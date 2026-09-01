@@ -20,7 +20,7 @@ export const CALC_SUBTYPES = [
 export const EXAM_SECTIONS = [
   { key: "기본1", label: "기본작업-1 · 데이터 입력", ready: false },
   { key: "기본2", label: "기본작업-2 · 서식", ready: false },
-  { key: "기본3", label: "기본작업-3 · 조건부서식/고급필터/텍스트나누기", ready: false },
+  { key: "기본3", label: "기본작업-3 · 조건부서식(고급필터·텍스트나누기 준비중)", ready: true },
   { key: "계산", label: "계산작업 · 함수 5문제", ready: true },
   { key: "분석1", label: "분석작업-1 · 피벗/부분합/시나리오 등", ready: false },
   { key: "분석2", label: "분석작업-2 · 피벗/부분합/시나리오 등", ready: false },
@@ -29,6 +29,22 @@ export const EXAM_SECTIONS = [
 ];
 
 const calcProblems = () => EXAM_PROBLEMS.filter((p) => p.section === "계산");
+const bySection = (sec) => EXAM_PROBLEMS.filter((p) => p.section === sec);
+
+// 기본작업-3 유형(택1): 조건부서식/고급필터/텍스트나누기
+export const BASIC3_SUBTYPES = [
+  { key: "condformat", label: "조건부 서식" },
+  { key: "advfilter", label: "고급필터" },
+  { key: "text2col", label: "텍스트 나누기" },
+];
+export function basic3AvailableSubtypes() {
+  const have = new Set(bySection("기본3").map((p) => p.subtype));
+  return BASIC3_SUBTYPES.map((s) => ({ ...s, ready: have.has(s.key) }));
+}
+export function pickBasic3(subtype) {
+  const pool = bySection("기본3").filter((p) => !subtype || p.subtype === subtype);
+  return pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], sheetName: "기본작업-3" } : null;
+}
 
 export function calcAvailableSubtypes() {
   const have = new Set(calcProblems().map((p) => p.subtype));

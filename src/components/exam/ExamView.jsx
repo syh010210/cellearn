@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Target, Download, Upload, CheckCircle2, XCircle, Lock } from "lucide-react";
-import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc } from "../../data/examBank";
+import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3 } from "../../data/examBank";
 import { buildExamFile } from "../../utils/examBuilder";
 import { gradeExamFile } from "../../utils/examGrader";
 import { UI } from "../../theme";
@@ -8,8 +8,11 @@ import { UI } from "../../theme";
 // 실전 모드 — 컴활 2급 실기 모의고사. (P1: 계산작업 실동작 — 시험지 .xlsx 다운로드 → 업로드 채점)
 export default function ExamView() {
   const calcSubs = calcAvailableSubtypes();
+  const basic3Subs = basic3AvailableSubtypes();
   const [selected, setSelected] = useState([]); // 계산 유형(빈 배열=전체)
   const [count, setCount] = useState(5);
+  const [inc3, setInc3] = useState(true); // 기본작업-3 포함
+  const [sub3, setSub3] = useState("condformat"); // 기본작업-3 유형
   const [problems, setProblems] = useState(null); // 생성된 시험지 문제 세트
   const [result, setResult] = useState(null);
   const [checking, setChecking] = useState(false);
@@ -19,7 +22,9 @@ export default function ExamView() {
   const toggle = (k) => setSelected((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]));
 
   function generate() {
-    const set = pickCalc(selected, count);
+    const set = [];
+    if (inc3) { const b3 = pickBasic3(sub3); if (b3) set.push(b3); }
+    set.push(...pickCalc(selected, count));
     setProblems(set);
     setResult(null);
     buildExamFile(set, new Date().toISOString().slice(0, 10));
@@ -54,6 +59,29 @@ export default function ExamView() {
       <p style={{ color: UI.mut, fontSize: 14, marginBottom: 20, lineHeight: 1.7 }}>
         실제 시험지 형식의 엑셀 파일을 내려받아 풀고, 완성 파일을 업로드하면 <b style={{ color: UI.ink }}>정답 수식 일치</b>로 채점합니다.
       </p>
+
+      {/* 기본작업-3 구성 */}
+      <div style={card}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer", marginBottom: 10 }}>
+          <input type="checkbox" checked={inc3} onChange={(e) => setInc3(e.target.checked)} />
+          <span style={{ fontWeight: 700, color: UI.ink }}>기본작업-3 포함</span>
+          <span style={{ fontSize: 12, color: UI.mut }}>(조건부 서식 · 파일 업로드 실채점)</span>
+        </label>
+        {inc3 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {BASIC3_SUBTYPES.map((s) => {
+              const avail = basic3Subs.find((a) => a.key === s.key)?.ready;
+              return (
+                <button key={s.key} onClick={() => avail && setSub3(s.key)} disabled={!avail}
+                  title={avail ? "" : "문제 준비 중"}
+                  style={{ ...chip(sub3 === s.key && avail), opacity: avail ? 1 : 0.45, cursor: avail ? "pointer" : "not-allowed" }}>
+                  {s.label}{!avail && " ·준비중"}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* 계산작업 구성 (P1 실동작) */}
       <div style={card}>

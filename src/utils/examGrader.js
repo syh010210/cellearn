@@ -1,32 +1,56 @@
 import XLSX from "xlsx-js-style";
+import { loadXlsxZip, getConditionalFormats, normFormula } from "./xlsxInspect";
 
-// 실전 모드 채점 — 업로드한 .xlsx를 열어 각 계산작업 문제의 정답 셀 수식을 비교.
-// 컴활 실채점과 동일하게 '정답 수식 문자열 일치'(공백 제거·대문자 정규화)로 판정.
-const norm = (s) => String(s ?? "").replace(/\s/g, "").toUpperCase();
+// 실전 모드 채점 — 작업(section)별로 실채점.
+//  · 계산: 정답 셀 수식 문자열 정확 일치(공백제거·대문자)
+//  · 기본3/조건부서식: 업로드 파일의 xlsx 내부 XML에서 조건부 서식 규칙(범위+수식) 검사
+const norm = normFormula;
 
-export function gradeExamFile(file, problems) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      try {
-        const wb = XLSX.read(ev.target.result, { type: "array", cellFormula: true });
-        const results = problems.map((p) => {
-          const ws = wb.Sheets[p.sheetName];
-          const items = (p.answers || []).map((ans) => {
-            if (!ws) return { ...ans, status: "시트없음", studentFormula: "-" };
-            const cell = ws[ans.cell];
-            const studentFormula = cell?.f ? `=${cell.f}` : cell?.v !== undefined ? String(cell.v) : "";
-            const ok = norm(studentFormula) === norm(ans.formula);
-            return { ...ans, status: ok ? "correct" : "wrong", studentFormula };
-          });
-          const correct = items.filter((it) => it.status === "correct").length;
-          return { id: p.id, title: p.title, sheetName: p.sheetName, items, correct, total: items.length };
-        });
-        resolve(results);
-      } catch {
-        reject(new Error("파일을 읽는 중 오류가 발생했어요."));
-      }
-    };
-    reader.readAsArrayBuffer(file);
+function gradeCalc(wb, p) {
+  const ws = wb.Sheets[p.sheetName];
+  const items = (p.answers || []).map((ans) => {
+    if (!ws) return { ...ans, status: "시트없음", studentFormula: "-" };
+    const cell = ws[ans.cell];
+    const studentFormula = cell?.f ? `=${cell.f}` : cell?.v !== undefined ? String(cell.v) : "";
+    const ok = norm(studentFormula) === norm(ans.formula);
+    return { ...ans, status: ok ? "correct" : "wrong", studentFormula };
   });
+  return items;
+}
+
+async function gradeCondFormat(zip, p) {
+  const rules = await getConditionalFormats(zip, p.sheetName);
+  const wantSqref = String(p.expect.sqref).replace(/\s/g, "").toUpperCase();
+  const wantFormula = norm(p.expect.formula);
+  const hit = rules.some(
+    (r) => r.sqref.replace(/\s/g, "").toUpperCase() === wantSqref && r.formula && norm(r.formula) === wantFormula
+  );
+  const detail = rules.map((r) => `${r.sqref}: ${r.formula || r.type}`).join(" / ") || "(규칙 없음)";
+  return [{
+    cell: p.expect.sqref,
+    status: hit ? "correct" : "wrong",
+    studentFormula: detail,
+    formula: `${p.expect.sqref} · =${p.expect.formula}`,
+  }];
+}
+
+export async function gradeExamFile(file, problems) {
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, { type: "array", cellFormula: true });
+  let zip = null;
+  const needZip = problems.some((p) => p.section !== "계산");
+  if (needZip) { try { zip = await loadXlsxZip(buf); } catch { zip = null; } }
+
+  const results = [];
+  for (const p of problems) {
+    let items;
+    if (p.section === "기본3" && p.expect?.kind === "condformat") {
+      items = zip ? await gradeCondFormat(zip, p) : [{ cell: p.expect.sqref, status: "wrong", studentFormula: "(파일 파싱 실패)", formula: p.expect.formula }];
+    } else {
+      items = gradeCalc(wb, p);
+    }
+    const correct = items.filter((it) => it.status === "correct").length;
+    results.push({ id: p.id, title: p.title, sheetName: p.sheetName, section: p.section, items, correct, total: items.length });
+  }
+  return results;
 }
