@@ -12,7 +12,9 @@ import WrongNoteView from "./components/wrongnote/WrongNoteView";
 import AuthView from "./components/auth/AuthView";
 import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
-import { ArrowLeft, BookOpen, FolderOpen, PenLine } from "lucide-react";
+import DayGateView from "./components/lesson/DayGateView";
+import { getDay, isLessonUnlocked, isDayComplete } from "./data/days";
+import { ArrowLeft, BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck } from "lucide-react";
 import { UI } from "./theme";
 
 const STEP_TABS = [
@@ -31,7 +33,7 @@ export default function App() {
   const [view, setView] = useState("dash");
   const [step, setStep] = useState("concept");
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
-  const { progress, quizWrongMap, practiceWrongMap, saveQuizWrong, savePracticeWrong, completeLesson: persistComplete } = useLearningData();
+  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
@@ -58,8 +60,13 @@ export default function App() {
   }
   function completeLesson(lid, score) { persistComplete(lid, score); setView("dash"); }
 
+  function openGate(day) { setView(`gate-${day}`); document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" }); }
+  function onDayCleared(day) { clearDay(day); setView("dash"); }
+
   const totalWrong = Object.values(quizWrongMap).flat().length + Object.values(practiceWrongMap).flat().length;
   const currentLesson = typeof view === "number" ? LESSONS.find((l) => l.id === view) : null;
+  const gateDay = typeof view === "string" && view.startsWith("gate-") ? Number(view.slice(5)) : null;
+  const lessonLocked = currentLesson && !isLessonUnlocked(currentLesson.id, dayClears);
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
@@ -96,9 +103,11 @@ export default function App() {
         current={view}
         onSelect={selectLesson}
         progress={progress}
+        dayClears={dayClears}
         onDash={() => setView("dash")}
         onWrong={() => setView("wrong")}
         wrongCount={totalWrong}
+        onGate={openGate}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 상단 탭 — sticky 고정. 차시 탭은 엑셀 시트탭 모양 */}
@@ -109,7 +118,7 @@ export default function App() {
           >
             <ArrowLeft size={15} strokeWidth={2} /> 홈
           </button>
-          {currentLesson && STEP_TABS.map(({ key, label, Icon }) => {
+          {currentLesson && !lessonLocked && STEP_TABS.map(({ key, label, Icon }) => {
             const active = step === key;
             return (
               <button
@@ -143,11 +152,50 @@ export default function App() {
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
-          {currentLesson && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} />}
-          {currentLesson && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
-          {currentLesson && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
+          {gateDay != null && (
+            <DayGateView
+              day={gateDay}
+              lessons={LESSONS}
+              quizWrongMap={quizWrongMap}
+              saveQuizWrong={saveQuizWrong}
+              onCleared={onDayCleared}
+              onExit={() => setView("dash")}
+            />
+          )}
+          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} />}
+          {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} />}
+          {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
+          {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
         </div>
       </div>
+    </div>
+  );
+}
+
+// 잠긴 차시 진입 시 안내 — 이전 일차 마무리 시험을 먼저 통과해야 함
+function LockNotice({ lesson, progress, onGate, onDash }) {
+  const d = getDay(lesson.id);
+  const prevDay = d ? d.day - 1 : null;
+  const prevComplete = prevDay ? isDayComplete(prevDay, progress) : false;
+  return (
+    <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
+      <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.panelAlt, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+        <Lock size={24} strokeWidth={2} color={UI.mut} />
+      </div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: UI.ink }}>{d?.day}일차는 아직 잠겨 있어요</h2>
+      <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
+        {prevDay}일차를 마치고 <b style={{ color: UI.ink }}>{prevDay}일차 마무리 시험</b>(오답 재시험 · 누적 복습 엑셀)을
+        통과하면 {d?.day}일차가 열립니다.
+      </p>
+      {prevComplete ? (
+        <button onClick={() => onGate(prevDay)} style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <ClipboardCheck size={17} strokeWidth={2} /> {prevDay}일차 마무리 시험 보기
+        </button>
+      ) : (
+        <button onClick={onDash} style={{ background: UI.panelAlt, color: UI.ink, border: `1px solid ${UI.line}`, padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>
+          {prevDay}일차 학습 먼저 끝내기
+        </button>
+      )}
     </div>
   );
 }

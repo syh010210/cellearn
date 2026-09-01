@@ -13,18 +13,20 @@ export function useLearningData() {
   const [progress, setProgress] = useState({});
   const [quizWrongMap, setQuizWrongMap] = useState({});
   const [practiceWrongMap, setPracticeWrongMap] = useState({});
+  const [dayClears, setDayClears] = useState({}); // { [day]: true }
 
   // 로그인/로그아웃에 따라 로드 또는 초기화
   useEffect(() => {
     if (!supabase || !userId) {
-      setProgress({}); setQuizWrongMap({}); setPracticeWrongMap({});
+      setProgress({}); setQuizWrongMap({}); setPracticeWrongMap({}); setDayClears({});
       return;
     }
     let cancelled = false;
     (async () => {
-      const [{ data: prog }, { data: notes }] = await Promise.all([
+      const [{ data: prog }, { data: notes }, { data: clears }] = await Promise.all([
         supabase.from("progress").select("lesson_id, done, score").eq("user_id", userId),
         supabase.from("wrong_notes").select("lesson_id, kind, payload").eq("user_id", userId),
+        supabase.from("day_clears").select("day").eq("user_id", userId),
       ]);
       if (cancelled) return;
       const p = {};
@@ -34,7 +36,9 @@ export function useLearningData() {
         if (r.kind === "quiz") qw[r.lesson_id] = r.payload ?? [];
         else if (r.kind === "practice") pw[r.lesson_id] = r.payload ?? [];
       });
-      setProgress(p); setQuizWrongMap(qw); setPracticeWrongMap(pw);
+      const dc = {};
+      (clears ?? []).forEach((r) => { dc[r.day] = true; });
+      setProgress(p); setQuizWrongMap(qw); setPracticeWrongMap(pw); setDayClears(dc);
     })();
     return () => { cancelled = true; };
   }, [userId]);
@@ -73,5 +77,19 @@ export function useLearningData() {
     }
   }, [userId]);
 
-  return { progress, quizWrongMap, practiceWrongMap, saveQuizWrong, savePracticeWrong, completeLesson };
+  // 일차 마무리 시험 통과 → 다음 일차 잠금 해제
+  const clearDay = useCallback((day) => {
+    setDayClears((m) => ({ ...m, [day]: true }));
+    if (supabase && userId) {
+      supabase
+        .from("day_clears")
+        .upsert(
+          { user_id: userId, day, cleared_at: new Date().toISOString() },
+          { onConflict: "user_id,day" },
+        )
+        .then(({ error }) => { if (error) console.error("일차 클리어 저장 실패:", error.message); });
+    }
+  }, [userId]);
+
+  return { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, completeLesson, clearDay };
 }

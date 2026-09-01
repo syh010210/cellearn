@@ -1,7 +1,8 @@
-import { LayoutDashboard, XCircle, CheckCircle2, Circle } from "lucide-react";
+import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck } from "lucide-react";
+import { DAYS, isDayComplete, isDayUnlocked, isDayCleared } from "../../data/days";
 import { UI } from "../../theme";
 
-export default function Sidebar({ lessons, current, onSelect, progress, onDash, onWrong, wrongCount }) {
+export default function Sidebar({ lessons, current, onSelect, progress, dayClears, onDash, onWrong, wrongCount, onGate }) {
   const navBtn = (active, activeBg = UI.teal, activeColor = "#fff") => ({
     width: "100%",
     background: active ? activeBg : "transparent",
@@ -19,6 +20,8 @@ export default function Sidebar({ lessons, current, onSelect, progress, onDash, 
     alignItems: "center",
     gap: 9,
   });
+
+  const byId = (id) => lessons.find((l) => l.id === id);
 
   return (
     <div style={{ width: 240, background: UI.surface, borderRight: `1px solid ${UI.line}`, display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0 }}>
@@ -38,28 +41,56 @@ export default function Sidebar({ lessons, current, onSelect, progress, onDash, 
           )}
         </button>
 
-        <div style={{ color: UI.faint, fontSize: 11, fontWeight: 700, letterSpacing: 0.4, padding: "12px 12px 6px" }}>차시 목록</div>
-        {lessons.map((l) => {
-          const active = current === l.id;
-          const done = progress[l.id]?.done;
+        {DAYS.map((d) => {
+          const unlocked = isDayUnlocked(d.day, dayClears);
+          const cleared = isDayCleared(d.day, dayClears);
+          const complete = isDayComplete(d.day, progress);
+          const gateActive = current === `gate-${d.day}`;
           return (
-            <button
-              key={l.id}
-              onClick={() => onSelect(l.id)}
-              style={{ ...navBtn(active), fontSize: 13 }}
-            >
-              {done
-                ? <CheckCircle2 size={16} strokeWidth={2} color={active ? "#fff" : UI.correct} style={{ flexShrink: 0 }} />
-                : <Circle size={16} strokeWidth={1.5} color={active ? UI.lime : "#cfd6d2"} style={{ flexShrink: 0 }} />}
-              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.id}. {l.shortTitle || l.title}</span>
-            </button>
+            <div key={d.day} style={{ marginTop: 12 }}>
+              {/* 일차 헤더 */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px 6px", color: UI.faint, fontSize: 11, fontWeight: 700, letterSpacing: 0.4 }}>
+                {cleared ? <CheckCircle2 size={13} strokeWidth={2} color={UI.correct} />
+                  : !unlocked ? <Lock size={12} strokeWidth={2} color={UI.faint} />
+                  : null}
+                {d.day}일차
+                <span style={{ color: "#cfd6d2", fontWeight: 500 }}>({d.lessons[0]}~{d.lessons[d.lessons.length - 1]}차시)</span>
+              </div>
+
+              {/* 차시들 */}
+              {d.lessons.map((id) => {
+                const l = byId(id);
+                if (!l) return (
+                  <div key={id} style={{ padding: "10px 12px", color: "#c2cac6", fontSize: 13, display: "flex", alignItems: "center", gap: 9 }}>
+                    <Circle size={16} strokeWidth={1.5} color="#d3dad6" style={{ flexShrink: 0 }} />{id}. 준비 중...
+                  </div>
+                );
+                const active = current === id;
+                const done = progress[id]?.done;
+                return (
+                  <button key={id} onClick={() => onSelect(id)} style={{ ...navBtn(active), fontSize: 13, opacity: unlocked ? 1 : 0.55 }}>
+                    {!unlocked
+                      ? <Lock size={15} strokeWidth={1.5} color={active ? "#fff" : UI.faint} style={{ flexShrink: 0 }} />
+                      : done
+                      ? <CheckCircle2 size={16} strokeWidth={2} color={active ? "#fff" : UI.correct} style={{ flexShrink: 0 }} />
+                      : <Circle size={16} strokeWidth={1.5} color={active ? UI.lime : "#cfd6d2"} style={{ flexShrink: 0 }} />}
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{id}. {l.shortTitle || l.title}</span>
+                  </button>
+                );
+              })}
+
+              {/* 마무리 시험 진입 (일차 100% + 아직 미클리어) */}
+              {unlocked && complete && !cleared && (
+                <button
+                  onClick={() => onGate(d.day)}
+                  style={{ ...navBtn(gateActive, UI.lime, UI.teal), fontSize: 12.5, fontWeight: 700, marginTop: 2, background: gateActive ? UI.lime : UI.limeSoft, color: UI.teal }}
+                >
+                  <ClipboardCheck size={15} strokeWidth={2} /> {d.day}일차 마무리 시험
+                </button>
+              )}
+            </div>
           );
         })}
-        {Array.from({ length: Math.max(0, 5 - lessons.length) }, (_, i) => lessons.length + i + 1).map((n) => (
-          <div key={n} style={{ padding: "10px 12px", color: "#c2cac6", fontSize: 13, display: "flex", alignItems: "center", gap: 9 }}>
-            <Circle size={16} strokeWidth={1.5} color="#d3dad6" style={{ flexShrink: 0 }} />{n}. 준비 중...
-          </div>
-        ))}
       </div>
     </div>
   );

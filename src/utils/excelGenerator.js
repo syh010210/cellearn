@@ -137,9 +137,7 @@ function generateLesson9(lesson) {
   XLSX.writeFile(wb, `컴활2급_9차시_셀서식_실습.xlsx`);
 }
 
-function generateLesson1(lesson) {
-  const wb = XLSX.utils.book_new();
-
+function appendLesson1(wb) {
   // ── 시트 1: 상대 참조 (아래로 + 오른쪽으로 자동 채우기). 문제는 최상단. ──
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["표 1 - 분기별 판매 실적 (상대 참조)"],
@@ -200,13 +198,15 @@ function generateLesson1(lesson) {
   setFont(ws3, "A1", { sz: 16, bold: true }); // 제목
   setProblem(ws3, "A2"); // 문제 (자동 줄바꿈)
   XLSX.utils.book_append_sheet(wb, ws3, "표3_구구단");
+}
 
+function generateLesson1(lesson) {
+  const wb = XLSX.utils.book_new();
+  appendLesson1(wb);
   XLSX.writeFile(wb, `컴활2급_${lesson.id}차시_${lesson.title}_실습.xlsx`);
 }
 
-function generateLesson2(lesson) {
-  const wb = XLSX.utils.book_new();
-
+function appendLesson2(wb) {
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["문자열 추출 함수 실습 (LEFT / RIGHT / MID)"],
     ["원본 데이터", "B열 (결과 입력)", "C열 (결과 입력)", "D열 (결과 입력)"],
@@ -269,13 +269,15 @@ function generateLesson2(lesson) {
   ]);
   ws4["!cols"] = [{wch:18},{wch:10},{wch:28}];
   XLSX.utils.book_append_sheet(wb, ws4, "문자열연결");
+}
 
+function generateLesson2(lesson) {
+  const wb = XLSX.utils.book_new();
+  appendLesson2(wb);
   XLSX.writeFile(wb, `컴활2급_${lesson.id}차시_${lesson.title}_실습.xlsx`);
 }
 
-function generateLesson3(lesson) {
-  const wb = XLSX.utils.book_new();
-
+function appendLesson3(wb) {
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["기본 통계 함수 실습 (AVERAGE / MEDIAN)"],
     ["월별", "판매량", "구분", "결과값"],
@@ -326,13 +328,15 @@ function generateLesson3(lesson) {
   ]);
   ws4["!cols"] = [{ wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 14 }];
   XLSX.utils.book_append_sheet(wb, ws4, "조건부통계");
+}
 
+function generateLesson3(lesson) {
+  const wb = XLSX.utils.book_new();
+  appendLesson3(wb);
   XLSX.writeFile(wb, `컴활2급_${lesson.id}차시_${lesson.title}_실습.xlsx`);
 }
 
-function generateLesson4(lesson) {
-  const wb = XLSX.utils.book_new();
-
+function appendLesson4(wb) {
   const ws1 = XLSX.utils.aoa_to_sheet([
     ["도서코드", "도서명", "검색결과(도서명)"],
     ["A-101", "파이썬 기초", ""],
@@ -380,6 +384,22 @@ function generateLesson4(lesson) {
   ]);
   ws4["!cols"] = [{ wch: 10 }, { wch: 10 }, { wch: 10 }];
   XLSX.utils.book_append_sheet(wb, ws4, "값선택");
+}
 
+function generateLesson4(lesson) {
+  const wb = XLSX.utils.book_new();
+  appendLesson4(wb);
   XLSX.writeFile(wb, `컴활2급_${lesson.id}차시_${lesson.title}_실습.xlsx`);
+}
+
+// 누적 복습 통합문서 — 여러 차시의 실습 시트를 한 파일에 모은다.
+// (실습 생성기가 갖춰진 차시만 포함. days.js의 REVIEW_ENABLED와 일치)
+const REVIEW_APPENDERS = { 1: appendLesson1, 2: appendLesson2, 3: appendLesson3, 4: appendLesson4 };
+
+export function generateReviewExcel(lessonIds, label = "") {
+  const wb = XLSX.utils.book_new();
+  lessonIds.forEach((id) => { if (REVIEW_APPENDERS[id]) REVIEW_APPENDERS[id](wb); });
+  if (!wb.SheetNames || wb.SheetNames.length === 0) return false;
+  XLSX.writeFile(wb, `컴활2급_누적복습${label ? `_${label}` : ""}.xlsx`);
+  return true;
 }

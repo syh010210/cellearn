@@ -69,6 +69,14 @@ create table if not exists public.progress (
   primary key (user_id, lesson_id)
 );
 
+-- ── 4-1) day_clears : 일차 마무리 시험 통과 기록(일차 게이팅) ────
+create table if not exists public.day_clears (
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  day         integer not null,
+  cleared_at  timestamptz not null default now(),
+  primary key (user_id, day)
+);
+
 -- ── 5) wrong_notes : 오답노트(퀴즈/실습) ───────────────────────
 create table if not exists public.wrong_notes (
   id          uuid primary key default gen_random_uuid(),
@@ -116,6 +124,7 @@ alter table public.payments    enable row level security;
 alter table public.enrollments enable row level security;
 alter table public.progress    enable row level security;
 alter table public.wrong_notes enable row level security;
+alter table public.day_clears  enable row level security;
 
 -- 관리자 판별 헬퍼
 create or replace function public.is_admin()
@@ -153,6 +162,14 @@ create policy progress_admin_read on public.progress
   for select using (public.is_admin());
 drop policy if exists wrong_admin_read on public.wrong_notes;
 create policy wrong_admin_read on public.wrong_notes
+  for select using (public.is_admin());
+
+-- day_clears: 본인 CRUD + 관리자 전체 조회
+drop policy if exists day_clears_self on public.day_clears;
+create policy day_clears_self on public.day_clears
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists day_clears_admin_read on public.day_clears;
+create policy day_clears_admin_read on public.day_clears
   for select using (public.is_admin());
 
 -- 관리자 지정(가입 후 1회 실행): 아래 이메일을 본인 관리자 계정으로 바꾼다.
