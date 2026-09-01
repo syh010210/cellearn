@@ -1,5 +1,6 @@
 import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck } from "lucide-react";
 import { DAYS, isDayComplete, isDayUnlocked, isDayCleared } from "../../data/days";
+import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
 export default function Sidebar({ lessons, current, onSelect, progress, dayClears, onDash, onWrong, wrongCount, onGate }) {
@@ -25,9 +26,9 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
 
   return (
     <div style={{ width: 240, background: UI.surface, borderRight: `1px solid ${UI.line}`, display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0 }}>
-      <div style={{ padding: "20px 18px", borderBottom: `1px solid ${UI.line}`, display: "flex", alignItems: "center", gap: 9 }}>
-        <span style={{ width: 28, height: 28, borderRadius: 8, background: UI.teal, color: UI.lime, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 15, fontFamily: UI.mono }}>C</span>
-        <span style={{ fontWeight: 700, fontSize: 15.5, color: UI.ink }}>컴활 2급 실기</span>
+      <div style={{ padding: "18px 18px", borderBottom: `1px solid ${UI.line}`, display: "flex", flexDirection: "column", gap: 4 }}>
+        <Logo size={20} />
+        <span style={{ fontSize: 12, color: UI.faint, fontWeight: 600 }}>컴활 2급 실기</span>
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 8px" }}>

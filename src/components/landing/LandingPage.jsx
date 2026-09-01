@@ -4,7 +4,7 @@ import {
   Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
-import MiniExcel from "../lesson/MiniExcel";
+import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
 // 콘텐츠 재구성 (2026-09):
@@ -42,18 +42,44 @@ function HoverCard({ children, style, hoverStyle, onClick }) {
 }
 
 const mono = { fontFamily: UI.mono };
+// 숫자 표기 전용 — 깔끔한 본문 글꼴 + 균등폭 숫자 + 좁은 자간
+const num = { fontFamily: UI.font, fontWeight: 800, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" };
 
-// 히어로 라이브 데모 (실제 조작 가능한 MiniExcel)
-const heroPractice = {
-  instruction: "D2 셀에 =B2+C2 를 입력해 합계를 구하고, 오른쪽 아래 채우기 핸들을 아래로 끌어 D3·D4까지 채워 보세요.",
-  cols: ["A", "B", "C", "D"],
-  rows: [
-    [{ val: "이름", editable: false }, { val: "필기", editable: false }, { val: "실기", editable: false }, { val: "합계", editable: false }],
-    [{ val: "김철수", editable: false }, { val: "85", editable: false }, { val: "90", editable: false }, { val: "", editable: true, answer: "=B2+C2", result: 175 }],
-    [{ val: "이영희", editable: false }, { val: "72", editable: false }, { val: "68", editable: false }, { val: "", editable: true, answer: "=B3+C3", result: 140 }],
-    [{ val: "박민준", editable: false }, { val: "91", editable: false }, { val: "78", editable: false }, { val: "", editable: true, answer: "=B4+C4", result: 169 }],
-  ],
-};
+// 히어로 시각물 — 실제 시험형 파일의 '수식 채점' 스냅샷 (정적).
+function HeroShot() {
+  const rows = [
+    { name: "김철수", a: 85, b: 90, f: "=B2+C2", ok: true },
+    { name: "이영희", a: 72, b: 68, f: "=B3+C3", ok: true },
+    { name: "박민준", a: 91, b: 78, f: "=B4+C4", ok: true },
+    { name: "정다은", a: 64, b: 80, f: "=B5+C4", ok: false },
+  ];
+  const cell = { padding: "9px 12px", borderBottom: `1px solid ${UI.gridline}`, fontSize: 13 };
+  const head = { ...cell, background: UI.panelAlt, color: UI.mut, fontWeight: 700, fontSize: 11.5, textAlign: "center", borderBottom: `1px solid ${UI.line}` };
+  return (
+    <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow, overflow: "hidden" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${UI.line}` }}>
+        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>실습 파일 자동 채점</span>
+        <span style={{ ...mono, fontSize: 12.5, fontWeight: 700, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>3 / 4 정답</span>
+      </div>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: UI.font }}>
+        <thead><tr><th style={{ ...head, textAlign: "left" }}>이름</th><th style={head}>필기</th><th style={head}>실기</th><th style={{ ...head, textAlign: "left" }}>합계 수식</th><th style={head} /></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.name} style={{ background: r.ok ? "transparent" : UI.redSoft }}>
+              <td style={cell}>{r.name}</td>
+              <td style={{ ...cell, ...mono, textAlign: "center" }}>{r.a}</td>
+              <td style={{ ...cell, ...mono, textAlign: "center" }}>{r.b}</td>
+              <td style={{ ...cell, ...mono, color: r.ok ? UI.correct : UI.wrong }}>{r.f}</td>
+              <td style={{ ...cell, textAlign: "center", width: 40 }}>
+                {r.ok ? <CheckCircle2 size={16} strokeWidth={2} color={UI.correct} /> : <XCircle size={16} strokeWidth={2} color={UI.wrong} />}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default function LandingPage({ onStart }) {
   const isMobile = window.innerWidth < 768;
@@ -115,10 +141,7 @@ export default function LandingPage({ onStart }) {
 
       {/* ===== N. 네비 ===== */}
       <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, fontSize: 20 }}>
-          <span style={{ width: 30, height: 30, borderRadius: 8, background: UI.teal, color: UI.lime, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, ...mono, fontWeight: 700 }}>C</span>
-          <span><span style={{ ...mono, color: UI.inkFaint, fontWeight: 500 }}>=</span>CellLearn</span>
-        </div>
+        <Logo size={24} />
         {!isMobile && (
           <div style={{ display: "flex", gap: 28, fontSize: 15, color: UI.mut }}>
             <a href="#top" style={{ color: UI.ink, textDecoration: "none" }}>홈</a>
@@ -175,9 +198,9 @@ export default function LandingPage({ onStart }) {
             </div>
           ) : (
             <div>
-              <MiniExcel practice={heroPractice} autoplay />
+              <HeroShot />
               <div style={{ ...mono, textAlign: "center", color: UI.inkFaint, fontSize: 12.5, marginTop: 10 }}>
-                설치 없음 · 채점 즉시 · 실기 전용 (필기 강의 없음)
+                설치 없음 · 수식까지 채점 · 실기 전용 (필기 강의 없음)
               </div>
             </div>
           )}
@@ -187,12 +210,15 @@ export default function LandingPage({ onStart }) {
       {/* ===== S. 스탯 (4칸) ===== */}
       <section style={{ maxWidth: 1180, margin: "0 auto", padding: "8px 24px 20px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 14 }}>
-          {stats.map((s) => (
-            <div key={s.label} style={{ background: UI.surface, borderRadius: UI.rMd, padding: "24px 24px", border: `1px solid ${UI.line}`, borderLeft: `2px solid ${UI.teal}` }}>
-              <div style={{ ...mono, fontSize: 30, fontWeight: 700, color: UI.ink }}>{s.num}</div>
-              <div style={{ color: UI.mut, fontSize: 14, marginTop: 6 }}>{s.label}</div>
-            </div>
-          ))}
+          {stats.map((s) => {
+            const inf = s.num === "∞";
+            return (
+              <div key={s.label} style={{ background: UI.surface, borderRadius: UI.rMd, padding: "22px 24px", border: `1px solid ${UI.line}`, borderLeft: `2px solid ${UI.teal}` }}>
+                <div style={{ ...num, fontSize: inf ? 44 : 34, color: UI.ink, lineHeight: 1, height: 44, display: "flex", alignItems: "center" }}>{s.num}</div>
+                <div style={{ color: UI.mut, fontSize: 14, marginTop: 8 }}>{s.label}</div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -250,7 +276,7 @@ export default function LandingPage({ onStart }) {
                 hoverStyle={{ borderColor: UI.lime }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                  <span style={{ ...mono, fontSize: 12, color: UI.invMut }}>{i + 1} / {loop.length}</span>
+                  <span style={{ ...num, fontSize: 13, color: UI.invMut }}>{i + 1} / {loop.length}</span>
                   {i < loop.length - 1 && <ArrowRight size={15} strokeWidth={2} color={UI.invMut} />}
                 </div>
                 <Icon size={22} strokeWidth={1.5} color={UI.lime} />
@@ -338,11 +364,11 @@ export default function LandingPage({ onStart }) {
               ))}
               <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
                 <div style={{ flex: 1, background: UI.bg, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px" }}>
-                  <div style={{ ...mono, fontSize: 22, fontWeight: 700 }}>92%</div>
+                  <div style={{ ...num, fontSize: 24 }}>92%</div>
                   <div style={{ fontSize: 12, color: UI.mut }}>퀴즈 정답률</div>
                 </div>
                 <div style={{ flex: 1, background: UI.limeSoft, borderRadius: UI.rMd, padding: "12px 14px" }}>
-                  <div style={{ ...mono, fontSize: 22, fontWeight: 700, color: UI.teal }}>3</div>
+                  <div style={{ ...num, fontSize: 24, color: UI.teal }}>3</div>
                   <div style={{ fontSize: 12, color: UI.teal, opacity: 0.8 }}>오답 복습 대기</div>
                 </div>
               </div>
@@ -395,7 +421,7 @@ export default function LandingPage({ onStart }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>커리큘럼</h2>
           <p style={{ textAlign: "center", color: UI.mut, fontSize: 16, margin: "0 0 32px" }}>
-            총 <span style={{ ...mono, fontWeight: 700, color: UI.ink }}>{lessonCount}</span>차시 — 하루 한 차시, 개념·실습·퀴즈가 한 세트로 이어집니다
+            총 <span style={{ ...num, color: UI.ink }}>{lessonCount}</span>차시 — 하루 한 차시, 개념·실습·퀴즈가 한 세트로 이어집니다
           </p>
           <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, overflow: "hidden" }}>
             <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr" }}>
@@ -438,7 +464,7 @@ export default function LandingPage({ onStart }) {
             <div style={{ position: "relative", background: UI.teal, border: `1px solid ${tealLine}`, borderRadius: UI.rLg, padding: "28px 26px" }}>
               <span style={{ position: "absolute", top: 20, right: 22, background: UI.lime, color: UI.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>9월 오픈</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: UI.lime, marginBottom: 6 }}>컴활 실기 2급</div>
-              <div style={{ ...mono, fontSize: 34, fontWeight: 700 }}>₩49,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut, fontFamily: UI.font }}> / 3개월</span></div>
+              <div style={{ ...num, fontSize: 36 }}>₩49,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 3개월</span></div>
               <div style={{ margin: "20px 0" }}>
                 {["20차시 전체 커리큘럼", "엑셀 파일 자동 채점 · 오답노트", "복습 게이트 · 누적 복습 시스템", "완주 후 실전 모드 무제한"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>
@@ -452,7 +478,7 @@ export default function LandingPage({ onStart }) {
             <div style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "28px 26px" }}>
               <span style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: `1px solid ${tealLine}`, color: UI.invMut, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>10월 오픈 예정</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#cfd6d3", marginBottom: 6 }}>컴활 실기 1급</div>
-              <div style={{ ...mono, fontSize: 34, fontWeight: 700 }}>₩69,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut, fontFamily: UI.font }}> / 3개월</span></div>
+              <div style={{ ...num, fontSize: 36 }}>₩69,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 3개월</span></div>
               <div style={{ margin: "20px 0" }}>
                 {["2급 전체 학습 시스템 포함", "1급 심화 함수 · 배열 수식", "액세스 · 매크로 실기 대비", "10월 첫 주 오픈 예정"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>
@@ -506,9 +532,8 @@ export default function LandingPage({ onStart }) {
       <footer style={{ background: UI.greenDeep, color: "#cfe0da", padding: "48px 24px 28px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "space-between" }}>
           <div style={{ flex: "1 1 260px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, fontSize: 19, color: "#fff", marginBottom: 12 }}>
-              <span style={{ width: 28, height: 28, borderRadius: 8, background: UI.lime, color: UI.teal, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, ...mono, fontWeight: 700 }}>C</span>
-              CellLearn
+            <div style={{ marginBottom: 12 }}>
+              <Logo size={22} tone="light" />
             </div>
             <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴활·ITQ·실무 엑셀 실기를 개념부터 채점까지<br />한 흐름으로 준비하는 학습 플랫폼.</div>
           </div>
