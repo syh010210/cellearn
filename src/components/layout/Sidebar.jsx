@@ -3,7 +3,7 @@ import { DAYS, isDayComplete, isDayUnlocked, isDayCleared } from "../../data/day
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
-export default function Sidebar({ lessons, current, onSelect, progress, dayClears, onDash, onWrong, wrongCount, onGate }) {
+export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate }) {
   const navBtn = (active, activeBg = UI.teal, activeColor = "#fff") => ({
     width: "100%",
     background: active ? activeBg : "transparent",
@@ -43,7 +43,7 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
         </button>
 
         {DAYS.map((d) => {
-          const unlocked = isDayUnlocked(d.day, dayClears);
+          const unlocked = unlockAll || isDayUnlocked(d.day, dayClears);
           const cleared = isDayCleared(d.day, dayClears);
           const complete = isDayComplete(d.day, progress);
           const gateActive = current === `gate-${d.day}`;

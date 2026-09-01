@@ -66,7 +66,8 @@ export default function App() {
   const totalWrong = Object.values(quizWrongMap).flat().length + Object.values(practiceWrongMap).flat().length;
   const currentLesson = typeof view === "number" ? LESSONS.find((l) => l.id === view) : null;
   const gateDay = typeof view === "string" && view.startsWith("gate-") ? Number(view.slice(5)) : null;
-  const lessonLocked = currentLesson && !isLessonUnlocked(currentLesson.id, dayClears);
+  // 관리자 계정은 차시 잠금 없이 전체 접근
+  const lessonLocked = currentLesson && !isAdmin && !isLessonUnlocked(currentLesson.id, dayClears);
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
@@ -104,6 +105,7 @@ export default function App() {
         onSelect={selectLesson}
         progress={progress}
         dayClears={dayClears}
+        unlockAll={isAdmin}
         onDash={() => setView("dash")}
         onWrong={() => setView("wrong")}
         wrongCount={totalWrong}
