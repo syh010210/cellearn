@@ -4,6 +4,7 @@ import {
   Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
+import { DAYS } from "../../data/days";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
@@ -225,7 +226,6 @@ function HeroCarousel() {
 export default function LandingPage({ onStart }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
-  const [showAllLessons, setShowAllLessons] = useState(false);
 
   // S. 스탯
   const stats = [
@@ -286,7 +286,6 @@ export default function LandingPage({ onStart }) {
         {!isMobile && (
           <div style={{ display: "flex", gap: 28, fontSize: 15, color: UI.mut }}>
             <a href="#top" style={{ color: UI.ink, textDecoration: "none" }}>홈</a>
-            <a href="#roadmap" style={{ color: UI.mut, textDecoration: "none" }}>오픈 일정</a>
             <a href="#features" style={{ color: UI.mut, textDecoration: "none" }}>학습 방식</a>
             <a href="#curriculum" style={{ color: UI.mut, textDecoration: "none" }}>커리큘럼</a>
             <a href="#pricing" style={{ color: UI.mut, textDecoration: "none" }}>수강료</a>
@@ -564,35 +563,28 @@ export default function LandingPage({ onStart }) {
         <div style={{ maxWidth: 880, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>커리큘럼</h2>
           <p style={{ textAlign: "center", color: UI.mut, fontSize: 16, margin: "0 0 32px" }}>
-            총 <span style={{ ...num, color: UI.ink }}>{lessonCount}</span>차시 — 하루 한 차시, 개념·실습·퀴즈가 한 세트로 이어집니다
+            <span style={{ ...num, color: UI.ink }}>7</span>일 · 총 <span style={{ ...num, color: UI.ink }}>{lessonCount}</span>차시 — 하루치 진도를 마치고 사전 점검 세션을 통과하면 다음 날이 열립니다
           </p>
-          <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, overflow: "hidden" }}>
-            <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr" }}>
-              {(showAllLessons ? LESSONS : LESSONS.slice(0, 8)).map((l, i, arr) => (
-                <div
-                  key={l.id}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 14, padding: "13px 20px",
-                    borderBottom: i < arr.length - (isMobile ? 1 : 2) ? `1px solid ${UI.gridline}` : "none",
-                    borderRight: !isMobile && i % 2 === 0 ? `1px solid ${UI.gridline}` : "none",
-                  }}
-                >
-                  <span style={{ ...mono, fontSize: 12, fontWeight: 700, color: UI.teal, background: UI.limeSoft, padding: "3px 8px", borderRadius: UI.rSm, flexShrink: 0 }}>
-                    {String(l.id).padStart(2, "0")}
-                  </span>
-                  <span style={{ fontWeight: 600, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>{l.title}</span>
-                  <span style={{ ...num, color: UI.inkFaint, fontSize: 13, flexShrink: 0 }}>{l.quiz.length}문항</span>
+          <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
+            {DAYS.map((d) => (
+              <div key={d.day} style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "18px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                  <span style={{ ...num, fontSize: 13, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>{d.day}일차</span>
+                  <span style={{ fontSize: 12.5, color: UI.mut }}>{d.lessons[0]}~{d.lessons[d.lessons.length - 1]}차시</span>
                 </div>
-              ))}
-            </div>
-            {LESSONS.length > 8 && (
-              <button
-                onClick={() => setShowAllLessons(!showAllLessons)}
-                style={{ width: "100%", padding: "13px 20px", background: UI.bg, border: "none", borderTop: `1px solid ${UI.line}`, color: UI.teal, fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: UI.font }}
-              >
-                {showAllLessons ? "접기" : `전체 ${lessonCount}차시 보기`}
-              </button>
-            )}
+                {d.lessons.map((id) => {
+                  const l = LESSONS.find((x) => x.id === id);
+                  if (!l) return null;
+                  return (
+                    <div key={id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderTop: id === d.lessons[0] ? "none" : `1px solid ${UI.gridline}` }}>
+                      <span style={{ ...num, fontSize: 12, color: UI.inkFaint, width: 20, flexShrink: 0 }}>{id}</span>
+                      <span style={{ fontWeight: 600, fontSize: 13.5, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{l.title}</span>
+                      <span style={{ ...num, fontSize: 12, color: UI.inkFaint, flexShrink: 0 }}>{l.quiz.length}문항</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
           </div>
         </div>
       </section>

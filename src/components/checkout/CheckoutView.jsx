@@ -6,7 +6,7 @@ import { UI } from "../../theme";
 
 // 급수별 3개월 기간제 상품 (가격은 실제 정책에 맞게 조정 — 서버 verify-payment의 PRICE와 반드시 일치)
 const PRODUCTS = {
-  "2급": { grade: "2급", amount: 49000, label: "컴활 2급 실기 · 3개월" },
+  "2급": { grade: "2급", amount: 70000, label: "컴퓨터활용능력 2급 실기 · 올해 끝까지" },
   "1급": { grade: "1급", amount: 69000, label: "컴활 1급 실기 · 3개월" },
 };
 

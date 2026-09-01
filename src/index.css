@@ -5,6 +5,10 @@
 
 * { box-sizing: border-box; }
 
+html {
+  scroll-behavior: smooth; /* 네비 앵커 클릭 시 부드럽게 스크롤 */
+}
+
 html, body {
   margin: 0;
   padding: 0;

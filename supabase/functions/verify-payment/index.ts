@@ -9,7 +9,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // 상품 정가(서버 기준). 클라이언트가 보낸 금액과 대조.
-const PRICE: Record<string, number> = { "2급": 49000, "1급": 69000 };
+const PRICE: Record<string, number> = { "2급": 70000, "1급": 69000 };
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
