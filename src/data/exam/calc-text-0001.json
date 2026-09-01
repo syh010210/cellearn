@@ -1,0 +1,23 @@
+{
+  "id": "calc-text-0001",
+  "section": "계산",
+  "subtype": "text",
+  "difficulty": "하",
+  "grade": "2급",
+  "title": "문자열 — 분류코드 추출",
+  "instruction": "[표] C열(분류코드)에 상품코드(A)의 왼쪽 2글자를 추출하시오. LEFT 사용. (C2 입력 후 C5까지 자동 채우기)",
+  "sheetName": "계산_문자열",
+  "table": [
+    ["상품코드", "상품명", "분류코드"],
+    ["BK-201", "노트", ""],
+    ["EL-330", "이어폰", ""],
+    ["BK-118", "펜", ""],
+    ["EL-402", "충전기", ""]
+  ],
+  "answers": [
+    { "cell": "C2", "formula": "=LEFT(A2,2)" },
+    { "cell": "C3", "formula": "=LEFT(A3,2)" },
+    { "cell": "C4", "formula": "=LEFT(A4,2)" },
+    { "cell": "C5", "formula": "=LEFT(A5,2)" }
+  ]
+}
