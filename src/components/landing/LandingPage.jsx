@@ -594,13 +594,13 @@ export default function LandingPage({ onStart }) {
               { month: "11월", title: "ITQ 엑셀" },
               { month: "12월", title: "실무 엑셀" },
             ].map((r) => (
-              <div key={r.month} style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "26px 22px 18px" }}>
-                <span style={{ position: "absolute", top: -1, left: 16, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: UI.tealCard, color: UI.invMut }}>{r.month}</span>
+              <div key={r.month} style={{ position: "relative", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "26px 22px 18px" }}>
+                <span style={{ position: "absolute", top: -1, left: 16, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: UI.bg, color: UI.inkFaint, border: `1px solid ${UI.line}`, borderTop: "none" }}>{r.month}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <CalendarDays size={17} strokeWidth={1.5} color={UI.invMut} />
-                  <span style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>{r.title}</span>
+                  <CalendarDays size={17} strokeWidth={1.5} color={UI.inkFaint} />
+                  <span style={{ fontWeight: 700, fontSize: 16, color: UI.ink }}>{r.title}</span>
                 </div>
-                <div style={{ marginTop: 8, fontSize: 13, color: UI.invMut, fontWeight: 500 }}>오픈 예정</div>
+                <div style={{ marginTop: 8, fontSize: 13, color: UI.mut, fontWeight: 500 }}>오픈 예정</div>
               </div>
             ))}
           </div>
