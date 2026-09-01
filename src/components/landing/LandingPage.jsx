@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, Repeat, Play, Pause,
+  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
 import { DAYS } from "../../data/days";
@@ -226,6 +226,7 @@ function HeroCarousel() {
 export default function LandingPage({ onStart }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
+  const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
 
   // S. 스탯
   const stats = [
@@ -233,6 +234,12 @@ export default function LandingPage({ onStart }) {
     { num: "60+", label: "자체 엔진 함수 지원" },
     { num: "100%", label: "실습 중심 학습" },
     { num: "∞", label: "오답을 맞출 때까지 맞춤 복습" },
+  ];
+
+  // R. 오픈 로드맵 (9·10월 카드. 11·12월은 가격 하단 밴드로 안내)
+  const roadmap = [
+    { month: "9월", title: "컴활 2급 실기", state: "open", note: "이번 주말 오픈" },
+    { month: "10월", title: "컴활 1급 실기", state: "next", note: "오픈 예정" },
   ];
 
   // F. 학습 루프 (실제 순서가 있는 시퀀스)
@@ -343,6 +350,40 @@ export default function LandingPage({ onStart }) {
               <div key={s.label} style={{ background: UI.surface, borderRadius: UI.rMd, padding: "22px 24px", border: `1px solid ${UI.line}`, borderLeft: `2px solid ${UI.teal}` }}>
                 <div style={{ ...num, fontSize: inf ? 44 : 34, color: UI.ink, lineHeight: 1, height: 44, display: "flex", alignItems: "center" }}>{s.num}</div>
                 <div style={{ color: UI.mut, fontSize: 14, marginTop: 8 }}>{s.label}</div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ===== R. 오픈 로드맵 (9·10월 카드) ===== */}
+      <section id="roadmap" style={{ maxWidth: 1180, margin: "0 auto", padding: "20px 24px 64px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
+          {roadmap.map((r) => {
+            const open = r.state === "open";
+            const next = r.state === "next";
+            return (
+              <div
+                key={r.month}
+                style={{
+                  position: "relative",
+                  background: open ? UI.teal : UI.surface,
+                  color: open ? "#fff" : UI.ink,
+                  border: `1px solid ${open ? UI.teal : next ? UI.teal : UI.line}`,
+                  borderRadius: UI.rMd,
+                  padding: "26px 20px 18px",
+                }}
+              >
+                <span style={{ position: "absolute", top: -1, left: 14, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: open ? UI.lime : next ? UI.teal : UI.bg, color: open ? UI.teal : next ? "#fff" : UI.inkFaint, border: open || next ? "none" : `1px solid ${UI.line}`, borderTop: "none" }}>
+                  {r.month}
+                </span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <CalendarDays size={17} strokeWidth={1.5} color={open ? UI.lime : next ? UI.teal : UI.inkFaint} />
+                  <span style={{ fontWeight: 700, fontSize: 16 }}>{r.title}</span>
+                </div>
+                <div style={{ marginTop: 8, fontSize: 13, color: open ? UI.lime : next ? UI.teal : UI.mut, fontWeight: open || next ? 700 : 500 }}>
+                  {r.note}
+                </div>
               </div>
             );
           })}
@@ -521,7 +562,7 @@ export default function LandingPage({ onStart }) {
             <span style={{ ...num, color: UI.ink }}>7</span>일 · 총 <span style={{ ...num, color: UI.ink }}>{lessonCount}</span>차시 — 하루치 진도를 마치고 사전 점검 세션을 통과하면 다음 날이 열립니다
           </p>
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: 12 }}>
-            {DAYS.map((d) => (
+            {DAYS.filter((d) => showMoreDays || d.day <= 4).map((d) => (
               <div key={d.day} style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "18px 20px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
                   <span style={{ ...num, fontSize: 13, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>{d.day}일차</span>
@@ -540,6 +581,14 @@ export default function LandingPage({ onStart }) {
                 })}
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 18 }}>
+            <button
+              onClick={() => setShowMoreDays((v) => !v)}
+              style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.teal, fontWeight: 700, fontSize: 14, padding: "10px 20px", borderRadius: UI.rMd, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6 }}
+            >
+              {showMoreDays ? "5~7일차 접기 ▲" : "5~7일차 더 보기 ▼"}
+            </button>
           </div>
         </div>
       </section>
