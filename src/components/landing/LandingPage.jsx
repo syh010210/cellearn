@@ -601,15 +601,15 @@ export default function LandingPage({ onStart }) {
       <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>수강료</h2>
-          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 40px" }}>결제 한 번으로 3개월 무제한 — 지금은 2급 실기부터</p>
+          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 40px" }}>결제 한 번으로 올해가 끝날 때까지</p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {/* 2급 — 지금 결제 가능 (현재의 주인공) */}
             <div style={{ position: "relative", background: UI.teal, border: `1px solid ${tealLine}`, borderRadius: UI.rLg, padding: "28px 26px" }}>
               <span style={{ position: "absolute", top: 20, right: 22, background: UI.lime, color: UI.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>9월 오픈</span>
-              <div style={{ fontSize: 15, fontWeight: 700, color: UI.lime, marginBottom: 6 }}>컴활 실기 2급</div>
-              <div style={{ ...num, fontSize: 36 }}>₩49,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 3개월</span></div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: UI.lime, marginBottom: 6 }}>컴퓨터활용능력 실기 2급</div>
+              <div style={{ ...num, fontSize: 36 }}>₩70,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 올해 끝까지</span></div>
               <div style={{ margin: "20px 0" }}>
-                {["20차시 전체 커리큘럼", "엑셀 파일 자동 채점 · 오답노트", "복습 게이트 · 누적 복습 시스템", "완주 후 실전 모드 무제한"].map((f) => (
+                {["7일, 20차시 커리큘럼", "엑셀 파일 자동 채점 · 퀴즈 오답노트", "사전 점검 세션 · 누적 복습 시스템", "개념 학습 후 실전 문제 풀이 무제한"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>
                     <CheckCircle2 size={17} strokeWidth={2} color={UI.lime} style={{ flexShrink: 0, marginTop: 2 }} />{f}
                   </div>
