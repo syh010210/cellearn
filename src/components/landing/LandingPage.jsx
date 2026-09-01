@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
+  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause, ChevronDown,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
 import { DAYS } from "../../data/days";
@@ -223,6 +223,45 @@ function HeroCarousel() {
   );
 }
 
+const FAQS = [
+  { q: "PC에서만 학습할 수 있나요?", a: "개념 학습·실습·채점 기능은 PC(웹 브라우저)에서 이용합니다. 랜딩·커리큘럼·수강료 안내는 모바일에서도 볼 수 있어요." },
+  { q: "수강 기간은 얼마나 되나요?", a: "결제한 급수를 올해 말까지 무제한으로 이용합니다. 기간 내에는 모든 차시·실습·복습·실전 모드를 자유롭게 반복할 수 있어요." },
+  { q: "급수는 어떻게 선택하나요?", a: "결제 시 2급 또는 1급 중 하나를 선택합니다. 2급은 이번 주말, 1급은 10월에 오픈 예정입니다." },
+  { q: "실습은 어떻게 채점되나요?", a: "결과값이 아니라 셀에 입력한 수식 자체를 셀 단위로 비교해 정오답을 가립니다. 실제 시험처럼 수식을 정확히 써야 정답으로 인정됩니다." },
+  { q: "다음 차시는 어떻게 열리나요?", a: "하루치 진도를 마친 뒤, 사전 점검 세션(누적 퀴즈 오답 재시험 + 누적 실습 오답 엑셀)을 모두 통과하면 다음 날 차시가 열립니다." },
+  { q: "실전 모드는 무엇인가요?", a: "전 차시를 완주하면 열리는 모드로, 최근 기출 유형의 문제를 원하는 주제로 생성해 원하는 만큼 풀 수 있습니다. 시험 직전 감각 유지에 좋습니다." },
+  { q: "환불이 되나요?", a: "환불·청약철회는 이용약관 및 환불정책에 따릅니다. 자세한 규정은 하단 정책 페이지를 참고해 주세요." },
+];
+
+function FaqSection() {
+  const [open, setOpen] = useState(0);
+  return (
+    <section id="faq" style={{ background: UI.surface, padding: "64px 24px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+        <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.01em" }}>자주 묻는 질문</h2>
+        <p style={{ textAlign: "center", color: UI.mut, fontSize: 15, margin: "0 0 28px" }}>수강 전에 많이 궁금해하시는 내용을 모았습니다</p>
+        <div style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rLg, overflow: "hidden", background: UI.surface }}>
+          {FAQS.map((it, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={i} style={{ borderTop: i ? `1px solid ${UI.line}` : "none" }}>
+                <button
+                  onClick={() => setOpen(isOpen ? -1 : i)}
+                  style={{ width: "100%", textAlign: "left", background: isOpen ? UI.panelAlt : UI.surface, border: "none", padding: "18px 20px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontFamily: UI.font }}
+                >
+                  <span style={{ fontWeight: 700, fontSize: 15, color: UI.ink }}>{it.q}</span>
+                  <ChevronDown size={18} strokeWidth={2} color={UI.mut} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
+                </button>
+                {isOpen && <div style={{ padding: "0 20px 18px", color: UI.mut, fontSize: 14, lineHeight: 1.75 }}>{it.a}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function LandingPage({ onStart }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
@@ -282,6 +321,7 @@ export default function LandingPage({ onStart }) {
             <a href="#features" style={{ color: UI.mut, textDecoration: "none" }}>학습 방식</a>
             <a href="#curriculum" style={{ color: UI.mut, textDecoration: "none" }}>커리큘럼</a>
             <a href="#pricing" style={{ color: UI.mut, textDecoration: "none" }}>수강료</a>
+            <a href="#faq" style={{ color: UI.mut, textDecoration: "none" }}>FAQ</a>
           </div>
         )}
         <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>학습 시작</Btn>
@@ -576,8 +616,8 @@ export default function LandingPage({ onStart }) {
             {/* 1급 — 10월 오픈 예정 */}
             <div style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "28px 26px" }}>
               <span style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: `1px solid ${tealLine}`, color: UI.invMut, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>10월 오픈 예정</span>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#cfd6d3", marginBottom: 6 }}>컴활 실기 1급</div>
-              <div style={{ ...num, fontSize: 36 }}>₩69,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 3개월</span></div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#cfd6d3", marginBottom: 6 }}>컴퓨터활용능력 실기 1급</div>
+              <div style={{ ...num, fontSize: 36 }}>₩120,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 올해 끝까지</span></div>
               <div style={{ margin: "20px 0" }}>
                 {["2급 전체 학습 시스템 포함", "1급 심화 함수 · 배열 수식", "액세스 · 매크로 실기 대비", "10월 첫 주 오픈 예정"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>
@@ -606,6 +646,9 @@ export default function LandingPage({ onStart }) {
           </div>
         </div>
       </section>
+
+      {/* ===== FAQ (수강료 옆) ===== */}
+      <FaqSection />
 
       {/* ===== E. 함수/엔진 (밝은) ===== */}
       <section style={{ background: UI.surface, padding: "64px 24px" }}>
