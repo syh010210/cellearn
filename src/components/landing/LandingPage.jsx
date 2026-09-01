@@ -57,44 +57,52 @@ function CarouselCard({ label, children }) {
   );
 }
 
-// 화면 1 — 개념: '엑셀 기본 구조'(열/행/셀)를 라이트 톤으로 새로 구성. 내용은 1차시 다이어그램과 동일.
+// 화면 1 — 개념: 1차시 '엑셀 기본 구조' 다이어그램을 라이트 톤으로 최대한 비슷하게 재현.
+// (파랑=열, 보라=행, 앰버=셀 색 코딩 + Sheet1 탭 + 3 정보 카드 + 하단 요약바)
 function ConceptSlide() {
   const cols = ["A", "B", "C", "D"];
-  const th = { border: `1px solid ${UI.gridline}`, background: UI.panelAlt, color: UI.mut, fontSize: 12, fontWeight: 700, padding: "8px 0", textAlign: "center" };
-  const cellStyle = (hl) => ({ border: `1px solid ${UI.gridline}`, padding: "9px 6px", textAlign: "center", fontSize: 13, ...mono, background: hl ? UI.lime : UI.surface, color: hl ? UI.teal : UI.faint, fontWeight: hl ? 700 : 400 });
-  const legend = [
-    { c: UI.teal, k: "열(Column)", v: "A · B · C … 세로줄" },
-    { c: UI.faint, k: "행(Row)", v: "1 · 2 · 3 … 가로줄" },
-    { c: UI.lime, k: "셀(Cell)", v: "열 + 행 = C3" },
+  const BLUE = { bg: "#e7edfb", bd: "#bcd0f5", tx: "#2563eb" };
+  const PUR = { bg: "#f0e9fb", bd: "#d8c4f0", tx: "#7c3aed" };
+  const AMB = { bg: "#fdf0d8", bd: "#eecf92", tx: "#b8791a" };
+  const corner = { width: 22, border: `1px solid ${UI.gridline}`, background: UI.panelAlt };
+  const colH = { width: 40, border: `1px solid ${BLUE.bd}`, background: BLUE.bg, color: BLUE.tx, fontWeight: 700, fontSize: 12, textAlign: "center", padding: "6px 0" };
+  const rowH = { border: `1px solid ${PUR.bd}`, background: PUR.bg, color: PUR.tx, fontWeight: 700, fontSize: 12, textAlign: "center", padding: "6px 0" };
+  const cell = (hl) => ({ border: `1px solid ${hl ? AMB.bd : UI.gridline}`, background: hl ? AMB.bg : UI.surface, color: hl ? AMB.tx : UI.faint, fontWeight: hl ? 700 : 400, fontSize: 12, ...mono, textAlign: "center", padding: "7px 4px" });
+  const cards = [
+    { c: BLUE, k: "열(Column)", v: "알파벳 주소 · 세로줄" },
+    { c: PUR, k: "행(Row)", v: "숫자 주소 · 가로줄" },
+    { c: AMB, k: "셀(Cell)", v: "열 + 행 = C3" },
   ];
   return (
     <CarouselCard label="개념 · 엑셀 기본 구조">
-      <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
-        <table style={{ borderCollapse: "collapse", tableLayout: "fixed", flexShrink: 0 }}>
-          <thead><tr><th style={{ ...th, width: 22 }} />{cols.map((c) => <th key={c} style={{ ...th, width: 38 }}>{c}</th>)}</tr></thead>
-          <tbody>
-            {[1, 2, 3].map((r) => (
-              <tr key={r}>
-                <th style={th}>{r}</th>
-                {cols.map((c) => { const hl = c === "C" && r === 3; return <td key={c} style={cellStyle(hl)}>{hl ? "C3" : ""}</td>; })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
-          {legend.map((l) => (
-            <div key={l.k}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-                <span style={{ width: 10, height: 10, borderRadius: 3, background: l.c, flexShrink: 0 }} />
-                <span style={{ fontWeight: 700, fontSize: 13, color: UI.ink }}>{l.k}</span>
-              </div>
-              <div style={{ fontSize: 12, color: UI.mut, marginTop: 2, marginLeft: 17 }}>{l.v}</div>
+      <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+        <div style={{ flexShrink: 0 }}>
+          <table style={{ borderCollapse: "collapse", tableLayout: "fixed" }}>
+            <thead><tr><th style={corner} />{cols.map((c) => <th key={c} style={colH}>{c}</th>)}</tr></thead>
+            <tbody>
+              {[1, 2, 3].map((r) => (
+                <tr key={r}>
+                  <td style={rowH}>{r}</td>
+                  {cols.map((c) => { const hl = c === "C" && r === 3; return <td key={c} style={cell(hl)}>{hl ? "C3" : `${c}${r}`}</td>; })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div style={{ marginTop: 6 }}>
+            <span style={{ background: BLUE.bg, border: `1px solid ${BLUE.bd}`, color: BLUE.tx, borderRadius: 4, padding: "2px 12px", fontSize: 11, fontWeight: 600 }}>Sheet1</span>
+          </div>
+        </div>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+          {cards.map(({ c, k, v }) => (
+            <div key={k} style={{ background: c.bg, border: `1px solid ${c.bd}`, borderRadius: UI.rSm, padding: "7px 10px" }}>
+              <div style={{ fontWeight: 700, fontSize: 12.5, color: c.tx }}>{k}</div>
+              <div style={{ fontSize: 11.5, color: UI.mut, marginTop: 1 }}>{v}</div>
             </div>
           ))}
         </div>
       </div>
-      <div style={{ marginTop: 16, fontSize: 12.5, color: UI.mut, lineHeight: 1.6 }}>
-        셀 주소는 <b style={{ color: UI.ink }}>열 + 행</b> 순서로 표기합니다. 예) <span style={mono}>C3</span> = C열 3행.
+      <div style={{ marginTop: 12, background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: UI.rSm, padding: "8px 12px", fontSize: 12, color: UI.mut, textAlign: "center" }}>
+        셀 주소 = 열(알파벳) + 행(숫자) → <span style={mono}>A1 · B3 · C3</span>
       </div>
     </CarouselCard>
   );
@@ -544,9 +552,9 @@ export default function LandingPage({ onStart }) {
           <h2 style={{ fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>
             완주하면, 실전만 무제한
           </h2>
-          <p style={{ color: UI.invMut, fontSize: 16, lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-            전 차시를 마치면 실전 모드가 열립니다. 실제 시험 형식 그대로, 지금까지 출제되어 온
-            유형의 문제를 <b style={{ color: "#fff" }}>원하는 만큼 생성해</b> 풀 수 있습니다.
+          <p style={{ color: UI.invMut, fontSize: 16, lineHeight: 1.8, maxWidth: 620, margin: "0 auto" }}>
+            전 차시를 마치면 실전 모드가 열립니다.<br />
+            실제 시험 형식 그대로, 지금까지 출제되어 온 유형의 문제를 <b style={{ color: "#fff" }}>원하는 만큼 생성해</b> 풀 수 있습니다.<br />
             시험 전날까지 감을 유지하세요.
           </p>
         </div>
