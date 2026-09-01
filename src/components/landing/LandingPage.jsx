@@ -236,12 +236,6 @@ export default function LandingPage({ onStart }) {
     { num: "∞", label: "오답을 맞출 때까지 맞춤 복습" },
   ];
 
-  // R. 오픈 로드맵 (9·10월 카드. 11·12월은 가격 하단 밴드로 안내)
-  const roadmap = [
-    { month: "9월", title: "컴활 2급 실기", state: "open", note: "이번 주말 오픈" },
-    { month: "10월", title: "컴활 1급 실기", state: "next", note: "오픈 예정" },
-  ];
-
   // F. 학습 루프 (실제 순서가 있는 시퀀스)
   const loop = [
     { Icon: BookOpen, title: "개념 학습", desc: "차시별 핵심 개념을 카드로 익히고, 웹 미니 엑셀에서 바로 수식을 쳐 봅니다." },
@@ -350,40 +344,6 @@ export default function LandingPage({ onStart }) {
               <div key={s.label} style={{ background: UI.surface, borderRadius: UI.rMd, padding: "22px 24px", border: `1px solid ${UI.line}`, borderLeft: `2px solid ${UI.teal}` }}>
                 <div style={{ ...num, fontSize: inf ? 44 : 34, color: UI.ink, lineHeight: 1, height: 44, display: "flex", alignItems: "center" }}>{s.num}</div>
                 <div style={{ color: UI.mut, fontSize: 14, marginTop: 8 }}>{s.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ===== R. 오픈 로드맵 (9·10월 카드) ===== */}
-      <section id="roadmap" style={{ maxWidth: 1180, margin: "0 auto", padding: "20px 24px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
-          {roadmap.map((r) => {
-            const open = r.state === "open";
-            const next = r.state === "next";
-            return (
-              <div
-                key={r.month}
-                style={{
-                  position: "relative",
-                  background: open ? UI.teal : UI.surface,
-                  color: open ? "#fff" : UI.ink,
-                  border: `1px solid ${open ? UI.teal : next ? UI.teal : UI.line}`,
-                  borderRadius: UI.rMd,
-                  padding: "26px 20px 18px",
-                }}
-              >
-                <span style={{ position: "absolute", top: -1, left: 14, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: open ? UI.lime : next ? UI.teal : UI.bg, color: open ? UI.teal : next ? "#fff" : UI.inkFaint, border: open || next ? "none" : `1px solid ${UI.line}`, borderTop: "none" }}>
-                  {r.month}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <CalendarDays size={17} strokeWidth={1.5} color={open ? UI.lime : next ? UI.teal : UI.inkFaint} />
-                  <span style={{ fontWeight: 700, fontSize: 16 }}>{r.title}</span>
-                </div>
-                <div style={{ marginTop: 8, fontSize: 13, color: open ? UI.lime : next ? UI.teal : UI.mut, fontWeight: open || next ? 700 : 500 }}>
-                  {r.note}
-                </div>
               </div>
             );
           })}
@@ -628,10 +588,21 @@ export default function LandingPage({ onStart }) {
               <Btn variant="onDark" disabled style={{ width: "100%", justifyContent: "center" }}>10월에 열립니다</Btn>
             </div>
           </div>
-          <div style={{ background: UI.tealCard, borderRadius: UI.rLg, padding: "22px 26px", marginTop: 16, textAlign: "center" }}>
-            <div style={{ fontSize: 14, color: UI.invMut }}>
-              이후 오픈 예정 — <span style={{ color: "#fff", fontWeight: 700 }}>11월 ITQ 엑셀</span> · <span style={{ color: "#fff", fontWeight: 700 }}>12월 실무 엑셀</span>
-            </div>
+          <div style={{ fontSize: 13, color: UI.invMut, textAlign: "center", margin: "24px 0 12px" }}>이후 오픈 예정</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
+            {[
+              { month: "11월", title: "ITQ 엑셀" },
+              { month: "12월", title: "실무 엑셀" },
+            ].map((r) => (
+              <div key={r.month} style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "26px 22px 18px" }}>
+                <span style={{ position: "absolute", top: -1, left: 16, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: UI.tealCard, color: UI.invMut }}>{r.month}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <CalendarDays size={17} strokeWidth={1.5} color={UI.invMut} />
+                  <span style={{ fontWeight: 700, fontSize: 16, color: "#fff" }}>{r.title}</span>
+                </div>
+                <div style={{ marginTop: 8, fontSize: 13, color: UI.invMut, fontWeight: 500 }}>오픈 예정</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
