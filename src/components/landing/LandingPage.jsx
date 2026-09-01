@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat,
+  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
+import { ExcelBasicDiagram } from "../diagrams/Lesson1.jsx";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
@@ -57,33 +58,20 @@ function CarouselCard({ label, children }) {
   );
 }
 
-// 화면 1 — 개념 학습: 엑셀 기본 구조 미니 그리드
+// 화면 1 — 개념: 1차시 '엑셀 기본 구조' 다이어그램을 그대로 재사용(카드 폭에 맞춰 축소).
 function ConceptSlide() {
-  const cols = ["A", "B", "C", "D"];
-  const th = { border: `1px solid ${UI.gridline}`, background: UI.panelAlt, color: UI.mut, fontSize: 11, fontWeight: 700, padding: "6px 0", textAlign: "center" };
-  const cellStyle = (hl) => ({ border: `1px solid ${UI.gridline}`, padding: "8px 6px", textAlign: "center", fontSize: 12, ...mono, background: hl ? UI.teal : UI.surface, color: hl ? "#fff" : UI.faint, fontWeight: hl ? 700 : 400 });
   return (
-    <CarouselCard label="개념 학습 · 엑셀 기본 구조">
-      <table style={{ borderCollapse: "collapse", width: "100%", tableLayout: "fixed" }}>
-        <thead><tr><th style={{ ...th, width: 26 }} />{cols.map((c) => <th key={c} style={th}>{c}</th>)}</tr></thead>
-        <tbody>
-          {[1, 2, 3].map((r) => (
-            <tr key={r}>
-              <th style={th}>{r}</th>
-              {cols.map((c) => { const hl = c === "C" && r === 3; return <td key={c} style={cellStyle(hl)}>{hl ? "C3" : ""}</td>; })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div style={{ marginTop: 14, fontSize: 12.5, color: UI.mut, lineHeight: 1.7 }}>
-        열(A·B·C…) · 행(1·2·3…) · 셀은 <b style={{ color: UI.ink }}>열+행</b>으로 표기 → <span style={mono}>C3</span>.
-        미니 엑셀에서 직접 클릭·입력하며 익힙니다.
+    <CarouselCard label="개념 · 엑셀 기본 구조">
+      <div style={{ height: 262, overflow: "hidden", borderRadius: UI.rMd }}>
+        <div style={{ width: 720, transform: "scale(0.635)", transformOrigin: "top left" }}>
+          <ExcelBasicDiagram />
+        </div>
       </div>
     </CarouselCard>
   );
 }
 
-// 화면 2 — 오답노트: AND/OR 퀴즈 오답 예시
+// 화면 2 — 오답노트: AND/OR 퀴즈 오답 예시. '내가 고른 오답'을 표시하고 아래에 풀이.
 function WrongNoteSlide() {
   const opts = [
     "AND는 조건이 하나라도 참이면 TRUE, OR는 모든 조건이 참일 때만 TRUE를 반환한다.",
@@ -91,7 +79,7 @@ function WrongNoteSlide() {
     "AND와 OR는 동작 방식이 동일하며 결과도 항상 같다.",
     "AND는 숫자 조건에만, OR는 텍스트 조건에만 사용할 수 있다.",
   ];
-  const answer = 1;
+  const myWrong = 0; // 내가 고른 오답: ①
   return (
     <CarouselCard label="오답노트 · 퀴즈 복습">
       <div style={{ fontWeight: 700, fontSize: 13, color: UI.ink, marginBottom: 10, lineHeight: 1.5 }}>
@@ -99,15 +87,18 @@ function WrongNoteSlide() {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {opts.map((o, idx) => {
-          const correct = idx === answer;
+          const wrong = idx === myWrong;
           return (
-            <div key={idx} style={{ display: "flex", gap: 7, alignItems: "flex-start", fontSize: 11.5, lineHeight: 1.5, padding: "7px 10px", borderRadius: UI.rSm, border: `1px solid ${correct ? UI.greenLine : UI.line}`, background: correct ? UI.limeSoft : UI.surface, color: correct ? UI.correct : UI.mut, fontWeight: correct ? 600 : 400 }}>
+            <div key={idx} style={{ display: "flex", gap: 7, alignItems: "flex-start", fontSize: 11.5, lineHeight: 1.5, padding: "7px 10px", borderRadius: UI.rSm, border: `1px solid ${wrong ? UI.redLine : UI.line}`, background: wrong ? UI.redSoft : UI.surface, color: wrong ? UI.wrong : UI.mut, fontWeight: wrong ? 600 : 400 }}>
               <span style={{ flexShrink: 0 }}>{["①", "②", "③", "④"][idx]}</span>
               <span>{o}</span>
-              {correct && <CheckCircle2 size={14} strokeWidth={2} color={UI.correct} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+              {wrong && <XCircle size={14} strokeWidth={2} color={UI.wrong} style={{ marginLeft: "auto", flexShrink: 0 }} />}
             </div>
           );
         })}
+      </div>
+      <div style={{ marginTop: 10, background: UI.panelAlt, border: `1px solid ${UI.line}`, borderLeft: `3px solid ${UI.teal}`, borderRadius: UI.rSm, padding: "9px 12px", fontSize: 11.5, color: UI.mut, lineHeight: 1.6 }}>
+        <b style={{ color: UI.ink }}>풀이</b> · 정답은 <b style={{ color: UI.correct }}>②</b>. AND는 모든 조건이 참일 때만, OR는 하나라도 참이면 TRUE입니다. ①은 두 함수의 설명이 뒤바뀐 오답이에요.
       </div>
     </CarouselCard>
   );
@@ -117,7 +108,7 @@ function WrongNoteSlide() {
 function ReviewSlide() {
   const row = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px", display: "flex", gap: 12, alignItems: "center" };
   return (
-    <CarouselCard label="복습 게이트 · 다음 수업 전">
+    <CarouselCard label="사전 점검 세션 · 다음 수업 전">
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         <div style={row}>
           <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
@@ -148,26 +139,27 @@ function ReviewSlide() {
 const HERO_SLIDES = [
   { label: "개념", render: () => <ConceptSlide /> },
   { label: "오답노트", render: () => <WrongNoteSlide /> },
-  { label: "복습 게이트", render: () => <ReviewSlide /> },
+  { label: "사전 점검 세션", render: () => <ReviewSlide /> },
 ];
 
 function HeroCarousel() {
   const [i, setI] = useState(0);
+  const [playing, setPlaying] = useState(true);
   const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
   useEffect(() => {
-    if (reduce) return;
-    const t = setInterval(() => setI((x) => (x + 1) % HERO_SLIDES.length), 3800);
+    if (reduce || !playing) return;
+    const t = setInterval(() => setI((x) => (x + 1) % HERO_SLIDES.length), 5000);
     return () => clearInterval(t);
-  }, [reduce]);
+  }, [reduce, playing]);
   return (
     <div>
-      <div style={{ minHeight: 340 }}>
+      <div style={{ minHeight: 348 }}>
         <div key={i} className="cl-fade-up" style={{ height: "100%" }}>
           {HERO_SLIDES[i].render()}
         </div>
       </div>
-      {/* 진행 탭(클릭 가능) */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 14 }}>
+      {/* 진행 탭 + 재생/정지 */}
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 14 }}>
         {HERO_SLIDES.map((s, idx) => {
           const active = idx === i;
           return (
@@ -180,6 +172,14 @@ function HeroCarousel() {
             </button>
           );
         })}
+        <button
+          onClick={() => setPlaying((p) => !p)}
+          aria-label={playing ? "정지" : "재생"}
+          title={playing ? "자동 전환 정지" : "자동 전환 재생"}
+          style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, background: UI.surface, color: UI.mut, border: `1px solid ${UI.line}`, borderRadius: UI.rPill, cursor: "pointer", marginLeft: 2 }}
+        >
+          {playing ? <Pause size={14} strokeWidth={2} /> : <Play size={14} strokeWidth={2} />}
+        </button>
       </div>
     </div>
   );
