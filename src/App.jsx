@@ -13,6 +13,9 @@ import AuthView from "./components/auth/AuthView";
 import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
 
+// ⚠️ 임시: 결제 연동 전까지 로그인만 하면 실습 허용. 결제 붙일 때 true로 되돌려 수강권(결제) 필수로 조인다.
+const REQUIRE_ENROLLMENT = false;
+
 export default function App() {
   const isMobile = window.innerWidth < 768;
   const { loading, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
@@ -24,11 +27,11 @@ export default function App() {
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
-  const canLearn = gateBypassed || (isAuthed && hasActiveEnrollment);
+  const canLearn = gateBypassed || (isAuthed && (!REQUIRE_ENROLLMENT || hasActiveEnrollment));
 
   // 로그인/결제 상태가 바뀌면 인증·결제 페이지에서 자동으로 다음 단계로 이동
   useEffect(() => {
-    if (page === "auth" && isAuthed) setPage(hasActiveEnrollment ? "learn" : "checkout");
+    if (page === "auth" && isAuthed) setPage((!REQUIRE_ENROLLMENT || hasActiveEnrollment) ? "learn" : "checkout");
     if (page === "checkout" && hasActiveEnrollment) setPage("learn");
   }, [page, isAuthed, hasActiveEnrollment]);
 
@@ -36,7 +39,7 @@ export default function App() {
     if (isMobile) return;
     if (gateBypassed) return setPage("learn");
     if (!isAuthed) return setPage("auth");
-    if (!hasActiveEnrollment) return setPage("checkout");
+    if (REQUIRE_ENROLLMENT && !hasActiveEnrollment) return setPage("checkout");
     setPage("learn");
   }
 
