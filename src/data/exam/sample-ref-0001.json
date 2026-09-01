@@ -1,0 +1,18 @@
+{
+  "id": "ex-ref-0001",
+  "type": "excel",
+  "topics": ["ref"],
+  "difficulty": "기본",
+  "grade": "2급",
+  "title": "상대 참조 — 합계 자동 채우기",
+  "practice": {
+    "instruction": "D2 셀에 필기+실기 합계 수식을 입력하고, 오른쪽 아래 채우기 핸들을 아래로 끌어 D4까지 채우세요.",
+    "cols": ["A", "B", "C", "D"],
+    "rows": [
+      [{ "val": "이름", "editable": false }, { "val": "필기", "editable": false }, { "val": "실기", "editable": false }, { "val": "합계", "editable": false }],
+      [{ "val": "김철수", "editable": false }, { "val": "85", "editable": false }, { "val": "90", "editable": false }, { "val": "", "editable": true, "answer": "=B2+C2", "result": 175 }],
+      [{ "val": "이영희", "editable": false }, { "val": "72", "editable": false }, { "val": "68", "editable": false }, { "val": "", "editable": true, "answer": "=B3+C3", "result": 140 }],
+      [{ "val": "박민준", "editable": false }, { "val": "91", "editable": false }, { "val": "78", "editable": false }, { "val": "", "editable": true, "answer": "=B4+C4", "result": 169 }]
+    ]
+  }
+}

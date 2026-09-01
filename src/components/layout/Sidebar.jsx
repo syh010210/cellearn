@@ -1,9 +1,10 @@
-import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck } from "lucide-react";
-import { DAYS, isDayComplete, isDayUnlocked, isDayCleared } from "../../data/days";
+import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck, Target } from "lucide-react";
+import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared } from "../../data/days";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
-export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate }) {
+export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate, onExam }) {
+  const examUnlocked = unlockAll || allDaysCleared(dayClears);
   const navBtn = (active, activeBg = UI.teal, activeColor = "#fff") => ({
     width: "100%",
     background: active ? activeBg : "transparent",
@@ -40,6 +41,13 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
           {wrongCount > 0 && (
             <span style={{ marginLeft: "auto", background: UI.redSoft, color: UI.red, fontFamily: UI.mono, fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: UI.rPill, border: `1px solid ${UI.redLine}` }}>{wrongCount}</span>
           )}
+        </button>
+        <button onClick={onExam} style={{ ...navBtn(current === "exam"), opacity: examUnlocked ? 1 : 0.6 }}>
+          {examUnlocked
+            ? <Target size={17} strokeWidth={current === "exam" ? 2 : 1.5} color={current === "exam" ? "#fff" : UI.teal} />
+            : <Lock size={16} strokeWidth={1.5} />}
+          실전 모드
+          {!examUnlocked && <span style={{ marginLeft: "auto", fontSize: 11, color: UI.faint }}>완주 후</span>}
         </button>
 
         {DAYS.map((d) => {

@@ -13,8 +13,9 @@ import AuthView from "./components/auth/AuthView";
 import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
 import DayGateView from "./components/lesson/DayGateView";
-import { getDay, isLessonUnlocked, isDayComplete } from "./data/days";
-import { ArrowLeft, BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck } from "lucide-react";
+import ExamView from "./components/exam/ExamView";
+import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared } from "./data/days";
+import { ArrowLeft, BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target } from "lucide-react";
 import { UI } from "./theme";
 
 const STEP_TABS = [
@@ -110,6 +111,7 @@ export default function App() {
         onWrong={() => setView("wrong")}
         wrongCount={totalWrong}
         onGate={openGate}
+        onExam={() => setView("exam")}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 상단 탭 — sticky 고정. 차시 탭은 엑셀 시트탭 모양 */}
@@ -154,6 +156,19 @@ export default function App() {
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
+          {view === "exam" && (
+            (isAdmin || allDaysCleared(dayClears))
+              ? <ExamView />
+              : <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
+                  <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.panelAlt, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                    <Target size={24} strokeWidth={2} color={UI.mut} />
+                  </div>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: UI.ink }}>실전 모드는 완주 후 열립니다</h2>
+                  <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: 0 }}>
+                    1~7일차를 모두 마치고 사전 점검 세션을 통과하면, 최근 기출 유형 문제를 원하는 만큼 생성해 푸는 실전 모드가 열립니다.
+                  </p>
+                </div>
+          )}
           {gateDay != null && (
             <DayGateView
               day={gateDay}

@@ -68,3 +68,8 @@ export function currentDay(dayClears) {
   for (const d of DAYS) if (!isDayCleared(d.day, dayClears)) return d.day;
   return DAYS[DAYS.length - 1].day;
 }
+
+// 전 일차 클리어 여부 — 실전 모드 잠금 해제 조건
+export function allDaysCleared(dayClears) {
+  return DAYS.every((d) => isDayCleared(d.day, dayClears));
+}
