@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
   Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat,
@@ -45,37 +45,141 @@ const mono = { fontFamily: UI.mono };
 // 숫자 표기 전용 — 깔끔한 본문 글꼴 + 균등폭 숫자 + 좁은 자간
 const num = { fontFamily: UI.font, fontWeight: 800, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" };
 
-// 히어로 시각물 — '누적 오답 복습 관문' (정적).
-// 지난 전 차시의 오답(퀴즈+실습)을 모아 다음 수업 전에 다 맞혀야 잠금 해제.
-function HeroShot() {
+// 히어로 시각물 — 3화면 자동 전환 캐러셀: 개념(엑셀 기본 구조) → 오답노트(퀴즈) → 복습 게이트.
+function CarouselCard({ label, children }) {
+  return (
+    <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow, height: "100%", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div style={{ padding: "12px 16px", borderBottom: `1px solid ${UI.line}` }}>
+        <span style={{ fontSize: 11.5, fontWeight: 700, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>{label}</span>
+      </div>
+      <div style={{ padding: 16, flex: 1 }}>{children}</div>
+    </div>
+  );
+}
+
+// 화면 1 — 개념 학습: 엑셀 기본 구조 미니 그리드
+function ConceptSlide() {
+  const cols = ["A", "B", "C", "D"];
+  const th = { border: `1px solid ${UI.gridline}`, background: UI.panelAlt, color: UI.mut, fontSize: 11, fontWeight: 700, padding: "6px 0", textAlign: "center" };
+  const cellStyle = (hl) => ({ border: `1px solid ${UI.gridline}`, padding: "8px 6px", textAlign: "center", fontSize: 12, ...mono, background: hl ? UI.teal : UI.surface, color: hl ? "#fff" : UI.faint, fontWeight: hl ? 700 : 400 });
+  return (
+    <CarouselCard label="개념 학습 · 엑셀 기본 구조">
+      <table style={{ borderCollapse: "collapse", width: "100%", tableLayout: "fixed" }}>
+        <thead><tr><th style={{ ...th, width: 26 }} />{cols.map((c) => <th key={c} style={th}>{c}</th>)}</tr></thead>
+        <tbody>
+          {[1, 2, 3].map((r) => (
+            <tr key={r}>
+              <th style={th}>{r}</th>
+              {cols.map((c) => { const hl = c === "C" && r === 3; return <td key={c} style={cellStyle(hl)}>{hl ? "C3" : ""}</td>; })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div style={{ marginTop: 14, fontSize: 12.5, color: UI.mut, lineHeight: 1.7 }}>
+        열(A·B·C…) · 행(1·2·3…) · 셀은 <b style={{ color: UI.ink }}>열+행</b>으로 표기 → <span style={mono}>C3</span>.
+        미니 엑셀에서 직접 클릭·입력하며 익힙니다.
+      </div>
+    </CarouselCard>
+  );
+}
+
+// 화면 2 — 오답노트: AND/OR 퀴즈 오답 예시
+function WrongNoteSlide() {
+  const opts = [
+    "AND는 조건이 하나라도 참이면 TRUE, OR는 모든 조건이 참일 때만 TRUE를 반환한다.",
+    "AND는 모든 조건이 참일 때만 TRUE, OR는 조건 중 하나라도 참이면 TRUE를 반환한다.",
+    "AND와 OR는 동작 방식이 동일하며 결과도 항상 같다.",
+    "AND는 숫자 조건에만, OR는 텍스트 조건에만 사용할 수 있다.",
+  ];
+  const answer = 1;
+  return (
+    <CarouselCard label="오답노트 · 퀴즈 복습">
+      <div style={{ fontWeight: 700, fontSize: 13, color: UI.ink, marginBottom: 10, lineHeight: 1.5 }}>
+        6. 다음 중 AND 함수와 OR 함수의 차이점을 올바르게 설명한 것은?
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {opts.map((o, idx) => {
+          const correct = idx === answer;
+          return (
+            <div key={idx} style={{ display: "flex", gap: 7, alignItems: "flex-start", fontSize: 11.5, lineHeight: 1.5, padding: "7px 10px", borderRadius: UI.rSm, border: `1px solid ${correct ? UI.greenLine : UI.line}`, background: correct ? UI.limeSoft : UI.surface, color: correct ? UI.correct : UI.mut, fontWeight: correct ? 600 : 400 }}>
+              <span style={{ flexShrink: 0 }}>{["①", "②", "③", "④"][idx]}</span>
+              <span>{o}</span>
+              {correct && <CheckCircle2 size={14} strokeWidth={2} color={UI.correct} style={{ marginLeft: "auto", flexShrink: 0 }} />}
+            </div>
+          );
+        })}
+      </div>
+    </CarouselCard>
+  );
+}
+
+// 화면 3 — 복습 게이트: 누적 복습 단계
+function ReviewSlide() {
   const row = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px", display: "flex", gap: 12, alignItems: "center" };
   return (
-    <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow, overflow: "hidden" }}>
-      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${UI.line}` }}>
-        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>다음 수업 전 누적 복습 단계</span>
-      </div>
-      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+    <CarouselCard label="복습 게이트 · 다음 수업 전">
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         <div style={row}>
           <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적된 전 차시 퀴즈 오답 <span style={num}>4</span>문항</div>
-            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>오답노트에서 자동 수집 후 풀이</div>
+            <div style={{ fontWeight: 600, fontSize: 13 }}>누적 전 차시 퀴즈 오답 <span style={num}>4</span>문항</div>
+            <div style={{ fontSize: 11.5, color: UI.mut, marginTop: 2 }}>오답노트에서 자동 수집 후 풀이</div>
           </div>
         </div>
         <div style={row}>
           <Table2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적 전 차시 실습 오답 <span style={num}>3</span>문항</div>
-            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>틀린 문제만 모은 엑셀 파일로 다시 풀이</div>
+            <div style={{ fontWeight: 600, fontSize: 13 }}>누적 전 차시 실습 오답 <span style={num}>3</span>문항</div>
+            <div style={{ fontSize: 11.5, color: UI.mut, marginTop: 2 }}>틀린 문제만 모은 엑셀 파일로 다시 풀이</div>
           </div>
         </div>
         <div style={{ ...row, background: UI.teal, border: "none", color: "#fff" }}>
           <Unlock size={18} strokeWidth={1.5} color={UI.lime} style={{ flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 13.5 }}>모두 정답 → 오늘 차시 잠금 해제</div>
-            <div style={{ fontSize: 12, color: UI.invMut, marginTop: 2 }}>다 맞힐 때까지 다음 진도는 열리지 않습니다</div>
+            <div style={{ fontWeight: 700, fontSize: 13 }}>모두 정답 → 오늘 차시 잠금 해제</div>
+            <div style={{ fontSize: 11.5, color: UI.invMut, marginTop: 2 }}>다 맞힐 때까지 다음 진도는 열리지 않습니다</div>
           </div>
         </div>
+      </div>
+    </CarouselCard>
+  );
+}
+
+const HERO_SLIDES = [
+  { label: "개념", render: () => <ConceptSlide /> },
+  { label: "오답노트", render: () => <WrongNoteSlide /> },
+  { label: "복습 게이트", render: () => <ReviewSlide /> },
+];
+
+function HeroCarousel() {
+  const [i, setI] = useState(0);
+  const reduce = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  useEffect(() => {
+    if (reduce) return;
+    const t = setInterval(() => setI((x) => (x + 1) % HERO_SLIDES.length), 3800);
+    return () => clearInterval(t);
+  }, [reduce]);
+  return (
+    <div>
+      <div style={{ minHeight: 340 }}>
+        <div key={i} className="cl-fade-up" style={{ height: "100%" }}>
+          {HERO_SLIDES[i].render()}
+        </div>
+      </div>
+      {/* 진행 탭(클릭 가능) */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 14 }}>
+        {HERO_SLIDES.map((s, idx) => {
+          const active = idx === i;
+          return (
+            <button
+              key={s.label}
+              onClick={() => setI(idx)}
+              style={{ background: active ? UI.teal : UI.surface, color: active ? "#fff" : UI.mut, border: `1px solid ${active ? UI.teal : UI.line}`, borderRadius: UI.rPill, padding: "5px 12px", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: UI.font }}
+            >
+              {s.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -197,7 +301,7 @@ export default function LandingPage({ onStart }) {
               <div style={{ marginTop: 10, fontSize: 14 }}>PC에서 실제 미니 엑셀을 실습해 보세요</div>
             </div>
           ) : (
-            <HeroShot />
+            <HeroCarousel />
           )}
         </div>
       </header>
