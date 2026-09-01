@@ -6,6 +6,6 @@
     </linearGradient>
   </defs>
   <rect x="4" y="4" width="56" height="56" rx="15" fill="#123a33"/>
-  <rect x="22" y="22" width="8" height="22" rx="4" fill="url(#g)"/>
-  <rect x="34" y="16" width="8" height="28" rx="4" fill="#c8f26a"/>
+  <rect x="22" y="22" width="8" height="22" rx="4" fill="#4aa3e0"/>
+  <rect x="34" y="16" width="8" height="28" rx="4" fill="#46c07a"/>
 </svg>

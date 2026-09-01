@@ -694,11 +694,17 @@ export default function LandingPage({ onStart }) {
           <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>학습</div>
-              {["학습 방식", "커리큘럼", "수강료"].map((x) => <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>)}
+              {[["학습 방식", "#features"], ["커리큘럼", "#curriculum"], ["수강료", "#pricing"]].map(([x, href]) => (
+                <a key={x} href={href} style={{ display: "block", fontSize: 13.5, color: UI.invMut, marginBottom: 8, textDecoration: "none" }}>{x}</a>
+              ))}
             </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>고객지원</div>
-              {["자주 묻는 질문", "이용약관", "개인정보처리방침"].map((x) => <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>)}
+              {[["자주 묻는 질문", "#faq"], ["이용약관", null], ["개인정보처리방침", null]].map(([x, href]) => (
+                href
+                  ? <a key={x} href={href} style={{ display: "block", fontSize: 13.5, color: UI.invMut, marginBottom: 8, textDecoration: "none" }}>{x}</a>
+                  : <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>
+              ))}
             </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>문의</div>
