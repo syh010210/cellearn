@@ -266,6 +266,7 @@ export default function LandingPage({ onStart }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
   const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
+  const goPricing = () => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
 
   // S. 스탯
   const stats = [
@@ -356,7 +357,7 @@ export default function LandingPage({ onStart }) {
             </div>
           ) : (
             <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-              <Btn variant="dark" onClick={onStart}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
               <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
                 10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
               </a>
@@ -678,7 +679,7 @@ export default function LandingPage({ onStart }) {
           기출 유형이 통하는 마지막 해입니다
         </h2>
         <p style={{ color: UI.invMut, fontSize: 16, margin: "0 0 26px" }}>2027년 출제기준 개정 전, 9월 2급 실기 클래스로 시작하세요.</p>
-        <Btn variant="onDark" onClick={onStart}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+        <Btn variant="onDark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
       </section>
 
       {/* ===== FT. 푸터 (그린딥) ===== */}
