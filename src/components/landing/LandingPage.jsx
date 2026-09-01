@@ -303,25 +303,27 @@ export default function LandingPage({ onStart }) {
           <div style={{ flex: "1 1 380px", minWidth: 300 }}>
             <div style={{ background: UI.bg, borderRadius: UI.rLg, padding: 24, border: `1px solid ${UI.line}` }}>
               <div style={{ fontSize: 13, color: UI.mut, marginBottom: 14 }}>오늘의 학습 시작 전</div>
-              {/* 단계 1: 누적 퀴즈 오답 재시험 */}
-              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 12, alignItems: "center" }}>
-                <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>① 누적 퀴즈 오답 재시험</div>
-                  <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 2 }}>전 차시 오답노트에서 <span style={num}>4</span>문항 수집</div>
-                </div>
-                <CheckCircle2 size={18} strokeWidth={2} color={UI.correct} style={{ flexShrink: 0 }} />
+              {/* 좌우 2카드: 퀴즈 / 엑셀 */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
+                {[
+                  { Icon: RefreshCw, step: "①", title: "퀴즈 오답 재시험", sub: "전 차시 오답노트", n: "4", unit: "문항" },
+                  { Icon: Table2, step: "②", title: "실습 오답 엑셀", sub: "틀린 문제만 모아", n: "3", unit: "문항" },
+                ].map((c) => (
+                  <div key={c.step} style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 14px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <c.Icon size={20} strokeWidth={1.5} color={UI.teal} />
+                      <CheckCircle2 size={17} strokeWidth={2} color={UI.correct} />
+                    </div>
+                    <div style={{ fontWeight: 700, fontSize: 13.5, color: UI.ink }}>{c.step} {c.title}</div>
+                    <div style={{ fontSize: 12, color: UI.mut, marginTop: 3 }}>{c.sub}</div>
+                    <div style={{ marginTop: 8 }}>
+                      <span style={{ ...num, fontSize: 22, color: UI.teal }}>{c.n}</span>
+                      <span style={{ fontSize: 12, color: UI.mut, marginLeft: 3 }}>{c.unit} 통과</span>
+                    </div>
+                  </div>
+                ))}
               </div>
-              {/* 단계 2: 누적 실습 오답 엑셀 */}
-              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 12, alignItems: "center" }}>
-                <Table2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>② 누적 실습 오답 엑셀 풀이</div>
-                  <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 2 }}>틀린 문제만 모은 엑셀 <span style={num}>3</span>문항 채점</div>
-                </div>
-                <CheckCircle2 size={18} strokeWidth={2} color={UI.correct} style={{ flexShrink: 0 }} />
-              </div>
-              {/* 잠금 해제 */}
+              {/* 하단 해제바 */}
               <div style={{ background: UI.teal, borderRadius: UI.rMd, padding: "14px 16px", display: "flex", gap: 12, alignItems: "center", color: "#fff" }}>
                 <Unlock size={18} strokeWidth={1.5} color={UI.lime} style={{ flexShrink: 0 }} />
                 <div>
