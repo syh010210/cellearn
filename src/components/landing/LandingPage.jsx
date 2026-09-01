@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
+  Lock, Unlock, RefreshCw, Download, Upload, Repeat, Play, Pause,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
 import { DAYS } from "../../data/days";
@@ -235,14 +235,6 @@ export default function LandingPage({ onStart }) {
     { num: "∞", label: "오답을 맞출 때까지 맞춤 복습" },
   ];
 
-  // R. 오픈 로드맵
-  const roadmap = [
-    { month: "9월", title: "컴활 2급 실기", state: "open", note: "이번 주말 오픈" },
-    { month: "10월", title: "컴활 1급 실기", state: "next", note: "오픈 예정" },
-    { month: "11월", title: "ITQ 엑셀", state: "soon", note: "오픈 예정" },
-    { month: "12월", title: "실무 엑셀", state: "soon", note: "오픈 예정" },
-  ];
-
   // F. 학습 루프 (실제 순서가 있는 시퀀스)
   const loop = [
     { Icon: BookOpen, title: "개념 학습", desc: "차시별 핵심 개념을 카드로 익히고, 웹 미니 엑셀에서 바로 수식을 쳐 봅니다." },
@@ -277,7 +269,7 @@ export default function LandingPage({ onStart }) {
       <div style={{ background: UI.teal, color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13.5 }}>
         <span style={{ ...mono, background: UI.lime, color: UI.teal, fontWeight: 700, fontSize: 11.5, padding: "2px 8px", borderRadius: UI.rSm, marginRight: 10 }}>OPEN</span>
         이번 주말, 9월 컴활 2급 실기 클래스가 열립니다
-        <a href="#roadmap" style={{ color: UI.lime, fontWeight: 700, textDecoration: "none", marginLeft: 10 }}>오픈 일정 →</a>
+        <a href="#pricing" style={{ color: UI.lime, fontWeight: 700, textDecoration: "none", marginLeft: 10 }}>수강료 보기 →</a>
       </div>
 
       {/* ===== N. 네비 ===== */}
@@ -324,8 +316,8 @@ export default function LandingPage({ onStart }) {
           ) : (
             <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
               <Btn variant="dark" onClick={onStart}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-              <a href="#roadmap" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                10월 1급 오픈 일정 <ArrowRight size={16} strokeWidth={2} />
+              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
               </a>
             </div>
           )}
@@ -355,43 +347,6 @@ export default function LandingPage({ onStart }) {
             );
           })}
         </div>
-      </section>
-
-      {/* ===== R. 오픈 로드맵 (시트탭 모티프) ===== */}
-      <section id="roadmap" style={{ maxWidth: 1180, margin: "0 auto", padding: "20px 24px 64px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))", gap: 14 }}>
-          {roadmap.map((r) => {
-            const open = r.state === "open";
-            const next = r.state === "next";
-            return (
-              <div
-                key={r.month}
-                style={{
-                  position: "relative",
-                  background: open ? UI.teal : UI.surface,
-                  color: open ? "#fff" : UI.ink,
-                  border: `1px solid ${open ? UI.teal : next ? UI.teal : UI.line}`,
-                  borderRadius: UI.rMd,
-                  padding: "26px 20px 18px",
-                }}
-              >
-                <span style={{ position: "absolute", top: -1, left: 14, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: open ? UI.lime : next ? UI.teal : UI.bg, color: open ? UI.teal : next ? "#fff" : UI.inkFaint, border: open || next ? "none" : `1px solid ${UI.line}`, borderTop: "none" }}>
-                  {r.month}
-                </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
-                  <CalendarDays size={17} strokeWidth={1.5} color={open ? UI.lime : next ? UI.teal : UI.inkFaint} />
-                  <span style={{ fontWeight: 700, fontSize: 16 }}>{r.title}</span>
-                </div>
-                <div style={{ marginTop: 8, fontSize: 13, color: open ? UI.lime : next ? UI.teal : UI.mut, fontWeight: open || next ? 700 : 500 }}>
-                  {r.note}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <p style={{ textAlign: "center", color: UI.mut, fontSize: 13.5, marginTop: 16 }}>
-          9월 2급을 시작으로, 10월 컴활 1급 → 11월 ITQ 엑셀 → 12월 실무 엑셀까지 총 4개 클래스가 순차 오픈됩니다.
-        </p>
       </section>
 
       {/* ===== F. 학습 루프 (딥그린, 번호 시퀀스) ===== */}
@@ -675,7 +630,7 @@ export default function LandingPage({ onStart }) {
           <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>학습</div>
-              {["오픈 일정", "학습 방식", "커리큘럼", "수강료"].map((x) => <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>)}
+              {["학습 방식", "커리큘럼", "수강료"].map((x) => <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>)}
             </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>고객지원</div>
