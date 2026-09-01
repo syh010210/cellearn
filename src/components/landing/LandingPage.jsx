@@ -550,12 +550,11 @@ export default function LandingPage({ onStart }) {
             <Repeat size={15} strokeWidth={2} /> 전 차시 완주 후
           </div>
           <h2 style={{ fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>
-            완주하면, 실전만 무제한
+            완주하면, 실전은 무제한
           </h2>
-          <p style={{ color: UI.invMut, fontSize: 16, lineHeight: 1.8, maxWidth: 620, margin: "0 auto" }}>
-            전 차시를 마치면 실전 모드가 열립니다.<br />
-            실제 시험 형식 그대로, 지금까지 출제되어 온 유형의 문제를 <b style={{ color: "#fff" }}>원하는 만큼 생성해</b> 풀 수 있습니다.<br />
-            시험 전날까지 감을 유지하세요.
+          <p style={{ color: UI.invMut, fontSize: 16, lineHeight: 1.8, maxWidth: 720, margin: "0 auto" }}>
+            전 차시를 마치면 실전 모드가 열립니다. 실제 시험 형식 그대로, 지금까지 출제되어 온 유형의 문제를<br />
+            <b style={{ color: "#fff" }}>원하는 만큼 생성해</b> 풀 수 있습니다. 시험 전날까지 감을 유지하세요.
           </p>
         </div>
       </section>
@@ -582,7 +581,7 @@ export default function LandingPage({ onStart }) {
                     {String(l.id).padStart(2, "0")}
                   </span>
                   <span style={{ fontWeight: 600, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1 }}>{l.title}</span>
-                  <span style={{ ...mono, color: UI.inkFaint, fontSize: 12, flexShrink: 0 }}>{l.quiz.length}문항</span>
+                  <span style={{ ...num, color: UI.inkFaint, fontSize: 13, flexShrink: 0 }}>{l.quiz.length}문항</span>
                 </div>
               ))}
             </div>
