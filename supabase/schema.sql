@@ -147,5 +147,13 @@ drop policy if exists wrong_self on public.wrong_notes;
 create policy wrong_self on public.wrong_notes
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+-- 관리자 전체 조회(진도/오답노트) — 관리자 페이지에서 사용자 진도 확인용
+drop policy if exists progress_admin_read on public.progress;
+create policy progress_admin_read on public.progress
+  for select using (public.is_admin());
+drop policy if exists wrong_admin_read on public.wrong_notes;
+create policy wrong_admin_read on public.wrong_notes
+  for select using (public.is_admin());
+
 -- 관리자 지정(가입 후 1회 실행): 아래 이메일을 본인 관리자 계정으로 바꾼다.
 -- update public.profiles set role = 'admin' where email = 'admin@example.com';
