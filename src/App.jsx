@@ -12,7 +12,14 @@ import WrongNoteView from "./components/wrongnote/WrongNoteView";
 import AuthView from "./components/auth/AuthView";
 import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
+import { ArrowLeft, BookOpen, FolderOpen, PenLine } from "lucide-react";
 import { UI } from "./theme";
+
+const STEP_TABS = [
+  { key: "concept", label: "개념", Icon: BookOpen },
+  { key: "practice", label: "실습", Icon: FolderOpen },
+  { key: "quiz", label: "퀴즈", Icon: PenLine },
+];
 
 // ⚠️ 임시: 결제 연동 전까지 로그인만 하면 실습 허용. 결제 붙일 때 true로 되돌려 수강권(결제) 필수로 조인다.
 const REQUIRE_ENROLLMENT = false;
@@ -94,33 +101,41 @@ export default function App() {
         wrongCount={totalWrong}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
-        {/* 상단 탭 — sticky 고정 */}
-        <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        {/* 상단 탭 — sticky 고정. 차시 탭은 엑셀 시트탭 모양 */}
+        <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px 0", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
           <button
             onClick={() => setPage("landing")}
-            style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
+            style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 10, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI.font }}
           >
-            ← 홈
+            <ArrowLeft size={15} strokeWidth={2} /> 홈
           </button>
-          {currentLesson && ["concept", "practice", "quiz"].map((s) => {
-            const active = step === s;
+          {currentLesson && STEP_TABS.map(({ key, label, Icon }) => {
+            const active = step === key;
             return (
               <button
-                key={s}
-                onClick={() => { setStep(s); document.getElementById("main-content").scrollTo({ top: 0, behavior: "smooth" }); }}
-                style={{ background: active ? UI.teal : UI.panel, border: `1px solid ${active ? UI.teal : UI.line}`, color: active ? "#fff" : UI.mut, padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500 }}
+                key={key}
+                onClick={() => { setStep(key); document.getElementById("main-content").scrollTo({ top: 0, behavior: "smooth" }); }}
+                style={{
+                  background: active ? UI.surface : "transparent",
+                  border: `1px solid ${active ? UI.line : "transparent"}`,
+                  borderBottom: active ? `1px solid ${UI.surface}` : "1px solid transparent",
+                  color: active ? UI.ink : UI.mut,
+                  padding: "9px 18px", borderRadius: "10px 10px 0 0", cursor: "pointer",
+                  fontSize: 13.5, fontWeight: active ? 700 : 500, marginBottom: -1,
+                  display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI.font,
+                }}
               >
-                {s === "concept" ? "📖 개념" : s === "practice" ? "📂 실습" : "📝 퀴즈"}
+                <Icon size={16} strokeWidth={active ? 2 : 1.5} color={active ? UI.teal : UI.mut} /> {label}
               </button>
             );
           })}
-          <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
             {isAdmin && (
-              <button onClick={() => setPage("admin")} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>관리자</button>
+              <button onClick={() => setPage("admin")} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>관리자</button>
             )}
-            {user && <span style={{ fontSize: 12.5, color: UI.faint }}>{user.email}</span>}
+            {user && <span style={{ fontSize: 12.5, color: UI.faint, fontFamily: UI.mono }}>{user.email}</span>}
             {isAuthed && (
-              <button onClick={signOut} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>로그아웃</button>
+              <button onClick={signOut} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>로그아웃</button>
             )}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PenLine } from "lucide-react";
 import { UI } from "../../theme";
 
 export default function QuizView({ lesson, onDone, onSaveWrong }) {
@@ -18,14 +19,16 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4 }}>📝 복습 퀴즈</div>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: UI.ink }}>
+      <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+        <PenLine size={15} strokeWidth={2} /> 복습 퀴즈
+      </div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 20, color: UI.ink }}>
         {lesson.title} — {lesson.quiz.length}문제
       </h2>
 
       {submitted && (
-        <div style={{ background: score >= 8 ? UI.greenSoft : UI.redSoft, border: `1px solid ${score >= 8 ? UI.greenLine : UI.redLine}`, borderRadius: 16, padding: "18px 20px", marginBottom: 24, textAlign: "center" }}>
-          <div style={{ fontSize: 30, fontWeight: 800, color: score >= 8 ? UI.green : UI.red }}>{score} / {lesson.quiz.length}</div>
+        <div style={{ background: score >= 8 ? UI.limeSoft : UI.redSoft, border: `1px solid ${score >= 8 ? UI.greenLine : UI.redLine}`, borderRadius: UI.rLg, padding: "18px 20px", marginBottom: 24, textAlign: "center" }}>
+          <div style={{ fontSize: 30, fontWeight: 700, fontFamily: UI.mono, color: score >= 8 ? UI.correct : UI.wrong }}>{score} / {lesson.quiz.length}</div>
           <div style={{ color: UI.mut, marginTop: 4 }}>
             {score >= 8 ? "훌륭해요!" : "틀린 문제를 오답노트에서 확인해보세요."}
           </div>
@@ -87,16 +90,16 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
           <button
             onClick={submit}
             disabled={!allAnswered}
-            style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: allAnswered ? UI.teal : "#cfd6d2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: allAnswered ? "pointer" : "not-allowed" }}
+            style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: allAnswered ? UI.teal : "#cfd6d2", color: "#fff", fontSize: 16, fontWeight: 700, cursor: allAnswered ? "pointer" : "not-allowed" }}
           >
-            제출하기 ({answeredCount}/{lesson.quiz.length})
+            제출하기 (<span style={{ fontFamily: UI.mono }}>{answeredCount}/{lesson.quiz.length}</span>)
           </button>
         ) : (
           <button
             onClick={() => onDone(score)}
-            style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: UI.lime, color: UI.teal, fontSize: 16, fontWeight: 800, cursor: "pointer" }}
+            style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: UI.lime, color: UI.teal, fontSize: 16, fontWeight: 700, cursor: "pointer" }}
           >
-            ✅ 차시 완료
+            차시 완료
           </button>
         )}
       </div>

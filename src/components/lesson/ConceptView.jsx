@@ -31,9 +31,9 @@ function renderBlock(block, i, lesson) {
       <button
         key={i}
         onClick={() => generateExcel(lesson)}
-        style={{ display: "block", width: "100%", padding: 14, borderRadius: 12, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", margin: "6px 0 16px" }}
+        style={{ display: "block", width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", margin: "6px 0 16px" }}
       >
-        📥 {block.label || "실습 파일 내려받기"}
+        {block.label || "실습 파일 내려받기"}
       </button>
     );
   }
@@ -53,16 +53,8 @@ function renderBlock(block, i, lesson) {
   }
   if (block.type === "heading") {
     return (
-      <div key={i} style={{ margin: "26px 0 12px" }}>
-        <span style={{
-          display: "inline-block",
-          fontSize: 16,
-          fontWeight: 800,
-          color: "#fff",
-          background: UI.teal,
-          padding: "6px 14px",
-          borderRadius: 9,
-        }}>
+      <div key={i} style={{ margin: "26px 0 12px", borderLeft: `3px solid ${UI.teal}`, paddingLeft: 12 }}>
+        <span style={{ fontSize: 17, fontWeight: 700, color: UI.ink }}>
           {block.text}
         </span>
       </div>
@@ -99,7 +91,7 @@ export default function ConceptView({ lesson, onNext }) {
         📖 개념 학습 · {idx + 1}/{lesson.concepts.length}
       </div>
 
-      <div style={{ background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: 18, padding: 28, marginBottom: 16 }}>
+      <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 28, marginBottom: 16 }}>
         <h3 style={{ color: UI.ink, fontSize: 20, fontWeight: 800, marginBottom: 16 }}>{c.heading}</h3>
         {c.contentBlocks
           ? c.contentBlocks.map((b, i) => renderBlock(b, i, lesson))
@@ -125,23 +117,23 @@ export default function ConceptView({ lesson, onNext }) {
         <button
           disabled={idx === 0}
           onClick={() => setIdx((i) => i - 1)}
-          style={{ flex: 1, padding: 13, borderRadius: 12, border: `1px solid ${UI.line}`, background: UI.panel, color: idx === 0 ? "#c2cac6" : UI.mut, cursor: idx === 0 ? "not-allowed" : "pointer", fontWeight: 600 }}
+          style={{ flex: 1, padding: 13, borderRadius: UI.rMd, border: `1px solid ${UI.line}`, background: UI.surface, color: idx === 0 ? "#c2cac6" : UI.mut, cursor: idx === 0 ? "not-allowed" : "pointer", fontWeight: 600 }}
         >
           ← 이전
         </button>
         {idx < lesson.concepts.length - 1 ? (
           <button
             onClick={() => setIdx((i) => i + 1)}
-            style={{ flex: 2, padding: 13, borderRadius: 12, border: "none", background: UI.teal, color: "#fff", cursor: "pointer", fontWeight: 700 }}
+            style={{ flex: 2, padding: 13, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", cursor: "pointer", fontWeight: 700 }}
           >
             다음 개념 →
           </button>
         ) : (
           <button
             onClick={onNext}
-            style={{ flex: 2, padding: 13, borderRadius: 12, border: "none", background: UI.lime, color: UI.teal, cursor: "pointer", fontWeight: 800 }}
+            style={{ flex: 2, padding: 13, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", cursor: "pointer", fontWeight: 700 }}
           >
-            ✅ 개념 완료 → 퀴즈 풀기
+            개념 완료 → 퀴즈 풀기
           </button>
         )}
       </div>

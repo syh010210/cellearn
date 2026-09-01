@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { FolderOpen, Download, Upload, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { generateExcel } from "../../utils/excelGenerator";
 import { gradeExcel } from "../../utils/excelGrader";
 import { UI } from "../../theme";
@@ -27,25 +28,28 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
 
   const correctCount = gradeResult ? gradeResult.filter((r) => r.status === "correct").length : 0;
   const total = lesson.practiceAnswers.length;
-  const card = { background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: 16, padding: 24, marginBottom: 16 };
+  const card = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 24, marginBottom: 16 };
+  const mono = { fontFamily: UI.mono };
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4 }}>📂 엑셀 실습</div>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 20, color: UI.ink }}>엑셀 실습 파일</h2>
+      <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+        <FolderOpen size={15} strokeWidth={2} /> 엑셀 실습
+      </div>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 20, color: UI.ink }}>엑셀 실습 파일</h2>
 
       <div style={card}>
         <div style={{ fontWeight: 700, marginBottom: 12, color: UI.ink }}>① 실습 파일 다운로드</div>
         {[...new Set(lesson.practiceAnswers.map((a) => a.sheet))].map((sheet, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, color: UI.mut, fontSize: 14, marginBottom: 6 }}>
-            <span style={{ color: UI.green }}>✓</span>{sheet}
+            <CheckCircle2 size={15} strokeWidth={2} color={UI.correct} />{sheet}
           </div>
         ))}
         <button
           onClick={() => generateExcel(lesson)}
-          style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginTop: 12 }}
+          style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", marginTop: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: UI.font }}
         >
-          📥 엑셀 실습 파일 다운로드
+          <Download size={17} strokeWidth={2} /> 엑셀 실습 파일 다운로드
         </button>
       </div>
 
@@ -65,34 +69,37 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
         <button
           onClick={() => fileRef.current.click()}
           disabled={checking}
-          style={{ width: "100%", padding: 14, borderRadius: 12, border: `2px dashed ${UI.line}`, background: UI.panelAlt, color: UI.teal, fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+          style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: `2px dashed ${UI.line}`, background: UI.panelAlt, color: UI.teal, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: UI.font }}
         >
-          {checking ? "채점 중..." : "📤 파일 업로드 & 채점하기"}
+          <Upload size={17} strokeWidth={2} /> {checking ? "채점 중..." : "파일 업로드 & 채점하기"}
         </button>
       </div>
 
       {gradeResult && (
         <div style={card}>
-          <div style={{ fontWeight: 800, fontSize: 18, marginBottom: 16, textAlign: "center", color: correctCount === total ? UI.green : UI.amber }}>
-            채점 결과: {correctCount} / {total}
+          <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16, textAlign: "center", color: correctCount === total ? UI.correct : UI.warn }}>
+            채점 결과: <span style={mono}>{correctCount} / {total}</span>
           </div>
           {gradeResult.map((r, i) => {
             const ok = r.status === "correct";
+            const missing = r.status === "시트없음";
             return (
               <div
                 key={i}
-                style={{ background: ok ? UI.greenSoft : UI.redSoft, borderRadius: 12, padding: "12px 16px", marginBottom: 10, border: `1px solid ${ok ? UI.greenLine : UI.redLine}` }}
+                style={{ background: ok ? UI.limeSoft : UI.redSoft, borderRadius: UI.rMd, padding: "12px 16px", marginBottom: 10, border: `1px solid ${ok ? UI.greenLine : UI.redLine}` }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: ok ? 0 : 8 }}>
-                  <span style={{ fontSize: 13, color: UI.mut }}>{r.sheet} · {r.cell}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: ok ? UI.green : UI.red }}>
-                    {ok ? "✅ 정답" : r.status === "시트없음" ? "⚠️ 시트없음" : "❌ 오답"}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: ok ? 0 : 8 }}>
+                  <span style={{ fontSize: 13, color: UI.mut, ...mono }}>{r.sheet} · {r.cell}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: ok ? UI.correct : UI.wrong, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    {ok ? <><CheckCircle2 size={15} strokeWidth={2} /> 정답</>
+                      : missing ? <><AlertTriangle size={15} strokeWidth={2} /> 시트없음</>
+                      : <><XCircle size={15} strokeWidth={2} /> 오답</>}
                   </span>
                 </div>
                 {!ok && (
                   <div style={{ fontSize: 12.5, color: UI.mut }}>
-                    <div>입력한 수식: <span style={{ color: UI.red }}>{r.studentFormula || "(없음)"}</span></div>
-                    <div>정답 수식: <span style={{ color: UI.green }}>{r.formula}</span></div>
+                    <div>입력한 수식: <span style={{ color: UI.wrong, ...mono }}>{r.studentFormula || "(없음)"}</span></div>
+                    <div>정답 수식: <span style={{ color: UI.correct, ...mono }}>{r.formula}</span></div>
                   </div>
                 )}
               </div>
@@ -104,7 +111,7 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
       {uploaded && (
         <button
           onClick={onNext}
-          style={{ width: "100%", padding: 14, borderRadius: 12, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}
+          style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}
         >
           복습 퀴즈 풀기 →
         </button>

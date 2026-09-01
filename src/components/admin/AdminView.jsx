@@ -101,17 +101,17 @@ export default function AdminView({ onBack }) {
                   <td style={td}>{u.email}</td>
                   <td style={td}>{u.name || "—"}</td>
                   <td style={td}>{u.grade || "—"}</td>
-                  <td style={td}>{u.done} / {totalLessons}</td>
+                  <td style={{ ...td, fontFamily: UI.mono }}>{u.done} / {totalLessons}</td>
                   <td style={td}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 90, height: 8, background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: 999 }}>
-                        <div style={{ width: `${u.pct}%`, height: "100%", background: UI.teal, borderRadius: 999 }} />
+                      <div style={{ width: 90, height: 8, background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: UI.rPill }}>
+                        <div style={{ width: `${u.pct}%`, height: "100%", background: u.pct === 100 ? UI.lime : UI.teal, borderRadius: UI.rPill }} />
                       </div>
-                      <span style={{ fontVariantNumeric: "tabular-nums", color: UI.mut }}>{u.pct}%</span>
+                      <span style={{ fontFamily: UI.mono, color: UI.mut }}>{u.pct}%</span>
                     </div>
                   </td>
-                  <td style={td}>{u.avg == null ? "—" : u.avg}</td>
-                  <td style={td}>{fmtDate(u.last)}</td>
+                  <td style={{ ...td, fontFamily: UI.mono }}>{u.avg == null ? "—" : u.avg}</td>
+                  <td style={{ ...td, fontFamily: UI.mono }}>{fmtDate(u.last)}</td>
                 </tr>
               ))}
               {rows.length === 0 && <tr><td style={td} colSpan={7}>데이터가 없습니다.</td></tr>}
