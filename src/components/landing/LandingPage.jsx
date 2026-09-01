@@ -687,9 +687,9 @@ export default function LandingPage({ onStart }) {
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "space-between" }}>
           <div style={{ flex: "1 1 260px" }}>
             <div style={{ marginBottom: 12 }}>
-              <Logo size={26} tone="light" />
+              <Logo size={26} />
             </div>
-            <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴활·ITQ·실무 엑셀 실기를 개념부터 채점까지<br />한 흐름으로 준비하는 학습 플랫폼.</div>
+            <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴퓨터활용능력 · ITQ · 실무 엑셀 —<br />엑셀의 모든 것을 다루는 학습 플랫폼.</div>
           </div>
           <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
             <div>
