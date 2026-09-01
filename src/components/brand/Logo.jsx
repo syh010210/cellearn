@@ -14,9 +14,11 @@ export default function Logo({ size = 22, tone = "color" }) {
     fontFamily: UI.font, fontWeight: 800, fontSize: size, lineHeight: 1,
     letterSpacing: "-0.03em", userSelect: "none",
   };
+  // 막대(ll)는 글자 베이스라인에 바닥을 맞춘다 — 폰트 하강폭(descent≈0.12em)만큼 띄워
+  // ce/earn보다 더 내려가지 않게 한다.
   const bar = (hRatio) => ({
-    display: "inline-block", width: size * 0.17, height: size * hRatio,
-    borderRadius: size * 0.1, margin: `0 ${size * 0.035}px`,
+    display: "inline-block", width: size * 0.16, height: size * hRatio,
+    borderRadius: size * 0.1, margin: `0 ${size * 0.03}px ${size * 0.13}px`,
     background: tone === "light" ? UI.lime : barGrad,
   });
 

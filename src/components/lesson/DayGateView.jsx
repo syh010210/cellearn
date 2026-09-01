@@ -1,65 +1,74 @@
 import { useState, useRef } from "react";
 import { RotateCcw, Download, Upload, CheckCircle2, XCircle, Lock, ArrowRight } from "lucide-react";
-import { DAYS, reviewLessonIds, reviewAnswers } from "../../data/days";
+import { DAYS, REVIEW_ENABLED } from "../../data/days";
 import { generateReviewExcel } from "../../utils/excelGenerator";
 import { gradeExcel } from "../../utils/excelGrader";
 import { UI } from "../../theme";
 
 // 일차 마무리 시험 — 통과해야 다음 일차가 열린다.
-//  ① 직전(이번) 일차 퀴즈 오답 재시험 — 전부 정답
-//  ② 1차시~이번 일차 누적 복습 엑셀 — 다운로드 후 제출·채점 통과
-export default function DayGateView({ day, lessons, quizWrongMap, saveQuizWrong, onCleared, onExit }) {
-  const dayCfg = DAYS.find((d) => d.day === day);
-  const dayLessonIds = dayCfg?.lessons ?? [];
+//  ① 지난 모든 차시의 퀴즈 오답(오답노트 누적) 재시험 — 전부 정답
+//  ② 지난 모든 차시의 엑셀 실습 오답 셀(누적) 재채점 — 전부 정답
+// 범위는 특정 일차가 아니라 '지금까지 배운 전 차시 누적'이다.
+export default function DayGateView({ day, lessons, quizWrongMap, practiceWrongMap, saveQuizWrong, savePracticeWrong, onCleared, onExit }) {
   const isLast = day === DAYS[DAYS.length - 1].day;
 
-  // 이번 일차 차시들의 퀴즈 오답 문제 모으기
-  const wrongItems = dayLessonIds.flatMap((lid) => {
-    const lesson = lessons.find((l) => l.id === lid);
-    if (!lesson) return [];
-    return (quizWrongMap[lid] || [])
-      .map((qid) => { const q = lesson.quiz.find((qq) => qq.id === qid); return q ? { lid, q } : null; })
-      .filter(Boolean);
-  });
+  // ── ① 지난 모든 차시의 퀴즈 오답 ──
+  const wrongItems = lessons.flatMap((lesson) =>
+    (quizWrongMap[lesson.id] || [])
+      .map((qid) => { const q = lesson.quiz.find((qq) => qq.id === qid); return q ? { lid: lesson.id, q } : null; })
+      .filter(Boolean)
+  );
 
   const [answers, setAnswers] = useState({});
   const [retestSubmitted, setRetestSubmitted] = useState(false);
-
   const allRetestAnswered = wrongItems.every(({ lid, q }) => answers[`${lid}-${q.id}`] !== undefined);
   const retestPass = wrongItems.length === 0 ||
     (retestSubmitted && wrongItems.every(({ lid, q }) => answers[`${lid}-${q.id}`] === q.answer));
 
   function submitRetest() {
-    // 재시험에서 맞힌 오답은 누적 오답노트에서 제거
-    dayLessonIds.forEach((lid) => {
-      const cur = quizWrongMap[lid] || [];
+    lessons.forEach((lesson) => {
+      const cur = quizWrongMap[lesson.id] || [];
       if (cur.length === 0) return;
-      const lesson = lessons.find((l) => l.id === lid);
       const stillWrong = cur.filter((qid) => {
         const q = lesson.quiz.find((qq) => qq.id === qid);
-        return q ? answers[`${lid}-${qid}`] !== q.answer : true;
+        return q ? answers[`${lesson.id}-${qid}`] !== q.answer : true;
       });
-      if (stillWrong.length !== cur.length) saveQuizWrong(lid, stillWrong);
+      if (stillWrong.length !== cur.length) saveQuizWrong(lesson.id, stillWrong);
     });
     setRetestSubmitted(true);
   }
 
-  // ② 누적 복습 엑셀
-  const reviewIds = reviewLessonIds(day);
-  const answersList = reviewAnswers(day);
+  // ── ② 지난 모든 차시의 엑셀 실습 오답 셀 (누적) ──
+  // 재생성 가능한(실습 파일 생성기 보유) 차시의 오답 셀만 재출제한다.
+  const wrongPractice = []; // { lid, item:{sheet, cell, formula, ...} }
+  lessons.forEach((l) => (practiceWrongMap[l.id] || []).forEach((item) => {
+    if (REVIEW_ENABLED.includes(l.id)) wrongPractice.push({ lid: l.id, item });
+  }));
+  const fixableLessonIds = [...new Set(wrongPractice.map((w) => w.lid))];
+  const fixableAnswers = wrongPractice.map((w) => w.item);
+
   const [excelResult, setExcelResult] = useState(null);
   const [checking, setChecking] = useState(false);
   const fileRef = useRef();
   const excelCorrect = excelResult ? excelResult.filter((r) => r.status === "correct").length : 0;
-  const excelPass = reviewIds.length === 0 || (excelResult && excelResult.length > 0 && excelCorrect === excelResult.length);
+  const excelPass = fixableAnswers.length === 0 || (excelResult && excelResult.length > 0 && excelCorrect === excelResult.length);
 
   async function handleFile(e) {
     const file = e.target.files[0];
     if (!file) return;
     setChecking(true);
     try {
-      const results = await gradeExcel(file, answersList);
+      const results = await gradeExcel(file, fixableAnswers);
       setExcelResult(results);
+      // 맞힌 셀은 누적 실습 오답노트에서 제거
+      fixableLessonIds.forEach((lid) => {
+        const cur = practiceWrongMap[lid] || [];
+        const stillWrong = cur.filter((item) => {
+          const r = results.find((rr) => rr.sheet === item.sheet && rr.cell === item.cell);
+          return !r || r.status !== "correct";
+        });
+        if (stillWrong.length !== cur.length) savePracticeWrong(lid, stillWrong);
+      });
     } catch { alert("파일을 읽는 중 오류가 발생했어요."); }
     setChecking(false);
   }
@@ -81,27 +90,26 @@ export default function DayGateView({ day, lessons, quizWrongMap, saveQuizWrong,
       </div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, color: UI.ink }}>{day}일차 마무리 {isLast ? "· 전체 과정 완료" : "· 다음 일차 잠금 해제"}</h2>
       <p style={{ color: UI.mut, fontSize: 14, marginBottom: 20, lineHeight: 1.7 }}>
-        {isLast
-          ? <>아래 두 가지를 모두 통과하면 <b style={{ color: UI.ink }}>전체 커리큘럼</b>이 완료됩니다.</>
-          : <>아래 두 가지를 모두 통과하면 <b style={{ color: UI.ink }}>{day + 1}일차</b>가 열립니다.</>}
+        지금까지 배운 <b style={{ color: UI.ink }}>전 차시</b>에서 틀린 문제를 모아 다시 풉니다. 모두 맞히면
+        {isLast ? <> <b style={{ color: UI.ink }}>전체 커리큘럼</b>이 완료됩니다.</> : <> <b style={{ color: UI.ink }}>{day + 1}일차</b>가 열립니다.</>}
       </p>
 
-      {/* ① 오답 재시험 */}
+      {/* ① 누적 퀴즈 오답 재시험 */}
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <span style={stepBadge(retestPass)}>{retestPass ? "✓" : "1"}</span>
           <div style={{ fontWeight: 700, color: UI.ink, display: "flex", alignItems: "center", gap: 6 }}>
-            <RotateCcw size={16} strokeWidth={2} /> 퀴즈 오답 재시험
+            <RotateCcw size={16} strokeWidth={2} /> 누적 퀴즈 오답 재시험
           </div>
           {retestPass && <span style={{ marginLeft: "auto", color: UI.correct, fontSize: 13, fontWeight: 700 }}>통과</span>}
         </div>
 
         {wrongItems.length === 0 ? (
-          <div style={{ color: UI.mut, fontSize: 14 }}>이번 일차에서 다시 풀 퀴즈 오답이 없습니다. ✓</div>
+          <div style={{ color: UI.mut, fontSize: 14 }}>지금까지 다시 풀 퀴즈 오답이 없습니다. ✓</div>
         ) : (
           <>
             <div style={{ color: UI.mut, fontSize: 13.5, marginBottom: 14 }}>
-              이번 일차에서 틀렸던 <span style={mono}>{wrongItems.length}</span>문제입니다. 모두 맞혀야 통과합니다.
+              오답노트에 쌓인 <span style={mono}>{wrongItems.length}</span>문제입니다. 모두 맞혀야 통과합니다.
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {wrongItems.map(({ lid, q }) => {
@@ -150,27 +158,27 @@ export default function DayGateView({ day, lessons, quizWrongMap, saveQuizWrong,
         )}
       </div>
 
-      {/* ② 누적 복습 엑셀 */}
+      {/* ② 누적 실습 오답 엑셀 재채점 */}
       <div style={card}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
           <span style={stepBadge(excelPass)}>{excelPass ? "✓" : "2"}</span>
-          <div style={{ fontWeight: 700, color: UI.ink }}>누적 복습 엑셀 (1차시~{day}일차)</div>
+          <div style={{ fontWeight: 700, color: UI.ink }}>누적 실습 오답 엑셀 재채점</div>
           {excelPass && <span style={{ marginLeft: "auto", color: UI.correct, fontSize: 13, fontWeight: 700 }}>통과</span>}
         </div>
 
-        {reviewIds.length === 0 ? (
-          <div style={{ color: UI.mut, fontSize: 14 }}>이 구간에는 채점 가능한 복습 실습이 아직 없습니다. ✓</div>
+        {fixableAnswers.length === 0 ? (
+          <div style={{ color: UI.mut, fontSize: 14 }}>다시 풀 실습 오답 셀이 없습니다. ✓</div>
         ) : (
           <>
             <div style={{ color: UI.mut, fontSize: 13.5, marginBottom: 12, lineHeight: 1.7 }}>
-              지금까지 배운 차시(<span style={mono}>{reviewIds.join(", ")}</span>차시)의 핵심 수식을 한 파일에 모았습니다.
-              내려받아 각 시트의 수식을 채운 뒤 업로드하세요.
+              지금까지 <b style={{ color: UI.ink }}>틀린 실습 셀 <span style={mono}>{fixableAnswers.length}</span>개</b>가 있는 차시(<span style={mono}>{fixableLessonIds.join(", ")}</span>차시)의
+              실습 시트를 모았습니다. 내려받아 틀렸던 셀의 수식을 고친 뒤 업로드하세요.
             </div>
             <button
-              onClick={() => generateReviewExcel(reviewIds, `1~${day}일차`)}
+              onClick={() => generateReviewExcel(fixableLessonIds, "누적오답복습")}
               style={{ width: "100%", padding: 13, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 10 }}
             >
-              <Download size={17} strokeWidth={2} /> 누적 복습 파일 내려받기
+              <Download size={17} strokeWidth={2} /> 누적 오답 복습 파일 내려받기
             </button>
             <input ref={fileRef} type="file" accept=".xlsx" onChange={handleFile} style={{ display: "none" }} />
             <button

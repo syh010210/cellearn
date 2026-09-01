@@ -45,38 +45,39 @@ const mono = { fontFamily: UI.mono };
 // 숫자 표기 전용 — 깔끔한 본문 글꼴 + 균등폭 숫자 + 좁은 자간
 const num = { fontFamily: UI.font, fontWeight: 800, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" };
 
-// 히어로 시각물 — 실제 시험형 파일의 '수식 채점' 스냅샷 (정적).
+// 히어로 시각물 — '누적 오답 복습 관문' (정적).
+// 지난 전 차시의 오답(퀴즈+실습)을 모아 다음 수업 전에 다 맞혀야 잠금 해제.
 function HeroShot() {
-  const rows = [
-    { name: "김철수", a: 85, b: 90, f: "=B2+C2", ok: true },
-    { name: "이영희", a: 72, b: 68, f: "=B3+C3", ok: true },
-    { name: "박민준", a: 91, b: 78, f: "=B4+C4", ok: true },
-    { name: "정다은", a: 64, b: 80, f: "=B5+C4", ok: false },
-  ];
-  const cell = { padding: "9px 12px", borderBottom: `1px solid ${UI.gridline}`, fontSize: 13 };
-  const head = { ...cell, background: UI.panelAlt, color: UI.mut, fontWeight: 700, fontSize: 11.5, textAlign: "center", borderBottom: `1px solid ${UI.line}` };
+  const row = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px", display: "flex", gap: 12, alignItems: "center" };
   return (
     <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow, overflow: "hidden" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", borderBottom: `1px solid ${UI.line}` }}>
-        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>실습 파일 자동 채점</span>
-        <span style={{ ...mono, fontSize: 12.5, fontWeight: 700, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>3 / 4 정답</span>
+      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${UI.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>다음 수업 전 · 누적 복습 관문</span>
+        <span style={{ ...mono, fontSize: 11.5, fontWeight: 700, color: UI.mut }}>DAY 4</span>
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: UI.font }}>
-        <thead><tr><th style={{ ...head, textAlign: "left" }}>이름</th><th style={head}>필기</th><th style={head}>실기</th><th style={{ ...head, textAlign: "left" }}>합계 수식</th><th style={head} /></tr></thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.name} style={{ background: r.ok ? "transparent" : UI.redSoft }}>
-              <td style={cell}>{r.name}</td>
-              <td style={{ ...cell, ...mono, textAlign: "center" }}>{r.a}</td>
-              <td style={{ ...cell, ...mono, textAlign: "center" }}>{r.b}</td>
-              <td style={{ ...cell, ...mono, color: r.ok ? UI.correct : UI.wrong }}>{r.f}</td>
-              <td style={{ ...cell, textAlign: "center", width: 40 }}>
-                {r.ok ? <CheckCircle2 size={16} strokeWidth={2} color={UI.correct} /> : <XCircle size={16} strokeWidth={2} color={UI.wrong} />}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={row}>
+          <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13.5 }}>지난 전 차시 퀴즈 오답 <span style={num}>4</span>문항</div>
+            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>오답노트에서 자동 수집 · 다시 풀어 전부 정답</div>
+          </div>
+        </div>
+        <div style={row}>
+          <Table2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적 실습 오답 셀 <span style={num}>3</span>개</div>
+            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>틀린 셀만 모은 엑셀 파일로 다시 채점</div>
+          </div>
+        </div>
+        <div style={{ ...row, background: UI.teal, border: "none", color: "#fff" }}>
+          <Unlock size={18} strokeWidth={1.5} color={UI.lime} style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 13.5 }}>모두 정답 → 오늘 차시 잠금 해제</div>
+            <div style={{ fontSize: 12, color: UI.invMut, marginTop: 2 }}>다 맞힐 때까지 다음 진도는 열리지 않습니다</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -88,10 +89,10 @@ export default function LandingPage({ onStart }) {
 
   // S. 스탯
   const stats = [
-    { num: "20차시", label: "체계적 커리큘럼" },
+    { num: "7일", label: "20차시 완성 커리큘럼" },
     { num: "60+", label: "자체 엔진 함수 지원" },
     { num: "100%", label: "실습 중심 학습" },
-    { num: "∞", label: "내 오답으로 맞힐 때까지 맞춤 복습" },
+    { num: "∞", label: "오답을 맞출 때까지 맞춤 복습" },
   ];
 
   // R. 오픈 로드맵
@@ -141,7 +142,7 @@ export default function LandingPage({ onStart }) {
 
       {/* ===== N. 네비 ===== */}
       <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Logo size={24} />
+        <Logo size={30} />
         {!isMobile && (
           <div style={{ display: "flex", gap: 28, fontSize: 15, color: UI.mut }}>
             <a href="#top" style={{ color: UI.ink, textDecoration: "none" }}>홈</a>
@@ -262,12 +263,9 @@ export default function LandingPage({ onStart }) {
       {/* ===== F. 학습 루프 (딥그린, 번호 시퀀스) ===== */}
       <section id="features" style={{ background: UI.teal, color: "#fff", padding: "64px 24px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 40px", letterSpacing: "-0.01em" }}>
             하루 한 차시, 이렇게 돌아갑니다
           </h2>
-          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 40px" }}>
-            필기 이론 강의는 없습니다 — 개념을 익히면 곧바로 손으로 풀고, 채점받고, 오답을 남깁니다.
-          </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 14 }}>
             {loop.map(({ Icon, title, desc }, i) => (
               <HoverCard
@@ -533,7 +531,7 @@ export default function LandingPage({ onStart }) {
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", gap: 40, flexWrap: "wrap", justifyContent: "space-between" }}>
           <div style={{ flex: "1 1 260px" }}>
             <div style={{ marginBottom: 12 }}>
-              <Logo size={22} tone="light" />
+              <Logo size={26} tone="light" />
             </div>
             <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴활·ITQ·실무 엑셀 실기를 개념부터 채점까지<br />한 흐름으로 준비하는 학습 플랫폼.</div>
           </div>

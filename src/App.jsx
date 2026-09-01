@@ -157,7 +157,9 @@ export default function App() {
               day={gateDay}
               lessons={LESSONS}
               quizWrongMap={quizWrongMap}
+              practiceWrongMap={practiceWrongMap}
               saveQuizWrong={saveQuizWrong}
+              savePracticeWrong={savePracticeWrong}
               onCleared={onDayCleared}
               onExit={() => setView("dash")}
             />
