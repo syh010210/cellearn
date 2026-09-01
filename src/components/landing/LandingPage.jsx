@@ -51,23 +51,22 @@ function HeroShot() {
   const row = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px", display: "flex", gap: 12, alignItems: "center" };
   return (
     <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow, overflow: "hidden" }}>
-      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${UI.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>다음 수업 전 · 누적 복습 관문</span>
-        <span style={{ ...mono, fontSize: 11.5, fontWeight: 700, color: UI.mut }}>DAY 4</span>
+      <div style={{ padding: "14px 16px", borderBottom: `1px solid ${UI.line}` }}>
+        <span style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>다음 수업 전 누적 복습 단계</span>
       </div>
       <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={row}>
           <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 13.5 }}>지난 전 차시 퀴즈 오답 <span style={num}>4</span>문항</div>
-            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>오답노트에서 자동 수집 · 다시 풀어 전부 정답</div>
+            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적된 전 차시 퀴즈 오답 <span style={num}>4</span>문항</div>
+            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>오답노트에서 자동 수집 후 풀이</div>
           </div>
         </div>
         <div style={row}>
           <Table2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
           <div style={{ flex: 1 }}>
-            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적 실습 오답 셀 <span style={num}>3</span>개</div>
-            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>틀린 셀만 모은 엑셀 파일로 다시 채점</div>
+            <div style={{ fontWeight: 600, fontSize: 13.5 }}>누적 전 차시 실습 오답 <span style={num}>3</span>문항</div>
+            <div style={{ fontSize: 12, color: UI.mut, marginTop: 2 }}>틀린 문제만 모은 엑셀 파일로 다시 풀이</div>
           </div>
         </div>
         <div style={{ ...row, background: UI.teal, border: "none", color: "#fff" }}>
@@ -198,12 +197,7 @@ export default function LandingPage({ onStart }) {
               <div style={{ marginTop: 10, fontSize: 14 }}>PC에서 실제 미니 엑셀을 실습해 보세요</div>
             </div>
           ) : (
-            <div>
-              <HeroShot />
-              <div style={{ ...mono, textAlign: "center", color: UI.inkFaint, fontSize: 12.5, marginTop: 10 }}>
-                설치 없음 · 수식까지 채점 · 실기 전용 (필기 강의 없음)
-              </div>
-            </div>
+            <HeroShot />
           )}
         </div>
       </header>
@@ -241,7 +235,7 @@ export default function LandingPage({ onStart }) {
                   padding: "26px 20px 18px",
                 }}
               >
-                <span style={{ position: "absolute", top: -1, left: 14, ...mono, fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: open ? UI.lime : next ? UI.teal : UI.bg, color: open ? UI.teal : next ? "#fff" : UI.inkFaint, border: open || next ? "none" : `1px solid ${UI.line}`, borderTop: "none" }}>
+                <span style={{ position: "absolute", top: -1, left: 14, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: open ? UI.lime : next ? UI.teal : UI.bg, color: open ? UI.teal : next ? "#fff" : UI.inkFaint, border: open || next ? "none" : `1px solid ${UI.line}`, borderTop: "none" }}>
                   {r.month}
                 </span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
@@ -295,13 +289,13 @@ export default function LandingPage({ onStart }) {
               틀린 문제를 다 맞혀야<br />다음 수업이 열립니다
             </h2>
             <p style={{ color: UI.mut, fontSize: 15.5, lineHeight: 1.75, margin: "0 0 20px" }}>
-              다음 날 로그인하면 지난 수업의 오답이 새 문제로 다시 출제됩니다.
-              이 복습을 <b style={{ color: UI.ink }}>전부 통과해야</b> 오늘 차시가 잠금 해제됩니다.
+              다음 수업을 시작하기 전, 지금까지 쌓인 오답을 <b style={{ color: UI.ink }}>두 단계</b>로 복습합니다.
+              먼저 전 차시 <b style={{ color: UI.ink }}>퀴즈 오답</b>이 오답노트에서 모여 다시 출제되고, 이를 모두 맞혀야 합니다.
             </p>
             <p style={{ color: UI.mut, fontSize: 15.5, lineHeight: 1.75, margin: "0 0 24px" }}>
-              복습 범위는 어제 하루가 아닙니다. 이전 차시들의 오답이 <b style={{ color: UI.ink }}>누적 출제</b>되어
-              수업 시작 전 엑셀 파일로 풀게 되기 때문에, 약한 유형은 완전히 익힐 때까지 반복해서 만나게 됩니다.
-              진도만 나가고 잊어버리는 일이 없습니다.
+              이어서 전 차시 <b style={{ color: UI.ink }}>실습에서 틀린 문제</b>만 모은 엑셀 파일을 풀어 제출·채점받습니다.
+              퀴즈와 실습 두 복습을 모두 통과해야 오늘 차시가 잠금 해제됩니다.
+              약한 유형은 익힐 때까지 반복해 만나므로, 진도만 나가고 잊어버리는 일이 없습니다.
             </p>
             <Btn variant="dark" onClick={onStart}>이 방식으로 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
           </div>
@@ -309,34 +303,36 @@ export default function LandingPage({ onStart }) {
           <div style={{ flex: "1 1 380px", minWidth: 300 }}>
             <div style={{ background: UI.bg, borderRadius: UI.rLg, padding: 24, border: `1px solid ${UI.line}` }}>
               <div style={{ fontSize: 13, color: UI.mut, marginBottom: 14 }}>오늘의 학습 시작 전</div>
-              {/* step 1: 재생성된 복습 문제 */}
+              {/* 단계 1: 누적 퀴즈 오답 재시험 */}
               <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 12, alignItems: "center" }}>
                 <RefreshCw size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>복습 문제 <span style={mono}>3</span>문항 도착</div>
-                  <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 2 }}>2차시 오답 <span style={mono}>2</span> + 1차시 누적 오답 <span style={mono}>1</span></div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>① 누적 퀴즈 오답 재시험</div>
+                  <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 2 }}>전 차시 오답노트에서 <span style={num}>4</span>문항 수집</div>
                 </div>
+                <CheckCircle2 size={18} strokeWidth={2} color={UI.correct} style={{ flexShrink: 0 }} />
               </div>
-              {/* step 2: 전부 정답 */}
-              <div style={{ background: UI.limeSoft, borderRadius: UI.rMd, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 12, alignItems: "center" }}>
-                <CheckCircle2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: UI.teal }}>3문항 모두 정답 <span style={mono}>3/3</span></div>
-                  <div style={{ fontSize: 12.5, color: UI.teal, opacity: 0.75, marginTop: 2 }}>수식까지 정확히 일치해야 통과</div>
+              {/* 단계 2: 누적 실습 오답 엑셀 */}
+              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "14px 16px", marginBottom: 10, display: "flex", gap: 12, alignItems: "center" }}>
+                <Table2 size={18} strokeWidth={1.5} color={UI.teal} style={{ flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>② 누적 실습 오답 엑셀 풀이</div>
+                  <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 2 }}>틀린 문제만 모은 엑셀 <span style={num}>3</span>문항 채점</div>
                 </div>
+                <CheckCircle2 size={18} strokeWidth={2} color={UI.correct} style={{ flexShrink: 0 }} />
               </div>
-              {/* step 3: 잠금 해제 */}
+              {/* 잠금 해제 */}
               <div style={{ background: UI.teal, borderRadius: UI.rMd, padding: "14px 16px", display: "flex", gap: 12, alignItems: "center", color: "#fff" }}>
                 <Unlock size={18} strokeWidth={1.5} color={UI.lime} style={{ flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>3차시 · 통계 함수 잠금 해제</div>
-                  <div style={{ fontSize: 12.5, color: UI.invMut, marginTop: 2 }}>오늘 수업을 시작하세요</div>
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>오늘 차시 잠금 해제</div>
+                  <div style={{ fontSize: 12.5, color: UI.invMut, marginTop: 2 }}>퀴즈·실습 두 복습을 모두 통과</div>
                 </div>
               </div>
               {/* 잠긴 다음 차시 */}
               <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 16px 2px", color: UI.inkFaint, fontSize: 13 }}>
                 <Lock size={15} strokeWidth={1.5} />
-                4차시 · 찾기/참조 함수 — 3차시 완료 후 열립니다
+                다음 차시 — 오늘 차시 완료 후 열립니다
               </div>
             </div>
           </div>
