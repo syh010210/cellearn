@@ -4,7 +4,6 @@ export function ExcelBasicDiagram() {
   return (
     <Wrap>
       <Title>열(Column) · 행(Row) · 셀(Cell) 기본 구조</Title>
-      <Subtitle>셀 주소 = 열(알파벳) + 행(숫자)  예) C3 = C열 3번째 행</Subtitle>
       <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
         {/* Left: spreadsheet grid */}
         <div>
@@ -89,19 +88,9 @@ export function ExcelBasicDiagram() {
             <div style={{ fontWeight: 700, fontSize: 17, color: C.amber, marginBottom: 4 }}>
               셀(Cell) — 데이터를 입력하는 칸
             </div>
-            <div style={{ fontSize: 16, color: C.amberLight, marginBottom: 4 }}>
-              셀 주소 = 열(알파벳) + 행(숫자)
-            </div>
-            <div style={{ fontSize: 15, color: C.orange, fontWeight: 700 }}>
-              예: C3 = C열 3번째 행의 셀
-            </div>
           </Card>
         </div>
       </div>
-
-      <BottomBar>
-        <BLine>셀 주소: 열(Column) 알파벳 + 행(Row) 숫자  →  A1, B3, D2 등으로 표기합니다</BLine>
-      </BottomBar>
     </Wrap>
   );
 }

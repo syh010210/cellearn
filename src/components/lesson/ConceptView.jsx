@@ -141,7 +141,7 @@ export default function ConceptView({ lesson, onNext }) {
             onClick={onNext}
             style={{ flex: 2, padding: 13, borderRadius: 12, border: "none", background: UI.lime, color: UI.teal, cursor: "pointer", fontWeight: 800 }}
           >
-            ✅ 개념 완료 → 실습하기
+            ✅ 개념 완료 → 퀴즈 풀기
           </button>
         )}
       </div>

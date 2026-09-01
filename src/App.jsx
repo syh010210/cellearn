@@ -128,7 +128,7 @@ export default function App() {
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
-          {currentLesson && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("practice")} />}
+          {currentLesson && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} />}
           {currentLesson && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
           {currentLesson && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
         </div>
