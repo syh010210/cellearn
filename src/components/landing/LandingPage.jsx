@@ -689,7 +689,7 @@ export default function LandingPage({ onStart }) {
             <div style={{ marginBottom: 12 }}>
               <Logo size={26} />
             </div>
-            <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴퓨터활용능력 · ITQ · 실무 엑셀 —<br />엑셀의 모든 것을 다루는 학습 플랫폼.</div>
+            <div style={{ fontSize: 13.5, color: UI.invMut, lineHeight: 1.7 }}>컴퓨터활용능력 · ITQ · 실무 엑셀 — 엑셀의 모든 것을 다루는 학습 플랫폼.</div>
           </div>
           <div style={{ display: "flex", gap: 48, flexWrap: "wrap" }}>
             <div>
