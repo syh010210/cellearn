@@ -76,7 +76,7 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
       </div>
 
       {gradeResult && (
-        <div style={card}>
+        <div className="cl-fade-up" style={card}>
           <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 16, textAlign: "center", color: correctCount === total ? UI.correct : UI.warn }}>
             채점 결과: <span style={mono}>{correctCount} / {total}</span>
           </div>

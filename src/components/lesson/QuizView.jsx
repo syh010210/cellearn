@@ -27,7 +27,7 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
       </h2>
 
       {submitted && (
-        <div style={{ background: score >= 8 ? UI.limeSoft : UI.redSoft, border: `1px solid ${score >= 8 ? UI.greenLine : UI.redLine}`, borderRadius: UI.rLg, padding: "18px 20px", marginBottom: 24, textAlign: "center" }}>
+        <div className="cl-fade-up" style={{ background: score >= 8 ? UI.limeSoft : UI.redSoft, border: `1px solid ${score >= 8 ? UI.greenLine : UI.redLine}`, borderRadius: UI.rLg, padding: "18px 20px", marginBottom: 24, textAlign: "center" }}>
           <div style={{ fontSize: 30, fontWeight: 700, fontFamily: UI.mono, color: score >= 8 ? UI.correct : UI.wrong }}>{score} / {lesson.quiz.length}</div>
           <div style={{ color: UI.mut, marginTop: 4 }}>
             {score >= 8 ? "훌륭해요!" : "틀린 문제를 오답노트에서 확인해보세요."}

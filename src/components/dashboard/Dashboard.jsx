@@ -16,8 +16,8 @@ export default function Dashboard({ lessons, progress, quizWrongMap, practiceWro
   ];
 
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto" }}>
-      <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 24, color: UI.ink }}>나의 학습 현황</h2>
+    <div className="cl-fade-up" style={{ maxWidth: 760, margin: "0 auto" }}>
+      <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, color: UI.ink }}>나의 학습 현황</h2>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 14, marginBottom: 24 }}>
         {stats.map((s) => (

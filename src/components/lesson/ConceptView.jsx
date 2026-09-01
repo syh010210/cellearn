@@ -91,7 +91,7 @@ export default function ConceptView({ lesson, onNext }) {
         📖 개념 학습 · {idx + 1}/{lesson.concepts.length}
       </div>
 
-      <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 28, marginBottom: 16 }}>
+      <div key={idx} className="cl-fade-up" style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 28, marginBottom: 16 }}>
         <h3 style={{ color: UI.ink, fontSize: 20, fontWeight: 800, marginBottom: 16 }}>{c.heading}</h3>
         {c.contentBlocks
           ? c.contentBlocks.map((b, i) => renderBlock(b, i, lesson))
