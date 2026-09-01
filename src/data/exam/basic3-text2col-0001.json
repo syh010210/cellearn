@@ -1,0 +1,24 @@
+{
+  "id": "basic3-text2col-0001",
+  "section": "기본3",
+  "subtype": "text2col",
+  "difficulty": "하",
+  "grade": "2급",
+  "title": "텍스트 나누기 — 코드 분리",
+  "instruction": "[기본작업-3] A2:A4의 코드를 '텍스트 나누기'로 구분 기호 '-' 기준 분리하시오. (결과: A열=분류, B열=번호)",
+  "sheetName": "기본작업-3",
+  "table": [
+    ["코드"],
+    ["BK-201"],
+    ["EL-330"],
+    ["CO-118"]
+  ],
+  "expect": {
+    "kind": "values",
+    "values": [
+      { "cell": "A2", "value": "BK" }, { "cell": "B2", "value": "201" },
+      { "cell": "A3", "value": "EL" }, { "cell": "B3", "value": "330" },
+      { "cell": "A4", "value": "CO" }, { "cell": "B4", "value": "118" }
+    ]
+  }
+}

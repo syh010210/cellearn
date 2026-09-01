@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { Target, Download, Upload, CheckCircle2, XCircle, Lock } from "lucide-react";
-import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3 } from "../../data/examBank";
+import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
 import { buildExamFile } from "../../utils/examBuilder";
 import { gradeExamFile } from "../../utils/examGrader";
 import { UI } from "../../theme";
@@ -13,6 +13,14 @@ export default function ExamView() {
   const [count, setCount] = useState(5);
   const [inc3, setInc3] = useState(true); // 기본작업-3 포함
   const [sub3, setSub3] = useState("condformat"); // 기본작업-3 유형
+  const analysisSubs = analysisAvailableSubtypes();
+  const [anaSel, setAnaSel] = useState([]); // 분석작업 유형(최대 2)
+  const [incMacro, setIncMacro] = useState(true);
+  const [incChart, setIncChart] = useState(true);
+  const macroReady = sectionReady("매크로");
+  const chartReady = sectionReady("차트");
+
+  const toggleAna = (k) => setAnaSel((s) => (s.includes(k) ? s.filter((x) => x !== k) : s.length >= 2 ? s : [...s, k]));
   const [problems, setProblems] = useState(null); // 생성된 시험지 문제 세트
   const [result, setResult] = useState(null);
   const [checking, setChecking] = useState(false);
@@ -25,6 +33,9 @@ export default function ExamView() {
     const set = [];
     if (inc3) { const b3 = pickBasic3(sub3); if (b3) set.push(b3); }
     set.push(...pickCalc(selected, count));
+    if (anaSel.length) set.push(...pickAnalysis(anaSel));
+    if (incMacro && macroReady) { const m = pickSection("매크로", "매크로작업"); if (m) set.push(m); }
+    if (incChart && chartReady) { const c = pickSection("차트", "차트작업"); if (c) set.push(c); }
     setProblems(set);
     setResult(null);
     buildExamFile(set, new Date().toISOString().slice(0, 10));
@@ -109,6 +120,38 @@ export default function ExamView() {
         </div>
       </div>
 
+      {/* 분석작업 구성 (택2) */}
+      <div style={card}>
+        <div style={{ fontWeight: 700, color: UI.ink, marginBottom: 4 }}>분석작업 — 유형 2개 선택</div>
+        <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 12 }}>선택한 2개가 분석작업-1·2로 출제됩니다. (미선택 시 분석작업 제외)</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {ANALYSIS_SUBTYPES.map((s) => {
+            const avail = analysisSubs.find((a) => a.key === s.key)?.ready;
+            const on = anaSel.includes(s.key);
+            return (
+              <button key={s.key} onClick={() => avail && toggleAna(s.key)} disabled={!avail}
+                title={avail ? "" : "문제 준비 중"}
+                style={{ ...chip(on), opacity: avail ? 1 : 0.45, cursor: avail ? "pointer" : "not-allowed" }}>
+                {s.label}{on ? ` (${anaSel.indexOf(s.key) + 1})` : ""}{!avail && " ·준비중"}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 매크로 / 차트 */}
+      <div style={card}>
+        <div style={{ fontWeight: 700, color: UI.ink, marginBottom: 10 }}>매크로 · 차트</div>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, opacity: macroReady ? 1 : 0.5 }}>
+          <input type="checkbox" checked={incMacro && macroReady} disabled={!macroReady} onChange={(e) => setIncMacro(e.target.checked)} />
+          <span>매크로작업 포함 <span style={{ fontSize: 12, color: UI.mut }}>(.xlsm 저장·제출)</span></span>
+        </label>
+        <label style={{ display: "flex", alignItems: "center", gap: 8, opacity: chartReady ? 1 : 0.5 }}>
+          <input type="checkbox" checked={incChart && chartReady} disabled={!chartReady} onChange={(e) => setIncChart(e.target.checked)} />
+          <span>차트작업 포함 <span style={{ fontSize: 12, color: UI.mut }}>(차트 종류 검사)</span></span>
+        </label>
+      </div>
+
       {/* 업로드 채점 */}
       {problems && (
         <div style={card} className="cl-fade-up">
@@ -116,7 +159,7 @@ export default function ExamView() {
           <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 12, lineHeight: 1.7 }}>
             내려받은 파일의 각 시트(<span style={mono}>{problems.map((p) => p.sheetName).join(", ")}</span>)에서 정답 셀에 수식을 입력해 저장한 뒤 업로드하세요.
           </div>
-          <input ref={fileRef} type="file" accept=".xlsx" onChange={handleFile} style={{ display: "none" }} />
+          <input ref={fileRef} type="file" accept=".xlsx,.xlsm" onChange={handleFile} style={{ display: "none" }} />
           <button onClick={() => fileRef.current.click()} disabled={checking}
             style={{ width: "100%", padding: 13, borderRadius: UI.rMd, border: `2px dashed ${UI.line}`, background: UI.panelAlt, color: UI.teal, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontFamily: UI.font }}>
             <Upload size={17} strokeWidth={2} /> {checking ? "채점 중..." : "파일 업로드 & 채점"}

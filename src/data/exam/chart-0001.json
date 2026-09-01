@@ -1,0 +1,21 @@
+{
+  "id": "chart-0001",
+  "section": "차트",
+  "subtype": "chart",
+  "difficulty": "중",
+  "grade": "2급",
+  "title": "차트 — 분기별 매출(묶은 세로 막대형)",
+  "instruction": "[차트작업] 표를 이용해 '묶은 세로 막대형' 차트를 작성하시오. (분기=항목축, 매출=값)",
+  "sheetName": "차트작업",
+  "table": [
+    ["분기", "매출"],
+    ["1분기", 100],
+    ["2분기", 150],
+    ["3분기", 120],
+    ["4분기", 180]
+  ],
+  "expect": {
+    "kind": "chart",
+    "chartType": "barChart"
+  }
+}

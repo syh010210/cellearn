@@ -22,10 +22,10 @@ export const EXAM_SECTIONS = [
   { key: "기본2", label: "기본작업-2 · 서식", ready: false },
   { key: "기본3", label: "기본작업-3 · 조건부서식(고급필터·텍스트나누기 준비중)", ready: true },
   { key: "계산", label: "계산작업 · 함수 5문제", ready: true },
-  { key: "분석1", label: "분석작업-1 · 피벗/부분합/시나리오 등", ready: false },
-  { key: "분석2", label: "분석작업-2 · 피벗/부분합/시나리오 등", ready: false },
-  { key: "매크로", label: "매크로작업", ready: false },
-  { key: "차트", label: "차트작업", ready: false },
+  { key: "분석1", label: "분석작업-1 · 정렬(부분합·통합·피벗 등 확장중)", ready: true },
+  { key: "분석2", label: "분석작업-2 · 정렬(부분합·통합·피벗 등 확장중)", ready: true },
+  { key: "매크로", label: "매크로작업", ready: true },
+  { key: "차트", label: "차트작업 · 종류 검사", ready: true },
 ];
 
 const calcProblems = () => EXAM_PROBLEMS.filter((p) => p.section === "계산");
@@ -44,6 +44,36 @@ export function basic3AvailableSubtypes() {
 export function pickBasic3(subtype) {
   const pool = bySection("기본3").filter((p) => !subtype || p.subtype === subtype);
   return pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], sheetName: "기본작업-3" } : null;
+}
+
+// 분석작업 유형(택2): 피벗/부분합/시나리오/통합/목표값/정렬/데이터표
+export const ANALYSIS_SUBTYPES = [
+  { key: "sort", label: "정렬" },
+  { key: "subtotal", label: "부분합" },
+  { key: "consolidate", label: "통합" },
+  { key: "goalseek", label: "목표값" },
+  { key: "datatable", label: "데이터표" },
+  { key: "pivot", label: "피벗" },
+  { key: "scenario", label: "시나리오" },
+];
+export function analysisAvailableSubtypes() {
+  const have = new Set(bySection("분석").map((p) => p.subtype));
+  return ANALYSIS_SUBTYPES.map((s) => ({ ...s, ready: have.has(s.key) }));
+}
+export function pickAnalysis(subtypeKeys = []) {
+  const chosen = [];
+  subtypeKeys.slice(0, 2).forEach((st, i) => {
+    const pool = bySection("분석").filter((p) => p.subtype === st);
+    if (pool.length) chosen.push({ ...pool[Math.floor(Math.random() * pool.length)], sheetName: `분석작업-${i + 1}` });
+  });
+  return chosen;
+}
+
+// 매크로/차트 (고정 슬롯)
+export function sectionReady(section) { return bySection(section).length > 0; }
+export function pickSection(section, sheetName) {
+  const pool = bySection(section);
+  return pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], sheetName } : null;
 }
 
 export function calcAvailableSubtypes() {

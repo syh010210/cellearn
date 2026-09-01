@@ -1,0 +1,24 @@
+{
+  "id": "analysis-sort-0001",
+  "section": "분석",
+  "subtype": "sort",
+  "difficulty": "하",
+  "grade": "2급",
+  "title": "정렬 — 점수 내림차순",
+  "instruction": "[분석작업] 표를 '점수' 기준 내림차순으로 정렬하시오. (머리글 제외, A2:B4 재배열)",
+  "sheetName": "분석작업-1",
+  "table": [
+    ["이름", "점수"],
+    ["김민", 70],
+    ["이서", 90],
+    ["박준", 80]
+  ],
+  "expect": {
+    "kind": "values",
+    "values": [
+      { "cell": "A2", "value": "이서" }, { "cell": "B2", "value": 90 },
+      { "cell": "A3", "value": "박준" }, { "cell": "B3", "value": 80 },
+      { "cell": "A4", "value": "김민" }, { "cell": "B4", "value": 70 }
+    ]
+  }
+}
