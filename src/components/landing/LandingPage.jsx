@@ -4,7 +4,6 @@ import {
   Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
-import { ExcelBasicDiagram } from "../diagrams/Lesson1.jsx";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
@@ -58,14 +57,44 @@ function CarouselCard({ label, children }) {
   );
 }
 
-// 화면 1 — 개념: 1차시 '엑셀 기본 구조' 다이어그램을 그대로 재사용(카드 폭에 맞춰 축소).
+// 화면 1 — 개념: '엑셀 기본 구조'(열/행/셀)를 라이트 톤으로 새로 구성. 내용은 1차시 다이어그램과 동일.
 function ConceptSlide() {
+  const cols = ["A", "B", "C", "D"];
+  const th = { border: `1px solid ${UI.gridline}`, background: UI.panelAlt, color: UI.mut, fontSize: 12, fontWeight: 700, padding: "8px 0", textAlign: "center" };
+  const cellStyle = (hl) => ({ border: `1px solid ${UI.gridline}`, padding: "9px 6px", textAlign: "center", fontSize: 13, ...mono, background: hl ? UI.lime : UI.surface, color: hl ? UI.teal : UI.faint, fontWeight: hl ? 700 : 400 });
+  const legend = [
+    { c: UI.teal, k: "열(Column)", v: "A · B · C … 세로줄" },
+    { c: UI.faint, k: "행(Row)", v: "1 · 2 · 3 … 가로줄" },
+    { c: UI.lime, k: "셀(Cell)", v: "열 + 행 = C3" },
+  ];
   return (
     <CarouselCard label="개념 · 엑셀 기본 구조">
-      <div style={{ height: 262, overflow: "hidden", borderRadius: UI.rMd }}>
-        <div style={{ width: 720, transform: "scale(0.635)", transformOrigin: "top left" }}>
-          <ExcelBasicDiagram />
+      <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
+        <table style={{ borderCollapse: "collapse", tableLayout: "fixed", flexShrink: 0 }}>
+          <thead><tr><th style={{ ...th, width: 22 }} />{cols.map((c) => <th key={c} style={{ ...th, width: 38 }}>{c}</th>)}</tr></thead>
+          <tbody>
+            {[1, 2, 3].map((r) => (
+              <tr key={r}>
+                <th style={th}>{r}</th>
+                {cols.map((c) => { const hl = c === "C" && r === 3; return <td key={c} style={cellStyle(hl)}>{hl ? "C3" : ""}</td>; })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+          {legend.map((l) => (
+            <div key={l.k}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                <span style={{ width: 10, height: 10, borderRadius: 3, background: l.c, flexShrink: 0 }} />
+                <span style={{ fontWeight: 700, fontSize: 13, color: UI.ink }}>{l.k}</span>
+              </div>
+              <div style={{ fontSize: 12, color: UI.mut, marginTop: 2, marginLeft: 17 }}>{l.v}</div>
+            </div>
+          ))}
         </div>
+      </div>
+      <div style={{ marginTop: 16, fontSize: 12.5, color: UI.mut, lineHeight: 1.6 }}>
+        셀 주소는 <b style={{ color: UI.ink }}>열 + 행</b> 순서로 표기합니다. 예) <span style={mono}>C3</span> = C열 3행.
       </div>
     </CarouselCard>
   );
@@ -451,27 +480,34 @@ export default function LandingPage({ onStart }) {
           {/* 좌: 진도 미리보기 */}
           <div style={{ flex: "1 1 360px", minWidth: 300 }}>
             <div style={{ background: UI.surface, borderRadius: UI.rLg, padding: 24, border: `1px solid ${UI.line}` }}>
-              <div style={{ fontSize: 13, color: UI.mut, marginBottom: 10 }}>내 진도</div>
-              {[["1차시 · 상대/절대 참조", 100], ["2차시 · 문자열 함수", 70], ["3차시 · 통계 함수", 30]].map(([label, pct]) => (
-                <div key={label} style={{ marginBottom: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 5 }}>
-                    <span>{label}</span><span style={{ ...mono, color: UI.mut }}>{pct}%</span>
-                  </div>
-                  <div style={{ height: 8, background: "#dfe4e1", borderRadius: UI.rPill }}>
-                    <div style={{ width: `${pct}%`, height: "100%", background: pct === 100 ? UI.lime : UI.teal, borderRadius: UI.rPill }} />
+              <div style={{ fontSize: 13, color: UI.mut, marginBottom: 14 }}>내 진도 · 차시별 진도율 &amp; 정답률</div>
+              {[
+                { t: "1차시 · 상대/절대 참조", prog: 100, score: 90 },
+                { t: "2차시 · 문자열 함수", prog: 100, score: 60 },
+                { t: "3차시 · 통계 함수", prog: 50, score: null },
+              ].map(({ t, prog, score }) => (
+                <div key={t} style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: UI.ink, marginBottom: 8 }}>{t}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: UI.mut, marginBottom: 4 }}>
+                        <span>진도율</span><span style={{ ...num, fontSize: 12, color: UI.ink }}>{prog}%</span>
+                      </div>
+                      <div style={{ height: 6, background: "#dfe4e1", borderRadius: UI.rPill }}>
+                        <div style={{ width: `${prog}%`, height: "100%", background: prog === 100 ? UI.lime : UI.teal, borderRadius: UI.rPill }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: UI.mut, marginBottom: 4 }}>
+                        <span>정답률</span><span style={{ ...num, fontSize: 12, color: score === null ? UI.faint : UI.ink }}>{score === null ? "학습 중" : `${score}%`}</span>
+                      </div>
+                      <div style={{ height: 6, background: "#dfe4e1", borderRadius: UI.rPill }}>
+                        <div style={{ width: `${score ?? 0}%`, height: "100%", background: UI.teal, borderRadius: UI.rPill }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
-              <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-                <div style={{ flex: 1, background: UI.bg, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "12px 14px" }}>
-                  <div style={{ ...num, fontSize: 24 }}>92%</div>
-                  <div style={{ fontSize: 12, color: UI.mut }}>퀴즈 정답률</div>
-                </div>
-                <div style={{ flex: 1, background: UI.limeSoft, borderRadius: UI.rMd, padding: "12px 14px" }}>
-                  <div style={{ ...num, fontSize: 24, color: UI.teal }}>3</div>
-                  <div style={{ fontSize: 12, color: UI.teal, opacity: 0.8 }}>오답 복습 대기</div>
-                </div>
-              </div>
             </div>
           </div>
           {/* 우: 강점 목록 */}
