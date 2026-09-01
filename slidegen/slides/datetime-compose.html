@@ -1,0 +1,30 @@
+<div class="s-title">시간 쪼개기 · 흩어진 숫자로 날짜·시간 만들기</div>
+<div class="s-subtitle">HOUR·MINUTE·SECOND는 시간을 쪼개고, DATE·TIME은 따로 있는 숫자를 날짜/시간으로 합칩니다</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:flex-start">
+    <div class="card grow" style="gap:8px">
+      <div class="b" style="color:var(--amber-ink);text-align:center">시간 쪼개기</div>
+      <div style="text-align:center;font-size:15px;color:var(--ink-dim)">기준: A2 = 14:35:09</div>
+      <div class="box blue" style="justify-content:space-between;gap:12px"><span class="code" style="border:0;background:none;padding:0;color:var(--blue-ink)">=HOUR(A2)</span><span class="b" style="color:var(--green-ink);font-size:20px">14 (시)</span></div>
+      <div class="box" style="border-color:#a855f7;justify-content:space-between;gap:12px"><span class="code" style="border:0;background:none;padding:0;color:#d8b4fe">=MINUTE(A2)</span><span class="b" style="color:var(--green-ink);font-size:20px">35 (분)</span></div>
+      <div class="box amber" style="justify-content:space-between;gap:12px"><span class="code" style="border:0;background:none;padding:0;color:var(--amber-ink)">=SECOND(A2)</span><span class="b" style="color:var(--green-ink);font-size:20px">9 (초)</span></div>
+    </div>
+
+    <div class="card grow" style="gap:8px">
+      <div class="b" style="color:var(--green-ink);text-align:center">숫자 → 날짜·시간 합치기</div>
+      <div class="box green" style="flex-direction:column;gap:4px">
+        <div class="code" style="border:0;background:none;padding:0;color:var(--green-ink)">=DATE(2026, 6, 15)</div>
+        <div style="color:var(--ink-dim);font-size:13px">연 , 월 , 일</div>
+        <div class="result-box" style="font-size:20px;padding:6px 14px">2026-06-15</div>
+      </div>
+      <div class="box" style="border-color:#a855f7;flex-direction:column;gap:4px">
+        <div class="code" style="border:0;background:none;padding:0;color:#d8b4fe">=TIME(14, 35, 9)</div>
+        <div style="color:var(--ink-dim);font-size:13px">시 , 분 , 초</div>
+        <div class="result-box" style="font-size:20px;padding:6px 14px">14:35:09</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">쪼개기: =HOUR / MINUTE / SECOND(시간) &nbsp;·&nbsp; 합치기: =DATE(연,월,일) / =TIME(시,분,초)<br><span class="tip">⚠ 자주 실수:</span> DATE·TIME 인수 순서는 <span class="b">큰 단위부터</span> — DATE(연, 월, 일), TIME(시, 분, 초)</div>

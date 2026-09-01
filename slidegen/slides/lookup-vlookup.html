@@ -1,0 +1,33 @@
+<div class="s-title">VLOOKUP — 표에서 값을 세로로 찾아오기</div>
+<div class="s-subtitle">왼쪽 첫 열에서 찾을 값을 찾고, 같은 줄에 있는 다른 열의 값을 가져옵니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">찾는 값</span>
+    <span class="k blue">참조 범위 (드래그해서 선택한 영역)</span>
+    <span class="k amber">결과 셀</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">도서코드</td><td class="cell txt">도서명</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt range">A-101</td><td class="cell txt range">파이썬 기초</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt range find">B-102</td><td class="cell txt range result">자바스크립트 완전정복</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt range">C-103</td><td class="cell txt range">리액트 실무</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box green" style="justify-content:flex-start;gap:12px"><span class="h" style="color:var(--green-ink)">①</span><span>A열(왼쪽 첫 열)에서 <span class="b">"B-102"</span>를 세로로 내려가며 찾기</span></div>
+      <div class="box amber" style="justify-content:flex-start;gap:12px"><span class="h" style="color:var(--amber-ink)">②</span><span>찾은 줄(3행)에서 <span class="b">2번째 열</span>의 값을 가져오기</span></div>
+      <div class="box" style="flex-direction:column;gap:4px;font-size:16px"><span class="b">HLOOKUP = 가로 버전</span><span style="color:var(--ink-dim)">첫 번째 <span class="b">행</span>에서 찾고, 지정한 행 번호의 값을 가져옴</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">E2</div><div class="fx"><span class="fx-icon">fx</span>=VLOOKUP("B-102", A2:B4, 2, 0)</div></div>
+  <div class="arg-note"><b>①</b> 찾을 값 &nbsp;&nbsp; <b>②</b> 표 범위(드래그한 영역) &nbsp;&nbsp; <b>③</b> 가져올 열 번호(왼쪽부터 1, 2…) &nbsp;&nbsp; <b>④</b> 0 = 정확히 일치</div>
+
+  <div class="result-box">결과 &nbsp;→&nbsp; "자바스크립트 완전정복"</div>
+</div>
+
+<div class="bottom-bar">=VLOOKUP(찾을 값, 표 범위, 가져올 열 번호, 0)<br><span class="tip">⚠ 자주 실수:</span> 열 번호는 <span class="b">표 안에서 왼쪽부터 1</span>로 셈 (엑셀 전체 열 A·B가 아님) · 마지막 <span class="b">0</span>을 빼먹으면 엉뚱한 값이 나옴</div>

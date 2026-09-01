@@ -1,0 +1,403 @@
+// 자동 채우기 애니메이션 다이어그램 (아래로 / 오른쪽으로 / 절대참조).
+// 실제 엑셀처럼 얇은 십자(+) 커서가 채우기 핸들을 따라 움직이며 셀이 하나씩
+// 채워지는 과정을 반복 재생한다. 외부 라이브러리 없이 setInterval + DOM 측정으로 구동.
+import { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { Wrap, Title, Subtitle, C } from './shared.jsx';
+
+const CHG = C.amber;       // 바뀌는(증가하는) 부분 강조색
+const FIX = C.greenLight;  // 고정되는 부분 강조색
+
+// 0,1,2 (채우는 중) → 3 (완성 유지) → 다시 0 으로 순환
+function useFillStep(interval = 1400) {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setStep((s) => (s + 1) % 4), interval);
+    return () => clearInterval(id);
+  }, [interval]);
+  return step;
+}
+
+// 현재 채워지는 셀의 오른쪽 아래 모서리(채우기 핸들 위치)로 십자 커서를 이동시킨다.
+function useFillCursor(step, maxActive = 2) {
+  const containerRef = useRef(null);
+  const cellRefs = useRef({});
+  const [cursor, setCursor] = useState({ x: 0, y: 0, visible: false, animate: false });
+  const setCellRef = (idx) => (el) => { if (el) cellRefs.current[idx] = el; };
+  useLayoutEffect(() => {
+    const idx = Math.min(step, maxActive);
+    const el = cellRefs.current[idx];
+    const cont = containerRef.current;
+    if (el && cont) {
+      const er = el.getBoundingClientRect();
+      const cr = cont.getBoundingClientRect();
+      setCursor({
+        x: er.right - cr.left - 3,
+        y: er.bottom - cr.top - 3,
+        visible: step <= maxActive,
+        animate: step !== 0, // 0으로 돌아올 때는 미끄러지지 않고 원본 셀로 스냅
+      });
+    }
+  }, [step, maxActive]);
+  return { containerRef, setCellRef, cursor };
+}
+
+// 실제 엑셀 채우기 커서 모양: 흰 테두리를 두른 얇은 검은 십자(+)
+function FillCursor({ cursor }) {
+  return (
+    <svg width="26" height="26" style={{
+      position: 'absolute', left: cursor.x, top: cursor.y,
+      transform: 'translate(-50%,-50%)',
+      transition: cursor.animate
+        ? 'left 0.6s ease-in-out, top 0.6s ease-in-out, opacity 0.3s'
+        : 'opacity 0.3s',
+      opacity: cursor.visible ? 1 : 0, pointerEvents: 'none', zIndex: 30,
+    }}>
+      <line x1="13" y1="1" x2="13" y2="25" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+      <line x1="1" y1="13" x2="25" y2="13" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+      <line x1="13" y1="2" x2="13" y2="24" stroke="#111827" strokeWidth="2.6" strokeLinecap="round" />
+      <line x1="2" y1="13" x2="24" y2="13" stroke="#111827" strokeWidth="2.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// "왜 고정/증가 하는가" 설명 박스
+function WhyBox({ title, lines }) {
+  return (
+    <div style={{ background: '#0b1220', border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginTop: 16 }}>
+      <div style={{ fontSize: 16, fontWeight: 800, color: C.blueLight, marginBottom: 8 }}>{title}</div>
+      {lines.map((ln, i) => (
+        <div key={i} style={{ fontSize: 16, color: C.text, lineHeight: 1.8 }}>{ln}</div>
+      ))}
+    </div>
+  );
+}
+
+// 색으로 강조하는 수식 조각 렌더
+function Formula({ parts, size = 15 }) {
+  return (
+    <span style={{ fontSize: size }}>
+      {parts.map((p, i) => (
+        <span key={i} style={{ color: p.c || 'inherit', fontWeight: p.b ? 800 : 700 }}>{p.t}</span>
+      ))}
+    </span>
+  );
+}
+
+const gridBase = {
+  display: 'grid',
+  border: `1px solid ${C.border}`,
+  borderRadius: 8,
+  overflow: 'hidden',
+};
+
+function HeadCell({ children, accent }) {
+  return (
+    <div style={{
+      background: '#0b1220', borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
+      padding: '7px 4px', textAlign: 'center', fontSize: 14, fontWeight: 700, whiteSpace: 'nowrap',
+      color: accent ? FIX : C.textMuted,
+    }}>{children}</div>
+  );
+}
+
+function DataCell({ children, dim }) {
+  return (
+    <div style={{
+      background: C.bgDark, borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
+      padding: '9px 4px', textAlign: 'center', fontSize: 15, color: dim ? C.textMuted : C.text,
+    }}>{children}</div>
+  );
+}
+
+// 결과(수식) 셀 — 채워짐/비어있음 상태에 따라 스타일이 달라진다.
+function ResultCell({ filled, justFilled, isOrigin, formulaNodes, value, innerRef, style = {} }) {
+  return (
+    <div ref={innerRef} style={{
+      position: 'relative',
+      background: filled ? (isOrigin ? '#14532d' : '#172554') : '#0e1a33',
+      borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
+      borderLeft: filled ? `2px solid ${isOrigin ? '#22c55e' : '#3b82f6'}` : `2px dashed ${C.border}`,
+      padding: '7px 8px', textAlign: 'center', minHeight: 40,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      transition: 'background 0.3s, border-color 0.3s',
+      boxShadow: justFilled ? '0 0 0 2px #3b82f6 inset' : 'none',
+      ...style,
+    }}>
+      {filled ? (
+        <>
+          <span style={{ fontWeight: 700, color: isOrigin ? C.greenLight : C.blueLight }}>
+            {formulaNodes}
+          </span>
+          <span style={{ fontSize: 13, color: C.textDim }}>= {value}</span>
+        </>
+      ) : (
+        <span style={{ fontSize: 13, color: C.textDim }}>&nbsp;</span>
+      )}
+    </div>
+  );
+}
+
+/* ─────────────────────────── 아래로 자동 채우기 ─────────────────────────── */
+export function RelativeFillDownAnim() {
+  const step = useFillStep();
+  const filledCount = Math.min(step, 2) + 1;
+  const { containerRef, setCellRef, cursor } = useFillCursor(step);
+
+  const rows = [
+    { rn: 2, name: '김철수', b: 85, c: 90, sum: 175 },
+    { rn: 3, name: '이영희', b: 72, c: 68, sum: 140 },
+    { rn: 4, name: '박민준', b: 91, c: 78, sum: 169 },
+  ];
+
+  return (
+    <Wrap>
+      <Title>상대 참조 — 아래로 자동 채우기</Title>
+      <Subtitle>D2 수식을 아래로 끌면 행 번호만 2 → 3 → 4 로 따라 내려갑니다</Subtitle>
+
+      <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 66px 66px 150px' }}>
+          <HeadCell />
+          <HeadCell>A 이름</HeadCell>
+          <HeadCell>B 영어</HeadCell>
+          <HeadCell>C 수학</HeadCell>
+          <HeadCell accent>D 합계</HeadCell>
+          {rows.map((r, idx) => {
+            const filled = idx < filledCount;
+            const justFilled = idx === Math.min(step, 2) && step <= 2;
+            const isOrigin = idx === 0;
+            return [
+              <HeadCell key={`rn${r.rn}`}>{r.rn}</HeadCell>,
+              <DataCell key={`n${r.rn}`}>{r.name}</DataCell>,
+              <DataCell key={`b${r.rn}`} dim>{r.b}</DataCell>,
+              <DataCell key={`c${r.rn}`} dim>{r.c}</DataCell>,
+              <ResultCell
+                key={`d${r.rn}`}
+                innerRef={setCellRef(idx)}
+                filled={filled}
+                justFilled={justFilled && !isOrigin}
+                isOrigin={isOrigin}
+                value={r.sum}
+                formulaNodes={
+                  <Formula parts={[
+                    { t: '=B', c: FIX }, { t: r.rn, c: CHG, b: true },
+                    { t: '+C', c: FIX }, { t: r.rn, c: CHG, b: true },
+                  ]} />
+                }
+              />,
+            ];
+          })}
+        </div>
+
+        {/* 오른쪽 수식 목록 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 180 }}>
+          {[2, 3, 4].map((rn, idx) => {
+            const active = idx < filledCount;
+            const origin = idx === 0;
+            return (
+              <div key={rn} style={{
+                background: active ? (origin ? '#14532d' : '#172554') : '#0e1a33',
+                border: `1px solid ${active ? (origin ? '#22c55e' : '#3b82f6') : C.border}`,
+                borderRadius: 8, padding: '7px 12px', opacity: active ? 1 : 0.4, transition: 'all 0.3s',
+              }}>
+                <span style={{ fontSize: 12, color: C.textDim }}>D{rn}{origin ? ' (원본)' : ''}</span>
+                <div style={{ fontSize: 17, fontWeight: 700 }}>
+                  =<span style={{ color: FIX }}>B</span><span style={{ color: CHG }}>{rn}</span>
+                  +<span style={{ color: FIX }}>C</span><span style={{ color: CHG }}>{rn}</span>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ fontSize: 13, textAlign: 'center', marginTop: 2, lineHeight: 1.7 }}>
+            <span style={{ color: FIX }}>초록 = 고정</span> · <span style={{ color: CHG }}>노랑 = 증가</span>
+          </div>
+        </div>
+
+        <FillCursor cursor={cursor} />
+      </div>
+
+      <WhyBox
+        title="왜 B·C 열은 고정이고, 행 번호만 커질까?"
+        lines={[
+          <>아래로 복사하면 <b style={{ color: FIX }}>가로 위치(열)는 변하지 않습니다.</b></>,
+          <>그래서 <b style={{ color: FIX }}>B·C 열은 그대로 고정</b>돼요.</>,
+          <>대신 세로로 내려가며 가로줄(행)이 바뀌므로 <b style={{ color: CHG }}>행 번호만 2 → 3 → 4 로 증가</b>합니다.</>,
+        ]}
+      />
+    </Wrap>
+  );
+}
+
+/* ─────────────────────────── 오른쪽으로 자동 채우기 ─────────────────────────── */
+export function RelativeFillRightAnim() {
+  const step = useFillStep();
+  const filledCount = Math.min(step, 2) + 1;
+  const { containerRef, setCellRef, cursor } = useFillCursor(step);
+
+  // 참조 데이터: 3행(상반기)·4행(하반기)을 열 B·C·D 에 두고, =B3+B4 를 오른쪽으로 채움
+  const cols = ['B', 'C', 'D'];
+  const row3 = [10, 20, 30]; // 상반기 (3행)
+  const row4 = [40, 50, 60]; // 하반기 (4행)
+  const results = cols.map((col, i) => ({ col, sum: row3[i] + row4[i] })); // 50, 70, 90
+
+  return (
+    <Wrap>
+      <Title>상대 참조 — 오른쪽으로 자동 채우기</Title>
+      <Subtitle>수식을 오른쪽으로 끌면 열 문자만 B → C → D 로 따라 이동합니다</Subtitle>
+
+      <div ref={containerRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
+        {/* 참조 데이터 (3·4행) */}
+        <div>
+          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 4, textAlign: 'center' }}>참조 데이터</div>
+          <div style={{ ...gridBase, gridTemplateColumns: '88px 84px 84px 84px' }}>
+            <HeadCell />
+            {cols.map((c) => <HeadCell key={c}>{c}</HeadCell>)}
+            <HeadCell accent>3 상반기</HeadCell>
+            {row3.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
+            <HeadCell accent>4 하반기</HeadCell>
+            {row4.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
+          </div>
+        </div>
+
+        {/* 결과 (오른쪽으로 채우기) — 5행: 상반기+하반기 합계 */}
+        <div>
+          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 4, textAlign: 'center' }}>결과 (5행) — 상반기 + 하반기 합계</div>
+          <div style={{ display: 'flex' }}>
+            {results.map((r, idx) => {
+              const filled = idx < filledCount;
+              const justFilled = idx === Math.min(step, 2) && step <= 2;
+              const origin = idx === 0;
+              return (
+                <ResultCell
+                  key={idx}
+                  innerRef={setCellRef(idx)}
+                  filled={filled}
+                  justFilled={justFilled && !origin}
+                  isOrigin={origin}
+                  value={r.sum}
+                  style={{ width: 132, borderTop: `1px solid ${C.border}` }}
+                  formulaNodes={
+                    <Formula size={16} parts={[
+                      { t: '=' },
+                      { t: r.col, c: CHG, b: true }, { t: '3', c: FIX },
+                      { t: '+' },
+                      { t: r.col, c: CHG, b: true }, { t: '4', c: FIX },
+                    ]} />
+                  }
+                />
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 1.7 }}>
+            <span style={{ color: FIX }}>초록(행 3·4) = 고정</span> · <span style={{ color: CHG }}>노랑(열 문자) = 이동</span>
+          </div>
+        </div>
+
+        <FillCursor cursor={cursor} />
+      </div>
+
+      <WhyBox
+        title="왜 3·4행은 고정이고, 열 문자만 바뀔까?"
+        lines={[
+          <>오른쪽으로 복사하면 <b style={{ color: FIX }}>세로 위치(행)는 변하지 않습니다.</b></>,
+          <>그래서 <b style={{ color: FIX }}>3행·4행은 그대로 고정</b>돼요.</>,
+          <>대신 오른쪽으로 갈수록 세로줄(열)이 바뀌므로 <b style={{ color: CHG }}>열 문자만 B → C → D 로 이동</b>합니다.</>,
+        ]}
+      />
+    </Wrap>
+  );
+}
+
+/* ─────────────────────────── 절대 참조 아래로 채우기 ─────────────────────────── */
+export function AbsoluteFillDownAnim() {
+  const step = useFillStep();
+  const filledCount = Math.min(step, 2) + 1;
+  const { containerRef, setCellRef, cursor } = useFillCursor(step);
+
+  const rows = [
+    { rn: 2, name: '김철수', b: 80, c: 70, sum: 76 },
+    { rn: 3, name: '이영희', b: 90, c: 60, sum: 78 },
+    { rn: 4, name: '박민준', b: 70, c: 95, sum: 80 },
+  ];
+
+  return (
+    <Wrap>
+      <Title>절대 참조 — 아래로 채워도 $ 셀은 고정</Title>
+      <Subtitle>{'$B$5·$C$5(비율)는 항상 5행을 참조 · B·C의 행 번호만 2 → 3 → 4 로 변합니다'}</Subtitle>
+
+      <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 60px 60px 176px' }}>
+          <HeadCell />
+          <HeadCell>A 이름</HeadCell>
+          <HeadCell>B 실기</HeadCell>
+          <HeadCell>C 봉사</HeadCell>
+          <HeadCell accent>D 점수</HeadCell>
+          {rows.map((r, idx) => {
+            const filled = idx < filledCount;
+            const justFilled = idx === Math.min(step, 2) && step <= 2;
+            const isOrigin = idx === 0;
+            return [
+              <HeadCell key={`rn${r.rn}`}>{r.rn}</HeadCell>,
+              <DataCell key={`n${r.rn}`}>{r.name}</DataCell>,
+              <DataCell key={`b${r.rn}`} dim>{r.b}</DataCell>,
+              <DataCell key={`c${r.rn}`} dim>{r.c}</DataCell>,
+              <ResultCell
+                key={`d${r.rn}`}
+                innerRef={setCellRef(idx)}
+                filled={filled}
+                justFilled={justFilled && !isOrigin}
+                isOrigin={isOrigin}
+                value={r.sum}
+                formulaNodes={
+                  <Formula size={12} parts={[
+                    { t: '=' }, { t: 'B', c: FIX }, { t: r.rn, c: CHG, b: true },
+                    { t: '*' }, { t: '$B$5', c: FIX, b: true },
+                    { t: '+' }, { t: 'C', c: FIX }, { t: r.rn, c: CHG, b: true },
+                    { t: '*' }, { t: '$C$5', c: FIX, b: true },
+                  ]} />
+                }
+              />,
+            ];
+          })}
+          {/* 비율(고정) 행 */}
+          <HeadCell>5</HeadCell>
+          <DataCell>비율</DataCell>
+          <div style={{
+            background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
+            border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
+          }}>0.6 🔒</div>
+          <div style={{
+            background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
+            border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
+          }}>0.4 🔒</div>
+          <DataCell dim>고정 기준값</DataCell>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 210 }}>
+          {rows.map((r, idx) => {
+            const active = idx < filledCount;
+            const origin = idx === 0;
+            return (
+              <div key={r.rn} style={{
+                background: active ? (origin ? '#14532d' : '#172554') : '#0e1a33',
+                border: `1px solid ${active ? (origin ? '#22c55e' : '#3b82f6') : C.border}`,
+                borderRadius: 8, padding: '7px 12px', opacity: active ? 1 : 0.4, transition: 'all 0.3s',
+              }}>
+                <span style={{ fontSize: 12, color: C.textDim }}>D{r.rn}{origin ? ' (원본)' : ''}</span>
+                <div style={{ fontSize: 14, fontWeight: 700 }}>
+                  =B<span style={{ color: CHG }}>{r.rn}</span>*<span style={{ color: FIX }}>$B$5</span>
+                  +C<span style={{ color: CHG }}>{r.rn}</span>*<span style={{ color: FIX }}>$C$5</span>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ fontSize: 13, textAlign: 'center', marginTop: 2, lineHeight: 1.7 }}>
+            <span style={{ color: FIX }}>초록 = 고정($·열)</span> ·{' '}
+            <span style={{ color: CHG }}>노랑 = 증가(행 번호)</span>
+          </div>
+        </div>
+
+        <FillCursor cursor={cursor} />
+      </div>
+    </Wrap>
+  );
+}

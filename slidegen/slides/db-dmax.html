@@ -1,0 +1,36 @@
+<div class="s-title">DMAX — 와일드카드(*, ?)로 조건 잡고 최댓값</div>
+<div class="s-subtitle">* 는 "글자 수 상관없음", ? 는 "정확히 한 글자". 패턴에 맞는 행 중 최댓값을 구합니다</div>
+
+<div class="s-body">
+  <div class="row">
+    <div class="box blue grow" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--blue-ink);font-size:18px">OLED*</span><span style="font-size:14px;color:var(--ink-dim)">OLED로 <b>시작</b></span></div>
+    <div class="box green grow" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--green-ink);font-size:18px">*TV</span><span style="font-size:14px;color:var(--ink-dim)">TV로 <b>끝남</b></span></div>
+    <div class="box grow" style="border-color:#a855f7;flex-direction:column;gap:2px"><span class="b" style="color:#d8b4fe;font-size:18px">*모니터*</span><span style="font-size:14px;color:var(--ink-dim)"><b>포함</b></span></div>
+    <div class="box amber grow" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--amber-ink);font-size:18px">A??</span><span style="font-size:14px;color:var(--ink-dim)">A + <b>딱 2글자</b></span></div>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">제품번호</td><td class="cell txt">모델명</td><td class="cell txt">연도</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">101</td><td class="cell txt find">OLED-TV</td><td class="cell range">2024</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">102</td><td class="cell txt">UHD-TV</td><td class="cell">2023</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt find">103</td><td class="cell txt find">OLED-Monitor</td><td class="cell range result">2026</td></tr>
+    </table>
+
+    <div class="col" style="flex:0 0 auto">
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:4px">조건표 (E1:E2)</div>
+      <table class="xls">
+        <tr><td class="corner"></td><td class="colhead">E</td></tr>
+        <tr><td class="rowhead">1</td><td class="cell txt">모델명</td></tr>
+        <tr><td class="rowhead">2</td><td class="cell txt find">OLED*</td></tr>
+      </table>
+      <div style="font-size:14px;color:var(--ink-dim);margin-top:6px;text-align:center">OLED로 시작하는 모델</div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">G2</div><div class="fx"><span class="fx-icon">fx</span>=DMAX(A1:C4, 3, E1:E2)</div></div>
+  <div class="result-box">OLED 모델 중 최신 연도 &nbsp;→&nbsp; 2026</div>
+</div>
+
+<div class="bottom-bar">* = 글자 수 무제한 &nbsp;/&nbsp; ? = 정확히 한 글자<br><span class="tip">⚠ 자주 실수:</span> 와일드카드는 <span class="b">정확히 일치가 아니라 패턴</span> — "OLED"만 쓰면 "OLED-TV"는 안 걸림, "OLED*" 필요</div>

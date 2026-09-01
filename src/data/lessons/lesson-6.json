@@ -1,0 +1,407 @@
+{
+  "id": 6,
+  "title": "수학·삼각 함수",
+  "shortTitle": "수학·삼각 함수",
+  "concepts": [
+    {
+      "heading": "1. 기본 수학 함수와 데이터 변환 (ABS, INT, MOD, POWER, VALUE)",
+      "content": "수치 데이터를 정제하고 기본적인 연산을 수행하는 함수들입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "수치 데이터를 정제하고 기본적인 연산을 수행하는 핵심 수학 함수들입니다. 각 함수의 동작 방식과 차이를 명확히 구분하는 것이 중요합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/math-abs-int-mod-power.svg",
+          "alt": "ABS·INT·MOD·POWER·VALUE 함수 비교 및 예시"
+        },
+        {
+          "type": "heading",
+          "text": "함수별 기능 정리"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**ABS(숫자)**: 숫자의 부호를 제거하고 절댓값(양수 형태)으로 반환합니다. ABS(-3.7) = 3.7, ABS(3.7) = 3.7",
+            "**INT(숫자)**: 소수점을 버리고 '작거나 같은 가장 가까운 정수'로 내림합니다. 수직선의 왼쪽 방향입니다.",
+            "**MOD(숫자, 나누는수)**: 숫자를 특정 수로 나눈 나머지를 반환합니다. MOD(17, 5) = 2 (17 = 5×3 + **2**)",
+            "**POWER(숫자, K)**: 숫자의 K제곱 값을 구합니다. POWER(2, 3) = 8 (= 2^3). 엑셀 기호 '^'와 동일합니다.",
+            "**VALUE(텍스트)**: 따옴표가 붙은 문자 형식의 숫자(\"123\")를 계산 가능한 숫자(123)로 강제 변환합니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "⚠ INT 음수 주의사항"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "INT(3.9) → **3** (양수에서는 소수 버림과 결과 동일)",
+            "INT(-3.1) → **-4** (음수에서는 수직선 기준 왼쪽인 -4로 이동 — -3이 아님!)",
+            "INT는 단순 소수 제거가 아니라 항상 '더 작은 정수' 방향으로 이동합니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "농장 실험실 데이터입니다. [C2] 셀에 MOD 함수를 사용하여 수확량을 박스당 단위(3)로 나눈 나머지를 구하고, [C3] 셀에 VALUE 함수를 사용하여 텍스트로 저장된 수치를 계산 가능한 숫자로 바꾸세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "구분", "editable": false },
+            { "val": "입력값", "editable": false },
+            { "val": "변환 결과", "editable": false }
+          ],
+          [
+            { "val": "잔여 수량 계산", "editable": false },
+            { "val": 10, "editable": false },
+            { "val": "", "editable": true, "answer": "=MOD(B2,3)", "result": 1 }
+          ],
+          [
+            { "val": "텍스트 수치 변환", "editable": false },
+            { "val": "\"500\"", "editable": false },
+            { "val": "", "editable": true, "answer": "=VALUE(B3)", "result": 500 }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "2. 지정 자릿수 제어 함수 (ROUND, ROUNDUP, ROUNDDOWN)",
+      "content": "숫자의 소수점 혹은 정수 자리 위치를 지정하여 값을 정돈하는 함수입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "숫자의 자릿수를 지정하여 반올림·올림·내림하는 함수들입니다. 세 함수 모두 형식이 동일하며, 두 번째 인수 K(자릿수)의 값이 핵심입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/math-round.svg",
+          "alt": "ROUND·ROUNDUP·ROUNDDOWN 자릿수 K 규칙 및 비교"
+        },
+        {
+          "type": "heading",
+          "text": "자릿수(K) 핵심 규칙"
+        },
+        {
+          "type": "numbered",
+          "items": [
+            "**K가 양수(1, 2, 3)**: 소수점 아래 K번째 자리까지 표시합니다. (K=2이면 소수 둘째 자리까지)",
+            "**K가 0**: 소수점을 없애고 정수 형태로 나타냅니다.",
+            "**K가 음수(-1, -2)**: 정수의 일의 자리(-1), 십의 자리(-2) 단위에서 처리합니다. ROUNDUP(145, -1) → 150"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "세 함수의 차이"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**ROUND**: 5 이상이면 올림, 4 이하이면 내림 (일반적인 반올림)",
+            "**ROUNDUP**: 버릴 자리 이하에 숫자가 남아있으면 무조건 올림 (0에서 멀어지는 방향)",
+            "**ROUNDDOWN**: 버릴 자리 이하를 무조건 버림 (0 방향으로 내림, 절삭)"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "수확물 정산 금액 표입니다. [C2] 셀에 ROUND 함수를 사용하여 평균 단가를 소수 첫째 자리(K=1)까지 반올림하고, [C3] 셀에 ROUNDDOWN을 사용하여 십의 자리(K=-1)까지 내림(절삭)하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "작물명", "editable": false },
+            { "val": "원 수치", "editable": false },
+            { "val": "최종 처리값", "editable": false }
+          ],
+          [
+            { "val": "방울토마토 평균단가", "editable": false },
+            { "val": 12.86, "editable": false },
+            { "val": "", "editable": true, "answer": "=ROUND(B2,1)", "result": 12.9 }
+          ],
+          [
+            { "val": "유기농 딸기 지원금", "editable": false },
+            { "val": 1545, "editable": false },
+            { "val": "", "editable": true, "answer": "=ROUNDDOWN(B3,-1)", "result": 1540 }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. 조건부 합계의 기초와 단일 조건 필터링 (SUM, SUMIF)",
+      "content": "특정 데이터 그룹의 누적 합을 구하는 핵심 영역입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "전체를 더하는 SUM과 달리, **SUMIF는 조건에 맞는 행만 골라서** 합산합니다. 조건범위·조건·합계범위 세 가지 인수의 역할을 구분하는 것이 핵심입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/math-sumif.svg",
+          "alt": "SUM vs SUMIF 조건 필터링 비교 및 절대참조 필요성"
+        },
+        {
+          "type": "heading",
+          "text": "함수 형식"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**SUM(범위)**: 범위 내 모든 숫자의 합계를 구합니다.",
+            "**SUMIF(조건범위, 조건, [합계범위])**: 조건범위에서 조건과 일치하는 행의 합계범위 값을 더합니다.",
+            "합계범위를 생략하면 조건범위 자체가 합계범위로 사용됩니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "⚠ 절대 참조($) 필수 적용"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "수식을 아래로 자동 채우기 할 때 **조건범위와 합계범위가 함께 밀리지 않도록** F4 키로 절대 참조 처리해야 합니다.",
+            "예: =SUMIF(**$B$2:$B$5**, D2, **$C$2:$C$5**) — D2(조건)만 상대 참조로 이동"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "주말농장 수확 일지입니다. [E2] 셀에 SUMIF 함수를 사용하여 분류가 '채소'인 작물들의 수확량 합계를 계산하세요.",
+        "cols": ["A", "B", "C", "D", "E"],
+        "rows": [
+          [
+            { "val": "작물명", "editable": false },
+            { "val": "분류", "editable": false },
+            { "val": "수확량", "editable": false },
+            { "val": "지정 분류", "editable": false },
+            { "val": "채소 총수확량", "editable": false }
+          ],
+          [
+            { "val": "상추", "editable": false },
+            { "val": "채소", "editable": false },
+            { "val": 35, "editable": false },
+            { "val": "채소", "editable": false },
+            { "val": "", "editable": true, "answer": "=SUMIF($B$2:$B$4,D2,$C$2:$C$4)", "result": 55 }
+          ],
+          [
+            { "val": "사과", "editable": false },
+            { "val": "과일", "editable": false },
+            { "val": 12, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "깻잎", "editable": false },
+            { "val": "채소", "editable": false },
+            { "val": 20, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "4. 복합 다중 조건과 와일드카드 결합 합계 (SUMIFS)",
+      "content": "여러 개의 조건을 동시에 만족(AND)하는 행들만 추출하여 더하는 함수입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "**SUMIFS**는 여러 조건을 동시에 만족하는 행만 합산합니다. SUMIF와 구조가 다르며, **합계범위가 첫 번째 인수**로 온다는 점이 핵심 차이입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/math-sumifs.svg",
+          "alt": "SUMIFS 다중 조건 AND 필터링 및 와일드카드 활용"
+        },
+        {
+          "type": "heading",
+          "text": "SUMIF vs SUMIFS 구조 비교"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**SUMIF**: =SUMIF(조건범위, 조건, **합계범위**) — 합계범위가 마지막",
+            "**SUMIFS**: =SUMIFS(**합계범위**, 조건범위1, 조건1, 조건범위2, 조건2, ...) — 합계범위가 첫 번째!"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "고급 조건 표현 문법"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**와일드카드(*)**: \"*베리*\" → '베리'가 포함된 모든 텍스트 매칭 (블루베리, 라즈베리 등)",
+            "**함수 연동 조건**: \">=\"&AVERAGE(범위) — 비교 연산자를 쌍따옴표로 감싸고 & 로 함수와 연결",
+            "**조건을 셀로 참조**: 조건 자리에 \">=15\" 대신 셀 D2처럼 셀 주소를 쓸 수 있음"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "농장 출하 데이터입니다. [F2] 셀에 SUMIFS 함수를 사용하여 작물명에 '베리'가 포함되면서 출하량이 15kg 이상인 총 출하금액을 구하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F"],
+        "rows": [
+          [
+            { "val": "작물명", "editable": false },
+            { "val": "출하량", "editable": false },
+            { "val": "출하금액", "editable": false },
+            { "val": "조건1", "editable": false },
+            { "val": "조건2", "editable": false },
+            { "val": "만족 금액합계", "editable": false }
+          ],
+          [
+            { "val": "블루베리", "editable": false },
+            { "val": 20, "editable": false },
+            { "val": 180000, "editable": false },
+            { "val": "*베리*", "editable": false },
+            { "val": ">=15", "editable": false },
+            { "val": "", "editable": true, "answer": "=SUMIFS(C2:C4,A2:A4,\"*베리*\",B2:B4,\">=15\")", "result": 180000 }
+          ],
+          [
+            { "val": "딸기", "editable": false },
+            { "val": 30, "editable": false },
+            { "val": 250000, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "라즈베리", "editable": false },
+            { "val": 8, "editable": false },
+            { "val": 90000, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "다음 중 수식 '=INT(-4.3)'의 연산 결과값으로 올바른 것은 무엇인가?",
+      "options": [
+        "-4",
+        "-5",
+        "4",
+        "5"
+      ],
+      "answer": 1,
+      "explanation": "INT 함수는 인수로 받은 숫자보다 '작거나 같은 가장 가까운 정수'를 반환합니다. 수직선 상에서 -4.3보다 작은 왼쪽에 위치한 정수는 -5이므로 결과는 -5가 됩니다."
+    },
+    {
+      "id": 2,
+      "question": "SUMIFS 함수를 작성할 때 수량 범위가 평균(AVERAGE) 이상인 조건을 문자열과 함수 결합 규칙에 맞춰 바르게 코딩한 것은 어느 것인가?",
+      "options": [
+        "\">=AVERAGE(B2:B10)\"",
+        "\">=\"&AVERAGE(B2:B10)",
+        ">=&AVERAGE(B2:B10)",
+        "&>=&AVERAGE(B2:B10)"
+      ],
+      "answer": 1,
+      "explanation": "엑셀 조건문 안에서 다른 일반 함수나 셀 주소를 변수로 받아 비교 연산 기호와 연결할 때는, 비교 연산자만 쌍따옴표(\"\")로 감싸고 문자열 연결 연산자인 앰퍼샌드(&)를 사용하여 함수식과 결합해야 컴퓨터가 정확히 인식합니다."
+    },
+    {
+      "id": 3,
+      "question": "수식 '=ROUNDUP(1.01, 1)'의 결과로 올바른 것은?",
+      "options": [
+        "1.0",
+        "1.1",
+        "2.0",
+        "1.01"
+      ],
+      "answer": 1,
+      "explanation": "ROUNDUP은 항상 0에서 멀어지는 방향(양수이면 위쪽)으로 올림합니다. 1.01을 소수 첫째 자리(K=1)까지 올림하면 소수 둘째 자리를 버리는 게 아니라 올리므로 1.1이 됩니다. ROUND로 반올림했다면 1.0이지만 ROUNDUP은 무조건 올립니다."
+    },
+    {
+      "id": 4,
+      "question": "수식 '=MOD(17, 5)'의 결과로 올바른 것은?",
+      "options": [
+        "3",
+        "2",
+        "3.4",
+        "5"
+      ],
+      "answer": 1,
+      "explanation": "MOD(17, 5)는 17을 5로 나눈 나머지를 구합니다. 5×3=15이므로 17-15=2가 나머지입니다. 나머지가 아닌 몫(3)이나 나누기 결과(3.4)와 혼동하지 않도록 주의하세요."
+    },
+    {
+      "id": 5,
+      "question": "다음 중 ABS 함수에 대한 설명으로 올바른 것은?",
+      "options": [
+        "소수점을 버리고 정수만 반환하므로, ABS(-3.7)의 결과는 -3이다.",
+        "숫자의 부호를 제거하고 절댓값을 반환하므로, ABS(-3.7)의 결과는 3.7이다.",
+        "음수를 양수로, 양수를 음수로 부호를 바꾸는 함수이다.",
+        "양수 입력 시 오류(#VALUE!)를 반환하는 함수이다."
+      ],
+      "answer": 1,
+      "explanation": "ABS 함수는 숫자의 절댓값을 소수점까지 유지하며 반환합니다. ABS(-3.7) = 3.7, ABS(3.7) = 3.7로 음수·양수 상관없이 부호만 제거합니다. 소수점을 버리는 함수는 INT이며, ABS와 혼동하지 않아야 합니다."
+    },
+    {
+      "id": 6,
+      "question": "VALUE 함수를 사용해야 하는 가장 적절한 상황은?",
+      "options": [
+        "숫자를 텍스트 문자열 형태로 변환하여 셀에 표시할 때",
+        "외부 데이터로 가져온 값이 텍스트 형식으로 저장되어 SUM 등 수식 계산이 안 될 때",
+        "소수점을 제거하고 정수로 변환할 때",
+        "셀의 내용을 삭제하고 비워둘 때"
+      ],
+      "answer": 1,
+      "explanation": "VALUE 함수는 텍스트 형식으로 저장된 숫자를 계산 가능한 숫자형으로 변환합니다. 웹·DB에서 받아온 데이터가 겉보기에는 숫자지만 텍스트로 저장되어 SUM 결과가 0이 나올 때 VALUE로 해결합니다."
+    },
+    {
+      "id": 7,
+      "question": "수식 '=SUMIF($B$2:$B$5, \"채소\", $C$2:$C$5)'에서 범위에 달러($) 기호를 붙인 이유로 올바른 것은?",
+      "options": [
+        "금액을 다루는 열임을 표시하기 위해서이다.",
+        "수식을 다른 셀로 자동 채우기 할 때 조건 범위와 합계 범위가 이동하지 않도록 절대 참조로 고정하기 위해서이다.",
+        "달러 기호가 없으면 SUMIF 함수 자체가 동작하지 않기 때문이다.",
+        "첫 번째 행의 제목 행을 자동으로 제외시키기 위해서이다."
+      ],
+      "answer": 1,
+      "explanation": "SUMIF 수식을 여러 행으로 자동 채우기 할 때, 절대 참조($)를 붙이지 않으면 범위가 한 행씩 밀려 잘못된 범위를 참조하게 됩니다. F4 키로 조건 범위와 합계 범위를 고정하면 어느 셀에 복사해도 정확한 범위를 유지합니다."
+    },
+    {
+      "id": 8,
+      "question": "수식 '=ROUNDDOWN(3.987, 2)'의 결과로 올바른 것은?",
+      "options": [
+        "4.0",
+        "3.99",
+        "3.98",
+        "3.9"
+      ],
+      "answer": 2,
+      "explanation": "ROUNDDOWN은 항상 0 방향(절댓값이 작아지는 방향)으로 버림합니다. 3.987을 소수 둘째 자리(K=2)까지 내림하면 소수 셋째 자리(7)를 버린 3.98이 됩니다. ROUND로 반올림했다면 3.99이지만 ROUNDDOWN은 무조건 버립니다."
+    },
+    {
+      "id": 9,
+      "question": "INT 함수와 ROUND(숫자, 0)의 차이점으로 올바른 것은?",
+      "options": [
+        "INT와 ROUND(숫자, 0)은 양수·음수 모두에서 항상 동일한 결과를 반환한다.",
+        "INT는 항상 음의 무한대 방향으로 내림하지만, ROUND(숫자, 0)은 소수 첫째 자리를 기준으로 반올림한다.",
+        "INT는 양수에만 적용되고, ROUND는 음수에만 적용할 수 있다.",
+        "INT(3.7)과 ROUND(3.7, 0)은 모두 4를 반환하여 결과가 같다."
+      ],
+      "answer": 1,
+      "explanation": "양수에서 INT(3.2)=3, ROUND(3.2,0)=3으로 같아 보이지만, 음수에서 INT(-3.2)=-4(바닥 방향), ROUND(-3.2,0)=-3(반올림)으로 달라집니다. INT는 항상 수직선 왼쪽(더 작은 정수)으로 이동하고, ROUND는 소수 첫째 자리를 반올림합니다."
+    },
+    {
+      "id": 10,
+      "question": "SUMIFS 함수와 SUMIF 함수의 구조적 차이점으로 올바른 것은?",
+      "options": [
+        "SUMIF는 텍스트 조건만 처리하고, SUMIFS는 숫자 조건만 처리한다.",
+        "SUMIF는 조건 1개만 지정 가능하고, SUMIFS는 조건을 여러 개 지정할 수 있으며 합계 범위가 첫 번째 인수로 온다.",
+        "SUMIFS는 SUMIF보다 항상 계산 속도가 느리다.",
+        "SUMIF와 SUMIFS는 구조가 동일하며 인수 순서도 같다."
+      ],
+      "answer": 1,
+      "explanation": "SUMIF는 =SUMIF(조건범위, 조건, 합계범위)로 조건 1개만 지원합니다. SUMIFS는 =SUMIFS(합계범위, 조건범위1, 조건1, 조건범위2, 조건2, ...)로 여러 AND 조건을 결합하며, SUMIF와 달리 합계 범위가 첫 번째 인수로 옵니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "수학함수", "cell": "C2", "formula": "=MOD(B2,3)" },
+    { "sheet": "수학함수", "cell": "C3", "formula": "=VALUE(B3)" },
+    { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
+    { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-1)" },
+    { "sheet": "단일조건합", "cell": "E2", "formula": "=SUMIF($B$2:$B$4,D2,$C$2:$C$4)" },
+    { "sheet": "다중조건합", "cell": "F2", "formula": "=SUMIFS(C2:C4,A2:A4,\"*베리*\",B2:B4,\">=15\")" }
+  ]
+}

@@ -1,0 +1,460 @@
+{
+  "id": 5,
+  "title": "데이터베이스 함수의 공통 공식과 조건 설정 마스터",
+  "shortTitle": "데이터베이스 함수",
+  "concepts": [
+    {
+      "heading": "1. 데이터베이스 함수의 공통 공식과 단일 조건 합계 (DSUM)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "엑셀의 모든 데이터베이스 함수(D로 시작하는 함수)는 인수의 위치와 사용 형식이 완전히 동일합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/db-dsum.svg",
+          "alt": "데이터베이스 함수 공통 3인수 형식과 DSUM 단일 조건 합계 예시"
+        },
+        {
+          "type": "heading",
+          "text": "데이터베이스 함수 공통 형식 — 3가지 인수"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**공통 형식**: =DFUNCTION(**① 전체 표 범위**, **② 계산할 열 제목**, **③ 조건 범위**)",
+            "**① 전체 표 범위**: 반드시 맨 위의 열 제목(필드명)을 포함하여 전체 데이터를 드래그해야 합니다. 예) A1:D4",
+            "**② 계산할 열 제목**: 합계나 평균 등을 구할 열의 제목 셀을 클릭하거나, 첫 열부터 셀 때의 열 번호(숫자)를 입력합니다. 예) 4",
+            "**③ 조건 범위**: 일반 함수와 달리 셀 하나만 지정할 수 없으며, 반드시 '조건 열 제목'과 '해당 조건값'이 포함된 범위를 지정합니다. 예) E1:E2"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "DSUM — 조건을 만족하는 행의 합계"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "지정한 표 범위에서 조건을 만족하는 행들만 찾아 지정된 열의 **합계**를 구합니다.",
+            "예) =DSUM(A1:D4, 4, E1:E2) → 제품군이 '세탁기'인 행의 판매량(4번째 열) 합계를 반환"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "스마트 가전 매장의 판매 현황 표입니다. [G2] 셀에 DSUM 함수를 사용하여 제품군이 '세탁기'인 제품들의 총 판매수량을 계산하세요. (조건 범위는 [F1:F2] 영역을 활용하세요.)",
+        "cols": ["A", "B", "C", "D", "E", "F", "G"],
+        "rows": [
+          [
+            { "val": "제품ID", "editable": false },
+            { "val": "제품군", "editable": false },
+            { "val": "단가", "editable": false },
+            { "val": "판매량", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "제품군", "editable": false },
+            { "val": "세탁기 총판매수량", "editable": false }
+          ],
+          [
+            { "val": "W-01", "editable": false },
+            { "val": "세탁기", "editable": false },
+            { "val": 1200000, "editable": false },
+            { "val": 5, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "세탁기", "editable": false },
+            { "val": "", "editable": true, "answer": "=DSUM(A1:D4,4,F1:F2)", "result": 13 }
+          ],
+          [
+            { "val": "R-02", "editable": false },
+            { "val": "냉장고", "editable": false },
+            { "val": 2500000, "editable": false },
+            { "val": 3, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "W-03", "editable": false },
+            { "val": "세탁기", "editable": false },
+            { "val": 1500000, "editable": false },
+            { "val": 8, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "2. 나란히 작성하는 AND 조건 평균 (DAVERAGE)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "두 개 이상의 조건을 모두 만족해야 하는 경우(AND 조건, '~이면서', '~이고') 조건을 입력하는 규칙이 있습니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/db-daverage.svg",
+          "alt": "DAVERAGE AND 조건 — 조건을 같은 행에 나란히 입력하는 방법"
+        },
+        {
+          "type": "heading",
+          "text": "AND 조건 작성법 — 나란히 같은 행에"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "각 조건의 **열 제목을 가로로 나열**하고, 만족해야 하는 조건값들을 **같은 행**에 나란히 입력합니다.",
+            "예) 제조사=A사 이면서 재고량>=20: 제조사 | 재고량 → A사 | >=20 (같은 행에 입력)"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "DAVERAGE — 조건을 만족하는 행의 평균"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "다중 AND 조건을 모두 만족하는 데이터만 필터링하여 특정 열의 **평균값**을 반환합니다.",
+            "예) =DAVERAGE(A1:D4, 3, E1:F2) → 제조사=A사 이면서 재고량>=20인 행의 단가(3번째 열) 평균"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "제조사와 재고량을 기준으로 평균 단가를 구하려고 합니다. [F1:G2]에 작성된 '제조사가 A사 이면서 재고량이 20대 이상'인 AND 조건을 이용하여 [H2] 셀에 해당하는 가전의 평균 단가를 구하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F", "G", "H"],
+        "rows": [
+          [
+            { "val": "가전명", "editable": false },
+            { "val": "제조사", "editable": false },
+            { "val": "단가", "editable": false },
+            { "val": "재고량", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "제조사", "editable": false },
+            { "val": "재고량", "editable": false },
+            { "val": "조건 만족 평균단가", "editable": false }
+          ],
+          [
+            { "val": "에어컨", "editable": false },
+            { "val": "A사", "editable": false },
+            { "val": 1800000, "editable": false },
+            { "val": 25, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "A사", "editable": false },
+            { "val": ">=20", "editable": false },
+            { "val": "", "editable": true, "answer": "=DAVERAGE(A1:D4,3,F1:G2)", "result": 1900000 }
+          ],
+          [
+            { "val": "청소기", "editable": false },
+            { "val": "B사", "editable": false },
+            { "val": 600000, "editable": false },
+            { "val": 40, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "스타일러", "editable": false },
+            { "val": "A사", "editable": false },
+            { "val": 2000000, "editable": false },
+            { "val": 30, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. 어긋나게 행을 바꾸는 OR 조건 수량 카운트 (DCOUNT)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "여러 조건 중 하나라도 만족하면 포함시키는 경우(OR 조건, '~이거나')의 조건 입력 규칙입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/db-dcount.svg",
+          "alt": "DCOUNT OR 조건 — 조건을 서로 다른 행에 계단식으로 입력하는 방법"
+        },
+        {
+          "type": "heading",
+          "text": "OR 조건 작성법 — 서로 다른 행에 계단식으로"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "조건 열 제목들을 나열한 뒤, 조건값들을 동일한 행이 아닌 **서로 다른 행(엇갈린 행)**에 계단식으로 입력합니다.",
+            "예) 매장=대구점 이거나 판매량>=50: 대구점을 E행에, >=50을 F행의 다음 줄에 입력"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "DCOUNT 주의사항 — 숫자 데이터 열만 카운트"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "DCOUNT는 조건에 맞는 행 중에서 지정한 열의 데이터가 **숫자, 날짜, 시간**인 셀만 카운트합니다.",
+            "텍스트(문자)로 채워진 열을 지정하면 결과가 **0**이 됩니다.",
+            "문자열 데이터까지 포함하여 셀 개수를 세려면 **DCOUNTA** 함수를 사용해야 합니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "[F1:G3] 영역에 '매장이 대구점 이거나 판매량이 50대 이상'인 OR 조건이 구성되어 있습니다. [H2] 셀에 DCOUNT 함수를 사용해 조건을 충족하는 매장 건수를 계산하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F", "G", "H"],
+        "rows": [
+          [
+            { "val": "지점코드", "editable": false },
+            { "val": "매장위치", "editable": false },
+            { "val": "판매량", "editable": false },
+            { "val": "담당자", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "매장위치", "editable": false },
+            { "val": "판매량", "editable": false },
+            { "val": "조건 부합 지점수", "editable": false }
+          ],
+          [
+            { "val": "S01", "editable": false },
+            { "val": "서울점", "editable": false },
+            { "val": 65, "editable": false },
+            { "val": "최팀장", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "대구점", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": true, "answer": "=DCOUNT(A1:D4,3,F1:G3)", "result": 2 }
+          ],
+          [
+            { "val": "D02", "editable": false },
+            { "val": "대구점", "editable": false },
+            { "val": 30, "editable": false },
+            { "val": "이과장", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": ">=50", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "B03", "editable": false },
+            { "val": "부산점", "editable": false },
+            { "val": 20, "editable": false },
+            { "val": "박대리", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "4. 와일드카드 만능문자를 조합한 최댓값 추출 (DMAX)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "특정 키워드가 포함되거나 시작하는 텍스트 조건을 지정할 때는 만능문자(와일드카드)인 별표(*)와 물음표(?)를 활용합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/db-dmax.svg",
+          "alt": "DMAX 와일드카드 — *, ? 만능문자 4가지 패턴과 최댓값 추출 예시"
+        },
+        {
+          "type": "heading",
+          "text": "와일드카드 패턴 4가지"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**고***: '고'로 시작하는 글자 수 제한 없는 모든 텍스트",
+            "***고**: '고'로 끝나는 모든 텍스트",
+            "***고***: '고'라는 글자가 어디에 있든 포함된 모든 텍스트",
+            "**고??**: '고'로 시작하면서 반드시 전체가 3글자인 텍스트 (? 1개 = 임의의 1글자)"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "DMAX — 조건을 만족하는 행의 최댓값"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "와일드카드 조건 범위를 스캔하여 일치하는 데이터 그룹 내에서 **최댓값**을 찾아 반환합니다.",
+            "예) =DMAX(A1:D4, 3, E1:E2) → 모델명이 'OLED'로 시작하는 제품 중 가장 큰 출시연도"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "물류창고 리스트입니다. [F1:F2] 영역에 모델명이 'OLED'로 시작하는 조건인 'OLED*'가 입력되어 있습니다. [G2] 셀에 DMAX 함수를 사용하여 OLED 모델 중 가장 큰 출시연도를 추출하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F", "G"],
+        "rows": [
+          [
+            { "val": "식별번호", "editable": false },
+            { "val": "모델명", "editable": false },
+            { "val": "출시연도", "editable": false },
+            { "val": "입고수량", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "모델명", "editable": false },
+            { "val": "최신 출시연도", "editable": false }
+          ],
+          [
+            { "val": 101, "editable": false },
+            { "val": "OLED-TV", "editable": false },
+            { "val": 2024, "editable": false },
+            { "val": 15, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "OLED*", "editable": false },
+            { "val": "", "editable": true, "answer": "=DMAX(A1:D4,3,F1:F2)", "result": 2026 }
+          ],
+          [
+            { "val": 102, "editable": false },
+            { "val": "UHD-TV", "editable": false },
+            { "val": 2023, "editable": false },
+            { "val": 40, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": 103, "editable": false },
+            { "val": "OLED-Monitor", "editable": false },
+            { "val": 2026, "editable": false },
+            { "val": 8, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "데이터베이스 함수인 DCOUNT 함수를 사용할 때, 두 번째 인수로 지정하는 '계산할 열 제목'으로 지정할 수 없는 셀은 무엇인가?",
+      "options": [
+        "숫자가 채워진 '단가' 열 제목",
+        "날짜가 채워진 '입사일' 열 제목",
+        "문자(텍스트)가 채워진 '사원명' 열 제목",
+        "시간 데이터가 채워진 '출근시간' 열 제목"
+      ],
+      "answer": 2,
+      "explanation": "DCOUNT 함수는 오직 숫자, 날짜, 시간 데이터가 들어있는 필드(열)의 개수만 카운트할 수 있으므로, 문자로 가득 찬 열의 제목을 선택하면 올바른 개수를 세지 못하고 0을 반환합니다."
+    },
+    {
+      "id": 2,
+      "question": "데이터베이스 함수의 조건 지정 범위에서 '제품명' 열 제목 아래에 '스마트??'라고 조건을 입력했을 때 검색 필터링 결과로 올바른 것은?",
+      "options": [
+        "제품명이 '스마트'로 시작하는 모든 글자 수의 제품 검색",
+        "제품명이 '스마트폰'과 같이 '스마트'로 시작하면서 반드시 전체가 4글자인 제품 검색",
+        "제품의 글자 수 상관없이 중간에 '스마트'가 들어간 모든 제품 검색",
+        "제품명이 '스마트티비'와 같이 '스마트'로 시작하면서 뒤에 2글자가 더 붙어 총 5글자인 제품 검색"
+      ],
+      "answer": 3,
+      "explanation": "물음표(?) 기호는 임의의 한 글자를 뜻하므로, '스마트' 3글자 뒤에 ??가 붙었으므로 반드시 '스마트'로 시작하는 총 5글자의 데이터를 매칭하게 됩니다."
+    },
+    {
+      "id": 3,
+      "question": "DSUM 함수에서 세 번째 인수(조건 범위)를 지정할 때 올바른 방법은?",
+      "options": [
+        "조건값이 입력된 셀 하나만 지정한다. 예) E2",
+        "반드시 조건 열 제목과 조건값이 함께 포함된 범위를 지정한다. 예) E1:E2",
+        "전체 데이터 범위와 동일하게 지정해야 한다.",
+        "숫자로 된 열 번호만 입력하면 된다."
+      ],
+      "answer": 1,
+      "explanation": "데이터베이스 함수의 조건 범위는 반드시 '조건 열 제목(헤더)'과 그 아래 '조건값'이 함께 포함되도록 지정해야 합니다. 셀 하나만 지정하면 열 제목이 없어 올바른 조건을 인식할 수 없습니다."
+    },
+    {
+      "id": 4,
+      "question": "DAVERAGE 함수를 사용할 때 '제조사가 A사 이면서 재고량이 50 이상'인 AND 조건을 조건 범위에 작성하는 올바른 방법은?",
+      "options": [
+        "제조사 열 제목 아래 A사를 입력하고, 그 다음 행에 재고량 열 제목과 >=50을 엇갈려 입력한다.",
+        "같은 행에 제조사와 재고량 열 제목을 나란히 쓰고, 바로 아래 같은 행에 A사와 >=50을 나란히 입력한다.",
+        "A사와 >=50을 한 셀에 같이 입력한다.",
+        "조건 범위 없이 두 번째 인수에 조건식을 직접 작성한다."
+      ],
+      "answer": 1,
+      "explanation": "AND 조건(~이면서)은 조건 열 제목들을 가로로 나열하고, 그 아래 같은 행에 조건값들을 나란히 입력합니다. 반면 OR 조건(~이거나)은 조건값들을 서로 다른 행(엇갈린 행)에 입력합니다."
+    },
+    {
+      "id": 5,
+      "question": "다음 중 데이터베이스 함수들의 공통된 특징으로 올바른 것은?",
+      "options": [
+        "함수마다 인수의 순서와 개수가 모두 다르다.",
+        "두 번째 인수에 반드시 열 제목 문자열을 따옴표로 감싸서 입력해야 한다.",
+        "모든 데이터베이스 함수는 (전체 표 범위, 계산할 열 제목, 조건 범위) 세 인수를 같은 순서로 사용한다.",
+        "데이터베이스 함수는 조건 없이도 전체 데이터를 집계할 수 있다."
+      ],
+      "answer": 2,
+      "explanation": "DSUM, DAVERAGE, DCOUNT, DMAX, DMIN 등 모든 데이터베이스 함수는 (전체 표 범위, 계산할 열 제목, 조건 범위) 세 인수를 동일한 순서로 사용합니다. 열 제목은 해당 셀을 클릭하거나 숫자 열 번호로 지정할 수 있습니다."
+    },
+    {
+      "id": 6,
+      "question": "데이터베이스 함수 중 DMIN 함수의 역할로 올바른 것은?",
+      "options": [
+        "조건을 만족하는 레코드 중 숫자 필드의 평균을 반환한다.",
+        "조건을 만족하는 레코드 중 지정한 필드의 최솟값을 반환한다.",
+        "조건을 만족하는 레코드의 개수를 반환한다.",
+        "조건을 만족하는 레코드 중 지정한 필드의 합계를 반환한다."
+      ],
+      "answer": 1,
+      "explanation": "DMIN은 조건을 만족하는 레코드들 중 지정한 필드(열)의 최솟값(minimum)을 반환합니다. DMAX는 최댓값, DSUM은 합계, DAVERAGE는 평균, DCOUNT/DCOUNTA는 개수를 구합니다."
+    },
+    {
+      "id": 7,
+      "question": "DCOUNT와 DCOUNTA의 차이점으로 올바른 것은?",
+      "options": [
+        "DCOUNT는 문자와 숫자 모두 세고, DCOUNTA는 숫자만 센다.",
+        "DCOUNT는 숫자 데이터가 있는 셀만 세고, DCOUNTA는 비어있지 않은 모든 셀을 센다.",
+        "DCOUNT는 조건이 필요 없고, DCOUNTA는 조건이 반드시 필요하다.",
+        "DCOUNT와 DCOUNTA는 기능이 동일하고 이름만 다르다."
+      ],
+      "answer": 1,
+      "explanation": "DCOUNT는 조건을 만족하는 레코드 중 숫자 데이터가 있는 셀만 카운트합니다. DCOUNTA는 숫자뿐 아니라 문자·날짜 등 비어있지 않은 모든 셀을 카운트합니다. 'A'는 'All(전체)'의 의미로 이해하면 됩니다."
+    },
+    {
+      "id": 8,
+      "question": "데이터베이스 함수에서 '서울 지점이거나 판매량이 100 이상'인 OR 조건을 조건 범위에 올바르게 작성하는 방법은?",
+      "options": [
+        "같은 행에 지점='서울'과 판매량='>=100' 조건을 나란히 입력한다.",
+        "지점 조건값과 판매량 조건값을 서로 다른 행(엇갈리게)에 입력한다.",
+        "조건을 하나의 셀에 '서울 OR >=100'으로 입력한다.",
+        "두 번째 인수에 조건식을 직접 수식으로 연결한다."
+      ],
+      "answer": 1,
+      "explanation": "OR 조건(~이거나)은 조건값들을 서로 다른 행에 엇갈려 입력해야 합니다. 같은 행에 나란히 입력하면 AND 조건(~이면서)이 됩니다. 조건 범위는 반드시 열 제목(헤더) 행을 포함해야 합니다."
+    },
+    {
+      "id": 9,
+      "question": "데이터베이스 함수의 두 번째 인수(field)를 지정하는 방법으로 올바르지 않은 것은?",
+      "options": [
+        "열 제목이 있는 셀을 클릭하여 셀 주소로 지정한다. (예: C1)",
+        "열 제목 텍스트를 따옴표로 감싸서 직접 입력한다. (예: \"판매량\")",
+        "왼쪽부터 센 열 번호를 숫자로 직접 입력한다. (예: 3)",
+        "조건 범위에서 해당 열 제목이 위치한 행 번호를 입력한다."
+      ],
+      "answer": 3,
+      "explanation": "데이터베이스 함수의 두 번째 인수는 ① 열 제목 셀 주소 클릭, ② 열 제목 문자열 직접 입력(따옴표 포함), ③ 왼쪽부터 센 열 번호(숫자) 세 가지 방법이 모두 유효합니다. 조건 범위의 행 번호를 입력하는 것은 올바른 방법이 아닙니다."
+    },
+    {
+      "id": 10,
+      "question": "DMAX 함수의 조건 범위에 '모델명' 열 제목 아래 'OLED*'를 입력했을 때 올바르게 매칭되는 데이터는?",
+      "options": [
+        "'OLED'와 정확히 일치하는 데이터만 매칭된다.",
+        "'OLED'로 시작하는 글자 수에 상관없는 모든 데이터가 매칭된다.",
+        "'OLED'가 중간이나 끝에 포함된 데이터만 매칭된다.",
+        "와일드카드 * 기호는 데이터베이스 함수에서 사용할 수 없다."
+      ],
+      "answer": 1,
+      "explanation": "별표(*) 와일드카드는 0개 이상의 임의 문자를 의미합니다. 'OLED*'는 'OLED'로 시작하는 'OLED-TV', 'OLED55' 등 뒤에 어떤 글자가 몇 개 오든 모두 매칭됩니다. 반면 '?'는 정확히 1글자만 대체합니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "단일조건합계", "cell": "G2", "formula": "=DSUM(A1:D4,4,F1:F2)" },
+    { "sheet": "AND조건평균", "cell": "H2", "formula": "=DAVERAGE(A1:D4,3,F1:G2)" },
+    { "sheet": "OR조건카운트", "cell": "H2", "formula": "=DCOUNT(A1:D4,3,F1:G3)" },
+    { "sheet": "와일드카드최대", "cell": "G2", "formula": "=DMAX(A1:D4,3,F1:F2)" }
+  ]
+}

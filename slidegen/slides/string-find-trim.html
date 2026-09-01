@@ -1,0 +1,44 @@
+<div class="s-title">FIND · SEARCH · TRIM — 위치 찾기와 공백 지우기</div>
+<div class="s-subtitle">FIND·SEARCH는 "몇 번째에 있나?"를 찾고, TRIM은 불필요한 공백을 지웁니다</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:stretch">
+    <div class="card grow" style="gap:10px">
+      <div class="h" style="color:var(--amber-ink);text-align:center">FIND vs SEARCH</div>
+      <div class="row">
+        <div class="card green grow" style="gap:4px">
+          <div class="b" style="color:var(--green-ink);font-size:17px">FIND</div>
+          <div style="color:var(--ink-dim);font-size:14px">대소문자 구분함</div>
+          <div class="code" style="font-size:14px">=FIND("j","John_j")</div>
+          <div class="b" style="color:var(--green-ink)">→ 6 (소문자 j)</div>
+        </div>
+        <div class="card blue grow" style="gap:4px">
+          <div class="b" style="color:var(--blue-ink);font-size:17px">SEARCH</div>
+          <div style="color:var(--ink-dim);font-size:14px">대소문자 구분 안 함</div>
+          <div class="code" style="font-size:14px">=SEARCH("J","John_j")</div>
+          <div class="b" style="color:var(--blue-ink)">→ 1 (첫 J)</div>
+        </div>
+      </div>
+      <div class="row" style="justify-content:center;gap:6px">
+        <div class="branch"><div class="box blue" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">J</div><span style="font-size:12px;color:var(--ink-dim)">1</span></div>
+        <div class="branch"><div class="box" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">o</div><span style="font-size:12px;color:var(--ink-dim)">2</span></div>
+        <div class="branch"><div class="box" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">h</div><span style="font-size:12px;color:var(--ink-dim)">3</span></div>
+        <div class="branch"><div class="box" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">n</div><span style="font-size:12px;color:var(--ink-dim)">4</span></div>
+        <div class="branch"><div class="box" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">_</div><span style="font-size:12px;color:var(--ink-dim)">5</span></div>
+        <div class="branch"><div class="box green" style="width:44px;height:44px;font-size:18px;font-weight:800;padding:0">j</div><span style="font-size:12px;color:var(--ink-dim)">6</span></div>
+      </div>
+    </div>
+
+    <div class="card grow" style="border-color:#a855f7;gap:8px">
+      <div class="h" style="color:#d8b4fe;text-align:center">TRIM — 공백 정리</div>
+      <div style="font-size:14px;color:var(--ink-dim)">입력값 (양옆·중간에 공백 많음)</div>
+      <div class="code red" style="color:var(--red-ink)">·· 컴활 ·· 2급 ··</div>
+      <div class="code" style="font-size:16px">=TRIM(A2)</div>
+      <div class="arrow-down" style="color:#a855f7">↓</div>
+      <div class="result-box">"컴활 2급"</div>
+      <div style="font-size:13px;color:var(--ink-dim);text-align:center">앞뒤 공백 제거 · 단어 사이는 1칸만 남김</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=FIND / SEARCH(찾을 글자, 텍스트) → 위치 번호 &nbsp;·&nbsp; =TRIM(텍스트)<br><span class="tip">⚠ 자주 실수:</span> 찾는 글자가 없으면 <span class="b">#VALUE! 오류</span> · FIND는 대소문자를 구분하니 주의</div>

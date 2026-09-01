@@ -1,0 +1,14 @@
+{
+  "name": "slidegen",
+  "version": "1.0.0",
+  "description": "수업자료 슬라이드 이미지 생성기 (안 깨짐 보장, HTML→PNG)",
+  "private": true,
+  "scripts": {
+    "render": "node render.js",
+    "check": "node render.js --check"
+  },
+  "dependencies": {
+    "puppeteer": "^25.3.0"
+  }
+}
+

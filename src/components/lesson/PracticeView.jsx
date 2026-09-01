@@ -34,9 +34,9 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
 
       <div style={{ background: "#1e293b", borderRadius: 14, padding: 24, marginBottom: 16 }}>
         <div style={{ fontWeight: 600, marginBottom: 12 }}>① 실습 파일 다운로드</div>
-        {["표1: 합계/평균 (상대 참조)", "표2: 비율 적용 (절대 참조)", "표3: 환율 변환 (절대 참조)"].map((t, i) => (
+        {[...new Set(lesson.practiceAnswers.map((a) => a.sheet))].map((sheet, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, color: "#94a3b8", fontSize: 14, marginBottom: 6 }}>
-            <span style={{ color: "#22c55e" }}>✓</span>{t}
+            <span style={{ color: "#22c55e" }}>✓</span>{sheet}
           </div>
         ))}
         <button

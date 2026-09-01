@@ -1,0 +1,28 @@
+<div class="s-title">상대 참조 — 아래로 채우면 행 번호가 1씩 커진다</div>
+<div class="s-subtitle">D2에 수식을 한 번 쓰고, 셀 오른쪽 아래 점을 아래로 드래그하면 자동으로 채워집니다</div>
+
+<div class="s-body">
+  <div class="row" style="justify-content:center;font-size:15px;color:var(--ink-dim);gap:20px">
+    <span><span class="b" style="color:var(--green-ink)">■</span> 처음 입력한 수식(원본)</span>
+    <span><span class="b" style="color:var(--amber-ink)">■</span> 드래그로 자동 채워진 결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">이름</td><td class="cell txt">영어</td><td class="cell txt">수학</td><td class="cell txt">합계</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt">김철수</td><td class="cell">85</td><td class="cell">90</td><td class="cell txt find">=B2+C2</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">이영희</td><td class="cell">72</td><td class="cell">68</td><td class="cell txt result">=B3+C3</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt">박민준</td><td class="cell">91</td><td class="cell">78</td><td class="cell txt result">=B4+C4</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box amber" style="flex-direction:column;gap:6px"><span class="b" style="color:var(--amber-ink);font-size:20px">행 번호만 바뀜</span><span>2 → 3 → 4</span></div>
+      <div class="box blue" style="flex-direction:column;gap:6px"><span class="b" style="color:var(--blue-ink);font-size:20px">열 문자는 그대로</span><span>B, C 는 고정</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D2</div><div class="fx"><span class="fx-icon">fx</span>=B2+C2 &nbsp;→ 아래로 드래그 → =B3+C3 → =B4+C4</div></div>
+</div>
+
+<div class="bottom-bar">상대 참조: 복사하는 방향으로 셀 주소가 따라 움직입니다<br><span class="tip">⚠ 자주 실수:</span> 특정 셀을 <span class="b">안 움직이게</span> 하려면 F4를 눌러 $ 를 붙여야 함(절대 참조)</div>

@@ -1,0 +1,39 @@
+<div class="s-title">텍스트 이어 붙이기 — &amp; 연산자 · CONCAT</div>
+<div class="s-subtitle">& 기호로 글자·셀·함수 결과를 이어 붙입니다. 직접 쓰는 글자는 반드시 큰따옴표(" ")로 감쌉니다</div>
+
+<div class="s-body">
+  <div class="col" style="gap:12px">
+    <div>
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">예제 1 — 기본 연결</div>
+      <div class="row" style="align-items:center">
+        <div class="code grow" style="text-align:left">="컴퓨터활용능력" &amp; "-" &amp; "2급"</div>
+        <span style="color:var(--ink-dim);font-size:22px">→</span>
+        <div class="result-box" style="flex:0 0 auto;font-size:18px">"컴퓨터활용능력-2급"</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">예제 2 — 함수 결과와 연결</div>
+      <div class="row" style="align-items:center">
+        <div class="code grow" style="text-align:left">=UPPER("excel") &amp; "-" &amp; "2급"</div>
+        <span style="color:var(--ink-dim);font-size:22px">→</span>
+        <div class="result-box" style="flex:0 0 auto;font-size:18px">"EXCEL-2급"</div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:6px">예제 3 — 괄호·공백까지 조합</div>
+      <div class="row" style="align-items:center">
+        <div class="code grow" style="text-align:left">="(" &amp; LOWER("컴활") &amp; ") " &amp; "2급"</div>
+        <span style="color:var(--ink-dim);font-size:22px">→</span>
+        <div class="result-box" style="flex:0 0 auto;font-size:18px">"(컴활) 2급"</div>
+      </div>
+    </div>
+
+    <div class="card blue" style="margin-top:4px">
+      <div class="b" style="color:var(--blue-ink);text-align:center">CONCAT — 셀 범위를 한 번에 연결</div>
+      <div style="color:var(--blue-ink);font-size:15px;text-align:center">=CONCAT(A1:A3) → A1, A2, A3 내용을 차례로 이어 붙임</div>
+      <div style="color:var(--ink-dim);font-size:15px;text-align:center">& = 하나씩 &nbsp;/&nbsp; CONCAT = 범위 통째로</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">="글자" &amp; 셀 &amp; 함수결과 &nbsp;·&nbsp; =CONCAT(범위)<br><span class="tip">⚠ 자주 실수:</span> 직접 쓰는 글자·기호(공백, "-")는 <span class="b">따옴표</span>로 감싸야 함 — 안 감싸면 오류</div>

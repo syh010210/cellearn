@@ -1,0 +1,30 @@
+<div class="s-title">반올림 함수 — ROUND · ROUNDUP · ROUNDDOWN</div>
+<div class="s-subtitle">두 번째 값 K로 "어느 자리까지 남길지" 정합니다. 양수는 소수 자리, 음수는 정수 자리</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:0 0 250px">
+      <table class="tbl">
+        <thead><tr><th>K값</th><th>남기는 자리</th></tr></thead>
+        <tbody>
+          <tr><td class="b">K=2</td><td>소수 둘째 자리</td></tr>
+          <tr><td class="b">K=1</td><td>소수 첫째 자리</td></tr>
+          <tr><td class="b">K=0</td><td>정수(1의 자리)</td></tr>
+          <tr><td class="amber b" style="color:var(--amber-ink)">K=-1</td><td class="amber b" style="color:var(--amber-ink)">십의 자리</td></tr>
+          <tr><td class="amber b" style="color:var(--amber-ink)">K=-2</td><td class="amber b" style="color:var(--amber-ink)">백의 자리</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grow col" style="gap:10px">
+      <div class="code">예시: 3.987 을 K=2 로 처리</div>
+      <div class="box blue" style="justify-content:space-between;gap:12px"><span><b class="b" style="color:var(--blue-ink)">ROUND</b> 반올림 (뒤가 8 → 올림)</span><span class="result-box" style="font-size:20px;padding:6px 14px">3.99</span></div>
+      <div class="box green" style="justify-content:space-between;gap:12px"><span><b class="b" style="color:var(--green-ink)">ROUNDUP</b> 무조건 올림</span><span class="result-box" style="font-size:20px;padding:6px 14px">3.99</span></div>
+      <div class="box red" style="justify-content:space-between;gap:12px"><span><b class="b" style="color:var(--red-ink)">ROUNDDOWN</b> 무조건 내림</span><span class="b" style="color:var(--red-ink);font-size:20px">3.98</span></div>
+    </div>
+  </div>
+
+  <div class="arg-note">=ROUND( <b>①</b> 숫자 , <b>②</b> K = 남길 자리 )</div>
+</div>
+
+<div class="bottom-bar">=ROUND / ROUNDUP / ROUNDDOWN(숫자, K)<br><span class="tip">⚠ 자주 실수:</span> K는 자릿수 — <span class="b">K=0이면 정수</span>, <span class="b">K 음수면 십·백 자리</span>에서 반올림(1250 → K=-2 → 1300)</div>

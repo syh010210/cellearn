@@ -1,0 +1,25 @@
+<div class="s-title">COUNT · COUNTA · COUNTBLANK — 세는 기준이 다르다</div>
+<div class="s-subtitle">같은 범위 B2:B4 라도 "무엇을 셀지"에 따라 결과가 달라집니다</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">점수</td><td class="cell txt">종류</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell range">90</td><td class="cell txt">숫자</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt range">결시</td><td class="cell txt">글자</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell range"></td><td class="cell txt">빈칸</td></tr>
+    </table>
+
+    <div class="grow" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+      <div class="box blue" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--blue-ink);font-size:17px">COUNT</span><span style="font-size:14px;color:var(--ink-dim)">숫자만 셈</span><span style="font-size:13px">90 ✓ / 결시 ✗ / 빈칸 ✗</span><span class="b" style="color:var(--blue-ink);font-size:24px">= 1</span></div>
+      <div class="box green" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--green-ink);font-size:17px">COUNTA</span><span style="font-size:14px;color:var(--ink-dim)">값 있으면 다 셈</span><span style="font-size:13px">90 ✓ / 결시 ✓ / 빈칸 ✗</span><span class="b" style="color:var(--green-ink);font-size:24px">= 2</span></div>
+      <div class="box" style="flex-direction:column;gap:4px"><span class="b" style="font-size:17px">COUNTBLANK</span><span style="font-size:14px;color:var(--ink-dim)">빈칸만 셈</span><span style="font-size:13px">90 ✗ / 결시 ✗ / 빈칸 ✓</span><span class="b" style="font-size:24px">= 1</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D2</div><div class="fx"><span class="fx-icon">fx</span>=COUNT(B2:B4)</div></div>
+  <div class="arg-note"><b>B2:B4</b> = 셀 범위(드래그해서 선택한 영역) 하나만 넣으면 됩니다</div>
+</div>
+
+<div class="bottom-bar">COUNT 숫자만 / COUNTA 값 있으면 다 / COUNTBLANK 빈칸만<br><span class="tip">⚠ 자주 실수:</span> "결시" 같은 <span class="b">글자는 COUNT로 안 세짐</span> — 사람 수 세려면 COUNTA 사용</div>

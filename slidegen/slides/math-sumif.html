@@ -1,0 +1,30 @@
+<div class="s-title">SUMIF — 조건 맞는 것만 골라서 더하기</div>
+<div class="s-subtitle">SUM은 전부 더하지만, SUMIF는 "~인 것만" 골라 더합니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">조건에 맞는 행 (분류=채소)</span>
+    <span class="k blue">실제로 더할 열</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">작물</td><td class="cell txt">분류</td><td class="cell txt">수확량</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">상추</td><td class="cell txt find">채소</td><td class="cell range">35</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">사과</td><td class="cell txt">과일</td><td class="cell">12</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt find">깻잎</td><td class="cell txt find">채소</td><td class="cell range">20</td></tr>
+      <tr><td class="rowhead">5</td><td class="cell txt">딸기</td><td class="cell txt">과일</td><td class="cell">18</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box blue" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--blue-ink)">SUM — 전체 합계</span><span style="font-size:15px">35+12+20+18</span><span class="b" style="color:var(--blue-ink);font-size:24px">= 85</span></div>
+      <div class="box green" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--green-ink)">SUMIF — 채소만</span><span style="font-size:15px">35 + 20</span><span class="b" style="color:var(--green-ink);font-size:24px">= 55</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D2</div><div class="fx"><span class="fx-icon">fx</span>=SUMIF(B2:B5, "채소", C2:C5)</div></div>
+  <div class="arg-note"><b>①</b> 조건 볼 범위(분류) &nbsp;&nbsp; <b>②</b> 조건("채소") &nbsp;&nbsp; <b>③</b> 실제로 더할 범위(수확량)</div>
+</div>
+
+<div class="bottom-bar">=SUMIF(조건 범위, 조건, 더할 범위)<br><span class="tip">⚠ 자주 실수:</span> 아래로 채울 때 범위가 밀리지 않도록 <span class="b">F4로 $ 절대참조</span>를 걸어두기</div>

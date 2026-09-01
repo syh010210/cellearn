@@ -1,0 +1,30 @@
+<div class="s-title">INDEX + MATCH — VLOOKUP이 못하는 "왼쪽으로 찾기"</div>
+<div class="s-subtitle">VLOOKUP은 항상 첫 열에서만 찾습니다. 오른쪽 열로 찾아 왼쪽 값을 가져오려면 이 조합을 씁니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">찾는 값 (C열 = 도서명)</span>
+    <span class="k amber">가져올 값 (A열 = 도서코드)</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">도서코드</td><td class="cell txt">출판사</td><td class="cell txt">도서명</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt result">A-101</td><td class="cell txt">한빛</td><td class="cell txt find">파이썬기초</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">B-102</td><td class="cell txt">위키</td><td class="cell txt">자바스크립트</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:10px">
+      <div class="box red" style="font-size:15px"><span style="color:var(--red-ink)">도서명(C열)으로 도서코드(A열)를 찾고 싶다 → VLOOKUP 불가 (찾는 열이 더 오른쪽)</span></div>
+      <div class="box" style="flex-direction:column;gap:4px;border-color:#a855f7"><span class="b" style="color:#d8b4fe">① MATCH</span><span style="font-size:15px">"파이썬기초"가 C열에서 몇 번째? → <b>1</b></span></div>
+      <div class="box green" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--green-ink)">② INDEX</span><span style="font-size:15px">A열의 1번째 값 → <b>"A-101"</b></span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">E2</div><div class="fx"><span class="fx-icon">fx</span>=INDEX(A2:A3, MATCH("파이썬기초", C2:C3, 0))</div></div>
+  <div class="arg-note">INDEX(<b>가져올 열</b>, MATCH(<b>찾을 값</b>, <b>찾을 열</b>, 0))</div>
+  <div class="result-box">결과 &nbsp;→&nbsp; "A-101"</div>
+</div>
+
+<div class="bottom-bar">찾는 열이 결과 열보다 오른쪽에 있어도 자유롭게 검색 가능<br><span class="tip">⚠ 자주 실수:</span> INDEX의 첫 범위는 <span class="b">가져올(결과) 열</span>, MATCH의 범위는 <span class="b">찾을 열</span> — 헷갈리지 말 것</div>

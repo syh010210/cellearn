@@ -1,0 +1,23 @@
+<div class="s-title">엑셀 화면 구조 — 열 · 행 · 셀</div>
+<div class="s-subtitle">셀 주소는 항상 "열(세로 알파벳) + 행(가로 숫자)" 순서로 읽습니다</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell">A1</td><td class="cell">B1</td><td class="cell">C1</td><td class="cell">D1</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell">A2</td><td class="cell">B2</td><td class="cell">C2</td><td class="cell">D2</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell">A3</td><td class="cell">B3</td><td class="cell result">C3</td><td class="cell">D3</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="card blue"><div class="h">열 (Column) — 세로줄</div><div>맨 위 알파벳 A, B, C, D … 로 구분</div></div>
+      <div class="card" style="border-color:#a855f7"><div class="h" style="color:#d8b4fe">행 (Row) — 가로줄</div><div>맨 왼쪽 숫자 1, 2, 3 … 으로 구분</div></div>
+      <div class="card amber"><div class="h">셀 (Cell) — 한 칸</div><div>열과 행이 만나는 자리. 값·수식을 입력하는 곳</div></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">C3</div><div class="fx"><span class="fx-icon">fx</span>C열과 3행이 만나는 칸 → 이름은 "C3"</div></div>
+</div>
+
+<div class="bottom-bar">셀 주소 = 열 알파벳 + 행 숫자 &nbsp;(예: C3, B2, D1)<br><span class="tip">⚠ 자주 실수:</span> 항상 <span class="b">열이 먼저</span> — "C3"은 맞고 "3C"는 틀림</div>

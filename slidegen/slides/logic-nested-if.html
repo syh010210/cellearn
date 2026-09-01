@@ -1,0 +1,49 @@
+<div class="s-title">중첩 IF — 결과가 3개 이상일 때 단계로 나누기</div>
+<div class="s-subtitle">IF 안에 또 IF를 넣어 "A등급 / B등급 / C등급"처럼 여러 단계로 나눕니다</div>
+
+<div class="s-body">
+  <div class="box blue" style="flex-direction:column;gap:8px;padding:18px">
+    <div class="code" style="border:0;background:none;padding:0;font-size:21px">=IF( B2&gt;=90 , "A등급" , IF( B2&gt;=80 , "B등급" , "C등급" ) )</div>
+    <div style="color:var(--ink-dim);font-size:16px">90 이상 → A &nbsp;/&nbsp; 80~89 → B &nbsp;/&nbsp; 80 미만 → C</div>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <div class="card" style="flex:0 0 32%">
+      <div class="steps">
+        <div class="item"><span class="num">①</span><span>높은 기준부터 순서대로 쓴다</span></div>
+        <div class="item"><span class="num">②</span><span>앞 조건 통과하면 뒤는 자동 제외</span></div>
+        <div class="item"><span class="num">③</span><span>닫는 괄호 수 = IF 개수</span></div>
+      </div>
+    </div>
+
+    <div class="grow col" style="align-items:center;gap:12px">
+      <div class="box blue" style="max-width:70%">1단계: <span class="b">B2 ≥ 90 ?</span></div>
+      <div class="row" style="width:100%;justify-content:center;gap:60px">
+        <div class="branch">
+          <div class="arrow-lbl" style="color:var(--green-ink)">참</div>
+          <div class="arrow-down" style="color:var(--green)">↓</div>
+          <div class="result-box" style="font-size:19px;padding:8px 16px">"A등급"</div>
+        </div>
+        <div class="branch">
+          <div class="arrow-lbl" style="color:var(--blue-ink)">거짓</div>
+          <div class="arrow-down" style="color:var(--blue)">↓</div>
+          <div class="box blue">2단계: <span class="b">B2 ≥ 80 ?</span></div>
+        </div>
+      </div>
+      <div class="row" style="justify-content:flex-end;width:100%;gap:24px;padding-right:4%">
+        <div class="branch">
+          <div class="arrow-lbl" style="color:var(--green-ink)">참</div>
+          <div class="arrow-down" style="color:var(--green)">↓</div>
+          <div class="result-box" style="font-size:19px;padding:8px 16px">"B등급"</div>
+        </div>
+        <div class="branch">
+          <div class="arrow-lbl" style="color:var(--red-ink)">거짓</div>
+          <div class="arrow-down" style="color:var(--red)">↓</div>
+          <div class="box red"><span class="b" style="color:var(--red-ink)">"C등급"</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">IF가 2개면 마지막에 괄호 <span class="b">2개 ))</span> · IF가 N개면 괄호도 N개<br><span class="tip">⚠ 자주 실수:</span> <span class="b">기준을 큰 값부터</span> 써야 함 — 낮은 기준을 먼저 쓰면 모두 거기서 걸려버림</div>

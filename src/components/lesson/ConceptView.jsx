@@ -1,21 +1,114 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MiniExcel from "./MiniExcel";
+import { DIAGRAM_REGISTRY } from "../diagrams/registry.js";
+import { generateExcel } from "../../utils/excelGenerator";
+
+function bold(str) {
+  return str.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+function ListItem({ item }) {
+  const text = typeof item === "string" ? item : item.text;
+  return (
+    <li style={{ marginBottom: 6 }}>
+      <span dangerouslySetInnerHTML={{ __html: bold(text) }} />
+      {item.subItems && (
+        <ul style={{ marginTop: 4, paddingLeft: 18, listStyle: "disc" }}>
+          {item.subItems.map((sub, k) => (
+            <li key={k} style={{ color: "#94a3b8", marginBottom: 2 }}
+                dangerouslySetInnerHTML={{ __html: bold(sub) }} />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+}
+
+function renderBlock(block, i, lesson) {
+  if (block.type === "download") {
+    return (
+      <button
+        key={i}
+        onClick={() => generateExcel(lesson)}
+        style={{ display: "block", width: "100%", padding: 14, borderRadius: 10, border: "none", background: "#059669", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", margin: "6px 0 16px" }}
+      >
+        📥 {block.label || "실습 파일 내려받기"}
+      </button>
+    );
+  }
+  if (block.type === "text") {
+    return (
+      <p key={i} style={{ color: "#e2e8f0", lineHeight: 1.8, margin: "0 0 12px", whiteSpace: "pre-line" }}
+         dangerouslySetInnerHTML={{ __html: bold(block.text) }} />
+    );
+  }
+  if (block.type === "image") {
+    const DiagramComponent = DIAGRAM_REGISTRY[block.url];
+    if (DiagramComponent) return <DiagramComponent key={i} />;
+    return (
+      <img key={i} src={block.url} alt={block.alt || ""}
+           style={{ maxWidth: "100%", borderRadius: 8, margin: "10px 0 14px", display: "block" }} />
+    );
+  }
+  if (block.type === "heading") {
+    return (
+      <div key={i} style={{ margin: "26px 0 12px", lineHeight: 2.15 }}>
+        <span style={{
+          fontSize: 17,
+          fontWeight: 800,
+          color: "#ffffff",
+          background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)",
+          padding: "5px 13px",
+          borderRadius: 7,
+          WebkitBoxDecorationBreak: "clone",
+          boxDecorationBreak: "clone",
+          boxShadow: "0 2px 10px rgba(79, 70, 229, 0.35)",
+        }}>
+          {block.text}
+        </span>
+      </div>
+    );
+  }
+  if (block.type === "bullets") {
+    return (
+      <ul key={i} style={{ color: "#e2e8f0", lineHeight: 1.7, margin: "4px 0 12px", paddingLeft: 20, listStyle: "disc" }}>
+        {block.items.map((item, j) => <ListItem key={j} item={item} />)}
+      </ul>
+    );
+  }
+  if (block.type === "numbered") {
+    return (
+      <ol key={i} style={{ color: "#e2e8f0", lineHeight: 1.7, margin: "4px 0 12px", paddingLeft: 20 }}>
+        {block.items.map((item, j) => <ListItem key={j} item={item} />)}
+      </ol>
+    );
+  }
+  return null;
+}
 
 export default function ConceptView({ lesson, onNext }) {
   const [idx, setIdx] = useState(0);
   const c = lesson.concepts[idx];
 
+  useEffect(() => {
+    document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [idx]);
+
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto" }}>
-      <div style={{ color: "#60a5fa", fontSize: 13, marginBottom: 4 }}>
+    <div style={{ maxWidth: 1040, margin: "0 auto" }}>
+      <div style={{ color: "#60a5fa", fontSize: 13, marginBottom: 16 }}>
         📖 개념 학습 · {idx + 1}/{lesson.concepts.length}
       </div>
-      <h2 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 20px" }}>{lesson.title}</h2>
 
       <div style={{ background: "#1e293b", borderRadius: 14, padding: 24, marginBottom: 16 }}>
         <h3 style={{ color: "#60a5fa", fontSize: 16, marginBottom: 12 }}>{c.heading}</h3>
-        <p style={{ color: "#e2e8f0", lineHeight: 1.8, whiteSpace: "pre-line", margin: 0 }}>{c.content}</p>
-        {c.practice && <MiniExcel key={idx} practice={c.practice} />}
+        {c.contentBlocks
+          ? c.contentBlocks.map((b, i) => renderBlock(b, i, lesson))
+          : <p style={{ color: "#e2e8f0", lineHeight: 1.8, whiteSpace: "pre-line", margin: 0 }}>{c.content}</p>
+        }
+        {c.practices
+          ? c.practices.map((p, pi) => <MiniExcel key={`${idx}-p${pi}`} practice={p} />)
+          : c.practice && <MiniExcel key={idx} practice={c.practice} />}
       </div>
 
       {/* 진행 점 */}

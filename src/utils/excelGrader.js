@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import XLSX from "xlsx-js-style";
 
 export function gradeExcel(file, practiceAnswers) {
   return new Promise((resolve, reject) => {

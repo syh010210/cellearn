@@ -1,0 +1,434 @@
+{
+  "id": 1,
+  "title": "상대 참조와 절대 참조",
+  "shortTitle": "상대/절대 참조",
+  "concepts": [
+    {
+      "heading": "엑셀 기본 구조",
+      "content": "엑셀은 열(A, B, C…), 행(1, 2, 3…), 셀(열+행 교차점)로 구성됩니다.\n셀 주소는 열+행 순서로 표현합니다. 예) A1, B3, C9",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "엑셀은 열과 행으로 이루어진 셀들의 모임이며, 각 셀은 고유한 주소를 가지고 있어 이를 이용해 데이터를 관리하고 계산합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/excel-basic.svg",
+          "alt": "엑셀 기본 화면 구성"
+        },
+        {
+          "type": "heading",
+          "text": "셀에 데이터 입력하기"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "입력할 셀을 **클릭**해 선택한 뒤, 키보드로 값을 바로 입력합니다.",
+            "숫자·문자(텍스트)·날짜 등을 그대로 입력할 수 있습니다. 예) **85**, **홍길동**, **2026-01-01**",
+            "입력을 마치려면 **Enter** 키를 누릅니다. (아래 셀로 이동)",
+            "입력을 취소하려면 **Esc** 키를 누릅니다.",
+            "이미 입력된 값을 고치려면 셀을 **더블클릭**하거나 **F2** 키를 눌러 수정합니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "수식으로 계산하기"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "결과를 넣을 셀을 선택하고 맨 앞에 **=** 를 먼저 입력합니다. (=로 시작하면 엑셀이 수식으로 인식합니다)",
+            "= 뒤에 값을 직접 쓰는 대신 **셀 주소**를 넣으면, 그 셀에 든 값으로 계산합니다. 예) **=A1+B1**",
+            "셀 주소는 키보드로 직접 타이핑해도 되고, 해당 셀을 **마우스로 클릭**하면 주소가 자동으로 들어갑니다.",
+            "**+ − * /** 등 연산자로 셀끼리 계산합니다. 예) **=A1*B1**, **=(A1+B1)/2**",
+            "**Enter** 를 누르면 수식이 계산되어 **결과값**이 셀에 표시됩니다. (셀을 다시 클릭하면 입력한 수식을 확인할 수 있습니다)"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "C1 셀에 A1과 B1을 더하는 수식을 입력해보세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "10", "editable": false },
+            { "val": "20", "editable": false },
+            { "val": "", "editable": true, "answer": "=A1+B1", "result": 30 }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "참조의 기본 원리와 $의 역할",
+      "content": "셀 주소를 수식에 쓰면 자동 채우기(복사) 시 주소가 어떻게 되는지에 따라 상대·절대 참조로 나뉩니다.\n그 핵심은 $ 기호 하나로 결정됩니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "셀 주소를 수식에 넣고 자동 채우기(복사)하면, 그 주소가 **따라 움직이느냐 고정되느냐**에 따라 참조 방식이 나뉩니다. 이 전체를 결정하는 것이 바로 **$** 기호입니다."
+        },
+        {
+          "type": "heading",
+          "text": "$의 역할 — 셀 주소 고정"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "셀 주소에 붙는 **$**는 자동 채우기를 해도 그 부분이 바뀌지 않도록 **고정**하는 기호입니다.",
+            "**$**는 바로 뒤에 오는 열 문자 또는 행 번호를 고정합니다. 예) **$B**8 → B열 고정, B**$8** → 8행 고정",
+            "$가 없는 부분은 복사 방향을 따라 자동으로 변합니다.",
+            "수식 입력 중 **F4** 키를 누르면 커서가 있는 셀 주소에 $가 자동으로 붙습니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "이동 방향에 따른 자동 채우기 (상대 참조)"
+        },
+        {
+          "type": "text",
+          "text": "**상대 참조**는 $가 없는 일반 주소입니다. 자동 채우기하는 **복사 방향을 따라 셀 주소가 그대로 따라 움직입니다.**"
+        },
+        {
+          "type": "heading",
+          "text": "아래로 채우기 — 행 번호 증가"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "셀 오른쪽 아래 모서리의 검은 십자(+) 핸들을 **아래로** 드래그합니다.",
+            "열은 그대로, **행 번호가 1씩 증가**합니다.",
+            "예) =B3+C3 → =B4+C4 → =B5+C5"
+          ]
+        },
+        {
+          "type": "image",
+          "url": "/anim/relative-fill-down",
+          "alt": "아래로 자동 채우기 시 행 번호 증가 애니메이션"
+        },
+        {
+          "type": "heading",
+          "text": "오른쪽으로 채우기 — 열 문자 증가"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "핸들을 **오른쪽으로** 드래그합니다.",
+            "행은 그대로, **열 문자가 하나씩 증가**합니다.",
+            "예) =B3+B4 → =C3+C4 → =D3+D4"
+          ]
+        },
+        {
+          "type": "image",
+          "url": "/anim/relative-fill-right",
+          "alt": "오른쪽으로 자동 채우기 시 열 문자 이동 애니메이션"
+        }
+      ],
+      "practices": [
+        {
+          "instruction": "① 아래로 자동 채우기 — D2에 영어+수학 합계 수식을 입력한 뒤, 자동 채우기로 D3·D4까지 완성하세요.",
+          "cols": ["A", "B", "C", "D"],
+          "rows": [
+            [
+              { "val": "이름", "editable": false },
+              { "val": "영어", "editable": false },
+              { "val": "수학", "editable": false },
+              { "val": "합계", "editable": false }
+            ],
+            [
+              { "val": "김철수", "editable": false },
+              { "val": "85", "editable": false },
+              { "val": "90", "editable": false },
+              { "val": "", "editable": true, "answer": "=B2+C2", "result": 175 }
+            ],
+            [
+              { "val": "이영희", "editable": false },
+              { "val": "72", "editable": false },
+              { "val": "68", "editable": false },
+              { "val": "", "editable": true, "answer": "=B3+C3", "result": 140 }
+            ],
+            [
+              { "val": "박민준", "editable": false },
+              { "val": "91", "editable": false },
+              { "val": "78", "editable": false },
+              { "val": "", "editable": true, "answer": "=B4+C4", "result": 169 }
+            ]
+          ]
+        },
+        {
+          "instruction": "② 오른쪽으로 자동 채우기 — B4에 상반기+하반기 합계 수식을 입력한 뒤, 자동 채우기로 C4·D4까지 완성하세요.",
+          "cols": ["A", "B", "C", "D"],
+          "rows": [
+            [
+              { "val": "항목", "editable": false },
+              { "val": "1분기", "editable": false },
+              { "val": "2분기", "editable": false },
+              { "val": "3분기", "editable": false }
+            ],
+            [
+              { "val": "상반기", "editable": false },
+              { "val": "10", "editable": false },
+              { "val": "20", "editable": false },
+              { "val": "30", "editable": false }
+            ],
+            [
+              { "val": "하반기", "editable": false },
+              { "val": "40", "editable": false },
+              { "val": "50", "editable": false },
+              { "val": "60", "editable": false }
+            ],
+            [
+              { "val": "합계", "editable": false },
+              { "val": "", "editable": true, "answer": "=B2+B3", "result": 50 },
+              { "val": "", "editable": true, "answer": "=C2+C3", "result": 70 },
+              { "val": "", "editable": true, "answer": "=D2+D3", "result": 90 }
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "heading": "절대 참조 ($B$5) — 셀 완전 고정",
+      "content": "열과 행 모두에 $를 붙인 $B$5 형태를 절대 참조라고 합니다.\n어느 방향으로 채워도 항상 같은 셀만 참조합니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "열과 행 **모두**에 $를 붙인 **$B$5** 형태를 **절대 참조**라고 합니다. 어느 방향으로 자동 채우기해도 항상 **같은 셀**만 참조합니다."
+        },
+        {
+          "type": "heading",
+          "text": "절대 참조가 필요한 순간"
+        },
+        {
+          "type": "text",
+          "text": "여러 셀에 **똑같이 적용되는 기준값 하나**(비율·환율·단가 등)를 곱하거나 나눌 때 씁니다. 이 기준 셀이 자동 채우기로 밀려버리면 계산이 전부 틀어지므로 $로 고정합니다."
+        },
+        {
+          "type": "numbered",
+          "items": [
+            { "text": "**비율 고정**: 각 사람 점수 × 공통 비율($B$5) — 비율 셀이 움직이면 안 되므로 고정." },
+            { "text": "**환율 고정**: 각 지출액 × 공통 환율($B$2) — 환율 셀 고정." },
+            { "text": "**단가·기준값 고정**: 각 수량 × 공통 단가로 금액 계산 시 단가 셀 고정." }
+          ]
+        },
+        {
+          "type": "image",
+          "url": "/anim/absolute-fill-down",
+          "alt": "절대 참조로 기준값을 고정한 채 아래로 채우는 애니메이션"
+        },
+        {
+          "type": "heading",
+          "text": "입력 방법"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "수식에서 고정할 셀 주소에 커서를 둔 뒤 **F4**를 **한 번** 누르면 $B$5이 됩니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "D2에 '실기 × 실기반영비율(B5) + 봉사 × 봉사반영비율(C5)' 수식을 입력한 뒤, 자동 채우기로 D3·D4까지 완성하세요. 이때 비율 칸(B5·C5)이 밀리지 않도록 고정해야 합니다.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "이름", "editable": false },
+            { "val": "실기", "editable": false },
+            { "val": "봉사", "editable": false },
+            { "val": "점수", "editable": false }
+          ],
+          [
+            { "val": "김철수", "editable": false },
+            { "val": "80", "editable": false },
+            { "val": "70", "editable": false },
+            { "val": "", "editable": true, "answer": "=B2*$B$5+C2*$C$5", "result": 76 }
+          ],
+          [
+            { "val": "이영희", "editable": false },
+            { "val": "90", "editable": false },
+            { "val": "60", "editable": false },
+            { "val": "", "editable": true, "answer": "=B3*$B$5+C3*$C$5", "result": 78 }
+          ],
+          [
+            { "val": "박민준", "editable": false },
+            { "val": "70", "editable": false },
+            { "val": "95", "editable": false },
+            { "val": "", "editable": true, "answer": "=B4*$B$5+C4*$C$5", "result": 80 }
+          ],
+          [
+            { "val": "비율", "editable": false },
+            { "val": "0.6", "editable": false },
+            { "val": "0.4", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "혼합 참조 (행 또는 열만 고정)",
+      "content": "행과 열 중 한쪽에만 $를 붙인 B$8(행 고정) 또는 $B8(열 고정) 형태를 혼합 참조라고 합니다.\n한 번의 자동 채우기로 표 전체를 채울 때 씁니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "행과 열 중 **한쪽에만** $를 붙인 **B$8**(행 고정) 또는 **$B8**(열 고정) 형태를 **혼합 참조**라고 합니다. 한 번의 자동 채우기로 표 전체를 채울 때 씁니다."
+        },
+        {
+          "type": "heading",
+          "text": "F4 키로 고정 방식 바꾸기"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**1회** → $B$8 : 행·열 모두 고정 (절대 참조)",
+            "**2회** → B$8 : **행만** 고정",
+            "**3회** → $B8 : **열만** 고정",
+            "**4회** → B8 : 고정 해제 (상대 참조)"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "구구단으로 보는 혼합 참조"
+        },
+        {
+          "type": "text",
+          "text": "세로줄 머리(곱하는 수)와 가로줄 머리(단)를 각각 채워도 맞도록, **바뀌어야 할 방향은 열어두고 고정할 방향에만 $**를 붙입니다."
+        },
+        {
+          "type": "numbered",
+          "items": [
+            {
+              "text": "**단 머리 (예: B$1)** — 오른쪽으로 갈 때 열(B→C→D)은 바뀌고, 아래로 갈 때 행 번호 1은 고정",
+              "subItems": ["**행만** 고정 → B$1"]
+            },
+            {
+              "text": "**곱하는 수 (예: $A2)** — 아래로 갈 때 행(2→3→4)은 바뀌고, 오른쪽으로 갈 때 열 A는 고정",
+              "subItems": ["**열만** 고정 → $A2"]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "정리 — 방향에 따라 $ 붙이기"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**바뀌어야 할 방향** → $ 없음 (채우는 방향으로 자동으로 이동)",
+            "**고정할 방향** → $ 추가 (움직이면 안 되는 방향만 고정)"
+          ]
+        },
+        {
+          "type": "image",
+          "url": "/images/mixed-ref.svg",
+          "alt": "구구단을 혼합 참조로 한 번에 채우는 예시"
+        }
+      ],
+      "practice": {
+        "instruction": "B2에 '왼쪽 수(A열) × 위쪽 수(1행)' 곱셈 수식을 입력한 뒤, 한 번의 자동 채우기로 C2·B3·C3까지 표 전체를 완성하세요. 오른쪽과 아래로 동시에 채워야 하니, 어느 방향을 고정해야 할지 생각하며 $를 붙여 보세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "", "editable": false },
+            { "val": "2", "editable": false },
+            { "val": "3", "editable": false }
+          ],
+          [
+            { "val": "2", "editable": false },
+            { "val": "", "editable": true, "answer": "=$A2*B$1", "result": 4 },
+            { "val": "", "editable": true, "answer": "=$A2*C$1", "result": 6 }
+          ],
+          [
+            { "val": "3", "editable": false },
+            { "val": "", "editable": true, "answer": "=$A3*B$1", "result": 6 },
+            { "val": "", "editable": true, "answer": "=$A3*C$1", "result": 9 }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "엑셀에서 셀 주소 'C5'가 의미하는 것은?",
+      "options": ["C행 5열", "C열 5행", "5번째 시트의 C셀", "C번째 열 5번째 시트"],
+      "answer": 1,
+      "explanation": "셀 주소는 '열+행' 순서입니다. C5는 C열 5행을 의미합니다."
+    },
+    {
+      "id": 2,
+      "question": "수식 =B3+C3을 아래로 자동 채우기 하면 바로 아래 셀의 수식은?",
+      "options": ["=B3+C3", "=B4+C3", "=B4+C4", "=B3+C4"],
+      "answer": 2,
+      "explanation": "상대 참조는 복사 방향에 따라 행 번호가 자동 증가합니다."
+    },
+    {
+      "id": 3,
+      "question": "절대 참조를 설정하는 단축키는?",
+      "options": ["F2", "F3", "F4", "F5"],
+      "answer": 2,
+      "explanation": "F4 키를 누르면 $C$9와 같이 절대 참조로 변환됩니다."
+    },
+    {
+      "id": 4,
+      "question": "셀 주소 $C$9가 의미하는 것은?",
+      "options": ["C열만 고정", "9행만 고정", "C열과 9행 모두 고정", "고정 없음"],
+      "answer": 2,
+      "explanation": "$C$9는 C열과 9행이 모두 고정된 절대 참조입니다."
+    },
+    {
+      "id": 5,
+      "question": "아래로 자동 채우기 시 특정 셀을 고정하려면?",
+      "options": ["상대 참조", "절대 참조 또는 행 고정 혼합 참조", "열 고정 혼합 참조만", "참조 없이 직접 입력"],
+      "answer": 1,
+      "explanation": "아래로 복사할 때 행이 바뀌지 않게 하려면 절대 참조나 행 고정 혼합 참조를 씁니다."
+    },
+    {
+      "id": 6,
+      "question": "F4 키를 2번 눌렀을 때 C9는 어떻게 변하는가?",
+      "options": ["$C$9", "C$9", "$C9", "C9"],
+      "answer": 1,
+      "explanation": "F4 1회: $C$9 / 2회: C$9(행 고정) / 3회: $C9(열 고정) / 4회: C9(해제)"
+    },
+    {
+      "id": 7,
+      "question": "수식 =B$9를 오른쪽으로 자동 채우기 하면?",
+      "options": ["=C$9", "=B$10", "=B$9", "=$B9"],
+      "answer": 0,
+      "explanation": "B$9는 9행이 $로 고정됩니다. 오른쪽으로 채우면 열만 B→C로 이동하므로 =C$9가 됩니다."
+    },
+    {
+      "id": 8,
+      "question": "60%가 입력된 C9를 아래로도 오른쪽으로도 복사해도 항상 참조하려면?",
+      "options": ["C9", "$C9", "C$9", "$C$9"],
+      "answer": 3,
+      "explanation": "어느 방향으로 채워도 항상 C9만 참조하려면 열·행을 모두 고정한 절대 참조 $C$9를 사용합니다."
+    },
+    {
+      "id": 9,
+      "question": "구구단 표를 한 번의 자동 채우기로 완성하려면?",
+      "options": ["상대 참조", "절대 참조", "혼합 참조", "참조 불필요"],
+      "answer": 2,
+      "explanation": "구구단은 행/열이 각각 고정되어야 하므로 혼합 참조가 필요합니다."
+    },
+    {
+      "id": 10,
+      "question": "수식 =$B3*C$2를 오른쪽 아래로 복사하면?",
+      "options": ["=$B3*C$2", "=$B4*D$2", "=$B3*D$2", "=$B4*C$2"],
+      "answer": 1,
+      "explanation": "$B3은 B열 고정(행 변화), C$2는 2행 고정(열 변화)이므로 =$B4*D$2가 됩니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "표1_상대참조", "cell": "E6", "formula": "=B6+C6+D6" },
+    { "sheet": "표1_상대참조", "cell": "E7", "formula": "=B7+C7+D7" },
+    { "sheet": "표1_상대참조", "cell": "E8", "formula": "=B8+C8+D8" },
+    { "sheet": "표1_상대참조", "cell": "B9", "formula": "=B6+B7+B8" },
+    { "sheet": "표1_상대참조", "cell": "C9", "formula": "=C6+C7+C8" },
+    { "sheet": "표1_상대참조", "cell": "D9", "formula": "=D6+D7+D8" },
+    { "sheet": "표2_절대참조비율", "cell": "D5", "formula": "=B5*$B$10+C5*$B$11" },
+    { "sheet": "표2_절대참조비율", "cell": "D6", "formula": "=B6*$B$10+C6*$B$11" },
+    { "sheet": "표2_절대참조비율", "cell": "D7", "formula": "=B7*$B$10+C7*$B$11" },
+    { "sheet": "표2_절대참조비율", "cell": "D8", "formula": "=B8*$B$10+C8*$B$11" },
+    { "sheet": "표3_구구단", "cell": "B4", "formula": "=B$3*$A4" },
+    { "sheet": "표3_구구단", "cell": "C4", "formula": "=C$3*$A4" },
+    { "sheet": "표3_구구단", "cell": "B5", "formula": "=B$3*$A5" },
+    { "sheet": "표3_구구단", "cell": "I12", "formula": "=I$3*$A12" }
+  ]
+}

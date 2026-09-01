@@ -1,0 +1,475 @@
+{
+  "id": 3,
+  "title": "통계 함수 완벽 마스터",
+  "shortTitle": "통계 함수",
+  "concepts": [
+    {
+      "heading": "1. 기본 통계 함수 (AVERAGE, MAX, MIN, MEDIAN)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "통계 함수의 기본은 지정한 범위의 **대표값**을 구하는 것입니다. 숫자 범위를 인수로 받아 하나의 결과값을 반환합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/stat-basic.svg",
+          "alt": "AVERAGE, MEDIAN, MAX, MIN 함수 — 같은 데이터에서 결과값 비교"
+        },
+        {
+          "type": "heading",
+          "text": "AVERAGE — 평균"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =AVERAGE(범위)",
+            "범위 내 숫자들의 합계를 개수로 나눈 평균을 계산합니다.",
+            "예) =AVERAGE(B2:B6) → B2부터 B6까지 숫자의 평균"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "MAX / MIN — 최댓값 / 최솟값"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =MAX(범위) / =MIN(범위)",
+            "MAX는 범위에서 가장 큰 값을, MIN은 가장 작은 값을 반환합니다.",
+            "예) =MAX(C2:C10) → C2:C10 중 최댓값"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "MEDIAN — 중간값"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =MEDIAN(범위)",
+            "데이터를 크기 순으로 정렬했을 때 **정중앙**에 위치한 값을 반환합니다.",
+            "데이터 개수가 짝수이면 중앙 두 값의 평균을 반환합니다.",
+            "예) {70, 80, 90, 100} → MEDIAN = (80+90)/2 = **85**",
+            "※ 자동 채우기 시 범위가 고정되어야 한다면 **F4** 키로 절대 참조($) 처리!"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "상반기 판매량 데이터입니다. [D2] 셀에 평균 판매량을 구하고, [D3] 셀에 중간값 판매량을 구하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "월별", "editable": false },
+            { "val": "판매량", "editable": false },
+            { "val": "구분", "editable": false },
+            { "val": "결과값", "editable": false }
+          ],
+          [
+            { "val": "1월", "editable": false },
+            { "val": 150, "editable": false },
+            { "val": "평균 판매량", "editable": false },
+            { "val": "", "editable": true, "answer": "=AVERAGE(B2:B4)", "result": 160 }
+          ],
+          [
+            { "val": "2월", "editable": false },
+            { "val": 220, "editable": false },
+            { "val": "중간값 판매량", "editable": false },
+            { "val": "", "editable": true, "answer": "=MEDIAN(B2:B4)", "result": 150 }
+          ],
+          [
+            { "val": "3월", "editable": false },
+            { "val": 110, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "2. 순위 및 특정 위치의 값 구하기 (RANK.EQ, RANK.AVG, LARGE, SMALL)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "데이터의 서열이나 특정 순위의 값을 추출하는 함수입니다. 공동 순위 처리 방식에 따라 **RANK.EQ**와 **RANK.AVG** 중 하나를 선택합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/stat-rank.svg",
+          "alt": "RANK.EQ 순위 표와 LARGE·SMALL k번째 값 시각화"
+        },
+        {
+          "type": "heading",
+          "text": "RANK.EQ — 공동 순위 시 최상위 순위 부여"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =RANK.EQ(값, 참조범위, [정렬기준])",
+            "정렬기준: **0 또는 생략** = 내림차순(높을수록 1등), **1** = 오름차순(낮을수록 1등)",
+            "동점자가 여럿이면 **모두 같은 순위**로 표시하고, 다음 순위는 건너뜁니다.",
+            "예) 점수 {90, 85, 85, 70} → 순위: 1, **2, 2**, 4 (3위 없음)",
+            "⚠️ **참조범위는 반드시 절대 참조($)**로 고정해야 자동 채우기 시 밀리지 않습니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "RANK.AVG — 공동 순위 시 평균 순위 부여"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =RANK.AVG(값, 참조범위, [정렬기준])",
+            "동점자가 여럿이면 해당 순위들의 **평균**을 각자에게 부여합니다.",
+            "예) 점수 {90, 85, 85, 70} → 순위: 1, **2.5, 2.5**, 4 (2위+3위 평균 = 2.5)",
+            "통계적으로 공정한 순위 표기가 필요한 경우(스포츠 기록, 학술 분석 등)에 사용합니다.",
+            "참조범위 절대 참조($) 필수 — RANK.EQ와 동일한 주의사항 적용"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "LARGE / SMALL — K번째 큰 값 / 작은 값"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =LARGE(범위, K) / =SMALL(범위, K)",
+            "LARGE: 범위에서 K번째로 큰 값, SMALL: K번째로 작은 값을 반환합니다.",
+            "예) =LARGE(B2:B10, 2) → B2:B10에서 **2번째로 큰 값**",
+            "예) =SMALL(B2:B10, 1) → B2:B10에서 가장 작은 값 (=MIN과 동일)"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "점수 데이터를 바탕으로 [C2] 셀에 홍길동의 순위(높은 점수가 1등)를 구하고, [C5] 셀에는 2번째로 높은 점수를 구하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "이름", "editable": false },
+            { "val": "점수", "editable": false },
+            { "val": "결과", "editable": false }
+          ],
+          [
+            { "val": "홍길동", "editable": false },
+            { "val": 85, "editable": false },
+            { "val": "", "editable": true, "answer": "=RANK.EQ(B2,$B$2:$B$4,0)", "result": 2 }
+          ],
+          [
+            { "val": "김철수", "editable": false },
+            { "val": 95, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "이영희", "editable": false },
+            { "val": 70, "editable": false },
+            { "val": "2위 점수", "editable": false }
+          ],
+          [
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": true, "answer": "=LARGE(B2:B4,2)", "result": 85 }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. 셀 개수 세기 (COUNT, COUNTA, COUNTBLANK)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "범위 내에 존재하는 셀의 개수를 **조건 없이** 세어주는 함수입니다. 어떤 종류의 데이터를 세느냐에 따라 함수를 구분해야 합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/stat-count.svg",
+          "alt": "COUNT·COUNTA·COUNTBLANK — 같은 범위에서 세는 기준 비교"
+        },
+        {
+          "type": "heading",
+          "text": "COUNT — 숫자 셀만 카운트"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =COUNT(범위)",
+            "오직 **숫자, 날짜, 시간** 데이터가 입력된 셀의 개수만 셉니다. (문자 제외)",
+            "예) {90, '결시', 80} → COUNT = **2** (숫자인 90, 80만 카운트)"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "COUNTA — 비어있지 않은 모든 셀 카운트"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =COUNTA(범위)",
+            "비어있지 않은 **모든 셀**(All)의 개수를 셉니다. 문자, 숫자 불문합니다.",
+            "예) {90, '결시', 80} → COUNTA = **3** (세 셀 모두 데이터 있음)"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "COUNTBLANK — 빈 셀만 카운트"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =COUNTBLANK(범위)",
+            "비어있는 **빈 셀**(Blank)의 개수만 셉니다.",
+            "예) {90, '', 80} → COUNTBLANK = **1** (가운데 빈 셀 1개)"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "출석부 데이터를 이용하여 [C3] 셀에 응시자 수(점수가 입력된 셀)를 구하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "성명", "editable": false },
+            { "val": "시험점수", "editable": false },
+            { "val": "항목", "editable": false }
+          ],
+          [
+            { "val": "강감찬", "editable": false },
+            { "val": 90, "editable": false },
+            { "val": "응시자수", "editable": false }
+          ],
+          [
+            { "val": "이순신", "editable": false },
+            { "val": "결시", "editable": false },
+            { "val": "", "editable": true, "answer": "=COUNT(B2:B4)", "result": 2 }
+          ],
+          [
+            { "val": "유관순", "editable": false },
+            { "val": 80, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "4. 조건부 통계 함수 (COUNTIF, COUNTIFS, AVERAGEIF, AVERAGEIFS)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "특정 조건을 만족하는 데이터만 선별하여 개수나 평균을 구하는 함수입니다. 단일 조건과 다중 조건(IFS) 버전으로 구분됩니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/stat-condcount.svg",
+          "alt": "COUNTIF·AVERAGEIF — 조건에 맞는 행만 필터링하여 집계"
+        },
+        {
+          "type": "heading",
+          "text": "COUNTIF — 단일 조건 개수"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =COUNTIF(범위, 조건)",
+            "지정한 범위에서 조건을 만족하는 셀의 개수를 구합니다.",
+            "예) =COUNTIF(B2:B10, \"대리\") → B2:B10에서 '대리'인 셀 개수"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "COUNTIFS — 다중 조건 개수"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =COUNTIFS(범위1, 조건1, 범위2, 조건2, ...)",
+            "여러 조건을 **동시에 만족(AND)**하는 셀의 개수를 구합니다.",
+            "예) =COUNTIFS(B2:B10, \"대리\", C2:C10, \">2500000\")"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "AVERAGEIF — 단일 조건 평균"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =AVERAGEIF(조건범위, 조건, [평균범위])",
+            "조건에 맞는 셀을 찾아 지정된 **평균범위**의 평균을 구합니다.",
+            "평균범위 생략 시 조건범위를 평균범위로 사용합니다.",
+            "예) =AVERAGEIF(B2:B4, \"대리\", C2:C4) → '대리' 직급의 급여 평균"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "AVERAGEIFS — 다중 조건 평균 ⚠️ 인수 순서 주의!"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =AVERAGEIFS(평균범위, 조건범위1, 조건1, 조건범위2, 조건2, ...)",
+            "⚠️ AVERAGEIF와 달리 **계산할 평균범위가 맨 앞**에 옵니다!",
+            "여러 조건을 동시에 만족하는 데이터의 평균을 계산합니다.",
+            "예) =AVERAGEIFS(C2:C10, B2:B10, \"대리\", D2:D10, \"서울\")"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "[D2] 셀에 '대리' 직급의 평균 급여를 계산하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "성명", "editable": false },
+            { "val": "직급", "editable": false },
+            { "val": "급여", "editable": false },
+            { "val": "대리 평균급여", "editable": false }
+          ],
+          [
+            { "val": "박과장", "editable": false },
+            { "val": "과장", "editable": false },
+            { "val": 4000000, "editable": false },
+            { "val": "", "editable": true, "answer": "=AVERAGEIF(B2:B4,\"대리\",C2:C4)", "result": 2800000 }
+          ],
+          [
+            { "val": "김대리", "editable": false },
+            { "val": "대리", "editable": false },
+            { "val": 3000000, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "이사원", "editable": false },
+            { "val": "대리", "editable": false },
+            { "val": 2600000, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "RANK.EQ 함수를 아래로 자동 채우기 할 때 오류가 발생하지 않으려면 어떻게 해야 하는가?",
+      "options": [
+        "첫 번째 인수(값)를 절대 참조로 고정한다.",
+        "두 번째 인수(참조범위)를 F4 키를 눌러 절대 참조로 고정한다.",
+        "세 번째 인수(정렬기준)를 반드시 0으로 명시한다.",
+        "수식을 입력한 후 Ctrl+Enter를 눌러 일괄 입력한다."
+      ],
+      "answer": 1,
+      "explanation": "RANK.EQ에서 비교 기준이 되는 두 번째 인수(참조범위)는 수식을 아래로 채울 때 고정되어 있어야 합니다. F4 키로 절대 참조($) 처리를 해야 범위가 밀리지 않습니다."
+    },
+    {
+      "id": 2,
+      "question": "다음 중 계산할 '평균범위'가 첫 번째 인수로 오는 함수는?",
+      "options": [
+        "AVERAGEIF",
+        "SUMIF",
+        "AVERAGEIFS",
+        "COUNTIF"
+      ],
+      "answer": 2,
+      "explanation": "단일 조건 함수(SUMIF, AVERAGEIF)는 계산 범위가 마지막 인수이지만, 다중 조건 함수(SUMIFS, AVERAGEIFS)는 조건 범위·조건 쌍이 계속 추가될 수 있어 계산 범위가 가장 첫 번째 인수로 옵니다."
+    },
+    {
+      "id": 3,
+      "question": "다음 데이터에서 =COUNT(A1:A4)의 결과값은? (A1=90, A2='결시', A3=, A4=75)",
+      "options": [
+        "4",
+        "3",
+        "2",
+        "1"
+      ],
+      "answer": 2,
+      "explanation": "COUNT 함수는 숫자 데이터가 입력된 셀만 셉니다. A1(90)과 A4(75)는 숫자이므로 2개입니다. '결시'(문자)와 빈 셀(A3)은 COUNT에서 제외됩니다."
+    },
+    {
+      "id": 4,
+      "question": "점수 {60, 70, 80, 90, 100} 5개에 대해 =MEDIAN()을 적용하면 결과는?",
+      "options": [
+        "80",
+        "75",
+        "85",
+        "70"
+      ],
+      "answer": 0,
+      "explanation": "데이터가 홀수 개이면 MEDIAN은 정중앙 값을 반환합니다. 5개를 정렬하면 60, 70, **80**, 90, 100이므로 정중앙인 80이 결과입니다."
+    },
+    {
+      "id": 5,
+      "question": "점수가 {95, 85, 85, 70}일 때 85에 대해 RANK.EQ와 RANK.AVG의 결과를 올바르게 짝지은 것은?",
+      "options": [
+        "RANK.EQ=2, RANK.AVG=2",
+        "RANK.EQ=2, RANK.AVG=2.5",
+        "RANK.EQ=2.5, RANK.AVG=2",
+        "RANK.EQ=3, RANK.AVG=2.5"
+      ],
+      "answer": 1,
+      "explanation": "85는 2위와 3위 공동 순위입니다. RANK.EQ는 공동 순위 중 최상위(2위)를 부여하고, RANK.AVG는 2위와 3위의 평균인 2.5를 부여합니다."
+    },
+    {
+      "id": 6,
+      "question": "데이터 범위 B2:B6에서 3번째로 작은 값을 구하는 수식으로 올바른 것은?",
+      "options": [
+        "=LARGE(B2:B6, 3)",
+        "=SMALL(B2:B6, 3)",
+        "=MIN(B2:B6, 3)",
+        "=RANK.EQ(B2:B6, 3)"
+      ],
+      "answer": 1,
+      "explanation": "K번째로 작은 값은 SMALL(범위, K) 함수를 사용합니다. LARGE는 K번째로 큰 값을 반환합니다."
+    },
+    {
+      "id": 7,
+      "question": "=COUNTIF(B2:B10, \">80\")이 하는 동작으로 옳은 것은?",
+      "options": [
+        "B2:B10 범위에서 80보다 큰 셀의 합계를 구한다.",
+        "B2:B10 범위에서 80보다 큰 셀의 개수를 구한다.",
+        "B2:B10 범위에서 80 이상인 셀의 개수를 구한다.",
+        "B2:B10 범위에서 80보다 큰 셀의 평균을 구한다."
+      ],
+      "answer": 1,
+      "explanation": "COUNTIF는 조건을 만족하는 셀의 '개수'를 반환합니다. 조건 \">80\"은 80 초과(strictly greater than)를 의미합니다."
+    },
+    {
+      "id": 8,
+      "question": "=AVERAGEIF(B2:B5, \"영업부\", C2:C5)에서 세 번째 인수 C2:C5의 역할은?",
+      "options": [
+        "조건을 검사할 범위",
+        "찾을 조건값",
+        "평균을 계산할 실제 데이터 범위",
+        "결과를 출력할 셀 범위"
+      ],
+      "answer": 2,
+      "explanation": "AVERAGEIF의 세 번째 인수는 '평균범위'입니다. 첫 번째 인수(B2:B5)에서 \"영업부\"를 찾아 해당 행의 C열 값(C2:C5)의 평균을 계산합니다."
+    },
+    {
+      "id": 9,
+      "question": "=COUNTA(A1:A5)에서 A1=100, A2='', A3='미제출', A4=0, A5=(빈 셀)일 때 결과는?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "answer": 1,
+      "explanation": "COUNTA는 비어있지 않은 모든 셀을 셉니다. A1(100), A2('')는 빈 문자열이라도 입력된 값이 있으면 카운트, A3('미제출'), A4(0)이 해당됩니다. 단 진짜 빈 셀(A5)만 제외됩니다. 단, A2가 완전히 빈 셀이면 3개입니다. 여기서는 A1, A3, A4가 데이터를 가지므로 3개입니다."
+    },
+    {
+      "id": 10,
+      "question": "성별(B열: '남'/'여')과 부서(C열: '영업')를 동시에 만족하는 직원 수를 구하는 수식은?",
+      "options": [
+        "=COUNTIF(B2:B10,\"남\",C2:C10,\"영업\")",
+        "=COUNTIFS(B2:B10,\"남\",C2:C10,\"영업\")",
+        "=COUNTIF(B2:B10,\"남\")+COUNTIF(C2:C10,\"영업\")",
+        "=COUNT(B2:B10,\"남\",C2:C10,\"영업\")"
+      ],
+      "answer": 1,
+      "explanation": "두 조건을 동시에 만족(AND)하는 셀 수는 COUNTIFS를 사용합니다. COUNTIF는 단일 조건만 지원합니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "기본통계", "cell": "D2", "formula": "=AVERAGE(B2:B4)" },
+    { "sheet": "기본통계", "cell": "D3", "formula": "=MEDIAN(B2:B4)" },
+    { "sheet": "순위", "cell": "C2", "formula": "=RANK.EQ(B2,$B$2:$B$4,0)" },
+    { "sheet": "순위", "cell": "C5", "formula": "=LARGE(B2:B4,2)" },
+    { "sheet": "셀개수", "cell": "C3", "formula": "=COUNT(B2:B4)" },
+    { "sheet": "조건부통계", "cell": "D2", "formula": "=AVERAGEIF(B2:B4,\"대리\",C2:C4)" }
+  ]
+}

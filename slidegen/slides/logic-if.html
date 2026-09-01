@@ -1,0 +1,28 @@
+<div class="s-title">IF — 조건에 따라 다른 값 내보내기</div>
+<div class="s-subtitle">"조건이 맞으면 이 값, 아니면 저 값" — 세 칸 모두 반드시 채웁니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:640px;margin:0 auto;font-size:20px">=IF( B2&gt;=100 , "우수유저" , "" )</div>
+  <div class="arg-note"><b>①</b> 조건(참/거짓을 따질 식) &nbsp;&nbsp; <b>②</b> 참일 때 값 &nbsp;&nbsp; <b>③</b> 거짓일 때 값</div>
+
+  <div class="row" style="justify-content:center;gap:0;align-items:center">
+    <div class="box blue" style="min-width:200px"><span class="h" style="color:var(--blue-ink)">B2 &gt;= 100 ?</span></div>
+  </div>
+
+  <div class="row" style="justify-content:center;gap:60px">
+    <div class="branch">
+      <div class="arrow-lbl" style="color:var(--green-ink)">참(TRUE) — 맞으면</div>
+      <div class="arrow-down" style="color:var(--green)">↓</div>
+      <div class="result-box">"우수유저"</div>
+      <div style="color:var(--ink-dim);font-size:14px;margin-top:6px">예: B2=120 → 조건 충족</div>
+    </div>
+    <div class="branch">
+      <div class="arrow-lbl" style="color:var(--red-ink)">거짓(FALSE) — 아니면</div>
+      <div class="arrow-down" style="color:var(--red)">↓</div>
+      <div class="box red"><span class="b" style="color:var(--red-ink);font-size:20px">"" (빈칸)</span></div>
+      <div style="color:var(--ink-dim);font-size:14px;margin-top:6px">예: B2=85 → 조건 미달</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=IF(조건, 참일 때 값, 거짓일 때 값) &nbsp;·&nbsp; 비교기호: &gt;= &nbsp; &lt;= &nbsp; &gt; &nbsp; &lt; &nbsp; = &nbsp; &lt;&gt;<br><span class="tip">⚠ 자주 실수:</span> 글자 값은 <span class="b">따옴표("우수")</span>, 빈칸은 <span class="b">""</span>, 숫자는 따옴표 없이</div>

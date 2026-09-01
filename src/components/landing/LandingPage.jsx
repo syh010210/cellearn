@@ -44,14 +44,16 @@ export default function LandingPage({ onStart }) {
             </div>
           </div>
         ))}
-        {[2, 3, 4, 5].map((n) => (
-          <div key={n} style={{ background: "#1e293b", border: "1px dashed #334155", borderRadius: 10, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16, marginBottom: 12, opacity: 0.4 }}>
-            <div style={{ background: "#334155", borderRadius: 8, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
-              {n}
+        {Array.from({ length: 5 }, (_, i) => i + 1)
+          .filter((n) => !LESSONS.some((l) => l.id === n))
+          .map((n) => (
+            <div key={n} style={{ background: "#1e293b", border: "1px dashed #334155", borderRadius: 10, padding: "16px 20px", display: "flex", alignItems: "center", gap: 16, marginBottom: 12, opacity: 0.4 }}>
+              <div style={{ background: "#334155", borderRadius: 8, width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
+                {n}
+              </div>
+              <div style={{ color: "#64748b", fontWeight: 600 }}>준비 중...</div>
             </div>
-            <div style={{ color: "#64748b", fontWeight: 600 }}>준비 중...</div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {/* 가격 */}

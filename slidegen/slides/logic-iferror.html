@@ -1,0 +1,35 @@
+<div class="s-title">IFERROR — 오류가 나면 대신 보여줄 값 정하기</div>
+<div class="s-subtitle">수식이 오류(#DIV/0! 등)를 내면, 빨간 오류 대신 정해둔 값을 보여줍니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:640px;margin:0 auto;font-size:20px">=IFERROR( B2/C2 , "수량오류" )</div>
+  <div class="arg-note"><b>①</b> 원래 계산할 수식 &nbsp;&nbsp; <b>②</b> 오류일 때 대신 보여줄 값</div>
+
+  <div class="row" style="align-items:stretch">
+    <div class="card red grow" style="gap:8px">
+      <div class="h" style="color:var(--red-ink);text-align:center">❌ IFERROR 없이</div>
+      <table class="tbl">
+        <thead><tr><th>처리시간</th><th>수량</th><th>=시간÷수량</th></tr></thead>
+        <tbody>
+          <tr><td class="red" style="color:var(--red-ink)">500</td><td class="red b" style="color:var(--red-ink)">0</td><td class="red b" style="color:var(--red-ink)">#DIV/0!</td></tr>
+          <tr><td style="color:var(--ink-dim)">300</td><td style="color:var(--ink-dim)">10</td><td style="color:var(--ink-dim)">30</td></tr>
+        </tbody>
+      </table>
+      <div style="color:var(--red-ink);font-size:15px;text-align:center">수량이 0 → 0으로 나눌 수 없어 오류!</div>
+    </div>
+
+    <div class="card green grow" style="gap:8px">
+      <div class="h" style="color:var(--green-ink);text-align:center">✅ IFERROR 사용</div>
+      <table class="tbl">
+        <thead><tr><th>처리시간</th><th>수량</th><th>=시간÷수량</th></tr></thead>
+        <tbody>
+          <tr><td class="green" style="color:var(--green-ink)">500</td><td class="green b" style="color:var(--green-ink)">0</td><td class="green b" style="color:var(--green-ink)">수량오류</td></tr>
+          <tr><td style="color:var(--ink-dim)">300</td><td style="color:var(--ink-dim)">10</td><td style="color:var(--ink-dim)">30</td></tr>
+        </tbody>
+      </table>
+      <div style="color:var(--green-ink);font-size:15px;text-align:center">오류를 "수량오류" 라는 글자로 바꿔줌</div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=IFERROR(원래 수식, 오류일 때 보여줄 값)<br><span class="tip">⚠ 자주 실수:</span> IFERROR는 <span class="b">모든 오류</span>를 가림 — VLOOKUP 못 찾을 때(#N/A) 빈칸("") 처리에 자주 사용</div>

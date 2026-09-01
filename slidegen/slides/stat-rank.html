@@ -1,0 +1,32 @@
+<div class="s-title">RANK · LARGE · SMALL — 순위와 k번째 값 구하기</div>
+<div class="s-subtitle">RANK 는 "몇 등?", LARGE·SMALL 은 "위·아래에서 k번째로 큰/작은 값"을 알려줍니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">순위 낼 값</span>
+    <span class="k blue">비교할 전체 범위</span>
+    <span class="k amber">결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">이름</td><td class="cell txt">점수</td><td class="cell txt">순위</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt">김철수</td><td class="cell range find">95</td><td class="cell result">1</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">홍길동</td><td class="cell range">85</td><td class="cell">2</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt">박지수</td><td class="cell range">78</td><td class="cell">3</td></tr>
+      <tr><td class="rowhead">5</td><td class="cell txt">이영희</td><td class="cell range">70</td><td class="cell">4</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:10px">
+      <div class="box" style="flex-direction:column;gap:4px"><span style="color:var(--ink-dim);font-size:15px">내림차순 정렬: 95 › 85 › 78 › 70</span></div>
+      <div class="box blue" style="justify-content:space-between"><span>LARGE(범위, <b>2</b>) = 위에서 2번째</span><span class="b" style="color:var(--blue-ink);font-size:22px">85</span></div>
+      <div class="box" style="border-color:#a855f7;justify-content:space-between"><span>SMALL(범위, <b>2</b>) = 아래서 2번째</span><span class="b" style="color:#d8b4fe;font-size:22px">78</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">C2</div><div class="fx"><span class="fx-icon">fx</span>=RANK.EQ(B2, $B$2:$B$5, 0)</div></div>
+  <div class="arg-note"><b>①</b> 순위 낼 값 &nbsp;&nbsp; <b>②</b> 비교할 전체 범위($ 고정) &nbsp;&nbsp; <b>③</b> 0 = 내림차순(큰 값이 1등)</div>
+</div>
+
+<div class="bottom-bar">=RANK.EQ(값, 범위, 0) → 큰 값이 1등 &nbsp;·&nbsp; =LARGE / =SMALL(범위, k)<br><span class="tip">⚠ 자주 실수:</span> 아래로 채울 때 비교 범위에 <span class="b">$ 를 안 붙이면</span> 범위가 같이 밀려 순위가 틀어짐</div>

@@ -1,0 +1,35 @@
+<div class="s-title">DSUM — 조건표를 만들어 합계 구하기</div>
+<div class="s-subtitle">DB 함수는 "표 전체 + 계산할 열 + 조건표" 세 가지를 넣습니다. DSUM은 조건 맞는 행의 합계</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">조건에 맞는 행</span>
+    <span class="k blue">합계 낼 열</span>
+    <span class="k amber">결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">제품ID</td><td class="cell txt">제품군</td><td class="cell txt">단가</td><td class="cell txt">판매량</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">W-01</td><td class="cell txt find">세탁기</td><td class="cell">350,000</td><td class="cell range">5</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">R-02</td><td class="cell txt">냉장고</td><td class="cell">500,000</td><td class="cell">3</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt find">W-03</td><td class="cell txt find">세탁기</td><td class="cell">420,000</td><td class="cell range">8</td></tr>
+    </table>
+
+    <div class="col" style="flex:0 0 auto">
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:4px">조건표 (F1:F2)</div>
+      <table class="xls">
+        <tr><td class="corner"></td><td class="colhead">F</td></tr>
+        <tr><td class="rowhead">1</td><td class="cell txt">제품군</td></tr>
+        <tr><td class="rowhead">2</td><td class="cell txt find">세탁기</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">H2</div><div class="fx"><span class="fx-icon">fx</span>=DSUM(A1:D4, 4, F1:F2)</div></div>
+  <div class="arg-note"><b>①</b> 표 전체(머리글 포함) &nbsp;&nbsp; <b>②</b> 계산할 열(4번째 = 판매량) &nbsp;&nbsp; <b>③</b> 조건표(머리글+조건)</div>
+  <div class="result-box">세탁기만 합산 &nbsp;→&nbsp; 5 + 8 = 13</div>
+</div>
+
+<div class="bottom-bar">DB 함수 공통: =D함수(표 전체, 계산할 열, 조건표)<br><span class="tip">⚠ 자주 실수:</span> 표와 조건표 <span class="b">둘 다 머리글(제목 줄)을 포함</span>해야 하고, 조건표 머리글은 표와 같은 이름</div>

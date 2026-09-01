@@ -1,0 +1,34 @@
+<div class="s-title">DAVERAGE — AND 조건은 "같은 줄"에 나란히</div>
+<div class="s-subtitle">조건 두 개를 같은 줄에 쓰면 "둘 다 만족(그리고)"하는 행만 골라 평균을 냅니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">두 조건 모두 만족한 행</span>
+    <span class="k blue">평균 낼 열</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">가전명</td><td class="cell txt">제조사</td><td class="cell txt">단가</td><td class="cell txt">재고량</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">에어컨</td><td class="cell txt find">A사</td><td class="cell range">1,800,000</td><td class="cell find">25</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">청소기</td><td class="cell txt">B사</td><td class="cell">1,200,000</td><td class="cell">15</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt find">스타일러</td><td class="cell txt find">A사</td><td class="cell range">2,000,000</td><td class="cell find">30</td></tr>
+    </table>
+
+    <div class="col" style="flex:0 0 auto">
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:4px">조건표 (같은 줄 = AND)</div>
+      <table class="xls">
+        <tr><td class="corner"></td><td class="colhead">F</td><td class="colhead">G</td></tr>
+        <tr><td class="rowhead">1</td><td class="cell txt">제조사</td><td class="cell txt">재고량</td></tr>
+        <tr><td class="rowhead">2</td><td class="cell txt find">A사</td><td class="cell find">&gt;=20</td></tr>
+      </table>
+      <div style="font-size:14px;color:var(--ink-dim);margin-top:6px;text-align:center">A사 <b>이면서</b> 재고 20 이상</div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">I2</div><div class="fx"><span class="fx-icon">fx</span>=DAVERAGE(A1:D4, 3, F1:G2)</div></div>
+  <div class="result-box">(1,800,000 + 2,000,000) ÷ 2 = 1,900,000</div>
+</div>
+
+<div class="bottom-bar">조건을 <span class="b">같은 줄</span>에 = AND(그리고) &nbsp;·&nbsp; 계산할 열 3 = 단가<br><span class="tip">⚠ 자주 실수:</span> 조건을 <span class="b">다른 줄</span>에 쓰면 AND가 아니라 OR(또는)로 바뀜</div>

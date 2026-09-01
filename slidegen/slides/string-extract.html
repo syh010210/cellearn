@@ -1,0 +1,38 @@
+<div class="s-title">문자열 자르기 — LEFT · MID · RIGHT</div>
+<div class="s-subtitle">텍스트에서 왼쪽 / 가운데 / 오른쪽 글자를 잘라옵니다. 글자 위치는 1번부터 셉니다</div>
+
+<div class="s-body">
+  <div class="row" style="justify-content:center;gap:8px">
+    <div class="branch"><div class="box green" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0">A</div><span style="font-size:14px;color:var(--ink-dim)">1</span></div>
+    <div class="branch"><div class="box green" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0">B</div><span style="font-size:14px;color:var(--ink-dim)">2</span></div>
+    <div class="branch"><div class="box green" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0">C</div><span style="font-size:14px;color:var(--ink-dim)">3</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0;border-color:#a855f7;background:#1e0f47;color:#d8b4fe">4</div><span style="font-size:14px;color:var(--ink-dim)">4</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0;border-color:#a855f7;background:#1e0f47;color:#d8b4fe">5</div><span style="font-size:14px;color:var(--ink-dim)">5</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0">6</div><span style="font-size:14px;color:var(--ink-dim)">6</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0;border-color:#f97316;background:#2a1206;color:#fdba74">X</div><span style="font-size:14px;color:var(--ink-dim)">7</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0;border-color:#f97316;background:#2a1206;color:#fdba74">Y</div><span style="font-size:14px;color:var(--ink-dim)">8</span></div>
+    <div class="branch"><div class="box" style="width:62px;height:62px;font-size:26px;font-weight:800;padding:0;border-color:#f97316;background:#2a1206;color:#fdba74">Z</div><span style="font-size:14px;color:var(--ink-dim)">9</span></div>
+  </div>
+
+  <div class="row" style="gap:16px">
+    <div class="card green grow" style="gap:8px">
+      <div class="code" style="font-size:16px">=LEFT("ABC456XYZ", 3)</div>
+      <div style="color:var(--ink-dim);font-size:15px">왼쪽부터 <b>3글자</b></div>
+      <div class="result-box" style="font-size:19px">"ABC"</div>
+    </div>
+    <div class="card grow" style="border-color:#a855f7;background:#1e0f47;gap:8px">
+      <div class="code" style="font-size:16px">=MID("ABC456XYZ", 4, 2)</div>
+      <div style="color:var(--ink-dim);font-size:15px"><b>4번째</b>부터 <b>2글자</b></div>
+      <div class="result-box" style="font-size:19px">"45"</div>
+    </div>
+    <div class="card grow" style="border-color:#f97316;background:#2a1206;gap:8px">
+      <div class="code" style="font-size:16px">=RIGHT("ABC456XYZ", 3)</div>
+      <div style="color:var(--ink-dim);font-size:15px">오른쪽부터 <b>3글자</b></div>
+      <div class="result-box" style="font-size:19px">"XYZ"</div>
+    </div>
+  </div>
+
+  <div class="arg-note">MID( <b>①</b> 원본 텍스트 , <b>②</b> 시작 위치 , <b>③</b> 가져올 글자 수 )</div>
+</div>
+
+<div class="bottom-bar">=LEFT(텍스트, 개수) &nbsp;·&nbsp; =MID(텍스트, 시작위치, 개수) &nbsp;·&nbsp; =RIGHT(텍스트, 개수)<br><span class="tip">⚠ 자주 실수:</span> 위치는 <span class="b">1번부터</span> — MID("ABC", 2, 1)은 2번째인 "B" (0부터 아님)</div>

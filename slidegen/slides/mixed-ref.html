@@ -1,0 +1,33 @@
+<div class="s-title">혼합 참조 (B$1 · $A2) — 행 또는 열 중 하나만 $ 로 고정</div>
+<div class="s-subtitle">바뀌어야 할 방향은 열어두고, 고정할 방향에만 $ · 99단을 한 칸으로 채웁니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">$A → 열 고정 (곱하는 수·세로줄)</span>
+    <span class="k blue">$1 → 행 고정 (단 머리·가로줄)</span>
+    <span class="k amber">처음 입력한 원본 칸</span>
+  </div>
+
+  <div class="row" style="align-items:center">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">×</td><td class="cell range">2</td><td class="cell range">3</td><td class="cell range">4</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell find">2</td><td class="cell result">4</td><td class="cell">6</td><td class="cell">8</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell find">3</td><td class="cell">6</td><td class="cell">9</td><td class="cell">12</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell find">4</td><td class="cell">8</td><td class="cell">12</td><td class="cell">16</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:10px">
+      <div class="box blue" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--blue-ink)">B$1 — 단 머리(가로줄), 1행 고정</span><span style="font-size:15px">아래로 가도 항상 1행 · 열은 B→C→D 이동</span></div>
+      <div class="box green" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--green-ink)">$A2 — 곱하는 수(세로줄), A열 고정</span><span style="font-size:15px">오른쪽으로 가도 항상 A열 · 행은 2→3→4 이동</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">B2</div><div class="fx"><span class="fx-icon">fx</span>=$A2*B$1 &nbsp;→ 이 한 칸만 입력하고 오른쪽·아래로 쭉 드래그</div></div>
+
+  <div class="row">
+    <div class="box grow" style="gap:14px"><span class="b" style="color:var(--amber-ink)">F4 반복</span><span style="font-size:16px">$B$8 &nbsp;→&nbsp; B$8 (행만) &nbsp;→&nbsp; $B8 (열만) &nbsp;→&nbsp; B8</span></div>
+  </div>
+</div>
+
+<div class="bottom-bar"><span class="b">바뀌어야 할 방향 → $ 없음</span> &nbsp;/&nbsp; <span class="b">고정할 방향 → $ 붙임</span><br><span class="tip">⚠ 자주 실수:</span> <span class="b">$A2</span>는 열 고정, <span class="b">A$2</span>는 행 고정 (위치가 완전 반대)</div>

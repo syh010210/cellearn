@@ -1,0 +1,401 @@
+{
+  "id": 4,
+  "title": "찾기 및 참조 함수 (VLOOKUP, INDEX·MATCH)",
+  "shortTitle": "찾기/참조 함수",
+  "concepts": [
+    {
+      "heading": "1. 방향에 따른 데이터 검색 (VLOOKUP, HLOOKUP)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "기준값을 표의 첫 열(VLOOKUP) 또는 첫 행(HLOOKUP)에서 찾아, 지정한 위치의 값을 가져오는 함수입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/lookup-vlookup.svg",
+          "alt": "VLOOKUP 세로 방향 검색 동작 및 HLOOKUP과 비교"
+        },
+        {
+          "type": "heading",
+          "text": "VLOOKUP — 세로 방향 검색"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =VLOOKUP(찾을값, 범위, 열번호, [옵션])",
+            "범위의 **첫 번째 열**에서 찾을값을 검색하여 지정한 열번호의 값을 반환합니다.",
+            "옵션: **0** 또는 FALSE → 정확히 일치 / **1** 또는 생략 → 유사 일치(오름차순 정렬 필수)",
+            "예) =VLOOKUP(\"B-102\", A2:C10, 2, 0) → A열에서 'B-102'를 찾아 B열 값을 반환"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "HLOOKUP — 가로 방향 검색"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =HLOOKUP(찾을값, 범위, 행번호, [옵션])",
+            "범위의 **첫 번째 행**에서 찾을값을 검색하여 지정한 행번호의 값을 반환합니다.",
+            "VLOOKUP과 사용법이 동일하나 방향이 세로↔가로로 반대입니다.",
+            "예) =HLOOKUP(\"3월\", B1:E5, 3, 0) → 1행에서 '3월'을 찾아 3행 값을 반환"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "도서 코드표입니다. [C2] 셀에 VLOOKUP을 사용하여 코드 'B-102'에 해당하는 도서명을 가져오세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "도서코드", "editable": false },
+            { "val": "도서명", "editable": false },
+            { "val": "검색결과(도서명)", "editable": false }
+          ],
+          [
+            { "val": "A-101", "editable": false },
+            { "val": "파이썬 기초", "editable": false },
+            { "val": "", "editable": true, "answer": "=VLOOKUP(\"B-102\",A2:B4,2,0)", "result": "자바스크립트 완전정복" }
+          ],
+          [
+            { "val": "B-102", "editable": false },
+            { "val": "자바스크립트 완전정복", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "C-103", "editable": false },
+            { "val": "리액트 실무", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "2. 위치 찾기와 데이터 추출 (INDEX, MATCH)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "특정 데이터의 위치를 파악하거나 지정한 행·열 번호의 값을 추출하는 함수입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/lookup-matchindex.svg",
+          "alt": "MATCH로 위치 번호를 찾고 INDEX로 해당 위치의 값을 추출"
+        },
+        {
+          "type": "heading",
+          "text": "MATCH — 값의 위치 번호 반환"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =MATCH(찾을값, 범위, [옵션])",
+            "지정한 범위에서 찾을값이 몇 번째에 있는지 **순번**을 반환합니다.",
+            "옵션: **0** → 정확히 일치 / 1 → 오름차순 이하 / -1 → 내림차순 이상",
+            "예) =MATCH(\"이영희\", B2:B10, 0) → B열에서 '이영희'의 위치 번호를 반환"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "INDEX — 위치 번호로 값 추출"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =INDEX(범위, 행번호, [열번호])",
+            "지정한 범위에서 **행번호**와 **열번호**가 교차하는 위치의 값을 반환합니다.",
+            "열번호를 생략하면 단일 열 범위에서 행번호의 값을 반환합니다.",
+            "예) =INDEX(A2:A10, 3) → A2:A10 범위의 3번째 값을 반환"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "사원 명단입니다. [C3] 셀에 MATCH 함수를 사용하여 '이영희' 사원이 B열에서 몇 번째 위치에 있는지 구하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "사원번호", "editable": false },
+            { "val": "이름", "editable": false },
+            { "val": "결과항목", "editable": false }
+          ],
+          [
+            { "val": "E001", "editable": false },
+            { "val": "홍길동", "editable": false },
+            { "val": "이영희의 위치", "editable": false }
+          ],
+          [
+            { "val": "E002", "editable": false },
+            { "val": "김철수", "editable": false },
+            { "val": "", "editable": true, "answer": "=MATCH(\"이영희\",B2:B4,0)", "result": 3 }
+          ],
+          [
+            { "val": "E003", "editable": false },
+            { "val": "이영희", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. VLOOKUP의 한계를 극복하는 INDEX + MATCH 조합",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "VLOOKUP은 찾을값이 반드시 표의 **첫 번째 열**에 있어야 하고, 왼쪽 데이터는 가져올 수 없다는 한계가 있습니다. **INDEX + MATCH 조합**으로 이 한계를 완벽하게 극복할 수 있습니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/lookup-indexmatch.svg",
+          "alt": "VLOOKUP 한계 vs INDEX+MATCH 조합으로 해결하는 방법 비교"
+        },
+        {
+          "type": "heading",
+          "text": "INDEX + MATCH 조합 구조"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**기본 구조**: =INDEX(가져올 데이터 범위, MATCH(찾을값, 찾을범위, 0))",
+            "MATCH가 찾을값의 **위치 번호**를 구하고, INDEX가 그 번호로 **실제 값**을 추출합니다.",
+            "찾을값의 **왼쪽** 열 데이터도 자유롭게 가져올 수 있어 실무 필수 수식입니다.",
+            "예) =INDEX(A2:A10, MATCH(\"BK-99\", B2:B10, 0)) → B열에서 'BK-99'를 찾아 A열 값을 반환"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "VLOOKUP vs INDEX+MATCH 비교"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**VLOOKUP**: 첫 번째 열 기준, 오른쪽 방향만 가능, 수식 간결",
+            "**INDEX+MATCH**: 어느 열 기준이든 가능, 양방향 검색, 수식은 다소 복잡하지만 유연성 우수",
+            "컴활 1급 실기에서는 INDEX+MATCH 조합이 자주 출제됩니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "도서 재고 표입니다. 도서코드([B]열) 기준으로 왼쪽에 있는 도서ID([A]열)를 추출해야 합니다. [D2] 셀에 INDEX와 MATCH를 조합하여 'BK-99' 코드를 가진 도서의 ID를 구하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "도서ID", "editable": false },
+            { "val": "도서코드", "editable": false },
+            { "val": "재고량", "editable": false },
+            { "val": "조회 결과 (ID)", "editable": false }
+          ],
+          [
+            { "val": "1001", "editable": false },
+            { "val": "BK-88", "editable": false },
+            { "val": 45, "editable": false },
+            { "val": "", "editable": true, "answer": "=INDEX(A2:A4,MATCH(\"BK-99\",B2:B4,0))", "result": "1002" }
+          ],
+          [
+            { "val": "1002", "editable": false },
+            { "val": "BK-99", "editable": false },
+            { "val": 12, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "1003", "editable": false },
+            { "val": "BK-77", "editable": false },
+            { "val": 30, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "4. 인덱스 번호로 값 선택하기 (CHOOSE)",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "**CHOOSE** 함수는 첫 번째 인수로 지정한 순번에 따라 나열된 목록에서 해당 순서의 값을 선택하여 반환합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/lookup-choose.svg",
+          "alt": "CHOOSE 함수 — 번호 2 입력 시 세 번째 항목이 아닌 두 번째 항목 '우수' 반환"
+        },
+        {
+          "type": "heading",
+          "text": "CHOOSE — 순번으로 값 선택"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**구문**: =CHOOSE(순번, 값1, 값2, 값3, ...)",
+            "순번이 1이면 값1, 2이면 값2, 3이면 값3을 반환합니다.",
+            "순번은 **1부터 시작**하며 최대 254개의 값을 지정할 수 있습니다.",
+            "예) =CHOOSE(2, \"대상\", \"금상\", \"은상\") → **금상** 반환"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "실전 활용 — RANK.EQ, WEEKDAY와 조합"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "=CHOOSE(RANK.EQ(점수, 범위), \"대상\", \"금상\", \"은상\") → 순위에 따른 등급 자동 부여",
+            "=CHOOSE(WEEKDAY(날짜, 2), \"월\", \"화\", \"수\", \"목\", \"금\", \"토\", \"일\") → 요일 한글 변환",
+            "컴활 실기에서 **RANK.EQ + CHOOSE 조합**이 자주 출제됩니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "평가 등급 코드표입니다. [B2] 셀의 등급코드(1~3)에 따라 [C2] 셀에 등급(1=최우수, 2=우수, 3=보통)이 표시되도록 CHOOSE 수식을 완성하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "이름", "editable": false },
+            { "val": "등급코드", "editable": false },
+            { "val": "최종등급", "editable": false }
+          ],
+          [
+            { "val": "강감찬", "editable": false },
+            { "val": 2, "editable": false },
+            { "val": "", "editable": true, "answer": "=CHOOSE(B2,\"최우수\",\"우수\",\"보통\")", "result": "우수" }
+          ],
+          [
+            { "val": "이순신", "editable": false },
+            { "val": 1, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "유관순", "editable": false },
+            { "val": 3, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "VLOOKUP 함수와 비교했을 때 INDEX와 MATCH 함수를 조합하여 사용할 때의 가장 큰 장점은 무엇인가?",
+      "options": [
+        "수식의 길이가 짧아져 연산 속도가 무조건 빨라진다.",
+        "기준이 되는 찾을값이 데이터 표의 첫 번째 열에 없어도, 왼쪽이나 오른쪽 어느 방향이든 자유롭게 데이터를 추출할 수 있다.",
+        "오름차순 정렬이 되어 있지 않으면 절대로 값을 찾을 수 없는 제약이 사라진다.",
+        "텍스트 데이터는 찾을 수 없고 오직 숫자 데이터만 찾을 수 있게 제약한다."
+      ],
+      "answer": 1,
+      "explanation": "VLOOKUP은 찾고자 하는 기준 열의 반드시 '오른쪽' 데이터만 가져올 수 있는 반면, INDEX와 MATCH를 조합하면 찾을값의 왼쪽에 위치한 데이터 열도 제약 없이 조회할 수 있습니다."
+    },
+    {
+      "id": 2,
+      "question": "다음 중 CHOOSE 함수 수식 '=CHOOSE(3, \"사과\", \"배\", \"포도\", \"수박\")'의 실행 결과로 올바른 것은?",
+      "options": [
+        "사과",
+        "배",
+        "포도",
+        "수박"
+      ],
+      "answer": 2,
+      "explanation": "CHOOSE 함수의 첫 번째 인수가 '3'이므로 뒤에 나열된 값 중 3번째 항목인 '포도'를 선택하여 반환합니다. (인덱스는 0이 아닌 1부터 시작합니다.)"
+    },
+    {
+      "id": 3,
+      "question": "VLOOKUP 함수에서 네 번째 인수(range_lookup)를 0으로 지정할 때의 의미는?",
+      "options": [
+        "찾을값보다 작거나 유사한 값을 찾는다.",
+        "범위를 자동으로 오름차순 정렬한 후 검색한다.",
+        "찾을값과 정확히 일치하는 값을 찾는다.",
+        "범위 전체를 검색하지 않고 첫 번째 값만 확인한다."
+      ],
+      "answer": 2,
+      "explanation": "VLOOKUP의 네 번째 인수가 0 또는 FALSE이면 정확히 일치하는 값만 찾습니다. 1 또는 생략하면 유사하게 일치하는 값을 찾으며 이때는 데이터가 반드시 오름차순으로 정렬되어 있어야 합니다."
+    },
+    {
+      "id": 4,
+      "question": "MATCH 함수가 반환하는 값은 무엇인가?",
+      "options": [
+        "찾을 값 자체 (예: '이영희')",
+        "찾을 값이 있는 셀의 주소 (예: 'B4')",
+        "범위 내에서 찾을 값의 순번(위치 번호)",
+        "찾을 값의 개수"
+      ],
+      "answer": 2,
+      "explanation": "MATCH 함수는 찾을값 자체나 셀 주소가 아닌, 지정한 범위에서 찾을값이 몇 번째 위치에 있는지를 나타내는 순번(정수)을 반환합니다. 이 순번을 INDEX 함수의 행번호로 활용합니다."
+    },
+    {
+      "id": 5,
+      "question": "A2=사과, A3=배, A4=포도일 때, 수식 '=INDEX(A2:A4, 2)'의 결과는?",
+      "options": [
+        "사과",
+        "배",
+        "포도",
+        "#REF!"
+      ],
+      "answer": 1,
+      "explanation": "INDEX(A2:A4, 2)는 A2:A4 범위에서 2번째 위치의 값을 반환합니다. 범위의 1번째가 A2(사과), 2번째가 A3(배)이므로 결과는 '배'입니다."
+    },
+    {
+      "id": 6,
+      "question": "VLOOKUP 함수를 사용할 때 반드시 지켜야 하는 조건은?",
+      "options": [
+        "찾을값이 지정한 범위의 마지막 열에 있어야 한다.",
+        "찾을값이 지정한 범위의 첫 번째 열에 있어야 한다.",
+        "범위가 반드시 내림차순으로 정렬되어 있어야 한다.",
+        "열번호는 항상 1이어야 한다."
+      ],
+      "answer": 1,
+      "explanation": "VLOOKUP은 지정한 범위의 '첫 번째 열'에서 찾을값을 검색합니다. 찾을값이 첫 번째 열에 없으면 올바른 결과를 반환할 수 없습니다. 이것이 INDEX+MATCH 조합으로 대체하는 주된 이유입니다."
+    },
+    {
+      "id": 7,
+      "question": "HLOOKUP과 VLOOKUP의 차이점으로 올바른 것은?",
+      "options": [
+        "HLOOKUP은 범위의 첫 번째 열에서, VLOOKUP은 범위의 첫 번째 행에서 찾을값을 검색한다.",
+        "HLOOKUP은 범위의 첫 번째 행에서 검색하고, VLOOKUP은 범위의 첫 번째 열에서 검색한다.",
+        "HLOOKUP과 VLOOKUP은 기능이 완전히 동일하고 이름만 다르다.",
+        "HLOOKUP은 숫자만, VLOOKUP은 텍스트만 검색할 수 있다."
+      ],
+      "answer": 1,
+      "explanation": "VLOOKUP은 V(Vertical, 세로) 방향으로 표의 첫 번째 '열'에서 검색하고, HLOOKUP은 H(Horizontal, 가로) 방향으로 표의 첫 번째 '행'에서 검색합니다. 세로로 긴 표에는 VLOOKUP, 가로로 넓은 표에는 HLOOKUP을 사용합니다."
+    },
+    {
+      "id": 8,
+      "question": "다음 중 CHOOSE 함수에 대한 설명으로 올바른 것은?",
+      "options": [
+        "지정된 범위에서 조건에 맞는 값의 개수를 센다.",
+        "첫 번째 인수인 순번에 따라 나열된 값 목록에서 해당 순서의 값을 선택하여 반환한다.",
+        "범위에서 가장 큰 값을 찾아 반환한다.",
+        "텍스트 문자열에서 특정 위치의 문자를 추출한다."
+      ],
+      "answer": 1,
+      "explanation": "CHOOSE 함수는 =CHOOSE(순번, 값1, 값2, ...)의 형태로 사용하며, 첫 번째 인수의 숫자에 해당하는 위치의 값을 반환합니다. RANK.EQ나 WEEKDAY와 조합하여 순위나 요일에 따른 텍스트를 출력할 때 자주 사용됩니다."
+    },
+    {
+      "id": 9,
+      "question": "수식 '=INDEX(B2:B10, MATCH(\"홍길동\", A2:A10, 0))'에서 MATCH 함수의 세 번째 인수 '0'의 역할로 올바른 것은?",
+      "options": [
+        "찾을 범위를 오름차순으로 자동 정렬한 뒤 검색한다.",
+        "찾을값과 정확히 일치하는 데이터의 위치(순번)만 찾는다.",
+        "찾을값보다 작거나 같은 가장 큰 값의 위치를 찾는다.",
+        "검색 결과가 0인 경우에만 위치를 반환한다."
+      ],
+      "answer": 1,
+      "explanation": "MATCH 함수의 세 번째 인수가 0이면 정확히 일치하는 값만 검색하여 위치를 반환합니다. 1이면 오름차순 정렬 기준 이하 값, -1이면 내림차순 정렬 기준 이상 값을 찾습니다. 실기 시험에서는 정확히 일치 검색을 위해 거의 항상 0을 사용합니다."
+    },
+    {
+      "id": 10,
+      "question": "수식 '=VLOOKUP(\"홍길동\", A1:D10, 3, 0)'에서 세 번째 인수 '3'이 의미하는 것은?",
+      "options": [
+        "A1:D10 범위의 세 번째 행에 있는 데이터를 반환한다.",
+        "A1:D10 범위에서 왼쪽부터 세 번째 열(C열)의 데이터를 반환한다.",
+        "홍길동과 일치하는 값 중 세 번째로 발견된 값을 반환한다.",
+        "소수점 세 자리까지 반올림하여 반환한다."
+      ],
+      "answer": 1,
+      "explanation": "VLOOKUP의 세 번째 인수(열번호)는 지정한 범위에서 왼쪽부터 몇 번째 열의 값을 가져올지 지정합니다. '3'이면 범위의 세 번째 열(C열)의 데이터를 반환합니다. 범위가 A~D이면 1=A열, 2=B열, 3=C열, 4=D열입니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "방향검색", "cell": "C2", "formula": "=VLOOKUP(\"B-102\",A2:B4,2,0)" },
+    { "sheet": "위치찾기", "cell": "C3", "formula": "=MATCH(\"이영희\",B2:B4,0)" },
+    { "sheet": "조합활용", "cell": "D2", "formula": "=INDEX(A2:A4,MATCH(\"BK-99\",B2:B4,0))" },
+    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(B2,\"최우수\",\"우수\",\"보통\")" }
+  ]
+}

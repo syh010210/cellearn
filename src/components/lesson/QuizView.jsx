@@ -25,7 +25,7 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
         >
           <div style={{ fontSize: 28, fontWeight: 800 }}>{score} / {lesson.quiz.length}</div>
           <div style={{ color: "#e2e8f0", marginTop: 4 }}>
-            {score >= 8 ? "🎉 훌륭해요!" : "😅 틀린 문제를 오답노트에서 확인해보세요."}
+            {score >= 8 ? "훌륭해요!" : "틀린 문제를 오답노트에서 확인해보세요."}
           </div>
         </div>
       )}

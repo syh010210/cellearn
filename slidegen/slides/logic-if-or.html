@@ -1,0 +1,31 @@
+<div class="s-title">IF + OR — 조건 중 "하나라도" 만족하면 참</div>
+<div class="s-subtitle">"~이거나", "또는", "하나라도" 라는 말이 나오면 OR 를 씁니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:660px;margin:0 auto">=IF( OR( B2&gt;=90 , C2&gt;=90 ) , "점검요망" , "" )</div>
+  <div class="arg-note">OR( <b>①</b> 조건1 , <b>②</b> 조건2 ) — 하나만 참이어도 통과</div>
+
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:0 0 250px">
+      <div class="b" style="color:var(--amber-ink);text-align:center;margin-bottom:8px">OR 결과표</div>
+      <table class="tbl">
+        <thead><tr><th>조건1</th><th>조건2</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td class="green" style="color:var(--green-ink)">참</td><td class="green" style="color:var(--green-ink)">참</td><td class="green b" style="color:var(--green-ink)">참 ✓</td></tr>
+          <tr><td class="green" style="color:var(--green-ink)">참</td><td class="green" style="color:var(--green-ink)">거짓</td><td class="green b" style="color:var(--green-ink)">참 ✓</td></tr>
+          <tr><td class="green" style="color:var(--green-ink)">거짓</td><td class="green" style="color:var(--green-ink)">참</td><td class="green b" style="color:var(--green-ink)">참 ✓</td></tr>
+          <tr><td class="red" style="color:var(--red-ink)">거짓</td><td class="red" style="color:var(--red-ink)">거짓</td><td class="red b" style="color:var(--red-ink)">거짓</td></tr>
+        </tbody>
+      </table>
+      <div style="color:var(--blue-ink);font-size:15px;text-align:center;margin-top:8px;font-weight:700">둘 다 거짓일 때만 거짓</div>
+    </div>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box blue" style="font-size:16px"><span style="color:var(--blue-ink)">트래픽 B2≥90 &nbsp;<b>또는</b>&nbsp; 응답속도 C2≥90</span></div>
+      <div class="box green" style="font-size:15px"><span style="color:var(--green-ink)">B2=92, C2=60 → 하나 참 →</span> <span class="b" style="color:var(--green-ink)">"점검요망"</span></div>
+      <div class="box red" style="font-size:15px"><span style="color:var(--red-ink)">B2=40, C2=55 → 둘 다 거짓 →</span> <span class="b" style="color:var(--red-ink)">"" (빈칸)</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=OR(조건1, 조건2, …) — 하나라도 참이면 참, 모두 거짓이면 거짓<br><span class="tip">⚠ 자주 실수:</span> AND(모두)와 OR(하나라도)를 <span class="b">문제 속 "그리고/또는"</span>으로 구분해서 골라야 함</div>

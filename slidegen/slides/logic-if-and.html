@@ -1,0 +1,31 @@
+<div class="s-title">IF + AND — 조건을 "모두" 만족해야 참</div>
+<div class="s-subtitle">"~이고", "~이면서", "둘 다" 라는 말이 나오면 AND 를 씁니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:640px;margin:0 auto">=IF( AND( B2&gt;=80 , C2&gt;=80 ) , "통과" , "" )</div>
+  <div class="arg-note">AND( <b>①</b> 조건1 , <b>②</b> 조건2 ) — 둘 다 참이어야 통과</div>
+
+  <div class="row" style="align-items:flex-start">
+    <div style="flex:0 0 250px">
+      <div class="b" style="color:var(--amber-ink);text-align:center;margin-bottom:8px">AND 결과표</div>
+      <table class="tbl">
+        <thead><tr><th>조건1</th><th>조건2</th><th>결과</th></tr></thead>
+        <tbody>
+          <tr><td class="green" style="color:var(--green-ink)">참</td><td class="green" style="color:var(--green-ink)">참</td><td class="green b" style="color:var(--green-ink)">참 ✓</td></tr>
+          <tr><td class="red" style="color:var(--red-ink)">참</td><td class="red" style="color:var(--red-ink)">거짓</td><td class="red b" style="color:var(--red-ink)">거짓</td></tr>
+          <tr><td class="red" style="color:var(--red-ink)">거짓</td><td class="red" style="color:var(--red-ink)">참</td><td class="red b" style="color:var(--red-ink)">거짓</td></tr>
+          <tr><td class="red" style="color:var(--red-ink)">거짓</td><td class="red" style="color:var(--red-ink)">거짓</td><td class="red b" style="color:var(--red-ink)">거짓</td></tr>
+        </tbody>
+      </table>
+      <div style="color:var(--amber-ink);font-size:15px;text-align:center;margin-top:8px;font-weight:700">둘 다 참일 때만 참</div>
+    </div>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box amber" style="font-size:16px"><span style="color:var(--amber-ink)">알고리즘 B2≥80 &nbsp;<b>그리고</b>&nbsp; SQL C2≥80</span></div>
+      <div class="box green" style="font-size:15px"><span style="color:var(--green-ink)">B2=85, C2=90 → 둘 다 참 →</span> <span class="b" style="color:var(--green-ink)">"통과"</span></div>
+      <div class="box red" style="font-size:15px"><span style="color:var(--red-ink)">B2=75, C2=90 → 하나 거짓 →</span> <span class="b" style="color:var(--red-ink)">"" (빈칸)</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=AND(조건1, 조건2, …) — 모두 참이면 참, 하나라도 거짓이면 거짓<br><span class="tip">⚠ 자주 실수:</span> AND는 <span class="b">혼자 못 씀</span> — IF 안에 넣어 =IF(AND(...), 참값, 거짓값) 형태로 사용</div>

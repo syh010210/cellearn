@@ -1,0 +1,29 @@
+<div class="s-title">CHOOSE — 번호로 목록에서 하나 고르기</div>
+<div class="s-subtitle">첫 번째 칸에 번호를 넣으면, 그 번호에 해당하는 값을 목록에서 골라 돌려줍니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:620px;margin:0 auto;font-size:20px">=CHOOSE( <b style="color:var(--amber-ink)">2</b> , "최우수" , "우수" , "보통" )</div>
+  <div class="arg-note"><b>①</b> 고를 번호 &nbsp;&nbsp; <b>②</b> 1번 값 &nbsp;&nbsp; <b>③</b> 2번 값 &nbsp;&nbsp; <b>④</b> 3번 값</div>
+
+  <div class="arrow-down" style="color:var(--blue)">↓ &nbsp;번호가 2 → 두 번째 값 선택</div>
+
+  <div class="row" style="gap:16px">
+    <div class="card grow" style="align-items:center;gap:8px;opacity:.5">
+      <div style="color:var(--ink-dim);font-size:15px">번호 1</div>
+      <div class="b" style="color:var(--ink-dim);font-size:22px">"최우수"</div>
+    </div>
+    <div class="card blue grow" style="align-items:center;gap:8px;border-width:3px">
+      <div class="b" style="color:var(--amber-ink);font-size:16px">번호 2 &nbsp;★ 선택</div>
+      <div class="b" style="color:var(--blue-ink);font-size:30px">"우수"</div>
+    </div>
+    <div class="card grow" style="align-items:center;gap:8px;opacity:.5">
+      <div style="color:var(--ink-dim);font-size:15px">번호 3</div>
+      <div class="b" style="color:var(--ink-dim);font-size:22px">"보통"</div>
+    </div>
+  </div>
+
+  <div class="arrow-down" style="color:var(--green)">↓</div>
+  <div class="result-box" style="max-width:320px;margin:0 auto">결과 → "우수"</div>
+</div>
+
+<div class="bottom-bar">=CHOOSE(번호, 1번값, 2번값, 3번값 …)<br><span class="tip">⚠ 자주 실수:</span> 번호 자리에 <span class="b">WEEKDAY·MONTH 같은 함수</span>를 넣어 "요일명·분기" 뽑는 문제로 자주 나옴</div>

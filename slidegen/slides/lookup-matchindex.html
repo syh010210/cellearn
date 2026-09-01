@@ -1,0 +1,31 @@
+<div class="s-title">MATCH · INDEX — 위치를 찾고, 그 위치의 값을 꺼내기</div>
+<div class="s-subtitle">MATCH 는 "몇 번째 줄?"을 알려주고, INDEX 는 "그 번째 줄의 값"을 꺼내옵니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">찾는 값</span>
+    <span class="k blue">참조 범위</span>
+    <span class="k amber">결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">이름</td><td class="cell txt">점수</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt range">홍길동</td><td class="cell range">88</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt range">김철수</td><td class="cell range">72</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt range find">이영희</td><td class="cell range result">95</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box" style="flex-direction:column;gap:4px;border-color:#a855f7"><span class="b" style="color:#d8b4fe">① MATCH — 위치 찾기</span><span style="font-size:15px">=MATCH("이영희", A2:A4, 0) → <span class="b">3</span> (3번째 줄)</span></div>
+      <div class="arrow-down" style="color:var(--amber)">↓ &nbsp;3을 넘겨줌</div>
+      <div class="box green" style="flex-direction:column;gap:4px"><span class="b" style="color:var(--green-ink)">② INDEX — 값 꺼내기</span><span style="font-size:15px">=INDEX(B2:B4, <span class="b">3</span>) → <span class="b">95</span></span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D2</div><div class="fx"><span class="fx-icon">fx</span>=INDEX(B2:B4, MATCH("이영희", A2:A4, 0))</div></div>
+  <div class="result-box">결과 &nbsp;→&nbsp; 95</div>
+</div>
+
+<div class="bottom-bar">MATCH = 위치 번호 &nbsp;·&nbsp; INDEX = 그 위치의 값<br><span class="tip">⚠ 자주 실수:</span> MATCH 마지막 <span class="b">0</span>을 빼먹으면 정확히 일치가 안 되어 엉뚱한 위치가 나옴</div>

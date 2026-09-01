@@ -29,10 +29,10 @@ export default function Sidebar({ lessons, current, onSelect, progress, onDash, 
             <span style={{ color: progress[l.id]?.done ? "#22c55e" : "#334155", fontSize: 16 }}>
               {progress[l.id]?.done ? "✓" : "○"}
             </span>
-            {l.id}. {l.title}
+            {l.id}. {l.shortTitle || l.title}
           </button>
         ))}
-        {[2, 3, 4, 5].map((n) => (
+        {Array.from({ length: Math.max(0, 5 - lessons.length) }, (_, i) => lessons.length + i + 1).map((n) => (
           <div key={n} style={{ padding: "10px 12px", color: "#334155", fontSize: 13, display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 16 }}>○</span>{n}. 준비 중...
           </div>

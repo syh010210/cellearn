@@ -1,0 +1,28 @@
+<div class="s-title">상대 참조 — 오른쪽으로 채우면 열 문자가 옮겨간다</div>
+<div class="s-subtitle">B5에 수식을 한 번 쓰고 오른쪽으로 드래그하면 참조하는 열이 한 칸씩 오른쪽으로 이동합니다</div>
+
+<div class="s-body">
+  <div class="row" style="justify-content:center;font-size:15px;color:var(--ink-dim);gap:20px">
+    <span><span class="b" style="color:var(--green-ink)">■</span> 처음 입력한 수식(원본)</span>
+    <span><span class="b" style="color:var(--amber-ink)">■</span> 드래그로 자동 채워진 결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td><td class="colhead">D</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt">구분</td><td class="cell txt">1반</td><td class="cell txt">2반</td><td class="cell txt">3반</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">남학생</td><td class="cell">15</td><td class="cell">18</td><td class="cell">20</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt">여학생</td><td class="cell">14</td><td class="cell">16</td><td class="cell">19</td></tr>
+      <tr><td class="rowhead">5</td><td class="cell txt">합계</td><td class="cell txt find">=B3+B4</td><td class="cell txt result">=C3+C4</td><td class="cell txt result">=D3+D4</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box amber" style="flex-direction:column;gap:6px"><span class="b" style="color:var(--amber-ink);font-size:20px">열 문자만 바뀜</span><span>B → C → D</span></div>
+      <div class="box blue" style="flex-direction:column;gap:6px"><span class="b" style="color:var(--blue-ink);font-size:20px">행 번호는 그대로</span><span>3, 4 는 고정</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">B5</div><div class="fx"><span class="fx-icon">fx</span>=B3+B4 &nbsp;→ 오른쪽으로 드래그 → =C3+C4 → =D3+D4</div></div>
+</div>
+
+<div class="bottom-bar">아래로 채우기 = 행 번호 증가 &nbsp;/&nbsp; 오른쪽으로 채우기 = 열 문자 이동<br><span class="tip">⚠ 자주 실수:</span> 방향에 따라 바뀌는 게 다름 — 오른쪽 드래그인데 행이 바뀔 거라 착각하기 쉬움</div>

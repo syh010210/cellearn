@@ -1,0 +1,30 @@
+<div class="s-title">SUMIFS — 여러 조건을 모두 만족하는 것만 더하기</div>
+<div class="s-subtitle">조건이 2개 이상일 때 사용. 조건을 모두 만족(AND)하는 행만 더합니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">두 조건 모두 만족</span>
+    <span class="k blue">더할 열(출하금액)</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">작물</td><td class="cell txt">출하량</td><td class="cell txt">출하금액</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">블루베리</td><td class="cell find">20</td><td class="cell range result">180,000</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt">딸기</td><td class="cell">30</td><td class="cell">250,000</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt">라즈베리</td><td class="cell">8</td><td class="cell">90,000</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:10px">
+      <div class="box green" style="font-size:15px"><span>블루베리: <b>*베리*</b> 포함 ✓ 이고 출하량 <b>20 ≥ 15</b> ✓</span></div>
+      <div class="box red" style="font-size:15px"><span style="color:var(--red-ink)">딸기: *베리* 아님 ✗ &nbsp;/&nbsp; 라즈베리: 출하량 8 &lt; 15 ✗</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">E2</div><div class="fx"><span class="fx-icon">fx</span>=SUMIFS(C2:C4, A2:A4, "*베리*", B2:B4, "&gt;=15")</div></div>
+  <div class="arg-note"><b>①</b> 더할 범위(맨 앞!) &nbsp;&nbsp; <b>②③</b> 조건1 범위·조건 &nbsp;&nbsp; <b>④⑤</b> 조건2 범위·조건</div>
+  <div class="result-box">블루베리만 포함 &nbsp;→&nbsp; 180,000</div>
+</div>
+
+<div class="bottom-bar">=SUMIFS(<span class="b">더할 범위</span>, 조건범위1, 조건1, 조건범위2, 조건2 …)<br><span class="tip">⚠ 자주 실수:</span> SUMIF는 더할 범위가 <span class="b">맨 뒤</span>, SUMIFS는 <span class="b">맨 앞</span> — 순서가 서로 반대!</div>

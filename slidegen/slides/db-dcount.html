@@ -1,0 +1,35 @@
+<div class="s-title">DCOUNT — OR 조건은 "서로 다른 줄"에 계단식</div>
+<div class="s-subtitle">조건을 다른 줄에 엇갈려 쓰면 "둘 중 하나만 만족(또는)"하는 행을 셉니다</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">조건 중 하나라도 맞는 행</span>
+    <span class="k blue">셀 숫자 열</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td><td class="colhead">C</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">지점코드</td><td class="cell txt">매장위치</td><td class="cell txt">판매량</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt find">S01</td><td class="cell txt find">서울점</td><td class="cell range find">65</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt find">D02</td><td class="cell txt find">대구점</td><td class="cell range find">30</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt">B03</td><td class="cell txt">부산점</td><td class="cell">20</td></tr>
+    </table>
+
+    <div class="col" style="flex:0 0 auto">
+      <div style="font-size:14px;color:var(--ink-dim);margin-bottom:4px">조건표 (다른 줄 = OR)</div>
+      <table class="xls">
+        <tr><td class="corner"></td><td class="colhead">E</td><td class="colhead">F</td></tr>
+        <tr><td class="rowhead">1</td><td class="cell txt">매장위치</td><td class="cell txt">판매량</td></tr>
+        <tr><td class="rowhead">2</td><td class="cell txt find">대구점</td><td class="cell"></td></tr>
+        <tr><td class="rowhead">3</td><td class="cell"></td><td class="cell find">&gt;=50</td></tr>
+      </table>
+      <div style="font-size:14px;color:var(--ink-dim);margin-top:6px;text-align:center">대구점 <b>또는</b> 판매 50 이상</div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">H2</div><div class="fx"><span class="fx-icon">fx</span>=DCOUNT(A1:C4, 3, E1:F3)</div></div>
+  <div class="result-box">서울점(65) + 대구점 = 2</div>
+</div>
+
+<div class="bottom-bar">조건을 <span class="b">다른 줄</span>에 = OR(또는) &nbsp;·&nbsp; 계단식으로 어긋나게 입력<br><span class="tip">⚠ 자주 실수:</span> DCOUNT는 <span class="b">숫자 열</span>만 셈 — 글자(텍스트) 개수를 세려면 DCOUNTA 사용</div>

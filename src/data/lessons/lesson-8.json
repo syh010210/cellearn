@@ -1,0 +1,451 @@
+{
+  "id": 8,
+  "title": "논리 함수 — 조건 분기 및 에러 처리",
+  "shortTitle": "논리·조건 함수",
+  "concepts": [
+    {
+      "heading": "1. 단일 조건 분기 구조 (IF)",
+      "content": "IF 함수는 가장 기본적인 논리 함수로, 지정한 조건이 참(TRUE)일 때와 거짓(FALSE)일 때 각각 서로 다른 결과값을 출력합니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "IF 함수는 조건식의 결과(참·거짓)에 따라 출력값을 두 갈래로 분기하는 논리 함수의 기본입니다. 세 가지 인수의 역할을 정확히 이해하는 것이 핵심입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/logic-if.svg",
+          "alt": "IF 함수 인수 구조 및 참·거짓 분기 흐름도"
+        },
+        {
+          "type": "heading",
+          "text": "함수 형식"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**=IF(조건식, 참일_때_결과, 거짓일_때_결과)**",
+            "**조건식**: 비교 연산자(>=, <=, >, <, =, <>)를 사용한 논리 표현식",
+            "**참일 때 결과**: 조건식이 TRUE일 때 출력할 값",
+            "**거짓일 때 결과**: 조건식이 FALSE일 때 출력할 값"
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "핵심 작성 규칙"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**문자열 출력 시 반드시 쌍따옴표(\"\")** 로 감싸야 합니다. 예: \"합격\", \"우수유저\"",
+            "**공백(빈 문자열) 출력**은 쌍따옴표 두 개를 붙여 씁니다: \"\"",
+            "**숫자 출력 시**는 따옴표 없이 그대로 씁니다: 0, 100"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "플랫폼 이용자 목록입니다. [C2] 셀에 IF 함수를 사용하여 사용 시간이 100시간 이상이면 '우수유저', 그렇지 않으면 공백(\"\")이 표시되도록 수식을 완성하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "유저ID", "editable": false },
+            { "val": "사용시간", "editable": false },
+            { "val": "유저등급", "editable": false }
+          ],
+          [
+            { "val": "U-501", "editable": false },
+            { "val": 120, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(B2>=100,\"우수유저\",\"\")", "result": "우수유저" }
+          ],
+          [
+            { "val": "U-502", "editable": false },
+            { "val": 85, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "2. 다중 조건 동시 만족 필터링 (IF-AND)",
+      "content": "AND 함수는 괄호 안에 나열된 모든 조건이 100% 참이어야만 최종 참(TRUE)을 반환합니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "AND 함수는 단독으로 쓰이기보다 IF 함수의 조건식 자리에 결합되어 복합 조건을 처리할 때 사용합니다. **모든 조건이 동시에 TRUE여야** AND가 TRUE를 반환합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/logic-if-and.svg",
+          "alt": "AND 진리표 및 IF-AND 결합 수식 예시"
+        },
+        {
+          "type": "heading",
+          "text": "함수 형식"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**=IF(AND(조건1, 조건2, ...), 참일_때, 거짓일_때)**",
+            "AND 함수 안에는 조건을 쉼표로 구분하여 2개 이상 나열할 수 있습니다.",
+            "조건 중 **하나라도 FALSE이면 AND 전체가 FALSE**가 됩니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "출제 키워드"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "문제에 **'~이면서'**, **'~이고'**, **'모두 만족하는 경우'** 라는 표현이 나오면 AND 함수를 사용합니다.",
+            "예: \"알고리즘과 SQL 점수가 **모두** 80점 이상이면\" → AND"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "신규 개발자 채용 역량 검증표입니다. [D2] 셀에 IF와 AND 함수를 조합하여 알고리즘 점수와 SQL 점수가 모두 80점 이상이면 '통과', 그렇지 않으면 공백(\"\")을 출력하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "지원자", "editable": false },
+            { "val": "알고리즘", "editable": false },
+            { "val": "SQL점수", "editable": false },
+            { "val": "합격여부", "editable": false }
+          ],
+          [
+            { "val": "강프로", "editable": false },
+            { "val": 85, "editable": false },
+            { "val": 90, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(AND(B2>=80,C2>=80),\"통과\",\"\")", "result": "통과" }
+          ],
+          [
+            { "val": "이코드", "editable": false },
+            { "val": 75, "editable": false },
+            { "val": 95, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. 하나라도 만족하는 조건 분기 (IF-OR)",
+      "content": "OR 함수는 괄호 안에 열거된 조건 중에서 단 하나라도 참(TRUE)이 존재하면 최종 참을 반환하는 함수입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "OR 함수는 조건 중 **하나라도 TRUE이면 전체 결과가 TRUE**가 됩니다. 모든 조건이 FALSE일 때만 FALSE를 반환하며, AND와 정반대의 동작 방식입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/logic-if-or.svg",
+          "alt": "OR 진리표 및 IF-OR 결합 수식 예시"
+        },
+        {
+          "type": "heading",
+          "text": "함수 형식"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**=IF(OR(조건1, 조건2, ...), 참일_때, 거짓일_때)**",
+            "OR 함수 안에는 조건을 쉼표로 구분하여 2개 이상 나열할 수 있습니다.",
+            "조건 중 **하나라도 TRUE이면 OR 전체가 TRUE**가 됩니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "출제 키워드"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "문제에 **'~이거나'**, **'또는'**, **'조건 중 하나라도 충족'** 이라는 표현이 나오면 OR 함수를 사용합니다.",
+            "예: \"트래픽이 90 이상이**거나** 응답속도가 90 이상이면\" → OR"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "서버 모니터링 로그입니다. [D2] 셀에 IF와 OR 함수를 결합하여 트래픽 점수가 90 이상이거나 응답 속도가 90 이상인 경우 '점검요망', 그렇지 않으면 공백(\"\")을 표시하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "서버명", "editable": false },
+            { "val": "트래픽", "editable": false },
+            { "val": "응답속도", "editable": false },
+            { "val": "상태진단", "editable": false }
+          ],
+          [
+            { "val": "Node-A", "editable": false },
+            { "val": 92, "editable": false },
+            { "val": 60, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(OR(B2>=90,C2>=90),\"점검요망\",\"\")", "result": "점검요망" }
+          ],
+          [
+            { "val": "Node-B", "editable": false },
+            { "val": 40, "editable": false },
+            { "val": 55, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "4. 단계별 복합 등급 부여 (중첩 IF)",
+      "content": "처리해야 할 결과 항목이 3개 이상으로 늘어나면 IF 함수의 거짓(FALSE) 결과값 자리에 또 다른 IF 함수를 밀어 넣어 연속적으로 조건을 스캔하는 '중첩 IF' 기법을 사용합니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "결과가 3가지 이상이면 IF의 거짓 자리에 새 IF를 삽입하여 조건을 단계적으로 걸러냅니다. 이를 **중첩 IF(Nested IF)**라 하며, 설계 순서와 괄호 개수 관리가 핵심입니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/logic-nested-if.svg",
+          "alt": "중첩 IF 의사결정 트리 및 괄호 구조 설명"
+        },
+        {
+          "type": "heading",
+          "text": "구조 설계 원칙"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**높은 기준부터 순차적으로 내려오며 작성합니다.** (>=90 먼저 → >=80 → 나머지)",
+            "앞 단계에서 통과한 조건은 자동으로 배제됩니다. (두 번째 IF에 도달하면 이미 <90임이 보장)",
+            "**닫는 괄호 수 = IF 함수 개수** — IF가 2개면 마지막에 )) 두 개로 닫습니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "수식 예시"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "=IF(B2>=90, \"A등급\", IF(B2>=80, \"B등급\", \"C등급\"))",
+            "B2=95: 첫 번째 조건 >=90 TRUE → **A등급** 출력",
+            "B2=82: 첫 번째 FALSE, 두 번째 조건 >=80 TRUE → **B등급** 출력",
+            "B2=71: 두 조건 모두 FALSE → **C등급** 출력"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "API 연동 처리율에 따른 인센티브 등급 산정 기준표입니다. [C2] 셀에 중첩 IF 함수를 사용해 처리율이 90 이상이면 'A등급', 80 이상이면 'B등급', 나머지는 'C등급'으로 처리되도록 작성하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "모듈명", "editable": false },
+            { "val": "처리율", "editable": false },
+            { "val": "최종등급", "editable": false }
+          ],
+          [
+            { "val": "결제모듈", "editable": false },
+            { "val": 95, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(B2>=90,\"A등급\",IF(B2>=80,\"B등급\",\"C등급\"))", "result": "A등급" }
+          ],
+          [
+            { "val": "알림모듈", "editable": false },
+            { "val": 82, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "검색모듈", "editable": false },
+            { "val": 71, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "5. 수식 에러 및 계산 예외 제어 (IFERROR)",
+      "content": "수식 연산 과정에서 에러 값(#DIV/0!, #N/A, #VALUE! 등)을 깔끔하게 정돈해 주는 방어 코딩용 함수입니다.",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "**IFERROR**는 수식 실행 중 에러가 발생할 경우 에러 메시지 대신 지정한 대체값을 표시하는 방어용 함수입니다. 데이터 부재나 0으로 나누기 등 예외 상황에서 사용합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/logic-iferror.svg",
+          "alt": "IFERROR 적용 전후 에러 처리 비교"
+        },
+        {
+          "type": "heading",
+          "text": "함수 형식"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**=IFERROR(정상_연산_수식, 에러_발생시_대체_출력값)**",
+            "첫 번째 인수의 수식을 먼저 실행하고, 에러가 없으면 결과를 그대로 출력합니다.",
+            "에러가 감지되면 즉시 두 번째 인수의 대체값으로 치환하여 출력합니다."
+          ]
+        },
+        {
+          "type": "heading",
+          "text": "처리 가능한 에러 종류"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "**#DIV/0!**: 0으로 나누기 (가장 흔함)",
+            "**#N/A**: VLOOKUP 등에서 찾는 값이 없을 때",
+            "**#VALUE!**: 잘못된 인수 형식 (문자 대신 숫자 필요 등)",
+            "**#REF!, #NAME?, #NUM!** 등 모든 엑셀 에러 포괄"
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "모듈별 트래픽 당 연산 시간 정산표입니다. 수량이 0인 경우 0으로 나누기 에러가 발생할 수 있습니다. [D2] 셀에 IFERROR 함수를 적용하여 '처리시간/수량'을 계산하되, 에러 발생 시 문자열 '수량오류'가 나오도록 방어 수식을 구성하세요.",
+        "cols": ["A", "B", "C", "D"],
+        "rows": [
+          [
+            { "val": "작업코드", "editable": false },
+            { "val": "처리시간", "editable": false },
+            { "val": "수량", "editable": false },
+            { "val": "단위당 시간", "editable": false }
+          ],
+          [
+            { "val": "T-10", "editable": false },
+            { "val": 500, "editable": false },
+            { "val": 0, "editable": false },
+            { "val": "", "editable": true, "answer": "=IFERROR(B2/C2,\"수량오류\")", "result": "수량오류" }
+          ],
+          [
+            { "val": "T-20", "editable": false },
+            { "val": 300, "editable": false },
+            { "val": 10, "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    }
+  ],
+  "quiz": [
+    {
+      "id": 1,
+      "question": "다음 중 수식 '=IF(AND(5>3, 2>=4), \"합격\", \"대기\")'의 최종 실행 결과값으로 가장 올바른 것은 무엇인가?",
+      "options": [
+        "합격",
+        "대기",
+        "FALSE",
+        "#VALUE!"
+      ],
+      "answer": 1,
+      "explanation": "AND 함수는 내부에 기재된 조건들이 모두 참이어야 참이 됩니다. 첫 번째 조건인 '5>3'은 참(TRUE)이지만, 두 번째 조건인 '2>=4'는 거짓(FALSE)이므로 AND 함수는 거짓을 반환합니다. 따라서 IF 함수의 거짓일 때 결과인 '대기'가 출력됩니다."
+    },
+    {
+      "id": 2,
+      "question": "엑셀 수식 작성 중 발생하는 #DIV/0! 이나 #N/A 같은 에러 메시지를 사용자에게 노출하지 않고, '데이터 에러'라는 텍스트로 바꾸어 표시하려고 할 때 가장 적절하게 활용할 수 있는 논리 함수는?",
+      "options": [
+        "IF",
+        "AND",
+        "IFERROR",
+        "NOT"
+      ],
+      "answer": 2,
+      "explanation": "IFERROR 함수는 첫 번째 인수의 계산 식에서 오류가 발견되었을 때, 에러 문자 대신 개발자가 지정한 대체 텍스트나 보정된 수치를 출력해 주는 오류 전용 제어 함수입니다."
+    },
+    {
+      "id": 3,
+      "question": "수식 '=IF(OR(A1>=90, B1>=90), \"점검\", \"정상\")'에서 A1=70, B1=95일 때 결과는?",
+      "options": [
+        "정상",
+        "점검",
+        "FALSE",
+        "#VALUE!"
+      ],
+      "answer": 1,
+      "explanation": "OR 함수는 조건 중 하나라도 TRUE이면 전체가 TRUE가 됩니다. A1=70이면 70>=90이 FALSE지만, B1=95이면 95>=90이 TRUE입니다. OR(FALSE, TRUE) = TRUE이므로 IF의 참 결과인 '점검'이 출력됩니다."
+    },
+    {
+      "id": 4,
+      "question": "다음 중 IF 함수에서 결과값으로 문자열을 출력하는 올바른 방법은?",
+      "options": [
+        "=IF(A1>0, 합격, 불합격)",
+        "=IF(A1>0, '합격', '불합격')",
+        "=IF(A1>0, \"합격\", \"불합격\")",
+        "=IF(A1>0, [합격], [불합격])"
+      ],
+      "answer": 2,
+      "explanation": "엑셀에서 IF 함수의 결과값으로 문자열(텍스트)을 출력할 때는 반드시 쌍따옴표(\"\")로 감싸야 합니다. 작은따옴표('')는 엑셀에서 문자열 구분자로 사용하지 않습니다."
+    },
+    {
+      "id": 5,
+      "question": "중첩 IF 수식 '=IF(B2>=90,\"A\",IF(B2>=80,\"B\",\"C\"))'에서 B2의 값이 85일 때 출력되는 결과는?",
+      "options": [
+        "A",
+        "B",
+        "C",
+        "#VALUE!"
+      ],
+      "answer": 1,
+      "explanation": "B2=85: 첫 번째 조건 B2>=90은 FALSE(85<90)이므로 두 번째 IF로 넘어갑니다. 두 번째 조건 B2>=80은 TRUE(85>=80)이므로 결과는 'B'가 출력됩니다."
+    },
+    {
+      "id": 6,
+      "question": "다음 중 AND 함수와 OR 함수의 차이점을 올바르게 설명한 것은?",
+      "options": [
+        "AND는 조건이 하나라도 참이면 TRUE, OR는 모든 조건이 참일 때만 TRUE를 반환한다.",
+        "AND는 모든 조건이 참일 때만 TRUE, OR는 조건 중 하나라도 참이면 TRUE를 반환한다.",
+        "AND와 OR는 동작 방식이 동일하며 결과도 항상 같다.",
+        "AND는 숫자 조건에만, OR는 텍스트 조건에만 사용할 수 있다."
+      ],
+      "answer": 1,
+      "explanation": "AND는 모든 조건이 동시에 TRUE일 때만 TRUE를 반환하고, 하나라도 FALSE이면 FALSE입니다. OR는 반대로 조건 중 하나라도 TRUE이면 TRUE를 반환하고, 모두 FALSE일 때만 FALSE입니다."
+    },
+    {
+      "id": 7,
+      "question": "수식 '=IF(A1<>\"\"과 '=IF(A1=\"\")'의 차이로 올바른 것은?",
+      "options": [
+        "'<>'는 같음을 의미하고, '='는 다름을 의미한다.",
+        "'<>'는 다름(같지 않음)을 의미하고, A1<>\"\"는 A1이 비어있지 않을 때 TRUE이다.",
+        "두 수식의 결과는 항상 동일하다.",
+        "'<>'는 엑셀에서 지원하지 않는 연산자이다."
+      ],
+      "answer": 1,
+      "explanation": "<>는 '같지 않음'을 뜻하는 비교 연산자입니다. A1<>\"\"는 A1이 빈 셀이 아닐 때(뭔가 입력되어 있을 때) TRUE가 됩니다. 반대로 A1=\"\"는 A1이 빈 셀일 때 TRUE입니다."
+    },
+    {
+      "id": 8,
+      "question": "다음 중 중첩 IF 수식을 작성할 때 주의사항으로 올바르지 않은 것은?",
+      "options": [
+        "닫는 괄호의 개수는 사용한 IF 함수의 개수와 동일해야 한다.",
+        "높은 기준의 조건부터 먼저 작성하는 것이 수식 오류를 방지하는 올바른 설계 방법이다.",
+        "중첩 IF에서 조건은 반드시 AND나 OR 함수와 함께 사용해야만 한다.",
+        "앞 단계 IF에서 걸러진 조건은 이후 IF에서 재검토할 필요가 없다."
+      ],
+      "answer": 2,
+      "explanation": "중첩 IF는 단순 비교 조건만으로도 작성할 수 있으며, AND나 OR 함수의 사용이 필수 조건은 아닙니다. 나머지 보기들은 모두 올바른 설명입니다: 괄호 수 = IF 개수, 높은 기준부터 작성, 앞 단계 조건 재검토 불필요."
+    },
+    {
+      "id": 9,
+      "question": "=IFERROR(VLOOKUP(A2, $D$2:$E$10, 2, 0), \"미등록\") 수식에서 A2의 값이 검색 범위에 없을 때 출력되는 결과는?",
+      "options": [
+        "#N/A",
+        "0",
+        "미등록",
+        "#VALUE!"
+      ],
+      "answer": 2,
+      "explanation": "VLOOKUP에서 찾는 값이 없으면 #N/A 에러가 발생합니다. IFERROR는 첫 번째 인수에서 어떤 종류의 에러라도 발생하면 두 번째 인수의 값인 '미등록'으로 대체하여 출력합니다."
+    },
+    {
+      "id": 10,
+      "question": "수식 '=IF(AND(A1>=60, B1>=60, C1>=60), \"전과목합격\", \"재시험\")'의 설명으로 올바른 것은?",
+      "options": [
+        "A1, B1, C1 중 하나라도 60점 이상이면 '전과목합격'을 출력한다.",
+        "A1, B1, C1 세 과목 모두 60점 이상일 때만 '전과목합격'을 출력한다.",
+        "AND 함수는 인수를 2개까지만 받을 수 있으므로 이 수식은 에러가 발생한다.",
+        "60점 미만이 하나라도 있으면 '전과목합격'을 출력한다."
+      ],
+      "answer": 1,
+      "explanation": "AND 함수는 인수를 2개 이상 받을 수 있으며 최대 255개까지 가능합니다. AND(A1>=60, B1>=60, C1>=60)은 세 조건이 모두 TRUE일 때만 TRUE를 반환하므로, 세 과목 모두 60점 이상일 때 '전과목합격'이 출력됩니다."
+    }
+  ],
+  "practiceAnswers": [
+    { "sheet": "단일조건", "cell": "C2", "formula": "=IF(B2>=100,\"우수유저\",\"\")" },
+    { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(B2>=80,C2>=80),\"통과\",\"\")" },
+    { "sheet": "OR조건", "cell": "D2", "formula": "=IF(OR(B2>=90,C2>=90),\"점검요망\",\"\")" },
+    { "sheet": "중첩IF", "cell": "C2", "formula": "=IF(B2>=90,\"A등급\",IF(B2>=80,\"B등급\",\"C등급\"))" },
+    { "sheet": "에러처리", "cell": "D2", "formula": "=IFERROR(B2/C2,\"수량오류\")" }
+  ]
+}

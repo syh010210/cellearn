@@ -1,0 +1,29 @@
+<div class="s-title">COUNTIF · AVERAGEIF — 조건 맞는 것만 세고 평균 내기</div>
+<div class="s-subtitle">"~인 것만" 골라서 개수를 세거나(COUNTIF) 평균을 냅니다(AVERAGEIF)</div>
+
+<div class="s-body">
+  <div class="hl-legend">
+    <span class="k green">조건에 맞는 행</span>
+    <span class="k amber">계산 결과</span>
+  </div>
+
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">A</td><td class="colhead">B</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">직급</td><td class="cell txt">급여</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell txt">과장</td><td class="cell">4,000,000</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell txt find">대리</td><td class="cell range">3,000,000</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell txt find">대리</td><td class="cell range">2,600,000</td></tr>
+    </table>
+
+    <div class="grow col" style="gap:12px">
+      <div class="box green" style="justify-content:space-between"><span>COUNTIF — "대리" 몇 명?</span><span class="result-box" style="font-size:24px;padding:6px 14px">2</span></div>
+      <div class="box amber" style="justify-content:space-between"><span>AVERAGEIF — "대리" 평균 급여</span><span class="b" style="color:var(--amber-ink);font-size:20px">2,800,000</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D2</div><div class="fx"><span class="fx-icon">fx</span>=AVERAGEIF(A2:A4, "대리", B2:B4)</div></div>
+  <div class="arg-note"><b>①</b> 조건 볼 범위 &nbsp;&nbsp; <b>②</b> 조건("대리") &nbsp;&nbsp; <b>③</b> 실제로 평균 낼 범위</div>
+</div>
+
+<div class="bottom-bar">조건은 <span class="b">"대리"</span>, <span class="b">"&gt;80"</span> 처럼 따옴표로 감쌉니다<br><span class="tip">⚠ 자주 실수:</span> AVERAGEIFS(복수 조건)는 <span class="b">평균 낼 범위가 맨 앞</span> — AVERAGEIF와 순서가 반대!</div>

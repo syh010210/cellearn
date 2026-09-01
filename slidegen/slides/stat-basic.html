@@ -1,0 +1,28 @@
+<div class="s-title">AVERAGE · MAX · MIN · MEDIAN — 범위를 요약하는 함수</div>
+<div class="s-subtitle">모두 "괄호 안에 범위(드래그해서 선택한 영역) 하나"만 넣으면 됩니다</div>
+
+<div class="s-body">
+  <div class="row" style="align-items:flex-start">
+    <table class="xls">
+      <tr><td class="corner"></td><td class="colhead">B</td></tr>
+      <tr><td class="rowhead">1</td><td class="cell txt">점수</td></tr>
+      <tr><td class="rowhead">2</td><td class="cell range">80</td></tr>
+      <tr><td class="rowhead">3</td><td class="cell range">95</td></tr>
+      <tr><td class="rowhead">4</td><td class="cell range">70</td></tr>
+      <tr><td class="rowhead">5</td><td class="cell range">85</td></tr>
+      <tr><td class="rowhead">6</td><td class="cell range">75</td></tr>
+    </table>
+
+    <div class="grow" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="box blue" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--blue-ink);font-size:18px">AVERAGE</span><span style="font-size:14px;color:var(--ink-dim)">평균 (합÷개수)</span><span class="b" style="color:var(--blue-ink);font-size:26px">= 81</span></div>
+      <div class="box" style="flex-direction:column;gap:2px;border-color:#a855f7"><span class="b" style="color:#d8b4fe;font-size:18px">MEDIAN</span><span style="font-size:14px;color:var(--ink-dim)">정렬 후 한가운데 값</span><span class="b" style="color:#d8b4fe;font-size:26px">= 80</span></div>
+      <div class="box green" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--green-ink);font-size:18px">MAX</span><span style="font-size:14px;color:var(--ink-dim)">가장 큰 값</span><span class="b" style="color:var(--green-ink);font-size:26px">= 95</span></div>
+      <div class="box red" style="flex-direction:column;gap:2px"><span class="b" style="color:var(--red-ink);font-size:18px">MIN</span><span style="font-size:14px;color:var(--ink-dim)">가장 작은 값</span><span class="b" style="color:var(--red-ink);font-size:26px">= 70</span></div>
+    </div>
+  </div>
+
+  <div class="formula-bar"><div class="name-box">D1</div><div class="fx"><span class="fx-icon">fx</span>=AVERAGE(B2:B6)</div></div>
+  <div class="arg-note"><b>B2:B6</b> = B2부터 B6까지의 범위(드래그해서 선택한 영역)</div>
+</div>
+
+<div class="bottom-bar">모두 =함수(범위) 형태 &nbsp;·&nbsp; MEDIAN 계산: 70 · 75 · [80] · 85 · 95 → 한가운데 80<br><span class="tip">⚠ 자주 실수:</span> 범위 안에 <span class="b">빈칸이나 글자</span>가 섞이면 무시하고 숫자만 계산함</div>

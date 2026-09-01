@@ -59,7 +59,7 @@ export default function WrongNoteView({ lessons, quizWrongMap, practiceWrongMap 
       )}
 
       {allPractice.length === 0 && allQuiz.length === 0 && (
-        <div style={{ color: "#64748b", textAlign: "center", marginTop: 60 }}>오답이 없어요! 🎉</div>
+        <div style={{ color: "#64748b", textAlign: "center", marginTop: 60 }}>오답이 없어요!</div>
       )}
     </div>
   );

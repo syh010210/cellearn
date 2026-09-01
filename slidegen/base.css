@@ -1,0 +1,265 @@
+/* =========================================================================
+   base.css — 슬라이드 공통 스타일
+   제1원칙: 어떤 텍스트도 상자를 삐져나오지 않는다.
+   방법: 좌표/높이 수동지정 금지. 브라우저 flexbox/grid가 크기를 계산한다.
+   폰트: 전체 단일 폰트(Noto Sans KR 계열). 함수식도 같은 폰트, 굵기/밑줄/배경으로만 강조.
+   ========================================================================= */
+
+:root {
+  /* ---- 색상 팔레트 (다크 테마) ---- */
+  --bg:        #0f1a2b;   /* 전체 배경 */
+  --panel:     #16233a;   /* 기본 패널 */
+  --panel-2:   #1b2b45;   /* 살짝 밝은 패널 */
+  --ink:       #e7eefb;   /* 기본 글자 */
+  --ink-dim:   #b7c4dc;   /* 보조 글자 */
+  --line:      #2c3e5c;   /* 테두리/구분선 */
+
+  --blue:      #3b82f6;   --blue-bg:   #17294a;   --blue-ink:  #93c5fd;
+  --green:     #22c55e;   --green-bg:  #123524;   --green-ink: #86efac;
+  --amber:     #f59e0b;   --amber-bg:  #3a2a0c;   --amber-ink: #fbbf24;
+  --red:       #ef4444;   --red-bg:    #3a1414;   --red-ink:   #fca5a5;
+
+  /* ---- 타이포 스케일 ---- */
+  --fs-title:    30px;
+  --fs-subtitle: 19px;
+  --fs-body:     19px;
+  --fs-small:    16px;
+  --radius:      10px;
+  --gap:         16px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* 전체 단일 폰트 강제. 함수식/코드도 이 폰트를 그대로 쓴다(폰트 섞임 방지). */
+html, body, .slide, .slide * {
+  font-family: "Noto Sans KR", "Malgun Gothic", sans-serif;
+  /* 숫자/기호 정렬을 위해 tabular-nums 사용 → 함수식도 일반 폰트로 가지런하게 */
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+body { background: var(--bg); }
+
+/* ---- 슬라이드 프레임 (고정 폭, 높이는 내용에 따라 자동) ---- */
+.slide {
+  width: 1280px;              /* 캡처 폭 고정 → 항상 동일한 결과 */
+  min-height: 720px;
+  background: var(--bg);
+  color: var(--ink);
+  padding: 40px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ---- 제목/부제 ---- */
+.s-title {
+  font-size: var(--fs-title);
+  font-weight: 800;
+  color: var(--blue-ink);
+  text-align: center;
+  line-height: 1.3;
+}
+.s-subtitle {
+  font-size: var(--fs-subtitle);
+  color: var(--ink-dim);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: -8px;
+}
+
+/* ---- 본문 영역: 남는 높이를 균등 분배하되 형제 높이 강제 없음 ---- */
+.s-body { display: flex; flex-direction: column; gap: 20px; }
+
+/* =========================================================================
+   부품(Primitives) — 모든 박스는 flex 중앙정렬이 기본값.
+   글자 수가 늘면 박스가 늘어나므로 삐져나올 수 없다.
+   ========================================================================= */
+
+/* 가로/세로 배치 헬퍼 */
+.row  { display: flex; gap: var(--gap); align-items: stretch; }
+.col  { display: flex; flex-direction: column; gap: var(--gap); }
+.grow { flex: 1 1 0; min-width: 0; }   /* min-width:0 → 자식 축소 허용(overflow 방지) */
+
+/* 카드: 내용만큼만 커지고, 안쪽 여백이 항상 확보됨 */
+.card {
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 정중앙 정렬 박스: 텍스트가 상자 정가운데 온다 */
+.box {
+  background: var(--panel-2);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  line-height: 1.4;
+}
+
+/* 색상 변형 */
+.blue  { background: var(--blue-bg);  border-color: var(--blue);  }
+.green { background: var(--green-bg); border-color: var(--green); }
+.amber { background: var(--amber-bg); border-color: var(--amber); }
+.red   { background: var(--red-bg);   border-color: var(--red);   }
+
+.blue  .h, .blue.h  { color: var(--blue-ink);  }
+.green .h, .green.h { color: var(--green-ink); }
+.amber .h, .amber.h { color: var(--amber-ink); }
+.red   .h, .red.h   { color: var(--red-ink);   }
+
+/* 박스 안 제목 라인 */
+.h { font-weight: 800; font-size: 21px; }
+
+/* 강조: 폰트를 바꾸지 않고 굵기/밑줄/배경으로만 */
+.b   { font-weight: 800; }
+.u   { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.hl  { background: rgba(59,130,246,.18); border-radius: 4px; padding: 1px 6px; font-weight: 700; }
+
+/* 함수식/코드 표기: monospace 대신 같은 폰트 + 옅은 배경으로 구분 */
+.code {
+  background: #0b1424;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: #cfe0ff;
+  letter-spacing: .3px;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+/* =========================================================================
+   표 — 진짜 <table>을 쓴다. 셀 높이/폭을 브라우저가 계산 → 정렬 완벽.
+   ========================================================================= */
+.tbl { width: 100%; border-collapse: collapse; border-radius: var(--radius); overflow: hidden; }
+.tbl th, .tbl td {
+  border: 1px solid var(--line);
+  padding: 12px 16px;
+  text-align: center;
+  vertical-align: middle;
+  line-height: 1.4;
+}
+.tbl thead th { background: var(--blue-bg); color: var(--blue-ink); font-weight: 800; }
+.tbl td { background: var(--panel); color: var(--ink); }
+.tbl tr.hit td { background: var(--green-bg); color: var(--green-ink); font-weight: 700; }
+.tag {
+  display: inline-flex; align-items: center;
+  background: var(--green); color: #06210f;
+  font-weight: 800; font-size: 13px;
+  padding: 3px 10px; border-radius: 999px;
+}
+
+/* =========================================================================
+   화살표 — 좌표가 아니라 flex 흐름 안에서 자연 배치.
+   ========================================================================= */
+.arrow-down { display: flex; justify-content: center; align-items: center; color: var(--amber); font-size: 26px; line-height: 1.4; }
+.arrow-right{ display: flex; justify-content: center; align-items: center; color: var(--amber); font-size: 26px; line-height: 1.4; }
+.arrow-lbl  { font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+
+/* 트리 분기용: 라벨+화살표+박스를 세로 스택으로 묶음 → 어긋남 없음 */
+.branch { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+
+/* ---- 하단 요약 바 ---- */
+.bottom-bar {
+  margin-top: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  text-align: center;
+  color: var(--ink-dim);
+  font-size: var(--fs-small);
+  line-height: 1.7;
+}
+.bottom-bar .note { color: var(--blue-ink); font-weight: 800; }
+
+/* 리스트(번호 매김)도 삐져나오지 않게 */
+.steps { display: flex; flex-direction: column; gap: 10px; }
+.steps .item { display: flex; gap: 10px; align-items: flex-start; line-height: 1.5; }
+.steps .num { color: var(--amber-ink); font-weight: 800; flex: 0 0 auto; }
+
+/* =========================================================================
+   엑셀 화면 부품 — 참조형(A) 슬라이드 전용.
+   실제 엑셀처럼 열 머리글(A B C) + 행 번호(1 2 3) + 회색 격자.
+   숫자는 오른쪽, 텍스트는 왼쪽 정렬. 셀 강조 3종.
+   ========================================================================= */
+.xls { border-collapse: collapse; margin: 0 auto; }
+.xls td { border: 1px solid #38507a; }
+
+/* 열 머리글 / 행 번호 / 좌상단 모서리 */
+.xls .corner,
+.xls .colhead,
+.xls .rowhead {
+  background: #26344d; color: #a9bcda; font-weight: 700;
+  font-size: 15px; text-align: center; padding: 7px 12px;
+}
+.xls .rowhead { min-width: 34px; }
+
+/* 데이터 셀: 기본은 숫자 → 오른쪽 정렬 */
+.xls td.cell {
+  background: #0e1b30; color: var(--ink);
+  font-size: 17px; padding: 11px 16px; min-width: 66px;
+  text-align: right; white-space: nowrap;
+}
+.xls td.cell.txt { text-align: left; }      /* 텍스트 → 왼쪽 정렬 */
+
+/* 셀 강조 3종 (outline은 자리를 밀지 않아 격자가 안 흔들림) */
+.xls td.find   { outline: 3px solid var(--green); outline-offset: -3px;
+                 color: var(--green-ink); font-weight: 800; }
+.xls td.range  { background: rgba(59,130,246,.24); }
+.xls td.result { background: #3a2f0c; outline: 2px solid var(--amber);
+                 outline-offset: -2px; color: var(--amber-ink); font-weight: 800; }
+
+/* 수식 입력줄: [이름 상자][ fx  =수식 ] */
+.formula-bar {
+  display: flex; align-items: stretch; border: 1px solid var(--line);
+  border-radius: 8px; overflow: hidden; margin: 4px 0;
+}
+.formula-bar .name-box {
+  background: #26344d; color: #cfe0ff; font-weight: 800;
+  min-width: 78px; padding: 12px 14px;
+  display: flex; align-items: center; justify-content: center;
+  border-right: 1px solid var(--line);
+}
+.formula-bar .fx {
+  background: #0b1424; color: #cfe0ff; flex: 1; min-width: 0;
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  font-size: 19px; font-weight: 600;
+}
+.formula-bar .fx-icon { color: #8aa0c0; font-style: italic; font-weight: 700; flex: 0 0 auto; }
+
+/* 강조 색상 범례 (찾는 값 / 참조 범위 / 결과 셀) */
+.hl-legend { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; font-size: 15px; }
+.hl-legend .k { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-dim); }
+.hl-legend .k::before { content: ""; width: 15px; height: 15px; border-radius: 3px; flex: 0 0 auto; }
+.hl-legend .k.green::before { border: 2.5px solid var(--green); }
+.hl-legend .k.blue::before  { background: rgba(59,130,246,.4); }
+.hl-legend .k.amber::before { background: #3a2f0c; border: 2px solid var(--amber); }
+
+/* 인수 설명 줄 (함수식 아래 ①②③ 라벨) */
+.arg-note { text-align: center; color: var(--ink-dim); font-size: 16px; line-height: 1.7; }
+.arg-note b { color: var(--amber-ink); font-weight: 800; }
+
+/* 결과 강조 박스 (초록) — 어디서든 재사용 */
+.result-box {
+  background: var(--green-bg); border: 2px solid var(--green); border-radius: 10px;
+  padding: 12px 18px; text-align: center; color: var(--green-ink);
+  font-weight: 800; font-size: 22px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+
+/* 하단 요약의 "자주 실수" 팁 */
+.bottom-bar .tip { color: var(--amber-ink); font-weight: 800; }

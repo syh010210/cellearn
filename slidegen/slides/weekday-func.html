@@ -1,0 +1,27 @@
+<div class="s-title">WEEKDAY — 날짜가 무슨 요일인지 번호로 알려주기</div>
+<div class="s-subtitle">두 번째 값(옵션)으로 "무슨 요일을 1번으로 볼지" 정합니다</div>
+
+<div class="s-body">
+  <div class="code" style="max-width:560px;margin:0 auto">=WEEKDAY( <b>①</b> 날짜 , <b>②</b> 옵션 )</div>
+
+  <div class="row" style="align-items:flex-start">
+    <div class="grow">
+      <div class="b" style="color:var(--amber-ink);text-align:center;margin-bottom:8px">옵션 1 (생략 가능) — 일요일 = 1</div>
+      <table class="tbl">
+        <thead><tr><th>요일</th><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr></thead>
+        <tbody><tr><td class="b">번호</td><td class="amber b" style="color:var(--amber-ink)">1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td class="b" style="color:#d8b4fe;background:#1e0f47;border-color:#a855f7">7</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row" style="align-items:flex-start">
+    <div class="grow">
+      <div class="b" style="color:var(--blue-ink);text-align:center;margin-bottom:8px">옵션 2 (업무일 기준) — 월요일 = 1</div>
+      <table class="tbl">
+        <thead><tr><th>요일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th><th>일</th></tr></thead>
+        <tbody><tr><td class="b">번호</td><td class="blue b" style="color:var(--blue-ink)">1</td><td>2</td><td>3</td><td>4</td><td>5</td><td class="b" style="color:#d8b4fe;background:#1e0f47;border-color:#a855f7">6</td><td class="amber b" style="color:var(--amber-ink)">7</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="bottom-bar">=WEEKDAY(날짜, 1) → 일요일=1 &nbsp;·&nbsp; =WEEKDAY(날짜, 2) → 월요일=1<br><span class="tip">⚠ 자주 실수:</span> 옵션에 따라 번호가 달라짐 · <span class="b">CHOOSE와 조합</span>해 "월·화·수" 요일명 뽑는 문제 자주 출제</div>
