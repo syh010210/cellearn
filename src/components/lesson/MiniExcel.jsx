@@ -3,7 +3,7 @@ import { toAddr, shiftFormula, cycleReference } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet } from "../../excel-engine/index.js";
 
-export default function MiniExcel({ practice }) {
+export default function MiniExcel({ practice, autoplay = false }) {
   const initCells = () =>
     practice.rows.map((row) => row.map((cell) => ({ ...cell, input: "", status: null })));
 
@@ -21,6 +21,8 @@ export default function MiniExcel({ practice }) {
   const [rangeStart, setRangeStart] = useState(null);
 
   const sheetRef = useRef(null);
+  const autoCancelRef = useRef(false); // 오토플레이(히어로 데모) 취소 플래그
+  function cancelAuto() { autoCancelRef.current = true; }
 
   function getAddr(ri, ci) {
     return `${practice.cols[ci]}${ri + 1}`;
@@ -66,6 +68,39 @@ export default function MiniExcel({ practice }) {
       nextCursorPos.current = null;
     }
   }, [inputVal]);
+
+  // 오토플레이(랜딩 히어로 데모): 마운트 시 1회, 첫 정답 셀에 수식을 타이핑→계산.
+  // reduced-motion 존중, 사용자가 표를 건드리면 즉시 취소.
+  useEffect(() => {
+    if (!autoplay) return;
+    if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    let target = null;
+    for (let r = 0; r < practice.rows.length && !target; r++) {
+      for (let c = 0; c < practice.rows[r].length; c++) {
+        const cell = practice.rows[r][c];
+        if (cell.editable && cell.answer) { target = { ri: r, ci: c, answer: cell.answer }; break; }
+      }
+    }
+    if (!target) return;
+    autoCancelRef.current = false;
+    const timers = [];
+    const full = target.answer;
+    timers.push(setTimeout(() => {
+      if (autoCancelRef.current) return;
+      setSelected({ ri: target.ri, ci: target.ci });
+      for (let i = 1; i <= full.length; i++) {
+        timers.push(setTimeout(() => { if (!autoCancelRef.current) setInputVal(full.slice(0, i)); }, i * 60));
+      }
+      timers.push(setTimeout(() => {
+        if (autoCancelRef.current) return;
+        commitInput(target.ri, target.ci, full);
+        setInputVal("");
+        setSelected(null);
+      }, full.length * 60 + 350));
+    }, 700));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoplay]);
 
   useEffect(() => {
     function onMouseMove(e) {
@@ -168,6 +203,7 @@ export default function MiniExcel({ practice }) {
 
   // 수식 모드 중 셀 mousedown: 범위 선택 드래그 시작 (즉시 삽입하지 않고 mouseup 시 삽입)
   function handleCellMouseDown(e, ri, ci) {
+    cancelAuto();
     if (isFormulaMode()) {
       e.preventDefault();
       // 드래그 시작 시점의 커서 위치 저장 — mouseup 시 이 위치에 범위 주소 삽입
@@ -387,6 +423,7 @@ export default function MiniExcel({ practice }) {
           onKeyDown={handleKeyDown}
           onSelect={(e) => setCursorPos(e.target.selectionStart ?? inputVal.length)}
           onFocus={() => {
+            cancelAuto();
             setInputFocused(true);
             if (inputVal.startsWith("=")) isEditingRef.current = true;
           }}
