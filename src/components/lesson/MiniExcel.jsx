@@ -365,9 +365,9 @@ export default function MiniExcel({ practice }) {
   return (
     <div style={{ marginTop: 20, background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", userSelect: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.07)", fontFamily: FONT }}>
       {/* 문제 설명 */}
-      <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 6, padding: "12px 16px", marginBottom: 20 }}>
-        <span style={{ color: "#1d4ed8", fontSize: 11, fontWeight: 700, letterSpacing: 1 }}>문제</span>
-        <p style={{ color: "#1e3a5f", fontSize: 15, fontWeight: 600, margin: "4px 0 0", lineHeight: 1.6 }}>{practice.instruction}</p>
+      <div style={{ background: "#e8f0ec", border: "1px solid #bfe0d2", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
+        <span style={{ color: "#123a33", fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>문제</span>
+        <p style={{ color: "#1c2f2a", fontSize: 15, fontWeight: 600, margin: "4px 0 0", lineHeight: 1.6 }}>{practice.instruction}</p>
       </div>
 
       {/* 수식 입력창 (Excel 스타일) */}

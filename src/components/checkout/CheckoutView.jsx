@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as PortOne from "@portone/browser-sdk/v2";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { UI } from "../../theme";
 
 // 급수별 3개월 기간제 상품 (가격은 실제 정책에 맞게 조정 — 서버 verify-payment의 PRICE와 반드시 일치)
 const PRODUCTS = {
@@ -61,39 +62,39 @@ export default function CheckoutView({ onBack }) {
     }
   }
 
-  const wrap = { minHeight: "100vh", background: "#0f172a", color: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: "'Noto Sans KR', sans-serif" };
-  const card = { width: "100%", maxWidth: 460, background: "#1e293b", border: "1px solid #334155", borderRadius: 16, padding: 32 };
-  const opt = (g) => ({ flex: 1, padding: "16px", borderRadius: 12, cursor: "pointer", textAlign: "center", border: `2px solid ${grade === g ? "#f59e0b" : "#334155"}`, background: grade === g ? "#422006" : "#0f172a" });
+  const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font };
+  const card = { width: "100%", maxWidth: 460, background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: 20, padding: 34, boxShadow: "0 6px 24px rgba(18,58,51,0.06)" };
+  const opt = (g) => ({ flex: 1, padding: "16px", borderRadius: 14, cursor: "pointer", textAlign: "center", border: `2px solid ${grade === g ? UI.teal : UI.line}`, background: grade === g ? UI.tealSoft : UI.panelAlt });
 
   return (
     <div style={wrap}>
       <div style={card}>
-        {onBack && <button style={{ background: "transparent", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 13, marginBottom: 12 }} onClick={onBack}>← 홈</button>}
-        <div style={{ fontSize: 22, fontWeight: 800 }}>수강권 결제</div>
-        <div style={{ fontSize: 13, color: "#94a3b8", margin: "6px 0 22px" }}>급수를 선택하면 3개월간 해당 급수 학습·실습이 열립니다.</div>
+        {onBack && <button style={{ background: "transparent", border: "none", color: UI.mut, cursor: "pointer", fontSize: 13, marginBottom: 12, fontWeight: 600 }} onClick={onBack}>← 홈</button>}
+        <div style={{ fontSize: 23, fontWeight: 800 }}>수강권 결제</div>
+        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>급수를 선택하면 3개월간 해당 급수 학습·실습이 열립니다.</div>
 
         <div style={{ display: "flex", gap: 12 }}>
           {["2급", "1급"].map((g) => (
             <div key={g} style={opt(g)} onClick={() => setGrade(g)}>
               <div style={{ fontWeight: 800, fontSize: 18 }}>컴활 {g}</div>
-              <div style={{ fontSize: 13, color: "#cbd5e1", marginTop: 4 }}>3개월 이용권</div>
-              <div style={{ fontWeight: 800, fontSize: 16, marginTop: 8, color: "#fbbf24" }}>{PRODUCTS[g].amount.toLocaleString()}원</div>
+              <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>3개월 이용권</div>
+              <div style={{ fontWeight: 800, fontSize: 16, marginTop: 8, color: UI.teal }}>{PRODUCTS[g].amount.toLocaleString()}원</div>
             </div>
           ))}
         </div>
 
-        <div style={{ marginTop: 20, fontSize: 13, color: "#94a3b8", lineHeight: 1.7 }}>
+        <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
           · 상품: {product.label}<br />
-          · 결제 금액: <b style={{ color: "#f1f5f9" }}>{product.amount.toLocaleString()}원</b><br />
+          · 결제 금액: <b style={{ color: UI.ink }}>{product.amount.toLocaleString()}원</b><br />
           · 이용 기간: 결제 완료 시점부터 3개월
         </div>
 
-        {msg && <div style={{ marginTop: 16, background: "#0c2344", border: "1px solid #1e40af", color: "#93c5fd", borderRadius: 8, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
+        {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: 10, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
 
         <button
           onClick={startCheckout}
           disabled={busy}
-          style={{ width: "100%", marginTop: 22, background: "#f59e0b", color: "#000", border: "none", padding: 14, borderRadius: 10, fontSize: 15, fontWeight: 800, cursor: "pointer" }}
+          style={{ width: "100%", marginTop: 22, background: UI.teal, color: "#fff", border: "none", padding: 14, borderRadius: 12, fontSize: 15, fontWeight: 800, cursor: "pointer" }}
         >
           {busy ? "처리 중…" : `${product.amount.toLocaleString()}원 결제하기`}
         </button>

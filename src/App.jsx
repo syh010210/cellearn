@@ -12,6 +12,7 @@ import WrongNoteView from "./components/wrongnote/WrongNoteView";
 import AuthView from "./components/auth/AuthView";
 import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
+import { UI } from "./theme";
 
 // ⚠️ 임시: 결제 연동 전까지 로그인만 하면 실습 허용. 결제 붙일 때 true로 되돌려 수강권(결제) 필수로 조인다.
 const REQUIRE_ENROLLMENT = false;
@@ -54,7 +55,7 @@ export default function App() {
   const currentLesson = typeof view === "number" ? LESSONS.find((l) => l.id === view) : null;
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#0f172a", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center" }}>불러오는 중…</div>
+    <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
   );
 
   if (page === "auth") return <AuthView onBack={() => setPage("landing")} />;
@@ -64,23 +65,13 @@ export default function App() {
   if (page === "landing") return (
     <div>
       <LandingPage onStart={startLearning} />
-      {!isMobile && (
-        <div style={{ position: "fixed", bottom: 24, right: 24, display: "flex", gap: 10 }}>
-          {isAuthed && (
-            <button
-              onClick={signOut}
-              style={{ background: "transparent", color: "#94a3b8", border: "1px solid #334155", padding: "14px 20px", borderRadius: 12, fontSize: 14, cursor: "pointer" }}
-            >
-              로그아웃
-            </button>
-          )}
-          <button
-            onClick={startLearning}
-            style={{ background: "#f59e0b", color: "#000", border: "none", padding: "14px 28px", borderRadius: 12, fontSize: 16, fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 20px #f59e0b66" }}
-          >
-            학습 시작 →
-          </button>
-        </div>
+      {!isMobile && isAuthed && (
+        <button
+          onClick={signOut}
+          style={{ position: "fixed", top: 18, right: 24, background: UI.panel, color: UI.mut, border: `1px solid ${UI.line}`, padding: "8px 16px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI.font, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+        >
+          로그아웃
+        </button>
       )}
     </div>
   );
@@ -92,7 +83,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ display: "flex", background: "#0f172a", color: "#f1f5f9", height: "100vh", overflow: "hidden", fontFamily: "'Noto Sans KR', sans-serif" }}>
+    <div style={{ display: "flex", background: UI.bg, color: UI.ink, height: "100vh", overflow: "hidden", fontFamily: UI.font }}>
       <Sidebar
         lessons={LESSONS}
         current={view}
@@ -104,29 +95,32 @@ export default function App() {
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 상단 탭 — sticky 고정 */}
-        <div style={{ position: "sticky", top: 0, zIndex: 20, background: "#0f172a", borderBottom: "1px solid #1e293b", padding: "10px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px", display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <button
             onClick={() => setPage("landing")}
-            style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}
+            style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}
           >
             ← 홈
           </button>
-          {currentLesson && ["concept", "practice", "quiz"].map((s) => (
-            <button
-              key={s}
-              onClick={() => { setStep(s); document.getElementById("main-content").scrollTo({ top: 0, behavior: "smooth" }); }}
-              style={{ background: step === s ? "#1e3a8a" : "transparent", border: `1px solid ${step === s ? "#3b82f6" : "#334155"}`, color: step === s ? "#f1f5f9" : "#94a3b8", padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}
-            >
-              {s === "concept" ? "📖 개념" : s === "practice" ? "📂 실습" : "📝 퀴즈"}
-            </button>
-          ))}
+          {currentLesson && ["concept", "practice", "quiz"].map((s) => {
+            const active = step === s;
+            return (
+              <button
+                key={s}
+                onClick={() => { setStep(s); document.getElementById("main-content").scrollTo({ top: 0, behavior: "smooth" }); }}
+                style={{ background: active ? UI.teal : UI.panel, border: `1px solid ${active ? UI.teal : UI.line}`, color: active ? "#fff" : UI.mut, padding: "7px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500 }}
+              >
+                {s === "concept" ? "📖 개념" : s === "practice" ? "📂 실습" : "📝 퀴즈"}
+              </button>
+            );
+          })}
           <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
             {isAdmin && (
-              <button onClick={() => setPage("admin")} style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>관리자</button>
+              <button onClick={() => setPage("admin")} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>관리자</button>
             )}
-            {user && <span style={{ fontSize: 12.5, color: "#64748b" }}>{user.email}</span>}
+            {user && <span style={{ fontSize: 12.5, color: UI.faint }}>{user.email}</span>}
             {isAuthed && (
-              <button onClick={signOut} style={{ background: "transparent", border: "1px solid #334155", color: "#94a3b8", padding: "6px 14px", borderRadius: 8, cursor: "pointer", fontSize: 13 }}>로그아웃</button>
+              <button onClick={signOut} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: 600 }}>로그아웃</button>
             )}
           </div>
         </div>

@@ -19,7 +19,9 @@ export const C = {
 export function Wrap({ children }) {
   return (
     <div style={{
-      background: C.bg, borderRadius: 12, padding: 20,
+      // 밝은 개념 페이지 위에서 브랜드 톤(딥그린) 피규어 카드로 보이게 한다.
+      background: '#123a33', border: '1px solid #1f4f45', borderRadius: 16, padding: 20,
+      margin: '10px 0 14px',
       // 다이어그램 안의 모든 텍스트를 페이지 기본 글꼴(문제 텍스트와 동일)로 통일한다.
       fontFamily: FONT, color: C.text,
     }}>
