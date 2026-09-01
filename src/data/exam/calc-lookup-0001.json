@@ -1,0 +1,23 @@
+{
+  "id": "calc-lookup-0001",
+  "section": "계산",
+  "subtype": "lookup",
+  "difficulty": "중",
+  "grade": "2급",
+  "title": "찾기/참조 — 등급표 조회",
+  "instruction": "[표3] C열(등급)에 점수(B)를 등급표(E2:F5)에서 찾아 표시하시오. VLOOKUP과 근사값 조회를 사용. (C2 입력 후 C5까지 자동 채우기)",
+  "sheetName": "계산3",
+  "table": [
+    ["응시자", "점수", "등급", "", "기준점수", "등급"],
+    ["A", 92, "", "", 0, "D"],
+    ["B", 78, "", "", 60, "C"],
+    ["C", 55, "", "", 80, "B"],
+    ["D", 84, "", "", 90, "A"]
+  ],
+  "answers": [
+    { "cell": "C2", "formula": "=VLOOKUP(B2,$E$2:$F$5,2)" },
+    { "cell": "C3", "formula": "=VLOOKUP(B3,$E$2:$F$5,2)" },
+    { "cell": "C4", "formula": "=VLOOKUP(B4,$E$2:$F$5,2)" },
+    { "cell": "C5", "formula": "=VLOOKUP(B5,$E$2:$F$5,2)" }
+  ]
+}

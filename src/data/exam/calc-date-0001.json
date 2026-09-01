@@ -1,0 +1,21 @@
+{
+  "id": "calc-date-0001",
+  "section": "계산",
+  "subtype": "date",
+  "difficulty": "상",
+  "grade": "2급",
+  "title": "날짜 — 완료 예정일",
+  "instruction": "[표6] C열(완료예정일)에 시작일(B)로부터 주말·휴일을 제외한 5 근무일 뒤 날짜를 구하시오. WORKDAY 사용. (C2 입력 후 C4까지 자동 채우기)",
+  "sheetName": "계산6",
+  "table": [
+    ["작업", "시작일", "완료예정일"],
+    ["설계", "2025-03-03", ""],
+    ["개발", "2025-03-10", ""],
+    ["검수", "2025-03-17", ""]
+  ],
+  "answers": [
+    { "cell": "C2", "formula": "=WORKDAY(B2,5)" },
+    { "cell": "C3", "formula": "=WORKDAY(B3,5)" },
+    { "cell": "C4", "formula": "=WORKDAY(B4,5)" }
+  ]
+}
