@@ -223,7 +223,7 @@ export default function AdminView({ onBack }) {
               <table style={{ borderCollapse: "collapse", width: "100%" }}>
                 <thead><tr>
                   <th style={th}>가입일</th><th style={th}>이메일</th><th style={th}>이름</th><th style={th}>연락처</th>
-                  <th style={th}>목표급수</th><th style={th}>응시예정일</th><th style={th}>수강권</th><th style={th}>마케팅</th><th style={th}>권한</th>
+                  <th style={th}>학습 과정</th><th style={th}>응시예정일</th><th style={th}>수강권</th><th style={th}>마케팅</th><th style={th}>권한</th>
                 </tr></thead>
                 <tbody>
                   {profiles.map((p) => {
@@ -283,7 +283,7 @@ export default function AdminView({ onBack }) {
             <div style={tableWrap}>
               <table style={{ borderCollapse: "collapse", width: "100%" }}>
                 <thead><tr>
-                  <th style={th}>이메일</th><th style={th}>이름</th><th style={th}>목표급수</th>
+                  <th style={th}>이메일</th><th style={th}>이름</th><th style={th}>학습 과정</th>
                   <th style={th}>완료 차시</th><th style={th}>진도율</th><th style={th}>퀴즈 평균</th><th style={th}>최근 학습</th>
                 </tr></thead>
                 <tbody>

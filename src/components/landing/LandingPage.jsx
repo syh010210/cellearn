@@ -627,7 +627,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
                   </div>
                 ))}
               </div>
-              <Btn variant="lime" onClick={onStart} style={{ width: "100%", justifyContent: "center" }}>2급 실기 시작하기</Btn>
+              <Btn variant="lime" onClick={() => onStart("2급")} style={{ width: "100%", justifyContent: "center" }}>2급 실기 시작하기</Btn>
             </div>
             {/* 1급 — 10월 오픈 예정 */}
             <div style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "28px 26px" }}>

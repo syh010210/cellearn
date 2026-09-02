@@ -1,8 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { UI } from "../../theme";
 import { S } from "./authStyles";
 
-export default function LoginView({ onSwitch }) {
+// 로그인 전용 화면 — 회원가입은 여기서 하지 않는다.
+// 신규 수강 신청은 랜딩의 '수강료'에서 과정을 선택(예: 2급 실기 시작하기)해 진행한다.
+export default function LoginView({ onNeedAccount }) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,8 +35,8 @@ export default function LoginView({ onSwitch }) {
       <button style={S.primary} disabled={busy}>{busy ? "확인 중…" : "로그인"}</button>
 
       <div style={{ marginTop: 18, textAlign: "center", fontSize: 13, color: "#94a3b8" }}>
-        아직 계정이 없으신가요?{" "}
-        <button type="button" style={S.ghost} onClick={onSwitch}>회원가입</button>
+        아직 수강생이 아니신가요?{" "}
+        <button type="button" style={S.ghost} onClick={onNeedAccount}>수강 신청하기</button>
       </div>
     </form>
   );

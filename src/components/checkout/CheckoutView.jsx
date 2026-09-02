@@ -27,9 +27,10 @@ const STORE_ID = import.meta.env.VITE_PORTONE_STORE_ID;
 const CHANNEL_KEY = import.meta.env.VITE_PORTONE_CHANNEL_KEY;
 const PENDING_KEY = "portone_pending";
 
-export default function CheckoutView({ onBack }) {
+export default function CheckoutView({ onBack, presetGrade }) {
   const { user, profile, refresh } = useAuth();
-  const [grade, setGrade] = useState(profile?.target_grade || "2급");
+  // 학습 과정(급수)은 눌러 들어온 과정 → 프로필 목표 → 기본값 순으로 자동 지정
+  const [grade, setGrade] = useState(presetGrade || profile?.target_grade || "2급");
   const [method, setMethod] = useState("CARD");
   const [buyerName, setBuyerName] = useState(profile?.name || "");
   const [buyerPhone, setBuyerPhone] = useState(profile?.phone || "");
@@ -135,7 +136,6 @@ export default function CheckoutView({ onBack }) {
 
   const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font };
   const card = { width: "100%", maxWidth: 460, background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 34, boxShadow: UI.shadow };
-  const opt = (g) => ({ flex: 1, padding: "16px", borderRadius: UI.rMd, cursor: "pointer", textAlign: "center", border: `2px solid ${grade === g ? UI.teal : UI.line}`, background: grade === g ? UI.limeSoft : UI.panelAlt });
   const methodBtn = (active) => ({
     padding: "10px 8px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500,
     border: `1.5px solid ${active ? UI.teal : UI.line}`, background: active ? UI.tealSoft : UI.surface,
@@ -147,16 +147,16 @@ export default function CheckoutView({ onBack }) {
       <div style={card}>
         {onBack && <button style={{ background: "transparent", border: "none", color: UI.mut, cursor: "pointer", fontSize: 13, marginBottom: 12, fontWeight: 600 }} onClick={onBack}>← 홈</button>}
         <div style={{ fontSize: 23, fontWeight: 700 }}>수강권 결제</div>
-        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>급수를 선택하면 올해 말까지 해당 급수 학습·실습이 열립니다.</div>
+        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습·실습이 열립니다.</div>
 
-        <div style={{ display: "flex", gap: 12 }}>
-          {["2급", "1급"].map((g) => (
-            <div key={g} style={opt(g)} onClick={() => setGrade(g)}>
-              <div style={{ fontWeight: 700, fontSize: 18 }}>컴활 {g}</div>
-              <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>올해 끝까지 이용</div>
-              <div style={{ fontWeight: 700, fontSize: 16, marginTop: 8, color: UI.teal, fontFamily: UI.mono }}>{PRODUCTS[g].amount.toLocaleString()}원</div>
-            </div>
-          ))}
+        {/* 학습 과정 — 진입 시 자동 지정(읽기 전용) */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: UI.ink, marginBottom: 10 }}>학습 과정</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderRadius: UI.rMd, border: `2px solid ${UI.teal}`, background: UI.limeSoft }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17 }}>컴활 {grade} 실기</div>
+            <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>올해 끝까지 이용</div>
+          </div>
+          <div style={{ fontWeight: 700, fontSize: 18, color: UI.teal, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</div>
         </div>
 
         <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>결제수단</div>

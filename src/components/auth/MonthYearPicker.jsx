@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useLayoutEffect, useMemo } from "react";
 import { UI } from "../../theme";
 import { S } from "./authStyles";
 
@@ -6,34 +6,36 @@ import { S } from "./authStyles";
 // value/onChange 는 "YYYY-MM-01" 형식(일은 01 고정 — DB의 date 컬럼과 호환).
 const ITEM_H = 40;
 const VISIBLE = 5; // 홀수 — 가운데가 선택 위치
+const PAD = ((VISIBLE - 1) / 2) * ITEM_H;
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
-// 스크롤 위치를 항목 인덱스로 스냅시키는 한 컬럼(년 또는 월)
+// 스크롤 위치를 항목에 스냅시키는 한 컬럼(년 또는 월)
 function WheelColumn({ items, value, onPick, render }) {
   const ref = useRef(null);
-  const timer = useRef(null);
-  const pad = ((VISIBLE - 1) / 2) * ITEM_H;
+  const settle = useRef(null);
 
-  // 외부 value 변경 시 해당 항목을 가운데로(즉시 이동)
-  useEffect(() => {
+  // 최초 표시 시 현재 선택값을 가운데로(즉시 이동) — 이후에는 스크롤/탭이 위치를 관리
+  useLayoutEffect(() => {
     const idx = items.indexOf(value);
     if (ref.current && idx >= 0) ref.current.scrollTop = idx * ITEM_H;
-  }, [value, items]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const onScroll = useCallback(() => {
-    clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
+  const onScroll = () => {
+    clearTimeout(settle.current);
+    settle.current = setTimeout(() => {
       const el = ref.current;
       if (!el) return;
-      const idx = Math.max(0, Math.min(items.length - 1, Math.round(el.scrollTop / ITEM_H)));
-      el.scrollTo({ top: idx * ITEM_H, behavior: "smooth" }); // 스냅
+      const idx = clamp(Math.round(el.scrollTop / ITEM_H), 0, items.length - 1);
+      if (el.scrollTop !== idx * ITEM_H) el.scrollTo({ top: idx * ITEM_H, behavior: "smooth" });
       if (items[idx] !== value) onPick(items[idx]);
-    }, 100);
-  }, [items, value, onPick]);
+    }, 90);
+  };
 
   const pick = (it) => {
-    onPick(it);
     const idx = items.indexOf(it);
     ref.current?.scrollTo({ top: idx * ITEM_H, behavior: "smooth" });
+    onPick(it);
   };
 
   return (
@@ -41,9 +43,9 @@ function WheelColumn({ items, value, onPick, render }) {
       ref={ref}
       className="no-scrollbar"
       onScroll={onScroll}
-      style={{ flex: 1, height: ITEM_H * VISIBLE, overflowY: "auto", scrollSnapType: "y mandatory" }}
+      style={{ flex: 1, height: ITEM_H * VISIBLE, overflowY: "auto", scrollSnapType: "y mandatory", position: "relative", zIndex: 1 }}
     >
-      <div style={{ height: pad }} />
+      <div style={{ height: PAD }} />
       {items.map((it) => {
         const sel = it === value;
         return (
@@ -53,16 +55,16 @@ function WheelColumn({ items, value, onPick, render }) {
             style={{
               height: ITEM_H, display: "flex", alignItems: "center", justifyContent: "center",
               scrollSnapAlign: "center", cursor: "pointer", userSelect: "none",
-              fontSize: sel ? 19 : 16, fontWeight: sel ? 700 : 500,
-              color: sel ? UI.ink : UI.faint, fontFamily: UI.font,
-              transition: "color .15s, font-size .15s",
+              fontSize: sel ? 20 : 16, fontWeight: sel ? 800 : 500,
+              color: sel ? UI.teal : UI.faint, fontFamily: UI.font,
+              transition: "color .12s, font-size .12s",
             }}
           >
             {render(it)}
           </div>
         );
       })}
-      <div style={{ height: pad }} />
+      <div style={{ height: PAD }} />
     </div>
   );
 }
@@ -70,8 +72,8 @@ function WheelColumn({ items, value, onPick, render }) {
 export default function MonthYearPicker({ value, onChange, placeholder = "응시 예정 시기 선택" }) {
   const now = new Date();
   const thisYear = now.getFullYear();
-  const years = Array.from({ length: 4 }, (_, i) => thisYear + i); // 올해~+3년
-  const months = Array.from({ length: 12 }, (_, i) => i + 1);
+  const years = useMemo(() => Array.from({ length: 4 }, (_, i) => thisYear + i), [thisYear]);
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
 
   const parsed = value && value.length >= 7
     ? { y: +value.slice(0, 4), m: +value.slice(5, 7) }
@@ -95,7 +97,6 @@ export default function MonthYearPicker({ value, onChange, placeholder = "응시
 
   const label = parsed ? `${parsed.y}년 ${parsed.m}월` : placeholder;
 
-  // 입력창처럼 보이는 필드 버튼
   const field = {
     ...S.input,
     textAlign: "left", cursor: "pointer",
@@ -122,14 +123,15 @@ export default function MonthYearPicker({ value, onChange, placeholder = "응시
             }}
           >
             <div style={{ position: "relative", display: "flex", gap: 8 }}>
-              {/* 가운데 선택 하이라이트 밴드 */}
+              {/* 가운데 선택 밴드 — 상하 라인으로 선택 위치를 또렷하게 (iOS 스타일) */}
               <div style={{
-                position: "absolute", left: 0, right: 0, top: ((VISIBLE - 1) / 2) * ITEM_H, height: ITEM_H,
-                background: UI.tealSoft, borderRadius: UI.rMd, pointerEvents: "none",
+                position: "absolute", left: 4, right: 4, top: PAD, height: ITEM_H, zIndex: 0,
+                background: UI.tealSoft, borderTop: `1px solid ${UI.teal}`, borderBottom: `1px solid ${UI.teal}`,
+                borderRadius: UI.rSm, pointerEvents: "none",
               }} />
-              {/* 위/아래 페이드 마스크 */}
-              <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: ITEM_H * 1.5, background: `linear-gradient(${UI.surface}, transparent)`, pointerEvents: "none", zIndex: 2 }} />
-              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: ITEM_H * 1.5, background: `linear-gradient(transparent, ${UI.surface})`, pointerEvents: "none", zIndex: 2 }} />
+              {/* 위/아래 페이드 마스크 (가운데 밴드는 가리지 않도록 높이 = 한 칸) */}
+              <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: ITEM_H, background: `linear-gradient(${UI.surface}, transparent)`, pointerEvents: "none", zIndex: 2 }} />
+              <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: ITEM_H, background: `linear-gradient(transparent, ${UI.surface})`, pointerEvents: "none", zIndex: 2 }} />
 
               <WheelColumn items={years} value={y} onPick={setY} render={(v) => `${v}년`} />
               <WheelColumn items={months} value={m} onPick={setM} render={(v) => `${v}월`} />

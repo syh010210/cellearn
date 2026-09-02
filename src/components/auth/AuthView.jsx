@@ -4,10 +4,11 @@ import LoginView from "./LoginView";
 import SignupView from "./SignupView";
 import { S } from "./authStyles";
 
-// 로그인/회원가입을 토글하는 인증 페이지 컨테이너
-export default function AuthView({ onBack }) {
+// 인증 페이지 컨테이너.
+// 기본은 로그인 전용. 수강 신청(제품 CTA)로 들어오면 initialMode="signup" + presetGrade로 가입 폼을 연다.
+export default function AuthView({ onBack, initialMode = "login", presetGrade = "2급" }) {
   const { isSupabaseConfigured } = useAuth();
-  const [mode, setMode] = useState("login");
+  const [mode, setMode] = useState(initialMode);
 
   return (
     <div style={S.wrap}>
@@ -21,8 +22,8 @@ export default function AuthView({ onBack }) {
           </div>
         )}
         {mode === "login"
-          ? <LoginView onSwitch={() => setMode("signup")} />
-          : <SignupView onSwitch={() => setMode("login")} />}
+          ? <LoginView onNeedAccount={() => setMode("signup")} />
+          : <SignupView presetGrade={presetGrade} onSwitch={() => setMode("login")} />}
       </div>
     </div>
   );

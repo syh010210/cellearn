@@ -36,6 +36,9 @@ export default function App() {
   const [legalTab, setLegalTab] = useState("terms");
   const [view, setView] = useState("dash");
   const [step, setStep] = useState("concept");
+  // 제품 CTA로 선택한 학습 과정(급수)과, 인증 화면 초기 모드
+  const [selectedGrade, setSelectedGrade] = useState(null);
+  const [authMode, setAuthMode] = useState("login");
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
   const { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
 
@@ -62,10 +65,17 @@ export default function App() {
     window.scrollTo({ top: 0 });
   }
 
-  function startLearning() {
+  function startLearning(grade) {
+    // 여러 버튼이 onClick={onStart}로 이벤트를 넘길 수 있어 문자열일 때만 과정으로 취급
+    const g = typeof grade === "string" ? grade : null;
     if (isMobile) return;
+    if (g) setSelectedGrade(g);
     if (gateBypassed) return setPage("learn");
-    if (!isAuthed) return setPage("auth");
+    if (!isAuthed) {
+      // 제품 CTA(과정 지정)로 들어오면 수강 신청(가입) 흐름, 그 외엔 로그인
+      setAuthMode(g ? "signup" : "login");
+      return setPage("auth");
+    }
     // 결제 필요 여부는 learn 화면 렌더 시 canLearn 게이트가 판단 (미리 결제화면 띄우지 않음)
     setPage("learn");
   }
@@ -90,8 +100,8 @@ export default function App() {
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
   );
 
-  if (page === "auth") return <AuthView onBack={() => setPage("landing")} />;
-  if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} />;
+  if (page === "auth") return <AuthView onBack={() => setPage("landing")} initialMode={authMode} presetGrade={selectedGrade || "2급"} />;
+  if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} />;
   if (page === "admin") return <AdminView onBack={() => setPage("landing")} />;
   if (page === "legal") return (
     <>
@@ -109,12 +119,12 @@ export default function App() {
 
   // page === "learn" — 접근 권한 확인
   if (!canLearn) {
-    if (!isAuthed) return <AuthView onBack={() => setPage("landing")} />;
+    if (!isAuthed) return <AuthView onBack={() => setPage("landing")} initialMode={authMode} presetGrade={selectedGrade || "2급"} />;
     // 로그인 직후 수강권 조회가 끝나기 전엔 결제화면 대신 로더 (깜빡임 방지)
     if (!dataReady) return (
       <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
     );
-    return <CheckoutView onBack={() => setPage("landing")} />;
+    return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} />;
   }
 
   return (
