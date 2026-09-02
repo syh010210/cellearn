@@ -529,12 +529,19 @@ export function AbsoluteFillDownAnim() {
       <Subtitle>{'$B$5·$C$5(비율)는 항상 5행을 참조 · B·C의 행 번호만 2 → 3 → 4 로 변합니다'}</Subtitle>
 
       <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 60px 60px 176px' }}>
+        <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 64px 64px 176px' }}>
+          {/* 열 문자 행 */}
           <HeadCell />
-          <HeadCell>A 이름</HeadCell>
-          <HeadCell>B 실기</HeadCell>
-          <HeadCell>C 봉사</HeadCell>
-          <HeadCell accent>D 점수</HeadCell>
+          <HeadCell>A</HeadCell>
+          <HeadCell>B</HeadCell>
+          <HeadCell>C</HeadCell>
+          <HeadCell accent>D</HeadCell>
+          {/* 제목 행 (엑셀 1행) */}
+          <HeadCell>1</HeadCell>
+          <TitleCell>이름</TitleCell>
+          <TitleCell>실기</TitleCell>
+          <TitleCell>봉사</TitleCell>
+          <TitleCell accent>점수</TitleCell>
           {rows.map((r, idx) => {
             const filled = idx < filledCount;
             const justFilled = idx === Math.min(step, 2) && step <= 2;
@@ -562,16 +569,16 @@ export function AbsoluteFillDownAnim() {
               />,
             ];
           })}
-          {/* 비율(고정) 행 — 자동 채우기 내내 값·색이 변하지 않는 고정 기준 셀 */}
+          {/* 비율(고정) 행 — 실기·봉사에 곱하는 공통 기준값. 자동 채우기 내내 절대 안 바뀜 */}
           <HeadCell>5</HeadCell>
-          <DataCell>비율</DataCell>
+          <TitleCell>비율</TitleCell>
           <div className="cl-lock-pulse" style={{
-            background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
-            border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
+            background: '#2a0d0d', borderBottom: `1px solid ${C.border}`,
+            border: `2px solid ${C.red}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: C.redLight,
           }}>🔒 $B$5<br /><span style={{ fontSize: 13 }}>0.6</span></div>
           <div className="cl-lock-pulse" style={{
-            background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
-            border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
+            background: '#2a0d0d', borderBottom: `1px solid ${C.border}`,
+            border: `2px solid ${C.red}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: C.redLight,
           }}>🔒 $C$5<br /><span style={{ fontSize: 13 }}>0.4</span></div>
           <DataCell dim>고정 기준값</DataCell>
         </div>
@@ -604,11 +611,11 @@ export function AbsoluteFillDownAnim() {
       </div>
 
       <WhyBox
-        title="🔒 표시된 비율 셀($B$5·$C$5)을 보세요 — 끝까지 그대로입니다"
+        title="🔒 빨간 비율 셀($B$5·$C$5)은 왜 고정해야 할까?"
         lines={[
-          <>D 열은 <b style={{ color: '#3b82f6' }}>2 → 3 → 4</b> 로 한 칸씩 채워지지만,</>,
-          <><b style={{ color: FIX }}>🔒 비율 셀(0.6·0.4)은 위치도 값도 색도 전혀 바뀌지 않습니다.</b></>,
-          <>$로 고정했기 때문에, 모든 행이 <b style={{ color: FIX }}>항상 같은 $B$5·$C$5</b>를 곱해 계산합니다.</>,
+          <><b style={{ color: C.redLight }}>0.6·0.4</b>는 모든 사람의 <b style={{ color: FIX }}>실기·봉사 점수에 똑같이 곱해야 하는 기준값</b>이에요.</>,
+          <>수식을 아래로 채울 때 이 셀이 함께 밀려 내려가면 <b style={{ color: C.redLight }}>비어 있는 6·7행을 참조</b>해 계산이 전부 틀어집니다.</>,
+          <>그래서 <b style={{ color: C.redLight }}>$B$5·$C$5로 고정</b>해, 어느 행을 채워도 항상 같은 비율을 곱하게 만듭니다.</>,
         ]}
       />
     </Wrap>
