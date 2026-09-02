@@ -45,6 +45,9 @@ export default function CheckoutView({ onBack, presetGrade }) {
     if (profile?.target_grade) setGrade((g) => g || profile.target_grade);
   }, [profile]);
 
+  // 페이지 진입 시 최상단으로 (랜딩/가입에서 스크롤 내린 상태로 넘어와도 상단부터)
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   // 모바일 리다이렉트 복귀 처리 — 결제창이 페이지를 벗어났다가 ?portone=return 로 돌아옴
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
@@ -134,7 +137,7 @@ export default function CheckoutView({ onBack, presetGrade }) {
     }
   }
 
-  const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font };
+  const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 24px", fontFamily: UI.font };
   const card = { width: "100%", maxWidth: 460, background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 34, boxShadow: UI.shadow };
   const methodBtn = (active) => ({
     padding: "10px 8px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: active ? 700 : 500,
@@ -145,7 +148,7 @@ export default function CheckoutView({ onBack, presetGrade }) {
   return (
     <div style={wrap}>
       <div style={card}>
-        {onBack && <button style={{ background: "transparent", border: "none", color: UI.mut, cursor: "pointer", fontSize: 13, marginBottom: 12, fontWeight: 600 }} onClick={onBack}>← 홈</button>}
+        {onBack && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
         <div style={{ fontSize: 23, fontWeight: 700 }}>수강권 결제</div>
         <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습·실습이 열립니다.</div>
 

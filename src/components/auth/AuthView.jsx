@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import LoginView from "./LoginView";
 import SignupView from "./SignupView";
@@ -10,11 +10,14 @@ export default function AuthView({ onBack, initialMode = "login", presetGrade = 
   const { isSupabaseConfigured } = useAuth();
   const [mode, setMode] = useState(initialMode);
 
+  // 페이지 진입 시 폼이 최상단에 보이도록 스크롤 리셋 (랜딩에서 스크롤 내린 상태로 넘어와도 상단부터)
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   return (
     <div style={S.wrap}>
       <div style={S.card}>
         {onBack && (
-          <button type="button" style={{ ...S.ghost, color: "#94a3b8", marginBottom: 12 }} onClick={onBack}>← 홈</button>
+          <button type="button" style={S.back} onClick={onBack}>← 홈으로</button>
         )}
         {!isSupabaseConfigured && (
           <div style={S.banner}>

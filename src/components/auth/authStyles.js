@@ -2,8 +2,9 @@ import { UI } from "../../theme";
 
 // 인증 화면 공용 인라인 스타일 — 밝고 깔끔한 톤 (랜딩과 통일)
 export const S = {
-  wrap: { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font },
+  wrap: { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 24px", fontFamily: UI.font },
   card: { width: "100%", maxWidth: 420, background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 34, boxShadow: UI.shadow },
+  back: { background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 },
   title: { fontSize: 23, fontWeight: 700, marginBottom: 4, color: UI.ink },
   sub: { fontSize: 13.5, color: UI.mut, marginBottom: 24 },
   label: { fontSize: 13, color: UI.mut, margin: "14px 0 6px", display: "block", fontWeight: 600 },
