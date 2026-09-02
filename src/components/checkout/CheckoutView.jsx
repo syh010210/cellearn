@@ -27,58 +27,70 @@ const STORE_ID = import.meta.env.VITE_PORTONE_STORE_ID;
 const CHANNEL_KEY = import.meta.env.VITE_PORTONE_CHANNEL_KEY;
 const PENDING_KEY = "portone_pending";
 
+// 결제 우선(게스트) → 결제 완료 후 이메일 OTP로 계정 생성·인증·즉시 로그인.
+// phase: "form"(결제 정보) → "account"(결제완료·비번/약관) → "otp"(6자리 코드) → 완료
 export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
-  const { user, profile, refresh, signUp } = useAuth();
-  // 학습 과정(급수)은 눌러 들어온 과정 → 프로필 목표 → 기본값 순으로 자동 지정
+  const { user, profile, refresh, signUp, verifySignupOtp, resendSignupOtp } = useAuth();
   const [grade, setGrade] = useState(presetGrade || profile?.target_grade || "2급");
   const [method, setMethod] = useState("CARD");
-  const [buyerName, setBuyerName] = useState(profile?.name || "");
-  const [buyerPhone, setBuyerPhone] = useState(profile?.phone || "");
-  // 비회원(결제 먼저) — 결제 화면 안에서 계정을 만든다
+  const [name, setName] = useState(profile?.name || "");
+  const [phone, setPhone] = useState(profile?.phone || "");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [termsAgree, setTermsAgree] = useState(false);
   const [marketingAgree, setMarketingAgree] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [phase, setPhase] = useState("form");
+  const [paidId, setPaidId] = useState(null); // 결제 완료된 paymentId (계정 생성 후 검증에 사용)
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const product = PRODUCTS[grade];
-  const isGuest = !user; // 로그인 안 된 상태 → 결제 화면에서 가입까지 처리
+  const isGuest = !user;
 
-  // 프로필이 (비동기로) 로드되면 구매자 정보 자동 채움 — 이미 입력한 값은 보존
   useEffect(() => {
-    if (profile?.name) setBuyerName((v) => v || profile.name);
-    if (profile?.phone) setBuyerPhone((v) => v || profile.phone);
+    if (profile?.name) setName((v) => v || profile.name);
+    if (profile?.phone) setPhone((v) => v || profile.phone);
     if (profile?.target_grade) setGrade((g) => g || profile.target_grade);
   }, [profile]);
 
-  // 페이지 진입 시 최상단으로 (랜딩/가입에서 스크롤 내린 상태로 넘어와도 상단부터)
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // 모바일 리다이렉트 복귀 처리 — 결제창이 페이지를 벗어났다가 ?portone=return 로 돌아옴
+  // 모바일 리다이렉트 복귀(?portone=return) 처리
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (q.get("portone") !== "return" && !q.get("paymentId")) return;
     const pending = JSON.parse(sessionStorage.getItem(PENDING_KEY) || "null");
-    // URL 정리(파라미터 제거) — 새로고침 시 재실행 방지
     window.history.replaceState({}, "", window.location.pathname);
     if (q.get("code")) {
       setMsg(q.get("message") ? decodeURIComponent(q.get("message")) : "결제가 취소되었습니다.");
       return;
     }
     const paymentId = q.get("paymentId") || pending?.paymentId;
+    if (!paymentId) return;
     const g = pending?.grade || grade;
-    if (paymentId) finalize(paymentId, g);
+    if (pending?.grade) setGrade(pending.grade);
+    if (user) {
+      // 이미 로그인된 사용자 → 바로 검증
+      finalize(paymentId, g);
+    } else {
+      // 게스트 → 결제는 됐으니 계정 생성 단계로
+      if (pending?.email) setEmail(pending.email);
+      if (pending?.name) setName(pending.name);
+      if (pending?.phone) setPhone(pending.phone);
+      setPaidId(paymentId);
+      setPhase("account");
+      setMsg("결제가 확인되었습니다. 아래에서 계정을 만들어 학습을 시작하세요.");
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 서버 검증 → 수강권 반영 (데스크톱·모바일 공통 마무리)
+  // 결제 검증 → 수강권 반영 (로그인된 상태에서 호출)
   async function finalize(paymentId, g) {
     setBusy(true);
     setMsg("결제를 확인하는 중…");
     try {
       const { data, error } = await supabase.functions.invoke("verify-payment", { body: { paymentId, grade: g } });
       if (error) {
-        // 서버가 반환한 상세 에러(JSON body)를 최대한 뽑아 표시
         let detail = error.message;
         try {
           const body = await error.context?.json?.();
@@ -97,50 +109,26 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
     }
   }
 
+  // 1단계: 결제하기 (게스트도 로그인 없이 결제)
   async function startCheckout() {
     setMsg("");
     if (!supabase || !STORE_ID || !CHANNEL_KEY) {
       setMsg("결제 설정이 아직 없습니다. docs/SETUP.md의 Supabase·포트원 키를 .env에 넣어주세요.");
       return;
     }
-    const phone = buyerPhone.replace(/[^0-9]/g, "");
-    if (!buyerName.trim() || phone.length < 10) {
-      setMsg("이름과 휴대폰 번호를 입력해 주세요.");
-      return;
-    }
-
-    // 비회원이면 결제 직전에 계정을 만든다(결제=수강권은 계정 귀속이라 계정이 선행돼야 함).
-    let activeUser = user;
-    if (isGuest) {
-      if (!email.trim()) { setMsg("이메일을 입력해 주세요."); return; }
-      if (password.length < 6) { setMsg("비밀번호는 6자 이상이어야 합니다."); return; }
-      if (!termsAgree) { setMsg("이용약관 및 개인정보 처리방침에 동의해 주세요."); return; }
-      setBusy(true);
-      const { data, error } = await signUp({
-        email: email.trim(), password, name: buyerName.trim(), phone,
-        targetGrade: grade, examDate: "", marketingAgree, termsAgree,
-      });
-      if (error) { setBusy(false); setMsg(error.message || "가입에 실패했습니다."); return; }
-      if (!data?.session) {
-        // Supabase '이메일 인증' 설정이 켜져 있으면 즉시 세션이 없다 → 인증 후 이어서 결제
-        setBusy(false);
-        setMsg("가입 확인 메일을 보냈어요. 메일에서 인증을 마치고 로그인하면 이 화면에서 결제가 이어집니다.");
-        return;
-      }
-      activeUser = data.user; // 세션 발급됨(이메일 인증 off) → 바로 결제 진행
-    }
+    const ph = phone.replace(/[^0-9]/g, "");
+    if (!name.trim() || ph.length < 10) { setMsg("이름과 휴대폰 번호를 입력해 주세요."); return; }
+    const mail = email.trim();
+    if (isGuest && !/^\S+@\S+\.\S+$/.test(mail)) { setMsg("결제 영수증·계정에 쓸 이메일을 정확히 입력해 주세요."); return; }
 
     setBusy(true);
     try {
       const paymentId = `pay-${crypto.randomUUID()}`;
-      // 모바일 리다이렉트 복귀 시 필요한 정보 보관
-      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ paymentId, grade }));
+      // 모바일 리다이렉트 복귀에 대비해 결제 정보 보관 (비번은 저장하지 않음)
+      sessionStorage.setItem(PENDING_KEY, JSON.stringify({ paymentId, grade, name: name.trim(), phone: ph, email: mail }));
       const m = METHODS.find((x) => x.key === method) || METHODS[0];
+      const customer = { email: user?.email || mail, fullName: name.trim(), phoneNumber: ph };
 
-      // 이니시스 V2 일반결제는 구매자명·휴대폰이 필수
-      const customer = { email: activeUser.email, fullName: buyerName.trim(), phoneNumber: phone };
-
-      // 포트원 결제창 호출 (KG이니시스 채널). 모바일은 여기서 redirectUrl로 이동됨.
       const res = await PortOne.requestPayment({
         storeId: STORE_ID,
         channelKey: CHANNEL_KEY,
@@ -151,17 +139,62 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         ...m.params,
         redirectUrl: `${window.location.origin}/?portone=return`,
         customer,
-        // 이니시스 merchantData는 한글 불가 → 급수는 ASCII 코드로 (검증은 서버 body.grade 사용)
-        customData: JSON.stringify({ userId: activeUser.id, grade: grade === "1급" ? "level1" : "level2" }),
+        customData: JSON.stringify({ grade: grade === "1급" ? "level1" : "level2" }),
       });
 
-      // 데스크톱(팝업): 결과가 여기로 반환됨. (모바일은 위에서 리다이렉트되어 도달하지 않음)
+      // 데스크톱(팝업): 결과가 여기로 반환됨. (모바일은 리다이렉트되어 도달 안 함)
       if (res?.code) throw new Error(res.message || "결제가 취소되었습니다.");
-      await finalize(paymentId, grade);
+
+      if (user) {
+        await finalize(paymentId, grade); // 로그인 상태면 바로 검증
+      } else {
+        setPaidId(paymentId);
+        setPhase("account");
+        setBusy(false);
+        setMsg("결제가 완료되었습니다. 아래에서 계정을 만들어 학습을 시작하세요.");
+      }
     } catch (e) {
       setMsg(e.message || "결제 처리 중 오류가 발생했습니다.");
       setBusy(false);
     }
+  }
+
+  // 2단계: 계정 만들기 → 이메일로 인증 코드 발송
+  async function createAccount() {
+    setMsg("");
+    if (password.length < 6) { setMsg("비밀번호는 6자 이상이어야 합니다."); return; }
+    if (!termsAgree) { setMsg("이용약관 및 개인정보 처리방침에 동의해 주세요."); return; }
+    setBusy(true);
+    const { data, error } = await signUp({
+      email: email.trim(), password, name: name.trim(), phone: phone.replace(/[^0-9]/g, ""),
+      targetGrade: grade, examDate: "", marketingAgree, termsAgree,
+    });
+    if (error) { setBusy(false); setMsg(error.message || "계정 생성에 실패했습니다."); return; }
+    if (data?.session) {
+      // Supabase 이메일 인증이 꺼져 있으면 가입 즉시 로그인됨 → OTP 건너뛰고 바로 검증
+      await finalize(paidId, grade);
+      return;
+    }
+    setBusy(false);
+    setPhase("otp");
+    setMsg("입력하신 이메일로 6자리 인증 코드를 보냈습니다. 코드를 입력해 주세요.");
+  }
+
+  // 3단계: 코드 인증 → 즉시 로그인 → 결제 검증(수강권 귀속)
+  async function verifyAndFinish() {
+    setMsg("");
+    if (otp.trim().length < 6) { setMsg("6자리 인증 코드를 입력해 주세요."); return; }
+    setBusy(true);
+    const { error } = await verifySignupOtp({ email: email.trim(), token: otp });
+    if (error) { setBusy(false); setMsg(error.message || "인증에 실패했습니다. 코드를 다시 확인해 주세요."); return; }
+    // 세션 발급됨(로그인 상태) → 결제 검증
+    await finalize(paidId, grade);
+  }
+
+  async function resendCode() {
+    setMsg("");
+    const { error } = await resendSignupOtp({ email: email.trim() });
+    setMsg(error ? (error.message || "코드 재발송에 실패했습니다.") : "인증 코드를 다시 보냈습니다.");
   }
 
   const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 24px", fontFamily: UI.font };
@@ -171,16 +204,36 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
     border: `1.5px solid ${active ? UI.teal : UI.line}`, background: active ? UI.tealSoft : UI.surface,
     color: active ? UI.teal : UI.mut, fontFamily: UI.font,
   });
-  const inp = { border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" };
+  const inp = { border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none", width: "100%" };
+  const primary = (label) => (
+    <button onClick={phase === "form" ? startCheckout : phase === "account" ? createAccount : verifyAndFinish} disabled={busy}
+      style={{ width: "100%", marginTop: 22, background: UI.teal, color: "#fff", border: "none", padding: 14, borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: busy ? "not-allowed" : "pointer", opacity: busy ? 0.7 : 1, fontFamily: UI.font }}>
+      {busy ? "처리 중…" : label}
+    </button>
+  );
 
   return (
     <div style={wrap}>
       <div style={card}>
-        {onBack && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
-        <div style={{ fontSize: 23, fontWeight: 700 }}>수강권 결제</div>
+        {onBack && phase === "form" && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
+
+        <div style={{ fontSize: 23, fontWeight: 700 }}>수강 결제</div>
         <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습·실습이 열립니다.</div>
 
-        {/* 학습 과정 — 진입 시 자동 지정(읽기 전용) */}
+        {/* 진행 단계 표시 (게스트 결제-우선 흐름) */}
+        {isGuest && (
+          <div style={{ display: "flex", gap: 6, marginBottom: 20, fontSize: 12, fontWeight: 700 }}>
+            {[["1", "결제", "form"], ["2", "계정", "account"], ["3", "인증", "otp"]].map(([n, lab, ph], i) => {
+              const order = { form: 0, account: 1, otp: 2 };
+              const active = order[phase] >= i;
+              return (
+                <div key={n} style={{ flex: 1, textAlign: "center", padding: "6px 0", borderRadius: UI.rSm, background: active ? UI.tealSoft : UI.panelAlt, color: active ? UI.teal : UI.faint, border: `1px solid ${active ? UI.teal : UI.line}` }}>{n} {lab}</div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* 학습 과정 (읽기 전용) */}
         <div style={{ fontSize: 13, fontWeight: 700, color: UI.ink, marginBottom: 10 }}>학습 과정</div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderRadius: UI.rMd, border: `2px solid ${UI.teal}`, background: UI.limeSoft }}>
           <div>
@@ -190,51 +243,49 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
           <div style={{ fontWeight: 700, fontSize: 18, color: UI.teal, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</div>
         </div>
 
-        <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>결제수단</div>
-        <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-          {METHODS.map((m) => (
-            <button key={m.key} style={methodBtn(method === m.key)} onClick={() => setMethod(m.key)}>{m.label}</button>
-          ))}
-        </div>
+        {/* ── 1단계: 결제 정보 ── */}
+        {phase === "form" && (
+          <>
+            <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>결제수단</div>
+            <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+              {METHODS.map((m) => (
+                <button key={m.key} style={methodBtn(method === m.key)} onClick={() => setMethod(m.key)}>{m.label}</button>
+              ))}
+            </div>
 
-        <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>
-          {isGuest ? "결제·계정 정보" : "구매자 정보"}
-        </div>
-        {isGuest && (
-          <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 4 }}>
-            결제와 동시에 이 정보로 계정이 만들어집니다.
-          </div>
+            <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>구매자 정보</div>
+            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" style={inp} />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="휴대폰 번호 (- 없이 숫자만)" inputMode="numeric" style={inp} />
+              {isGuest && <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일 (영수증·로그인 아이디)" style={inp} />}
+            </div>
+
+            <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
+              · 상품: {product.label}<br />
+              · 결제 금액: <b style={{ color: UI.ink, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</b><br />
+              · 이용 기간: 결제일부터 <b style={{ color: UI.ink }}>2026년 12월 31일</b>까지
+            </div>
+
+            {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
+            {primary(`${product.amount.toLocaleString()}원 결제하기`)}
+
+            {isGuest && (
+              <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: UI.mut }}>
+                이미 계정이 있으신가요?{" "}
+                <button type="button" onClick={onNeedLogin} style={{ background: "transparent", border: "none", color: UI.teal, cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI.font }}>로그인</button>
+              </div>
+            )}
+          </>
         )}
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-          <input
-            value={buyerName}
-            onChange={(e) => setBuyerName(e.target.value)}
-            placeholder="이름"
-            style={inp}
-          />
-          <input
-            value={buyerPhone}
-            onChange={(e) => setBuyerPhone(e.target.value)}
-            placeholder="휴대폰 번호 (- 없이 숫자만)"
-            inputMode="numeric"
-            style={inp}
-          />
-          {isGuest && (
-            <>
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                placeholder="이메일 (로그인 아이디)"
-                style={inp}
-              />
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                placeholder="비밀번호 (6자 이상)"
-                style={inp}
-              />
+
+        {/* ── 2단계: 계정 만들기 (결제 완료 후) ── */}
+        {phase === "account" && (
+          <>
+            <div style={{ marginTop: 18, background: UI.greenSoft, border: `1px solid ${UI.greenLine}`, color: UI.green, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13, fontWeight: 600 }}>✓ 결제 완료 — 이제 계정을 만들어 학습을 시작하세요.</div>
+            <div style={{ marginTop: 20, fontSize: 13, fontWeight: 700, color: UI.ink }}>계정 만들기</div>
+            <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일" style={inp} />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="비밀번호 (6자 이상)" style={inp} />
               <label style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 6, fontSize: 13, color: UI.mut }}>
                 <input type="checkbox" checked={termsAgree} onChange={(e) => setTermsAgree(e.target.checked)} />
                 <span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span>
@@ -243,31 +294,25 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
                 <input type="checkbox" checked={marketingAgree} onChange={(e) => setMarketingAgree(e.target.checked)} />
                 <span>[선택] 마케팅 정보 수신에 동의합니다.</span>
               </label>
-            </>
-          )}
-        </div>
+            </div>
+            {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
+            {primary("인증 코드 받기")}
+          </>
+        )}
 
-        <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
-          · 상품: {product.label}<br />
-          · 결제 금액: <b style={{ color: UI.ink, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</b><br />
-          · 이용 기간: 결제일부터 <b style={{ color: UI.ink }}>2026년 12월 31일</b>까지
-        </div>
-
-        {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
-
-        <button
-          onClick={startCheckout}
-          disabled={busy}
-          style={{ width: "100%", marginTop: 22, background: UI.teal, color: "#fff", border: "none", padding: 14, borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: busy ? "not-allowed" : "pointer", opacity: busy ? 0.7 : 1, fontFamily: UI.font }}
-        >
-          {busy ? "처리 중…" : `${product.amount.toLocaleString()}원 결제하기`}
-        </button>
-
-        {isGuest && (
-          <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: UI.mut }}>
-            이미 계정이 있으신가요?{" "}
-            <button type="button" onClick={onNeedLogin} style={{ background: "transparent", border: "none", color: UI.teal, cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI.font }}>로그인</button>
-          </div>
+        {/* ── 3단계: 이메일 코드 인증 → 즉시 로그인 ── */}
+        {phase === "otp" && (
+          <>
+            <div style={{ marginTop: 20, fontSize: 13, fontWeight: 700, color: UI.ink }}>이메일 인증</div>
+            <div style={{ fontSize: 12.5, color: UI.mut, margin: "4px 0 10px" }}><b style={{ color: UI.ink }}>{email}</b> 로 보낸 6자리 코드를 입력하세요.</div>
+            <input value={otp} onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, "").slice(0, 6))} inputMode="numeric" placeholder="6자리 코드" style={{ ...inp, fontFamily: UI.mono, fontSize: 20, letterSpacing: 6, textAlign: "center" }} />
+            <div style={{ marginTop: 8, textAlign: "center", fontSize: 13, color: UI.mut }}>
+              코드를 못 받으셨나요?{" "}
+              <button type="button" onClick={resendCode} style={{ background: "transparent", border: "none", color: UI.teal, cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI.font }}>재발송</button>
+            </div>
+            {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
+            {primary("인증하고 학습 시작")}
+          </>
         )}
       </div>
     </div>

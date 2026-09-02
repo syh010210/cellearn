@@ -66,6 +66,18 @@ export function AuthProvider({ children }) {
     return supabase.auth.signInWithPassword({ email, password });
   }, []);
 
+  // 이메일로 받은 6자리 코드로 가입 인증 → 성공 시 세션 발급(즉시 로그인)
+  const verifySignupOtp = useCallback(async ({ email, token }) => {
+    if (!supabase) return { error: new Error("Supabase 미설정") };
+    return supabase.auth.verifyOtp({ email, token: token.trim(), type: "signup" });
+  }, []);
+
+  // 가입 인증 코드 재발송
+  const resendSignupOtp = useCallback(async ({ email }) => {
+    if (!supabase) return { error: new Error("Supabase 미설정") };
+    return supabase.auth.resend({ type: "signup", email });
+  }, []);
+
   const signOut = useCallback(async () => {
     if (supabase) await supabase.auth.signOut();
     setSession(null); setProfile(null); setEnrollments([]);
@@ -81,7 +93,7 @@ export function AuthProvider({ children }) {
     loading, dataReady, isSupabaseConfigured,
     user, session, profile, enrollments,
     isAuthed, isAdmin, hasActiveEnrollment, enrolledGrade,
-    signUp, signIn, signOut,
+    signUp, signIn, signOut, verifySignupOtp, resendSignupOtp,
     // 결제 직후처럼 세션이 방금 생긴 경우에도 확실히 반영되도록 현재 세션에서 user를 다시 조회
     refresh: async () => {
       if (!supabase) return;
