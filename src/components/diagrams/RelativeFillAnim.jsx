@@ -416,7 +416,7 @@ export function RelativeFillRightAnim() {
   const filledCount = Math.min(step, 2) + 1;
   const { containerRef, setCellRef, cursor } = useFillCursor(step);
 
-  // 참조 데이터: 3행(상반기)·4행(하반기)을 열 B·C·D 에 두고, =B3+B4 를 오른쪽으로 채움
+  // 3행(상반기)·4행(하반기)을 열 B·C·D 에 두고, B5=B3+B4 를 오른쪽으로 채움
   const cols = ['B', 'C', 'D'];
   const row3 = [10, 20, 30]; // 상반기 (3행)
   const row4 = [40, 50, 60]; // 하반기 (4행)
@@ -425,59 +425,74 @@ export function RelativeFillRightAnim() {
   return (
     <Wrap>
       <Title>상대 참조 — 오른쪽으로 자동 채우기</Title>
-      <Subtitle>수식을 오른쪽으로 끌면 열 문자만 B → C → D 로 따라 이동합니다</Subtitle>
+      <Subtitle>B5 수식을 오른쪽으로 끌면 열 문자만 B → C → D 로 따라 이동합니다</Subtitle>
 
-      <div ref={containerRef} style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center' }}>
-        {/* 참조 데이터 (3·4행) */}
-        <div>
-          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 4, textAlign: 'center' }}>참조 데이터</div>
-          <div style={{ ...gridBase, gridTemplateColumns: '40px 78px 78px 78px 78px' }}>
-            {/* 열 문자 행 */}
-            <HeadCell />
-            <HeadCell>A</HeadCell>
-            {cols.map((c) => <HeadCell key={c}>{c}</HeadCell>)}
-            {/* 3행 */}
-            <HeadCell accent>3</HeadCell>
-            <TitleCell>상반기</TitleCell>
-            {row3.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
-            {/* 4행 */}
-            <HeadCell accent>4</HeadCell>
-            <TitleCell>하반기</TitleCell>
-            {row4.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
-          </div>
+      <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* 한 표 안에서 5행(합계)을 오른쪽으로 자동 채우기 */}
+        <div style={{ ...gridBase, gridTemplateColumns: '40px 84px 92px 92px 92px' }}>
+          {/* 열 문자 행 */}
+          <HeadCell />
+          <HeadCell>A</HeadCell>
+          <HeadCell>B</HeadCell>
+          <HeadCell>C</HeadCell>
+          <HeadCell>D</HeadCell>
+          {/* 3행 상반기 */}
+          <HeadCell accent>3</HeadCell>
+          <TitleCell>상반기</TitleCell>
+          {row3.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
+          {/* 4행 하반기 */}
+          <HeadCell accent>4</HeadCell>
+          <TitleCell>하반기</TitleCell>
+          {row4.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
+          {/* 5행 합계 — 오른쪽으로 채워짐 */}
+          <HeadCell>5</HeadCell>
+          <TitleCell accent>합계</TitleCell>
+          {results.map((r, idx) => {
+            const filled = idx < filledCount;
+            const justFilled = idx === Math.min(step, 2) && step <= 2;
+            const origin = idx === 0;
+            return (
+              <ResultCell
+                key={idx}
+                innerRef={setCellRef(idx)}
+                filled={filled}
+                justFilled={justFilled && !origin}
+                isOrigin={origin}
+                value={r.sum}
+                formulaNodes={
+                  <Formula size={13} parts={[
+                    { t: '=' },
+                    { t: r.col, c: CHG, b: true }, { t: '3', c: FIX },
+                    { t: '+' },
+                    { t: r.col, c: CHG, b: true }, { t: '4', c: FIX },
+                  ]} />
+                }
+              />
+            );
+          })}
         </div>
 
-        {/* 결과 (오른쪽으로 채우기) — 5행: 상반기+하반기 합계 */}
-        <div>
-          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 4, textAlign: 'center' }}>결과 (5행) — 상반기 + 하반기 합계</div>
-          <div style={{ display: 'flex' }}>
-            {results.map((r, idx) => {
-              const filled = idx < filledCount;
-              const justFilled = idx === Math.min(step, 2) && step <= 2;
-              const origin = idx === 0;
-              return (
-                <ResultCell
-                  key={idx}
-                  innerRef={setCellRef(idx)}
-                  filled={filled}
-                  justFilled={justFilled && !origin}
-                  isOrigin={origin}
-                  value={r.sum}
-                  style={{ width: 132, borderTop: `1px solid ${C.border}` }}
-                  formulaNodes={
-                    <Formula size={16} parts={[
-                      { t: '=' },
-                      { t: r.col, c: CHG, b: true }, { t: '3', c: FIX },
-                      { t: '+' },
-                      { t: r.col, c: CHG, b: true }, { t: '4', c: FIX },
-                    ]} />
-                  }
-                />
-              );
-            })}
-          </div>
-          <div style={{ fontSize: 13, textAlign: 'center', marginTop: 8, lineHeight: 1.7 }}>
-            <span style={{ color: FIX }}>초록(행 3·4) = 고정</span> · <span style={{ color: CHG }}>노랑(열 문자) = 이동</span>
+        {/* 오른쪽 수식 목록 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 180 }}>
+          {cols.map((col, idx) => {
+            const active = idx < filledCount;
+            const origin = idx === 0;
+            return (
+              <div key={col} style={{
+                background: active ? (origin ? '#14532d' : '#172554') : '#0e1a33',
+                border: `1px solid ${active ? (origin ? '#22c55e' : '#3b82f6') : C.border}`,
+                borderRadius: 8, padding: '7px 12px', opacity: active ? 1 : 0.4, transition: 'all 0.3s',
+              }}>
+                <span style={{ fontSize: 12, color: C.textDim }}>{col}5{origin ? ' (원본)' : ''}</span>
+                <div style={{ fontSize: 17, fontWeight: 700 }}>
+                  =<span style={{ color: CHG }}>{col}</span><span style={{ color: FIX }}>3</span>
+                  +<span style={{ color: CHG }}>{col}</span><span style={{ color: FIX }}>4</span>
+                </div>
+              </div>
+            );
+          })}
+          <div style={{ fontSize: 13, textAlign: 'center', marginTop: 2, lineHeight: 1.7 }}>
+            <span style={{ color: FIX }}>초록 = 고정(행)</span> · <span style={{ color: CHG }}>노랑 = 이동(열)</span>
           </div>
         </div>
 
