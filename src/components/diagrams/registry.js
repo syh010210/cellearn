@@ -7,7 +7,7 @@ import { MathBasicDiagram, MathRoundDiagram, SumifDiagram, SumifsDiagram } from 
 import { DatetimeBasicDiagram, DatetimeComposeDiagram, WeekdayDiagram, WorkdayDiagram } from './Lesson7.jsx';
 import { IfDiagram, IfAndDiagram, IfOrDiagram, NestedIfDiagram, IfErrorDiagram } from './Lesson8.jsx';
 import { PasteSpecialAnim, NumberFormatDiagram, CellAnatomyDiagram, ProductCodeDiagram, NameBoxDiagram, DateCodeDiagram, CellCommentDiagram, MergeCenterDiagram, AlignGridDiagram, BordersDiagram } from './Lesson9.jsx';
-import { RelativeFillDownAnim, RelativeFillRightAnim, AbsoluteFillDownAnim, FillHandleCursorAnim } from './RelativeFillAnim.jsx';
+import { RelativeFillDownAnim, RelativeFillRightAnim, AbsoluteFillDownAnim, FillHandleCursorAnim, ExcelCursorsAnim } from './RelativeFillAnim.jsx';
 import { AutoFilterAnim, CustomFilterMenu, CustomAutoFilterDialog, AndOrConditionDiagram, CompoundConditionDiagram, ComparisonOperatorDiagram, AdvancedFilterDialog, FilterMistakesDiagram } from './Lesson10.jsx';
 import { CondFormatFormulaAnim, CondFormatStepsAnim, CondFormatPracticeAnim } from './Lesson11.jsx';
 import { SortStepsAnim, SortLeftRightDiagram, SortBasicStepsAnim, SortFilterRibbon } from './Lesson12.jsx';
@@ -32,6 +32,7 @@ export const DIAGRAM_REGISTRY = {
   '/diagram/merge-center':             MergeCenterDiagram,
   '/diagram/align-grid':               AlignGridDiagram,
   '/diagram/borders':                  BordersDiagram,
+  '/anim/excel-cursors':               ExcelCursorsAnim,
   '/anim/fill-handle-cursor':          FillHandleCursorAnim,
   '/anim/relative-fill-down':          RelativeFillDownAnim,
   '/anim/relative-fill-right':         RelativeFillRightAnim,

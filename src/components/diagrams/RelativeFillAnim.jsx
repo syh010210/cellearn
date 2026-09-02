@@ -147,7 +147,8 @@ function useStep(count, interval) {
   return s;
 }
 
-// 커서 모양 두 가지: 'select'(굵은 흰색 십자 — 셀 선택 커서) / 'fill'(얇은 검은 십자 + — 채우기 커서)
+// 커서 모양 3가지:
+//  'select' 굵은 흰색 십자(셀 선택) / 'move' 사방 화살표 십자(셀 데이터 이동) / 'fill' 얇은 검은 십자 +(자동 채우기)
 function MorphCursor({ x, y, mode, moving }) {
   return (
     <div style={{
@@ -161,6 +162,19 @@ function MorphCursor({ x, y, mode, moving }) {
           <line x1="4" y1="17" x2="30" y2="17" stroke="#0b1220" strokeWidth="9" strokeLinecap="round" />
           <line x1="17" y1="5" x2="17" y2="29" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
           <line x1="5" y1="17" x2="29" y2="17" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
+        </svg>
+      ) : mode === 'move' ? (
+        <svg width="36" height="36">
+          {[6, 2.4].map((w, k) => (
+            <g key={k} stroke={k === 0 ? '#fff' : '#111827'} strokeWidth={w} fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="5" x2="18" y2="31" />
+              <line x1="5" y1="18" x2="31" y2="18" />
+              <polyline points="13,10 18,5 23,10" />
+              <polyline points="13,26 18,31 23,26" />
+              <polyline points="10,13 5,18 10,23" />
+              <polyline points="26,13 31,18 26,23" />
+            </g>
+          ))}
         </svg>
       ) : (
         <svg width="28" height="28">
@@ -229,6 +243,52 @@ export function FillHandleCursorAnim() {
           <><b style={{ color: C.blueLight }}>이 얇은 + 상태일 때만</b> 드래그해서 자동 채우기가 됩니다.</>,
         ]}
       />
+    </Wrap>
+  );
+}
+
+/* ───────────── 마우스 위치별 커서 3종 (선택 · 이동 · 채우기) ───────────── */
+export function ExcelCursorsAnim() {
+  const step = useStep(3, 1600); // 0 선택(가운데) / 1 이동(테두리) / 2 채우기(핸들)
+  const mode = ['select', 'move', 'fill'][step];
+  const pos = [{ x: 155, y: 79 }, { x: 155, y: 46 }, { x: 240, y: 112 }][step];
+  const caption = [
+    '셀 안에 두면 선택 커서 — 클릭하면 그 셀이 선택됩니다.',
+    '셀 테두리에 올리면 이동 커서 — 드래그하면 데이터가 통째로 이동합니다.',
+    '오른쪽 아래 핸들에 올리면 채우기 커서 — 드래그하면 수식·값이 복사됩니다.',
+  ][step];
+
+  return (
+    <Wrap>
+      <Title>마우스 위치에 따라 바뀌는 3가지 커서</Title>
+      <Subtitle>같은 셀이라도 마우스를 어디에 두느냐에 따라 커서 모양과 기능이 달라집니다</Subtitle>
+
+      <div style={{ position: 'relative', width: 340, height: 200, margin: '8px auto 0' }}>
+        <div style={{
+          position: 'absolute', left: 70, top: 46, width: 170, height: 66,
+          background: '#14532d', border: `2px solid ${step === 1 ? '#60a5fa' : '#22c55e'}`, borderRadius: 6,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          boxShadow: step === 1 ? '0 0 0 3px rgba(96,165,250,0.35)' : 'none',
+          transition: 'box-shadow 0.3s, border-color 0.3s',
+        }}>
+          <span style={{ fontSize: 12, color: C.green }}>D2 (선택된 셀)</span>
+          <span style={{ fontWeight: 700, fontSize: 18, color: C.greenLight }}>=B2+C2</span>
+          {/* 채우기 핸들 */}
+          <div style={{
+            position: 'absolute', right: -5, bottom: -5, width: 10, height: 10,
+            background: '#22c55e', border: '1.5px solid #0b1220',
+            boxShadow: step === 2 ? '0 0 0 4px rgba(34,197,94,0.35)' : 'none', transition: 'box-shadow 0.3s',
+          }} />
+        </div>
+        <MorphCursor x={pos.x} y={pos.y} mode={mode} moving={step !== 0} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+        <StateChip active={step === 0} label="① 선택 — 굵은 흰 십자" />
+        <StateChip active={step === 1} label="② 이동 — 사방 화살표" />
+        <StateChip active={step === 2} label="③ 채우기 — 얇은 검은 +" />
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 10, fontSize: 15, color: C.text, minHeight: 22 }}>{caption}</div>
     </Wrap>
   );
 }
