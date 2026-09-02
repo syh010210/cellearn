@@ -40,6 +40,7 @@ Deno.serve(async (req) => {
       headers: { Authorization: `PortOne ${Deno.env.get("PORTONE_API_SECRET")}` },
     });
     const payment = await pRes.json();
+    console.log("portone lookup:", pRes.status, JSON.stringify(payment).slice(0, 500));
 
     // 3) 상태·금액 검증
     const paidOk = payment.status === "PAID";
@@ -50,7 +51,10 @@ Deno.serve(async (req) => {
         status: paidOk ? "paid" : "failed", provider: "portone",
         payment_id: paymentId, raw: payment,
       });
-      return json({ error: "결제 검증 실패", paidOk, amountOk }, 400);
+      // 화면/로그에 실제 조회 결과를 남겨 원인 진단 (status/amount/포트원 에러)
+      const detail = `status=${payment?.status ?? "(none)"} amount=${payment?.amount?.total ?? "(none)"} expected=${PRICE[grade]} httpStatus=${pRes.status}${payment?.type ? ` portone=${payment.type}` : ""}${payment?.message ? ` msg=${payment.message}` : ""}`;
+      console.error("결제 검증 실패:", detail);
+      return json({ error: "결제 검증 실패", detail, paidOk, amountOk }, 400);
     }
 
     // 4) 결제 원장 기록 (insert 에러를 반드시 확인)
