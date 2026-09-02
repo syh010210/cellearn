@@ -14,6 +14,8 @@ import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
 import DayGateView from "./components/lesson/DayGateView";
 import ExamView from "./components/exam/ExamView";
+import LegalView from "./components/legal/LegalView";
+import SupportWidget from "./components/support/SupportWidget";
 import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared } from "./data/days";
 import { ArrowLeft, BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target } from "lucide-react";
 import { UI } from "./theme";
@@ -31,6 +33,7 @@ export default function App() {
   const isMobile = window.innerWidth < 768;
   const { loading, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
   const [page, setPage] = useState("landing");
+  const [legalTab, setLegalTab] = useState("terms");
   const [view, setView] = useState("dash");
   const [step, setStep] = useState("concept");
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
@@ -45,6 +48,12 @@ export default function App() {
     if (page === "auth" && isAuthed) setPage((!REQUIRE_ENROLLMENT || hasActiveEnrollment) ? "learn" : "checkout");
     if (page === "checkout" && hasActiveEnrollment) setPage("learn");
   }, [page, isAuthed, hasActiveEnrollment]);
+
+  function openLegal(section) {
+    setLegalTab(section || "terms");
+    setPage("legal");
+    window.scrollTo({ top: 0 });
+  }
 
   function startLearning() {
     if (isMobile) return;
@@ -77,10 +86,17 @@ export default function App() {
   if (page === "auth") return <AuthView onBack={() => setPage("landing")} />;
   if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} />;
   if (page === "admin") return <AdminView onBack={() => setPage("landing")} />;
+  if (page === "legal") return (
+    <>
+      <LegalView initial={legalTab} onBack={() => setPage("landing")} />
+      <SupportWidget />
+    </>
+  );
 
   if (page === "landing") return (
     <div>
-      <LandingPage onStart={startLearning} />
+      <LandingPage onStart={startLearning} onLegal={openLegal} />
+      <SupportWidget />
       {!isMobile && isAuthed && (
         <button
           onClick={signOut}

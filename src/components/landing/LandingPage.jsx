@@ -262,7 +262,7 @@ function FaqSection() {
   );
 }
 
-export default function LandingPage({ onStart }) {
+export default function LandingPage({ onStart, onLegal }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
   const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
@@ -705,10 +705,15 @@ export default function LandingPage({ onStart }) {
             </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>고객지원</div>
-              {[["자주 묻는 질문", "#faq"], ["이용약관", null], ["개인정보처리방침", null]].map(([x, href]) => (
-                href
-                  ? <a key={x} href={href} style={{ display: "block", fontSize: 13.5, color: UI.invMut, marginBottom: 8, textDecoration: "none" }}>{x}</a>
-                  : <div key={x} style={{ fontSize: 13.5, color: UI.invMut, marginBottom: 8 }}>{x}</div>
+              <a href="#faq" style={{ display: "block", fontSize: 13.5, color: UI.invMut, marginBottom: 8, textDecoration: "none" }}>자주 묻는 질문</a>
+              {[["이용약관", "terms"], ["개인정보처리방침", "privacy"], ["환불정책", "refund"], ["사업자정보", "business"]].map(([x, section]) => (
+                <button
+                  key={x}
+                  onClick={() => onLegal?.(section)}
+                  style={{ display: "block", fontSize: 13.5, color: UI.invMut, marginBottom: 8, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: UI.font, textAlign: "left" }}
+                >
+                  {x}
+                </button>
               ))}
             </div>
             <div>
@@ -717,9 +722,15 @@ export default function LandingPage({ onStart }) {
             </div>
           </div>
         </div>
-        <div style={{ maxWidth: 1100, margin: "28px auto 0", paddingTop: 20, borderTop: "1px solid #1e463e", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10, fontSize: 12.5, color: UI.invMut }}>
-          <span>© 2026 CellLearn. All rights reserved.</span>
-          <span style={mono}>cellearn.kr</span>
+        <div style={{ maxWidth: 1100, margin: "28px auto 0", paddingTop: 20, borderTop: "1px solid #1e463e", fontSize: 12.5, color: UI.invMut }}>
+          <div style={{ marginBottom: 8, lineHeight: 1.7 }}>
+            CellLearn · 사업자등록번호 <span style={mono}>189-56-01110</span>
+            <button onClick={() => onLegal?.("business")} style={{ background: "none", border: "none", padding: 0, marginLeft: 8, color: UI.invMut, textDecoration: "underline", cursor: "pointer", fontFamily: UI.font, fontSize: 12.5 }}>사업자정보 전체보기</button>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            <span>© 2026 CellLearn. All rights reserved.</span>
+            <span style={mono}>cellearn.kr</span>
+          </div>
         </div>
       </footer>
     </div>
