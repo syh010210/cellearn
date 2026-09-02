@@ -117,7 +117,7 @@ function ResultCell({ filled, justFilled, isOrigin, formulaNodes, value, innerRe
       background: filled ? (isOrigin ? '#14532d' : '#172554') : '#0e1a33',
       borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
       borderLeft: filled ? `2px solid ${isOrigin ? '#22c55e' : '#3b82f6'}` : `2px dashed ${C.border}`,
-      padding: '7px 8px', textAlign: 'center', minHeight: 40,
+      padding: '7px 8px', textAlign: 'center', height: 54,
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
       transition: 'background 0.3s, border-color 0.3s',
       boxShadow: justFilled ? '0 0 0 2px #3b82f6 inset' : 'none',
@@ -381,11 +381,11 @@ export function RelativeFillDownAnim() {
       </div>
 
       <WhyBox
-        title="왜 B·C 열은 고정이고, 행 번호만 커질까?"
+        title="아래로 자동 채우기를 할 때 D2 수식을 아래로 드래그하면 왜 B·C 열은 고정이고, 행 번호만 커질까?"
         lines={[
-          <>아래로 복사하면 <b style={{ color: FIX }}>가로 위치(열)는 변하지 않습니다.</b></>,
+          <>아래로 복사하면 <b style={{ color: FIX }}>세로줄(열)은 변하지 않습니다.</b></>,
           <>그래서 <b style={{ color: FIX }}>B·C 열은 그대로 고정</b>돼요.</>,
-          <>대신 세로로 내려가며 가로줄(행)이 바뀌므로 <b style={{ color: CHG }}>행 번호만 2 → 3 → 4 로 증가</b>합니다.</>,
+          <>대신 아래로 내려가며 가로줄(행)이 바뀌므로 <b style={{ color: CHG }}>행 번호만 2 → 3 → 4 로 증가</b>합니다.</>,
         ]}
       />
     </Wrap>
@@ -461,11 +461,11 @@ export function RelativeFillRightAnim() {
       </div>
 
       <WhyBox
-        title="왜 3·4행은 고정이고, 열 문자만 바뀔까?"
+        title="오른쪽으로 자동 채우기를 할 때 B5 수식을 오른쪽으로 드래그하면 왜 3·4행은 고정이고, 열 문자만 바뀔까?"
         lines={[
-          <>오른쪽으로 복사하면 <b style={{ color: FIX }}>세로 위치(행)는 변하지 않습니다.</b></>,
+          <>오른쪽으로 복사하면 <b style={{ color: FIX }}>가로줄(행)은 변하지 않습니다.</b></>,
           <>그래서 <b style={{ color: FIX }}>3행·4행은 그대로 고정</b>돼요.</>,
-          <>대신 오른쪽으로 갈수록 세로줄(열)이 바뀌므로 <b style={{ color: CHG }}>열 문자만 B → C → D 로 이동</b>합니다.</>,
+          <>대신 오른쪽으로 가며 세로줄(열)이 바뀌므로 <b style={{ color: CHG }}>열 문자만 B → C → D 로 이동</b>합니다.</>,
         ]}
       />
     </Wrap>
