@@ -51,6 +51,14 @@ function renderBlock(block, i, lesson) {
            style={{ maxWidth: "100%", borderRadius: 12, margin: "10px 0 14px", display: "block" }} />
     );
   }
+  if (block.type === "sectionTitle") {
+    // 카드 대제목(c.heading)과 같은 크기 — 상단 구분선으로 새 상위 섹션임을 표시
+    return (
+      <h3 key={i} style={{ fontSize: 20, fontWeight: 800, color: UI.ink, margin: "34px 0 14px", paddingTop: 22, borderTop: `1px solid ${UI.line}` }}>
+        {block.text}
+      </h3>
+    );
+  }
   if (block.type === "heading") {
     return (
       <div key={i} style={{ margin: "26px 0 12px", borderLeft: `3px solid ${UI.teal}`, paddingLeft: 12 }}>

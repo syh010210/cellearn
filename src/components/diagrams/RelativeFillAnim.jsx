@@ -137,6 +137,102 @@ function ResultCell({ filled, justFilled, isOrigin, formulaNodes, value, innerRe
   );
 }
 
+// 일반 스텝 순환 훅 (count 단계를 interval 마다 순환)
+function useStep(count, interval) {
+  const [s, setS] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setS((v) => (v + 1) % count), interval);
+    return () => clearInterval(id);
+  }, [count, interval]);
+  return s;
+}
+
+// 커서 모양 두 가지: 'select'(굵은 흰색 십자 — 셀 선택 커서) / 'fill'(얇은 검은 십자 + — 채우기 커서)
+function MorphCursor({ x, y, mode, moving }) {
+  return (
+    <div style={{
+      position: 'absolute', left: x, top: y, transform: 'translate(-50%,-50%)',
+      transition: moving ? 'left 0.5s ease-in-out, top 0.5s ease-in-out' : 'none',
+      pointerEvents: 'none', zIndex: 30,
+    }}>
+      {mode === 'select' ? (
+        <svg width="34" height="34">
+          <line x1="17" y1="4" x2="17" y2="30" stroke="#0b1220" strokeWidth="9" strokeLinecap="round" />
+          <line x1="4" y1="17" x2="30" y2="17" stroke="#0b1220" strokeWidth="9" strokeLinecap="round" />
+          <line x1="17" y1="5" x2="17" y2="29" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
+          <line x1="5" y1="17" x2="29" y2="17" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" />
+        </svg>
+      ) : (
+        <svg width="28" height="28">
+          <line x1="14" y1="1" x2="14" y2="27" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+          <line x1="1" y1="14" x2="27" y2="14" stroke="#fff" strokeWidth="5" strokeLinecap="round" />
+          <line x1="14" y1="2" x2="14" y2="26" stroke="#111827" strokeWidth="2.6" strokeLinecap="round" />
+          <line x1="2" y1="14" x2="26" y2="14" stroke="#111827" strokeWidth="2.6" strokeLinecap="round" />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+function StateChip({ active, label }) {
+  return (
+    <div style={{
+      fontSize: 13.5, fontWeight: 700, padding: '7px 14px', borderRadius: 999,
+      border: `1px solid ${active ? '#3b82f6' : C.border}`,
+      background: active ? '#172554' : '#0b1220',
+      color: active ? C.blueLight : C.textDim, transition: 'all 0.3s',
+    }}>{label}</div>
+  );
+}
+
+/* ───────────── 채우기 핸들 커서 변신 (굵은 흰 십자 → 얇은 검은 +) ───────────── */
+export function FillHandleCursorAnim() {
+  const step = useStep(3, 1500); // 0: 셀 위 / 1: 핸들로 이동 / 2: 핸들에서 대기
+  const atHandle = step >= 1;
+  // 고정 좌표(스테이지 340×200): 셀 left70 top46 w170 h66 → 중앙(155,79), 오른쪽아래 핸들(240,112)
+  const pos = atHandle ? { x: 240, y: 112 } : { x: 155, y: 79 };
+
+  return (
+    <Wrap>
+      <Title>채우기 핸들 — 커서가 얇은 십자(+)로 바뀝니다</Title>
+      <Subtitle>셀 오른쪽 아래 모서리(채우기 핸들)에 마우스를 올리면 커서 모양이 바뀝니다</Subtitle>
+
+      <div style={{ position: 'relative', width: 340, height: 200, margin: '8px auto 0' }}>
+        {/* 선택된 셀 D2 */}
+        <div style={{
+          position: 'absolute', left: 70, top: 46, width: 170, height: 66,
+          background: '#14532d', border: '2px solid #22c55e', borderRadius: 6,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: 12, color: C.green }}>D2 (선택된 셀)</span>
+          <span style={{ fontWeight: 700, fontSize: 18, color: C.greenLight }}>=B2+C2</span>
+          {/* 채우기 핸들 — 오른쪽 아래 작은 사각형 */}
+          <div style={{
+            position: 'absolute', right: -5, bottom: -5, width: 10, height: 10,
+            background: '#22c55e', border: '1.5px solid #0b1220',
+            boxShadow: atHandle ? '0 0 0 4px rgba(34,197,94,0.35)' : 'none', transition: 'box-shadow 0.3s',
+          }} />
+        </div>
+        <MorphCursor x={pos.x} y={pos.y} mode={atHandle ? 'fill' : 'select'} moving={step === 1} />
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+        <StateChip active={!atHandle} label="① 셀 위 — 굵은 흰색 십자" />
+        <StateChip active={atHandle} label="② 채우기 핸들 — 얇은 검은 십자(+)" />
+      </div>
+
+      <WhyBox
+        title="왜 커서 모양을 확인해야 하나요?"
+        lines={[
+          <>셀 위의 <b style={{ color: '#fff' }}>굵은 흰색 십자</b>는 &lsquo;셀 선택&rsquo; 커서예요.</>,
+          <>오른쪽 아래 모서리로 가면 <b style={{ color: C.blueLight }}>얇은 검은 십자(+)</b>로 바뀝니다.</>,
+          <><b style={{ color: C.blueLight }}>이 얇은 + 상태일 때만</b> 드래그해서 자동 채우기가 됩니다.</>,
+        ]}
+      />
+    </Wrap>
+  );
+}
+
 /* ─────────────────────────── 아래로 자동 채우기 ─────────────────────────── */
 export function RelativeFillDownAnim() {
   const step = useFillStep();
