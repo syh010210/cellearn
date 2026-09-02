@@ -344,16 +344,32 @@ export default function LandingPage({ onStart }) {
           <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap", color: UI.teal }}>반드시 올해 안에 끝내야 합니다.</span>
         </h1>
 
-        <div style={{ display: "flex", gap: 48, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ flex: "1 1 400px", minWidth: 300 }}>
+        <div style={{ display: "flex", gap: 48, alignItems: isMobile ? "stretch" : "center", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 400px", minWidth: 300, display: "flex", flexDirection: "column" }}>
             <p style={{ color: UI.mut, fontSize: 17, lineHeight: 1.7, margin: "0 0 12px" }}>
               지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
               9월, 컴활 2급 실기 클래스가 열립니다.
             </p>
-            <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 28px" }}>
+            <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 22px" }}>
               강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
+
+            {!isMobile && (
+              <ul style={{ listStyle: "none", margin: "0 0 26px", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+                {[
+                  "실제 시험과 같은 엑셀 파일 다운로드 → 업로드 자동 채점",
+                  "결과값이 아니라 수식 자체를 셀 단위로 비교",
+                  "틀린 문제를 다 맞혀야 다음 차시가 열리는 복습 게이트",
+                ].map((t) => (
+                  <li key={t} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 15, lineHeight: 1.5, color: UI.ink }}>
+                    <CheckCircle2 size={18} strokeWidth={2.2} color={UI.teal} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
             {isMobile ? (
               <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 20px", display: "inline-block", fontSize: 14, color: UI.teal, fontWeight: 600 }}>
                 학습 기능은 PC에서 이용할 수 있어요
