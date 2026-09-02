@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { UI } from "../../theme";
 import { S } from "./authStyles";
 import MonthYearPicker from "./MonthYearPicker";
+import PasswordInput from "./PasswordInput";
 
 // 학습 과정(카테고리) 정의 — 라벨 + 응시예정일 수집 여부.
 // 컴활 급수·ITQ는 시험 응시일이 있어 응시예정일을 받고, 실무 엑셀은 시험이 없어 제외.
@@ -69,7 +70,7 @@ export default function SignupView({ onSwitch, presetGrade = "2급" }) {
       <input style={S.input} type="email" required value={f.email} onChange={set("email")} />
 
       <label style={S.label}>비밀번호 (6자 이상)</label>
-      <input style={S.input} type="password" required value={f.password} onChange={set("password")} />
+      <PasswordInput style={S.input} required value={f.password} onChange={set("password")} />
 
       <label style={S.label}>휴대전화번호</label>
       <input style={S.input} type="tel" placeholder="010-0000-0000" required value={f.phone} onChange={set("phone")} />
