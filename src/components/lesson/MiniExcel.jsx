@@ -397,6 +397,11 @@ export default function MiniExcel({ practice, autoplay = false }) {
   const activeHint = inputFocused ? getFunctionHint(inputVal, cursorPos) : null;
 
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif";
+  // 실제 MS 엑셀 룩 — 엑셀 그린 계열로 통일
+  const XL = "#217346";        // 엑셀 브랜드 그린 (선택 테두리·핸들·버튼)
+  const XL_SOFT = "#e6f2ea";   // 선택/범위 채움 연녹
+  const XL_EDIT = "#eef6f1";   // 입력 대상 빈 셀 옅은 녹색 틴트
+  const XL_HDR_SEL = "#cfe6da"; // 선택된 셀의 행/열 머리 강조
 
   return (
     <div style={{ marginTop: 20, background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", userSelect: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.07)", fontFamily: FONT }}>
@@ -444,7 +449,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
               setInputVal("");
               inputRef.current?.blur();
             }}
-            style={{ background: "#1a73e8", border: "none", color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: 13, fontWeight: 700, borderRadius: "0 4px 0 0" }}
+            style={{ background: XL, border: "none", color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: 13, fontWeight: 700, borderRadius: "0 4px 0 0" }}
           >
             ✓
           </button>
@@ -466,13 +471,13 @@ export default function MiniExcel({ practice, autoplay = false }) {
           flexWrap: "wrap",
           gap: 0,
         }}>
-          <span style={{ fontWeight: 700, color: "#1a73e8" }}>{activeHint.name}</span>
+          <span style={{ fontWeight: 700, color: XL }}>{activeHint.name}</span>
           <span style={{ color: "#555" }}>(</span>
           {activeHint.args.map((arg, i) => (
             <span key={i}>
               {i > 0 && <span style={{ color: "#999" }}>,&nbsp;</span>}
               <span style={{
-                color: i === activeHint.argIdx ? "#1a73e8" : "#555",
+                color: i === activeHint.argIdx ? XL : "#555",
                 fontWeight: i === activeHint.argIdx ? 700 : 400,
                 textDecoration: i === activeHint.argIdx ? "underline" : "none",
               }}>{arg}</span>
@@ -507,18 +512,19 @@ export default function MiniExcel({ practice, autoplay = false }) {
                     }} />
                   );
                 }
+                const colSel = selected?.ci === ci && !isSpacer;
                 ths.push(
                   <th key={c} style={{
                     minWidth: isSpacer ? 32 : 120,
                     width: isSpacer ? 32 : undefined,
-                    background: "#f3f3f3",
+                    background: colSel ? XL_HDR_SEL : "#f3f3f3",
                     borderTop: "1px solid #d0d0d0",
                     borderRight: "1px solid #d0d0d0",
-                    borderBottom: "1px solid #d0d0d0",
+                    borderBottom: colSel ? `2px solid ${XL}` : "1px solid #d0d0d0",
                     borderLeft: "1px solid #d0d0d0",
                     padding: isSpacer ? "5px 0" : "5px 10px",
-                    color: isSpacer ? "#ccc" : "#333",
-                    fontWeight: 600,
+                    color: isSpacer ? "#ccc" : colSel ? XL : "#333",
+                    fontWeight: colSel ? 800 : 600,
                     fontSize: 13,
                     textAlign: "center",
                   }}>
@@ -532,7 +538,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
           <tbody>
             {cells.map((row, ri) => (
               <tr key={ri}>
-                <td style={{ background: "#f3f3f3", border: "1px solid #d0d0d0", padding: "5px 6px", color: "#888", textAlign: "center", fontSize: 13, fontWeight: 600 }}>
+                <td style={{ background: selected?.ri === ri ? XL_HDR_SEL : "#f3f3f3", borderTop: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", borderLeft: "1px solid #d0d0d0", borderRight: selected?.ri === ri ? `2px solid ${XL}` : "1px solid #d0d0d0", padding: "5px 6px", color: selected?.ri === ri ? XL : "#888", textAlign: "center", fontSize: 13, fontWeight: selected?.ri === ri ? 800 : 600 }}>
                   {ri + 1}
                 </td>
                 {row.flatMap((cell, ci) => {
@@ -550,11 +556,11 @@ export default function MiniExcel({ practice, autoplay = false }) {
 
                   const isSpecial = isSel || inFill || inRangeSelect;
                   const borderColor = inRangeSelect
-                    ? "#1a73e8"
+                    ? XL
                     : inFill
-                    ? "#1a73e8"
+                    ? XL
                     : isSel
-                    ? "#1a73e8"
+                    ? XL
                     : cell.status === "correct"
                     ? "#34A853"
                     : cell.status === "wrong"
@@ -566,9 +572,9 @@ export default function MiniExcel({ practice, autoplay = false }) {
                     : cell.status === "wrong"
                     ? "#fce8e6"
                     : inRangeSelect || inFill || isSel
-                    ? "#e8f0fe"
+                    ? XL_SOFT
                     : cell.editable && !cell.input
-                    ? "#e0f2fe"
+                    ? XL_EDIT
                     : "#fff";
                   const borderStyle = inRangeSelect || inFill ? "dashed" : "solid";
                   const borderWidth = isSpecial ? "2px" : "1px";
@@ -631,7 +637,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
                         <div
                           onMouseDown={(e) => handleFillDragStart(e, ri, ci)}
                           title="드래그하여 자동 채우기"
-                          style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: "#1a73e8", border: "1px solid #fff", cursor: "crosshair", zIndex: 10 }}
+                          style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: XL, border: "1px solid #fff", cursor: "crosshair", zIndex: 10 }}
                         />
                       )}
                     </td>
@@ -647,7 +653,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
       {/* 채점하기 버튼 */}
       <button
         onClick={grade}
-        style={{ width: "100%", padding: "10px 0", borderRadius: 6, border: "none", background: "#1a73e8", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+        style={{ width: "100%", padding: "10px 0", borderRadius: 6, border: "none", background: XL, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
       >
         채점하기
       </button>
