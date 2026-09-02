@@ -53,24 +53,33 @@ Deno.serve(async (req) => {
       return json({ error: "결제 검증 실패", paidOk, amountOk }, 400);
     }
 
-    // 4) 결제 원장 기록
-    const { data: pay } = await admin.from("payments").insert({
+    // 4) 결제 원장 기록 (insert 에러를 반드시 확인)
+    const { data: pay, error: payErr } = await admin.from("payments").insert({
       user_id: user.id, grade, amount: PRICE[grade],
       status: "paid", provider: "portone",
       payment_id: paymentId, tx_id: payment.pgTxId ?? null,
       raw: payment, paid_at: new Date().toISOString(),
     }).select("id").single();
+    if (payErr) {
+      console.error("payments insert error:", payErr);
+      return json({ error: "결제 기록 저장 실패", detail: payErr.message }, 500);
+    }
 
     // 5) 수강권 부여 — 프로모션: 구매 연도 12월 31일 23:59:59(KST)까지 "올해 끝까지"
     const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const year = kstNow.getUTCFullYear();
     const validTo = new Date(`${year}-12-31T23:59:59+09:00`);
-    await admin.from("enrollments").insert({
+    const { error: enrErr } = await admin.from("enrollments").insert({
       user_id: user.id, grade, payment_id: pay?.id, valid_to: validTo.toISOString(),
     });
+    if (enrErr) {
+      console.error("enrollments insert error:", enrErr);
+      return json({ error: "수강권 생성 실패", detail: enrErr.message }, 500);
+    }
 
     return json({ ok: true, validTo: validTo.toISOString() });
   } catch (e) {
+    console.error("verify-payment exception:", e);
     return json({ error: String(e) }, 500);
   }
 });
