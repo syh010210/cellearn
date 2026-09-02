@@ -105,7 +105,8 @@ export default function CheckoutView({ onBack }) {
         ...m.params,
         redirectUrl: `${window.location.origin}/?portone=return`,
         customer,
-        customData: JSON.stringify({ userId: user.id, grade }),
+        // 이니시스 merchantData는 한글 불가 → 급수는 ASCII 코드로 (검증은 서버 body.grade 사용)
+        customData: JSON.stringify({ userId: user.id, grade: grade === "1급" ? "level1" : "level2" }),
       });
 
       // 데스크톱(팝업): 결과가 여기로 반환됨. (모바일은 위에서 리다이렉트되어 도달하지 않음)
