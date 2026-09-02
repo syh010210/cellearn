@@ -26,8 +26,8 @@ const STEP_TABS = [
   { key: "quiz", label: "퀴즈", Icon: PenLine },
 ];
 
-// ⚠️ 임시: 결제 연동 전까지 로그인만 하면 실습 허용. 결제 붙일 때 true로 되돌려 수강권(결제) 필수로 조인다.
-const REQUIRE_ENROLLMENT = false;
+// 수강권(결제) 필수. true면 로그인 후 활성 수강권이 없으면 결제 화면으로 보낸다.
+const REQUIRE_ENROLLMENT = true;
 
 export default function App() {
   const isMobile = window.innerWidth < 768;
