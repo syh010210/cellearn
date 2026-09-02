@@ -169,7 +169,17 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
       email: email.trim(), password, name: name.trim(), phone: phone.replace(/[^0-9]/g, ""),
       targetGrade: grade, examDate: "", marketingAgree, termsAgree,
     });
-    if (error) { setBusy(false); setMsg(error.message || "계정 생성에 실패했습니다."); return; }
+    if (error) {
+      setBusy(false);
+      const m = (error.message || "").toLowerCase();
+      // 인증 메일 발송 실패(SMTP 문제) — 결제는 이미 완료됐으니 안심시키고 안내
+      if (m.includes("email") && (m.includes("send") || m.includes("confirmation"))) {
+        setMsg("결제는 정상 완료되었습니다. 다만 인증 메일 발송에 일시적 문제가 있어 계정 활성화가 지연되고 있어요. support@cellearn.kr 로 결제하신 이메일을 남겨 주시면 바로 처리해 드립니다.");
+      } else {
+        setMsg(error.message || "계정 생성에 실패했습니다.");
+      }
+      return;
+    }
     if (data?.session) {
       // Supabase 이메일 인증이 꺼져 있으면 가입 즉시 로그인됨 → OTP 건너뛰고 바로 검증
       await finalize(paidId, grade);
