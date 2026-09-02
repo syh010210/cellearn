@@ -24,8 +24,17 @@ create table if not exists public.profiles (
   marketing_agree boolean default false,
   terms_agree   boolean default false,
   role          text not null default 'user',   -- 'user' | 'admin'
+  active_session text,                           -- 단일 세션(공유 방지): 현재 활성 기기 토큰
   created_at    timestamptz not null default now()
 );
+
+-- 기존 DB에 컬럼이 없으면 추가 (마이그레이션)
+alter table public.profiles add column if not exists active_session text;
+
+-- 단일 세션 실시간 감지를 위해 profiles를 Realtime publication에 추가 (이미 있으면 무시)
+do $$ begin
+  alter publication supabase_realtime add table public.profiles;
+exception when duplicate_object then null; end $$;
 
 -- ── 2) payments : 결제 원장(포트원 결제 기록) ──────────────────
 create table if not exists public.payments (
