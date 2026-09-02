@@ -84,6 +84,12 @@ export default function CheckoutView({ onBack }) {
       sessionStorage.setItem(PENDING_KEY, JSON.stringify({ paymentId, grade }));
       const m = METHODS.find((x) => x.key === method) || METHODS[0];
 
+      // 값이 있는 필드만 담는다 (포트원은 fullName 등이 있으면 문자열이어야 함)
+      const customer = {};
+      if (user.email) customer.email = user.email;
+      if (profile?.name) customer.fullName = profile.name;
+      if (profile?.phone) customer.phoneNumber = profile.phone;
+
       // 포트원 결제창 호출 (KG이니시스 채널). 모바일은 여기서 redirectUrl로 이동됨.
       const res = await PortOne.requestPayment({
         storeId: STORE_ID,
@@ -94,7 +100,7 @@ export default function CheckoutView({ onBack }) {
         currency: "CURRENCY_KRW",
         ...m.params,
         redirectUrl: `${window.location.origin}/?portone=return`,
-        customer: { fullName: profile?.name, email: user.email, phoneNumber: profile?.phone },
+        customer,
         customData: JSON.stringify({ userId: user.id, grade }),
       });
 
