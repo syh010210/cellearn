@@ -43,6 +43,12 @@ export default function App() {
   const gateBypassed = !isSupabaseConfigured;
   const canLearn = gateBypassed || (isAuthed && (!REQUIRE_ENROLLMENT || hasActiveEnrollment));
 
+  // 포트원 모바일 결제 리다이렉트 복귀(?portone=return) → 결제 화면으로 보내 검증 마무리
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("portone") === "return" || q.get("paymentId")) setPage("checkout");
+  }, []);
+
   // 로그인/결제 상태가 바뀌면 인증·결제 페이지에서 자동으로 다음 단계로 이동
   useEffect(() => {
     if (page === "auth" && isAuthed) setPage((!REQUIRE_ENROLLMENT || hasActiveEnrollment) ? "learn" : "checkout");
