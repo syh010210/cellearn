@@ -3,7 +3,7 @@
 // 시크릿: supabase secrets set PORTONE_API_SECRET=... (SERVICE_ROLE 키는 런타임이 자동 주입)
 //
 // 흐름: 클라이언트가 결제창에서 결제 → paymentId 를 이 함수로 전달 →
-//       포트원 API로 결제 진위/금액 확인 → 통과 시 payments=paid + enrollments(3개월) 기록.
+//       포트원 API로 결제 진위/금액 확인 → 통과 시 payments=paid + enrollments(올해 말까지) 기록.
 // ⚠️ 금액/상품은 반드시 서버에서 재확인한다(클라이언트 값 신뢰 금지).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -61,9 +61,10 @@ Deno.serve(async (req) => {
       raw: payment, paid_at: new Date().toISOString(),
     }).select("id").single();
 
-    // 5) 수강권 3개월 부여
-    const validTo = new Date();
-    validTo.setMonth(validTo.getMonth() + 3);
+    // 5) 수강권 부여 — 프로모션: 구매 연도 12월 31일 23:59:59(KST)까지 "올해 끝까지"
+    const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const year = kstNow.getUTCFullYear();
+    const validTo = new Date(`${year}-12-31T23:59:59+09:00`);
     await admin.from("enrollments").insert({
       user_id: user.id, grade, payment_id: pay?.id, valid_to: validTo.toISOString(),
     });

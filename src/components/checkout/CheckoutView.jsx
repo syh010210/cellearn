@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { UI } from "../../theme";
 
-// 급수별 3개월 기간제 상품 (가격은 실제 정책에 맞게 조정 — 서버 verify-payment의 PRICE와 반드시 일치)
+// 급수별 기간제 상품 — 프로모션: 올해 말까지 (가격은 서버 verify-payment의 PRICE와 반드시 일치)
 const PRODUCTS = {
   "2급": { grade: "2급", amount: 70000, label: "컴퓨터활용능력 2급 실기 · 올해 끝까지" },
   "1급": { grade: "1급", amount: 120000, label: "컴퓨터활용능력 1급 실기 · 올해 끝까지" },
@@ -71,13 +71,13 @@ export default function CheckoutView({ onBack }) {
       <div style={card}>
         {onBack && <button style={{ background: "transparent", border: "none", color: UI.mut, cursor: "pointer", fontSize: 13, marginBottom: 12, fontWeight: 600 }} onClick={onBack}>← 홈</button>}
         <div style={{ fontSize: 23, fontWeight: 700 }}>수강권 결제</div>
-        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>급수를 선택하면 3개월간 해당 급수 학습·실습이 열립니다.</div>
+        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>급수를 선택하면 올해 말까지 해당 급수 학습·실습이 열립니다.</div>
 
         <div style={{ display: "flex", gap: 12 }}>
           {["2급", "1급"].map((g) => (
             <div key={g} style={opt(g)} onClick={() => setGrade(g)}>
               <div style={{ fontWeight: 700, fontSize: 18 }}>컴활 {g}</div>
-              <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>3개월 이용권</div>
+              <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>올해 끝까지 이용</div>
               <div style={{ fontWeight: 700, fontSize: 16, marginTop: 8, color: UI.teal, fontFamily: UI.mono }}>{PRODUCTS[g].amount.toLocaleString()}원</div>
             </div>
           ))}
@@ -86,7 +86,7 @@ export default function CheckoutView({ onBack }) {
         <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
           · 상품: {product.label}<br />
           · 결제 금액: <b style={{ color: UI.ink, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</b><br />
-          · 이용 기간: 결제 완료 시점부터 3개월
+          · 이용 기간: 결제일부터 <b style={{ color: UI.ink }}>2026년 12월 31일</b>까지
         </div>
 
         {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}

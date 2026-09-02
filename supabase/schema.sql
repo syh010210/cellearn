@@ -43,14 +43,14 @@ create table if not exists public.payments (
 );
 create index if not exists payments_user_idx on public.payments(user_id);
 
--- ── 3) enrollments : 수강권(급수별 3개월 기간제) ───────────────
+-- ── 3) enrollments : 수강권(급수별 기간제 — 프로모션: 올해 말까지) ───────────────
 create table if not exists public.enrollments (
   id            uuid primary key default gen_random_uuid(),
   user_id       uuid not null references auth.users(id) on delete cascade,
   grade         grade_level not null,
   payment_id    uuid references public.payments(id) on delete set null,
   valid_from    timestamptz not null default now(),
-  valid_to      timestamptz not null,           -- 결제 검증 시 now()+3개월로 세팅
+  valid_to      timestamptz not null,           -- 결제 검증 시 구매 연도 12/31(KST)로 세팅
   created_at    timestamptz not null default now()
 );
 create index if not exists enrollments_user_idx on public.enrollments(user_id);
