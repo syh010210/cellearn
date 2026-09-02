@@ -147,10 +147,12 @@ export default function AdminView({ onBack }) {
     <button onClick={() => setTab(t)} style={{ background: tab === t ? UI.teal : UI.panel, border: `1px solid ${tab === t ? UI.teal : UI.line}`, color: tab === t ? "#fff" : UI.mut, padding: "8px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 700 : 500 }}>{label}</button>
   );
 
-  const Kpi = ({ label, value, sub, accent }) => (
+  const Kpi = ({ label, value, unit, sub, accent }) => (
     <div style={{ background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "18px 20px", minWidth: 0 }}>
       <div style={{ fontSize: 13, color: UI.mut, fontWeight: 600, marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 26, fontWeight: 800, fontFamily: UI.mono, color: accent || UI.ink, lineHeight: 1.1 }}>{value}</div>
+      <div style={{ fontSize: 26, fontWeight: 800, fontFamily: UI.mono, color: accent || UI.ink, lineHeight: 1.1 }}>
+        {value}{unit && <span style={{ fontFamily: UI.font, fontSize: 15, fontWeight: 700, marginLeft: 3 }}>{unit}</span>}
+      </div>
       {sub && <div style={{ fontSize: 12, color: UI.faint, marginTop: 6 }}>{sub}</div>}
     </div>
   );
@@ -183,8 +185,8 @@ export default function AdminView({ onBack }) {
                 <Kpi label="유료 회원 (활성 수강권)" value={stats.paidMembers} sub={`전환율 ${stats.conversion}%`} accent={UI.green} />
                 <Kpi label="총 회원" value={stats.members} sub={`오늘 가입 +${stats.todaySignups}`} />
                 <Kpi label="활성 수강권" value={stats.activeCount} sub={`1급 ${stats.byGrade["1급"]} · 2급 ${stats.byGrade["2급"]}`} />
-                <Kpi label="결제 성공" value={stats.paidCount + "건"} />
-                <Kpi label="결제 실패" value={stats.failedCount + "건"} accent={stats.failedCount ? UI.red : UI.ink} />
+                <Kpi label="결제 성공" value={stats.paidCount} unit="건" />
+                <Kpi label="결제 실패" value={stats.failedCount} unit="건" accent={stats.failedCount ? UI.red : UI.ink} />
               </div>
 
               <div>

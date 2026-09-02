@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { UI } from "../../theme";
 import { S } from "./authStyles";
+import MonthYearPicker from "./MonthYearPicker";
 
 export default function SignupView({ onSwitch }) {
   const { signUp } = useAuth();
   const [f, setF] = useState({
     name: "", email: "", password: "", phone: "",
-    targetGrade: "2급", examDate: "",
+    examDate: "",
     marketingAgree: false, termsAgree: false,
   });
   const [err, setErr] = useState("");
@@ -53,19 +55,8 @@ export default function SignupView({ onSwitch }) {
       <label style={S.label}>휴대전화번호</label>
       <input style={S.input} type="tel" placeholder="010-0000-0000" required value={f.phone} onChange={set("phone")} />
 
-      <div style={{ display: "flex", gap: 12 }}>
-        <div style={{ flex: 1 }}>
-          <label style={S.label}>목표 급수</label>
-          <select style={S.input} value={f.targetGrade} onChange={set("targetGrade")}>
-            <option value="2급">2급</option>
-            <option value="1급">1급</option>
-          </select>
-        </div>
-        <div style={{ flex: 1 }}>
-          <label style={S.label}>응시 예정일</label>
-          <input style={S.input} type="date" value={f.examDate} onChange={set("examDate")} />
-        </div>
-      </div>
+      <label style={S.label}>응시 예정 시기 <span style={{ color: UI.faint, fontWeight: 500 }}>(선택)</span></label>
+      <MonthYearPicker value={f.examDate} onChange={(v) => setF((p) => ({ ...p, examDate: v }))} />
 
       <label style={S.checkRow}>
         <input type="checkbox" checked={f.termsAgree} onChange={set("termsAgree")} />

@@ -73,9 +73,13 @@ export default function Dashboard({ lessons, progress, quizWrongMap, practiceWro
                 <div>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11.5, color: UI.mut, marginBottom: 4 }}>
                     <span>퀴즈 정답률</span>
-                    <span style={{ ...mono, color: scoreRate === null ? UI.faint : weak ? UI.warn : UI.ink }}>
-                      {scoreRate === null ? "학습 중" : `${scoreRate}%`}{scoreRate !== null && <span style={{ color: UI.faint }}> ({p.score}/{quizLen})</span>}
-                    </span>
+                    {scoreRate === null ? (
+                      <span style={{ color: UI.faint }}>학습 중</span>
+                    ) : (
+                      <span style={{ ...mono, color: weak ? UI.warn : UI.ink }}>
+                        {scoreRate}%<span style={{ color: UI.faint }}> ({p.score}/{quizLen})</span>
+                      </span>
+                    )}
                   </div>
                   <div style={{ height: 6, background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: UI.rPill }}>
                     <div style={{ width: `${scoreRate ?? 0}%`, height: "100%", background: scoreRate === null ? "transparent" : weak ? UI.warn : UI.correct, borderRadius: UI.rPill, transition: "width 0.6s cubic-bezier(.22,1,.36,1)" }} />

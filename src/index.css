@@ -5,6 +5,10 @@
 
 * { box-sizing: border-box; }
 
+/* 휠 피커 등 스크롤바 숨김 (애플식 년/월 선택기) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 html {
   scroll-behavior: smooth; /* 네비 앵커 클릭 시 부드럽게 스크롤 */
 }
