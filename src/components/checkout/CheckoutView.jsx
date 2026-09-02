@@ -31,6 +31,8 @@ export default function CheckoutView({ onBack }) {
   const { user, profile, refresh } = useAuth();
   const [grade, setGrade] = useState(profile?.target_grade || "2급");
   const [method, setMethod] = useState("CARD");
+  const [buyerName, setBuyerName] = useState(profile?.name || "");
+  const [buyerPhone, setBuyerPhone] = useState(profile?.phone || "");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const product = PRODUCTS[grade];
@@ -77,6 +79,11 @@ export default function CheckoutView({ onBack }) {
       return;
     }
     if (!user) { setMsg("로그인이 필요합니다."); return; }
+    const phone = buyerPhone.replace(/[^0-9]/g, "");
+    if (!buyerName.trim() || phone.length < 10) {
+      setMsg("구매자 이름과 휴대폰 번호를 입력해 주세요.");
+      return;
+    }
     setBusy(true);
     try {
       const paymentId = `pay-${crypto.randomUUID()}`;
@@ -84,11 +91,8 @@ export default function CheckoutView({ onBack }) {
       sessionStorage.setItem(PENDING_KEY, JSON.stringify({ paymentId, grade }));
       const m = METHODS.find((x) => x.key === method) || METHODS[0];
 
-      // 값이 있는 필드만 담는다 (포트원은 fullName 등이 있으면 문자열이어야 함)
-      const customer = {};
-      if (user.email) customer.email = user.email;
-      if (profile?.name) customer.fullName = profile.name;
-      if (profile?.phone) customer.phoneNumber = profile.phone;
+      // 이니시스 V2 일반결제는 구매자명·휴대폰이 필수
+      const customer = { email: user.email, fullName: buyerName.trim(), phoneNumber: phone };
 
       // 포트원 결제창 호출 (KG이니시스 채널). 모바일은 여기서 redirectUrl로 이동됨.
       const res = await PortOne.requestPayment({
@@ -144,6 +148,23 @@ export default function CheckoutView({ onBack }) {
           {METHODS.map((m) => (
             <button key={m.key} style={methodBtn(method === m.key)} onClick={() => setMethod(m.key)}>{m.label}</button>
           ))}
+        </div>
+
+        <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>구매자 정보</div>
+        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+          <input
+            value={buyerName}
+            onChange={(e) => setBuyerName(e.target.value)}
+            placeholder="이름"
+            style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" }}
+          />
+          <input
+            value={buyerPhone}
+            onChange={(e) => setBuyerPhone(e.target.value)}
+            placeholder="휴대폰 번호 (- 없이 숫자만)"
+            inputMode="numeric"
+            style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" }}
+          />
         </div>
 
         <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
