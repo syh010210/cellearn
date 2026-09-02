@@ -526,7 +526,7 @@ export function AbsoluteFillDownAnim() {
   return (
     <Wrap>
       <Title>절대 참조 — 아래로 채워도 $ 셀은 고정</Title>
-      <Subtitle>{'$B$5·$C$5(비율)는 항상 5행을 참조 · B·C의 행 번호만 2 → 3 → 4 로 변합니다'}</Subtitle>
+      <Subtitle>{'B5 · C5(비율)는 항상 5행을 참조하고 B · C의 행 번호만 2 → 3 → 4 로 변합니다'}</Subtitle>
 
       <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 64px 64px 176px' }}>
@@ -575,11 +575,11 @@ export function AbsoluteFillDownAnim() {
           <div className="cl-lock-pulse" style={{
             background: '#2a0d0d', borderBottom: `1px solid ${C.border}`,
             border: `2px solid ${C.red}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: C.redLight,
-          }}>🔒 $B$5<br /><span style={{ fontSize: 13 }}>0.6</span></div>
+          }}>0.6</div>
           <div className="cl-lock-pulse" style={{
             background: '#2a0d0d', borderBottom: `1px solid ${C.border}`,
             border: `2px solid ${C.red}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: C.redLight,
-          }}>🔒 $C$5<br /><span style={{ fontSize: 13 }}>0.4</span></div>
+          }}>0.4</div>
           <DataCell dim>고정 기준값</DataCell>
         </div>
 
@@ -611,9 +611,9 @@ export function AbsoluteFillDownAnim() {
       </div>
 
       <WhyBox
-        title="🔒 빨간 비율 셀($B$5·$C$5)은 왜 고정해야 할까?"
+        title="수식 내의 빨간 비율 셀($B$5·$C$5)은 왜 고정해야 할까?"
         lines={[
-          <><b style={{ color: C.redLight }}>0.6·0.4</b>는 모든 사람의 <b style={{ color: FIX }}>실기·봉사 점수에 똑같이 곱해야 하는 기준값</b>이에요.</>,
+          <><b style={{ color: C.redLight }}>0.6·0.4</b>는 모든 사람의 <b style={{ color: FIX }}>실기·봉사 점수에 똑같이 곱해야 하는 공통 기준값</b>이에요.</>,
           <>수식을 아래로 채울 때 이 셀이 함께 밀려 내려가면 <b style={{ color: C.redLight }}>비어 있는 6·7행을 참조</b>해 계산이 전부 틀어집니다.</>,
           <>그래서 <b style={{ color: C.redLight }}>$B$5·$C$5로 고정</b>해, 어느 행을 채워도 항상 같은 비율을 곱하게 만듭니다.</>,
         ]}
