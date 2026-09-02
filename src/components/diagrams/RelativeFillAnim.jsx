@@ -109,6 +109,17 @@ function DataCell({ children, dim }) {
   );
 }
 
+// 제목(필드명) 셀 — 열 문자/행 번호 헤더와 구분되는 볼드 데이터 셀
+function TitleCell({ children, accent }) {
+  return (
+    <div style={{
+      background: '#101c30', borderRight: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`,
+      padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700,
+      color: accent ? C.greenLight : C.text,
+    }}>{children}</div>
+  );
+}
+
 // 결과(수식) 셀 — 채워짐/비어있음 상태에 따라 스타일이 달라진다.
 function ResultCell({ filled, justFilled, isOrigin, formulaNodes, value, innerRef, style = {} }) {
   return (
@@ -321,11 +332,18 @@ export function RelativeFillDownAnim() {
 
       <div ref={containerRef} style={{ position: 'relative', display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ ...gridBase, gridTemplateColumns: '34px 84px 66px 66px 150px' }}>
+          {/* 열 문자 행 */}
           <HeadCell />
-          <HeadCell>A 이름</HeadCell>
-          <HeadCell>B 영어</HeadCell>
-          <HeadCell>C 수학</HeadCell>
-          <HeadCell accent>D 합계</HeadCell>
+          <HeadCell>A</HeadCell>
+          <HeadCell>B</HeadCell>
+          <HeadCell>C</HeadCell>
+          <HeadCell accent>D</HeadCell>
+          {/* 제목 행 (엑셀 1행) */}
+          <HeadCell>1</HeadCell>
+          <TitleCell>이름</TitleCell>
+          <TitleCell>영어</TitleCell>
+          <TitleCell>수학</TitleCell>
+          <TitleCell accent>합계</TitleCell>
           {rows.map((r, idx) => {
             const filled = idx < filledCount;
             const justFilled = idx === Math.min(step, 2) && step <= 2;
@@ -413,12 +431,18 @@ export function RelativeFillRightAnim() {
         {/* 참조 데이터 (3·4행) */}
         <div>
           <div style={{ fontSize: 13, color: C.textDim, marginBottom: 4, textAlign: 'center' }}>참조 데이터</div>
-          <div style={{ ...gridBase, gridTemplateColumns: '88px 84px 84px 84px' }}>
+          <div style={{ ...gridBase, gridTemplateColumns: '40px 78px 78px 78px 78px' }}>
+            {/* 열 문자 행 */}
             <HeadCell />
+            <HeadCell>A</HeadCell>
             {cols.map((c) => <HeadCell key={c}>{c}</HeadCell>)}
-            <HeadCell accent>3 상반기</HeadCell>
+            {/* 3행 */}
+            <HeadCell accent>3</HeadCell>
+            <TitleCell>상반기</TitleCell>
             {row3.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
-            <HeadCell accent>4 하반기</HeadCell>
+            {/* 4행 */}
+            <HeadCell accent>4</HeadCell>
+            <TitleCell>하반기</TitleCell>
             {row4.map((v, i) => <DataCell key={i} dim>{v}</DataCell>)}
           </div>
         </div>
