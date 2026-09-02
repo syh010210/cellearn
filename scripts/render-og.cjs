@@ -52,13 +52,22 @@ const HTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
   .chip.lime { background:#c8f26a; color:#123a33; }
   .chip.dark { background:transparent; border:1px solid #2c5049; color:#cfe0d9; }
   .url { position:absolute; left:64px; bottom:52px; font-size:22px; font-weight:700; color:#5ec596; }
+  /* 오른쪽: 차트 카드 + 스프레드시트 목업 (세로 배치) */
+  .right { position:absolute; right:64px; top:150px; display:flex; flex-direction:column; gap:18px; align-items:flex-end; }
+  .card { background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.35); }
+  /* 막대 차트 */
+  .chart { width:360px; }
+  .chart .ct { font-size:14px; font-weight:700; color:#5c6b66; margin-bottom:12px; }
+  .bars { display:flex; align-items:flex-end; gap:16px; height:118px; padding:0 6px; }
+  .bars span { flex:1; border-radius:6px 6px 0 0; background:#123a33; }
+  .bars span.hl { background:#c8f26a; }
+  .bars span.mid { background:#2f9e6f; }
   /* 스프레드시트 목업 */
-  .mock { position:absolute; right:74px; top:196px; background:#ffffff; border-radius:16px; padding:18px; box-shadow:0 20px 50px rgba(0,0,0,.35); }
   table { border-collapse:collapse; table-layout:fixed; }
-  td { text-align:center; font-size:20px; padding:11px 0; width:74px; font-family:'JetBrains Mono','Pretendard',monospace; }
-  .corner { width:38px; background:#f2f4f2; border:1px solid #eaefec; }
+  td { text-align:center; font-size:19px; padding:10px 0; width:70px; font-family:'JetBrains Mono','Pretendard',monospace; }
+  .corner { width:36px; background:#f2f4f2; border:1px solid #eaefec; }
   .colh { background:#e7edfb; border:1px solid #bcd0f5; color:#2563eb; font-weight:700; }
-  .rowh { width:38px; background:#f0e9fb; border:1px solid #d8c4f0; color:#7c3aed; font-weight:700; }
+  .rowh { width:36px; background:#f0e9fb; border:1px solid #d8c4f0; color:#7c3aed; font-weight:700; }
   .cell { background:#fff; border:1px solid #eaefec; color:#8b988f; }
   .cell.hl { background:#fdf0d8; border:1px solid #eecf92; color:#b8791a; font-weight:800; }
 </style></head>
@@ -75,7 +84,19 @@ const HTML = `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
       <span class="chip dark">실무 엑셀</span>
     </div>
     <div class="url">cellearn.kr</div>
-    <div class="mock">${grid()}</div>
+    <div class="right">
+      <div class="card chart">
+        <div class="ct">차트 · 데이터 분석</div>
+        <div class="bars">
+          <span style="height:42%"></span>
+          <span class="mid" style="height:66%"></span>
+          <span style="height:54%"></span>
+          <span class="hl" style="height:92%"></span>
+          <span class="mid" style="height:74%"></span>
+        </div>
+      </div>
+      <div class="card">${grid()}</div>
+    </div>
   </div>
 </body></html>`;
 

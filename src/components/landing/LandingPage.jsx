@@ -365,15 +365,24 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
-              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
-              </a>
-            </div>
-            {isMobile && (
-              <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
-                ※ 개념 학습·실습·채점은 PC에서 이용할 수 있어요.
+            {isMobile ? (
+              <div style={{ marginTop: "auto" }}>
+                <div style={{ fontSize: 16.5, fontWeight: 700, color: UI.ink, marginBottom: 12, lineHeight: 1.5 }}>
+                  이번 주말, 9월 컴활 2급 실기 클래스가 열립니다
+                </div>
+                <Btn variant="dark" onClick={goPricing} style={{ width: "100%", justifyContent: "center" }}>
+                  수강료 보기 <ArrowRight size={18} strokeWidth={2} />
+                </Btn>
+                <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
+                  ※ 개념 학습·실습·채점은 PC에서 이용할 수 있어요.
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
+                <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+                <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
+                </a>
               </div>
             )}
           </div>

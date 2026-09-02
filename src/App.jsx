@@ -68,10 +68,9 @@ export default function App() {
   function startLearning(grade) {
     // 여러 버튼이 onClick={onStart}로 이벤트를 넘길 수 있어 문자열일 때만 과정으로 취급
     const g = typeof grade === "string" ? grade : null;
-    if (isMobile) return;
     if (g) setSelectedGrade(g);
-    if (gateBypassed) return setPage("learn");
-    if (!isAuthed) {
+    // 모바일도 수강 신청(가입)·결제까지는 가능해야 한다. 실제 학습(learn) 화면만 PC 전용으로 막는다.
+    if (!isAuthed && !gateBypassed) {
       // 제품 CTA(과정 지정)로 들어오면 수강 신청(가입) 흐름, 그 외엔 로그인
       setAuthMode(g ? "signup" : "login");
       return setPage("auth");
@@ -126,6 +125,21 @@ export default function App() {
     );
     return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} />;
   }
+
+  // 실제 학습(개념/실습/퀴즈)은 PC 전용 — 모바일은 안내 후 홈으로
+  if (isMobile) return (
+    <div style={{ minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font }}>
+      <div style={{ maxWidth: 380, textAlign: "center", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32 }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>🖥️</div>
+        <h2 style={{ fontSize: 19, fontWeight: 800, margin: "0 0 10px" }}>학습은 PC에서 이용해 주세요</h2>
+        <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
+          결제·계정은 완료되었습니다. 개념 학습·미니 엑셀 실습·채점은 마우스와 넓은 화면이 필요해
+          PC(웹 브라우저)에서 <b style={{ color: UI.ink }}>cellearn.kr</b>에 로그인하면 바로 이어집니다.
+        </p>
+        <button onClick={() => setPage("landing")} style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}>홈으로</button>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ display: "flex", background: UI.bg, color: UI.ink, height: "100vh", overflow: "hidden", fontFamily: UI.font }}>
