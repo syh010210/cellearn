@@ -71,8 +71,9 @@ export default function App() {
     if (g) setSelectedGrade(g);
     // 모바일도 수강 신청(가입)·결제까지는 가능해야 한다. 실제 학습(learn) 화면만 PC 전용으로 막는다.
     if (!isAuthed && !gateBypassed) {
-      // 제품 CTA(과정 지정)로 들어오면 수강 신청(가입) 흐름, 그 외엔 로그인
-      setAuthMode(g ? "signup" : "login");
+      // 제품 CTA(과정 지정)면 결제 화면에서 가입까지 한 번에(결제 우선 흐름), 그 외엔 로그인
+      if (g) return setPage("checkout");
+      setAuthMode("login");
       return setPage("auth");
     }
     // 결제 필요 여부는 learn 화면 렌더 시 canLearn 게이트가 판단 (미리 결제화면 띄우지 않음)
@@ -100,7 +101,7 @@ export default function App() {
   );
 
   if (page === "auth") return <AuthView onBack={() => setPage("landing")} initialMode={authMode} presetGrade={selectedGrade || "2급"} />;
-  if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} />;
+  if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} onNeedLogin={() => { setAuthMode("login"); setPage("auth"); }} />;
   if (page === "admin") return <AdminView onBack={() => setPage("landing")} />;
   if (page === "legal") return (
     <>
@@ -123,7 +124,7 @@ export default function App() {
     if (!dataReady) return (
       <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
     );
-    return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} />;
+    return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} onNeedLogin={() => { setAuthMode("login"); setPage("auth"); }} />;
   }
 
   // 실제 학습(개념/실습/퀴즈)은 PC 전용 — 모바일은 안내 후 홈으로

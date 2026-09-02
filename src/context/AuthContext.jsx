@@ -82,7 +82,12 @@ export function AuthProvider({ children }) {
     user, session, profile, enrollments,
     isAuthed, isAdmin, hasActiveEnrollment, enrolledGrade,
     signUp, signIn, signOut,
-    refresh: () => user && loadUserData(user.id),
+    // 결제 직후처럼 세션이 방금 생긴 경우에도 확실히 반영되도록 현재 세션에서 user를 다시 조회
+    refresh: async () => {
+      if (!supabase) return;
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) await loadUserData(data.user.id);
+    },
   };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

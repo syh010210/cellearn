@@ -27,16 +27,22 @@ const STORE_ID = import.meta.env.VITE_PORTONE_STORE_ID;
 const CHANNEL_KEY = import.meta.env.VITE_PORTONE_CHANNEL_KEY;
 const PENDING_KEY = "portone_pending";
 
-export default function CheckoutView({ onBack, presetGrade }) {
-  const { user, profile, refresh } = useAuth();
+export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
+  const { user, profile, refresh, signUp } = useAuth();
   // 학습 과정(급수)은 눌러 들어온 과정 → 프로필 목표 → 기본값 순으로 자동 지정
   const [grade, setGrade] = useState(presetGrade || profile?.target_grade || "2급");
   const [method, setMethod] = useState("CARD");
   const [buyerName, setBuyerName] = useState(profile?.name || "");
   const [buyerPhone, setBuyerPhone] = useState(profile?.phone || "");
+  // 비회원(결제 먼저) — 결제 화면 안에서 계정을 만든다
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [termsAgree, setTermsAgree] = useState(false);
+  const [marketingAgree, setMarketingAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const product = PRODUCTS[grade];
+  const isGuest = !user; // 로그인 안 된 상태 → 결제 화면에서 가입까지 처리
 
   // 프로필이 (비동기로) 로드되면 구매자 정보 자동 채움 — 이미 입력한 값은 보존
   useEffect(() => {
@@ -97,12 +103,33 @@ export default function CheckoutView({ onBack, presetGrade }) {
       setMsg("결제 설정이 아직 없습니다. docs/SETUP.md의 Supabase·포트원 키를 .env에 넣어주세요.");
       return;
     }
-    if (!user) { setMsg("로그인이 필요합니다."); return; }
     const phone = buyerPhone.replace(/[^0-9]/g, "");
     if (!buyerName.trim() || phone.length < 10) {
-      setMsg("구매자 이름과 휴대폰 번호를 입력해 주세요.");
+      setMsg("이름과 휴대폰 번호를 입력해 주세요.");
       return;
     }
+
+    // 비회원이면 결제 직전에 계정을 만든다(결제=수강권은 계정 귀속이라 계정이 선행돼야 함).
+    let activeUser = user;
+    if (isGuest) {
+      if (!email.trim()) { setMsg("이메일을 입력해 주세요."); return; }
+      if (password.length < 6) { setMsg("비밀번호는 6자 이상이어야 합니다."); return; }
+      if (!termsAgree) { setMsg("이용약관 및 개인정보 처리방침에 동의해 주세요."); return; }
+      setBusy(true);
+      const { data, error } = await signUp({
+        email: email.trim(), password, name: buyerName.trim(), phone,
+        targetGrade: grade, examDate: "", marketingAgree, termsAgree,
+      });
+      if (error) { setBusy(false); setMsg(error.message || "가입에 실패했습니다."); return; }
+      if (!data?.session) {
+        // Supabase '이메일 인증' 설정이 켜져 있으면 즉시 세션이 없다 → 인증 후 이어서 결제
+        setBusy(false);
+        setMsg("가입 확인 메일을 보냈어요. 메일에서 인증을 마치고 로그인하면 이 화면에서 결제가 이어집니다.");
+        return;
+      }
+      activeUser = data.user; // 세션 발급됨(이메일 인증 off) → 바로 결제 진행
+    }
+
     setBusy(true);
     try {
       const paymentId = `pay-${crypto.randomUUID()}`;
@@ -111,7 +138,7 @@ export default function CheckoutView({ onBack, presetGrade }) {
       const m = METHODS.find((x) => x.key === method) || METHODS[0];
 
       // 이니시스 V2 일반결제는 구매자명·휴대폰이 필수
-      const customer = { email: user.email, fullName: buyerName.trim(), phoneNumber: phone };
+      const customer = { email: activeUser.email, fullName: buyerName.trim(), phoneNumber: phone };
 
       // 포트원 결제창 호출 (KG이니시스 채널). 모바일은 여기서 redirectUrl로 이동됨.
       const res = await PortOne.requestPayment({
@@ -125,7 +152,7 @@ export default function CheckoutView({ onBack, presetGrade }) {
         redirectUrl: `${window.location.origin}/?portone=return`,
         customer,
         // 이니시스 merchantData는 한글 불가 → 급수는 ASCII 코드로 (검증은 서버 body.grade 사용)
-        customData: JSON.stringify({ userId: user.id, grade: grade === "1급" ? "level1" : "level2" }),
+        customData: JSON.stringify({ userId: activeUser.id, grade: grade === "1급" ? "level1" : "level2" }),
       });
 
       // 데스크톱(팝업): 결과가 여기로 반환됨. (모바일은 위에서 리다이렉트되어 도달하지 않음)
@@ -144,6 +171,7 @@ export default function CheckoutView({ onBack, presetGrade }) {
     border: `1.5px solid ${active ? UI.teal : UI.line}`, background: active ? UI.tealSoft : UI.surface,
     color: active ? UI.teal : UI.mut, fontFamily: UI.font,
   });
+  const inp = { border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" };
 
   return (
     <div style={wrap}>
@@ -169,21 +197,54 @@ export default function CheckoutView({ onBack, presetGrade }) {
           ))}
         </div>
 
-        <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>구매자 정보</div>
+        <div style={{ marginTop: 22, fontSize: 13, fontWeight: 700, color: UI.ink }}>
+          {isGuest ? "결제·계정 정보" : "구매자 정보"}
+        </div>
+        {isGuest && (
+          <div style={{ fontSize: 12.5, color: UI.mut, marginTop: 4 }}>
+            결제와 동시에 이 정보로 계정이 만들어집니다.
+          </div>
+        )}
         <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
           <input
             value={buyerName}
             onChange={(e) => setBuyerName(e.target.value)}
             placeholder="이름"
-            style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" }}
+            style={inp}
           />
           <input
             value={buyerPhone}
             onChange={(e) => setBuyerPhone(e.target.value)}
             placeholder="휴대폰 번호 (- 없이 숫자만)"
             inputMode="numeric"
-            style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 12px", fontSize: 14, fontFamily: UI.font, color: UI.ink, boxSizing: "border-box", outline: "none" }}
+            style={inp}
           />
+          {isGuest && (
+            <>
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                type="email"
+                placeholder="이메일 (로그인 아이디)"
+                style={inp}
+              />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                type="password"
+                placeholder="비밀번호 (6자 이상)"
+                style={inp}
+              />
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 6, fontSize: 13, color: UI.mut }}>
+                <input type="checkbox" checked={termsAgree} onChange={(e) => setTermsAgree(e.target.checked)} />
+                <span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span>
+              </label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: UI.mut }}>
+                <input type="checkbox" checked={marketingAgree} onChange={(e) => setMarketingAgree(e.target.checked)} />
+                <span>[선택] 마케팅 정보 수신에 동의합니다.</span>
+              </label>
+            </>
+          )}
         </div>
 
         <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
@@ -201,6 +262,13 @@ export default function CheckoutView({ onBack, presetGrade }) {
         >
           {busy ? "처리 중…" : `${product.amount.toLocaleString()}원 결제하기`}
         </button>
+
+        {isGuest && (
+          <div style={{ marginTop: 16, textAlign: "center", fontSize: 13, color: UI.mut }}>
+            이미 계정이 있으신가요?{" "}
+            <button type="button" onClick={onNeedLogin} style={{ background: "transparent", border: "none", color: UI.teal, cursor: "pointer", fontSize: 13, fontWeight: 700, fontFamily: UI.font }}>로그인</button>
+          </div>
+        )}
       </div>
     </div>
   );
