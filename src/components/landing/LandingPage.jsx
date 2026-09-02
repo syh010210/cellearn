@@ -339,43 +339,28 @@ export default function LandingPage({ onStart }) {
         }}
       >
         {/* 헤드라인 — 히어로 전체 폭을 써서 문장별 한 줄 유지 */}
-        <h1 style={{ fontSize: "clamp(28px,4.4vw,44px)", fontWeight: 700, lineHeight: 1.22, margin: 0, letterSpacing: "-0.02em" }}>
+        <h1 style={{ fontSize: "clamp(30px,4.7vw,48px)", fontWeight: 700, lineHeight: 1.2, margin: 0, letterSpacing: "-0.02em" }}>
           <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap" }}>2027년, 컴활 출제기준이 바뀝니다.</span>
           <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap", color: UI.teal }}>반드시 올해 안에 끝내야 합니다.</span>
         </h1>
 
-        <div style={{ display: "flex", gap: 48, alignItems: isMobile ? "stretch" : "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 48, alignItems: "stretch", flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 400px", minWidth: 300, display: "flex", flexDirection: "column" }}>
-            <p style={{ color: UI.mut, fontSize: 17, lineHeight: 1.7, margin: "0 0 12px" }}>
+            <p style={{ color: UI.ink, fontSize: 20, lineHeight: 1.65, margin: "0 0 18px", fontWeight: 500 }}>
               지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
               9월, 컴활 2급 실기 클래스가 열립니다.
             </p>
-            <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 22px" }}>
+            <p style={{ color: UI.mut, fontSize: 16.5, lineHeight: 1.75, margin: "0 0 30px" }}>
               강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
-
-            {!isMobile && (
-              <ul style={{ listStyle: "none", margin: "0 0 26px", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-                {[
-                  "실제 시험과 같은 엑셀 파일 다운로드 → 업로드 자동 채점",
-                  "결과값이 아니라 수식 자체를 셀 단위로 비교",
-                  "틀린 문제를 다 맞혀야 다음 차시가 열리는 복습 게이트",
-                ].map((t) => (
-                  <li key={t} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 15, lineHeight: 1.5, color: UI.ink }}>
-                    <CheckCircle2 size={18} strokeWidth={2.2} color={UI.teal} style={{ flexShrink: 0, marginTop: 2 }} />
-                    <span>{t}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
 
             {isMobile ? (
               <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 20px", display: "inline-block", fontSize: 14, color: UI.teal, fontWeight: 600 }}>
                 학습 기능은 PC에서 이용할 수 있어요
               </div>
             ) : (
-              <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto" }}>
                 <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
                 <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
                   10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
