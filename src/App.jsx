@@ -49,9 +49,10 @@ export default function App() {
     if (q.get("portone") === "return" || q.get("paymentId")) setPage("checkout");
   }, []);
 
-  // 로그인/결제 상태가 바뀌면 인증·결제 페이지에서 자동으로 다음 단계로 이동
+  // 로그인/결제 상태가 바뀌면 자동 이동. 결제 필요 여부는 learn 렌더 게이트(canLearn)가 판단 →
+  // 수강권 로딩 중 결제화면이 깜빡이는 레이스를 막는다.
   useEffect(() => {
-    if (page === "auth" && isAuthed) setPage((!REQUIRE_ENROLLMENT || hasActiveEnrollment) ? "learn" : "checkout");
+    if (page === "auth" && isAuthed) setPage("learn");
     if (page === "checkout" && hasActiveEnrollment) setPage("learn");
   }, [page, isAuthed, hasActiveEnrollment]);
 
@@ -65,7 +66,7 @@ export default function App() {
     if (isMobile) return;
     if (gateBypassed) return setPage("learn");
     if (!isAuthed) return setPage("auth");
-    if (REQUIRE_ENROLLMENT && !hasActiveEnrollment) return setPage("checkout");
+    // 결제 필요 여부는 learn 화면 렌더 시 canLearn 게이트가 판단 (미리 결제화면 띄우지 않음)
     setPage("learn");
   }
 
