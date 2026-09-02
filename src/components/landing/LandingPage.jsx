@@ -604,17 +604,27 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       {/* ===== P. 가격 — 2급만 결제 가능, 1급은 10월 예정 ===== */}
       <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>수강료</h2>
-          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 8px" }}>결제 한 번으로 올해가 끝날 때까지</p>
-          <p style={{ textAlign: "center", color: UI.lime, fontSize: 14, fontWeight: 600, margin: "0 0 40px" }}>
-            기본 이용 기간은 결제일부터 <b>2개월</b>이지만, <b>지금은 프로모션</b>으로 올해 말까지 열어드립니다. (내년부터 2개월 적용)
+          <div style={{ textAlign: "center", marginBottom: 14 }}>
+            <span style={{ display: "inline-block", background: UI.lime, color: UI.teal, fontSize: 13, fontWeight: 800, padding: "6px 16px", borderRadius: UI.rPill, letterSpacing: "-0.01em" }}>🎉 오픈 프로모션 진행 중</span>
+          </div>
+          <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3.4vw,34px)", fontWeight: 800, margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.25 }}>
+            지금 시작하면 <span style={{ color: UI.lime }}>올해 끝까지</span>
+          </h2>
+          <p style={{ textAlign: "center", color: "#d5dbd8", fontSize: 16.5, margin: "0 0 8px", lineHeight: 1.6 }}>
+            결제는 딱 한 번. 추가 결제 없이 모든 차시·실습·복습·실전 모드를 무제한으로.
+          </p>
+          <p style={{ textAlign: "center", color: UI.lime, fontSize: 15, fontWeight: 700, margin: "0 0 40px", lineHeight: 1.6 }}>
+            원래 이용 기간은 <b>2개월</b> — 지금 결제하면 <b>올해 말까지</b>, 같은 가격에 <b>기간 최대 2배</b>. <span style={{ color: UI.invMut, fontWeight: 500 }}>(내년부터 2개월 적용)</span>
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {/* 2급 — 지금 결제 가능 (현재의 주인공) */}
             <div style={{ position: "relative", background: UI.teal, border: `1px solid ${tealLine}`, borderRadius: UI.rLg, padding: "28px 26px" }}>
-              <span style={{ position: "absolute", top: 20, right: 22, background: UI.lime, color: UI.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>9월 오픈</span>
+              <span style={{ position: "absolute", top: 20, right: 22, background: UI.lime, color: UI.teal, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>지금 오픈</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: UI.lime, marginBottom: 6 }}>컴퓨터활용능력 실기 2급</div>
               <div style={{ ...num, fontSize: 36 }}>₩70,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 올해 끝까지</span></div>
+              <div style={{ display: "inline-block", marginTop: 8, background: "rgba(200,242,106,0.14)", border: `1px solid ${tealLine}`, color: UI.lime, fontSize: 12.5, fontWeight: 700, padding: "4px 10px", borderRadius: UI.rSm }}>
+                프로모션 · 2개월 → 올해 말까지
+              </div>
               <div style={{ margin: "20px 0" }}>
                 {["7일, 20차시 커리큘럼", "엑셀 파일 자동 채점 · 퀴즈 오답노트", "사전 점검 세션 · 누적 복습 시스템", "개념 학습 후 실전 문제 풀이 무제한"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>

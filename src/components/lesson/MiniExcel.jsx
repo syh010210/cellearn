@@ -405,10 +405,10 @@ export default function MiniExcel({ practice, autoplay = false }) {
 
   return (
     <div style={{ marginTop: 20, userSelect: "none", fontFamily: FONT }}>
-      {/* ── 문제 카드 (상단, 엑셀과 분리) ── */}
-      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderLeft: `4px solid ${XL}`, borderRadius: 8, padding: "14px 18px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
-        <span style={{ color: XL, fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>문제</span>
-        <p style={{ color: "#1c2f2a", fontSize: 15, fontWeight: 600, margin: "4px 0 0", lineHeight: 1.6 }}>{practice.instruction}</p>
+      {/* ── 문제 카드 (상단, 엑셀과 분리) — 가독성 우선, 엑셀 색 미사용 ── */}
+      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 20px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+        <span style={{ display: "inline-block", background: "#1f2937", color: "#fff", fontSize: 11, fontWeight: 800, letterSpacing: 1, padding: "3px 11px", borderRadius: 999, marginBottom: 9 }}>문제</span>
+        <p style={{ color: "#1f2937", fontSize: 16, fontWeight: 600, margin: 0, lineHeight: 1.7 }}>{practice.instruction}</p>
       </div>
 
       {/* ── 엑셀 카드 (하단) ── */}
