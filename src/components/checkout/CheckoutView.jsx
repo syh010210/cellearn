@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as PortOne from "@portone/browser-sdk/v2";
+import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { UI } from "../../theme";
@@ -40,6 +41,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   const [termsAgree, setTermsAgree] = useState(false);
   const [marketingAgree, setMarketingAgree] = useState(false);
   const [otp, setOtp] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [phase, setPhase] = useState("form");
   const [paidId, setPaidId] = useState(null); // 결제 완료된 paymentId (계정 생성 후 검증에 사용)
   const [busy, setBusy] = useState(false);
@@ -295,7 +297,12 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
             <div style={{ marginTop: 20, fontSize: 13, fontWeight: 700, color: UI.ink }}>계정 만들기</div>
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일" style={inp} />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="비밀번호 (6자 이상)" style={inp} />
+              <div style={{ position: "relative" }}>
+                <input value={password} onChange={(e) => setPassword(e.target.value)} type={showPw ? "text" : "password"} placeholder="비밀번호 (6자 이상)" style={{ ...inp, paddingRight: 44 }} />
+                <button type="button" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? "비밀번호 숨기기" : "비밀번호 표시"} style={{ position: "absolute", right: 6, top: "50%", transform: "translateY(-50%)", background: "transparent", border: "none", cursor: "pointer", color: UI.mut, display: "flex", padding: 6 }}>
+                  {showPw ? <EyeOff size={18} strokeWidth={1.8} /> : <Eye size={18} strokeWidth={1.8} />}
+                </button>
+              </div>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 6, fontSize: 13, color: UI.mut }}>
                 <input type="checkbox" checked={termsAgree} onChange={(e) => setTermsAgree(e.target.checked)} />
                 <span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span>
