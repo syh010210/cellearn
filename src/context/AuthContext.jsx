@@ -8,12 +8,15 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(isSupabaseConfigured);
+  // 로그인 후 profiles·수강권 조회가 끝났는지 — 결제화면 깜빡임(레이스) 방지용
+  const [dataReady, setDataReady] = useState(!isSupabaseConfigured);
 
   // 로그인한 사용자의 profiles + 활성 수강권 로드
   const loadUserData = useCallback(async (userId) => {
     if (!supabase || !userId) {
       setProfile(null);
-      setEnrollments(null === userId ? [] : []);
+      setEnrollments([]);
+      setDataReady(true);
       return;
     }
     const [{ data: prof }, { data: enr }] = await Promise.all([
@@ -22,6 +25,7 @@ export function AuthProvider({ children }) {
     ]);
     setProfile(prof ?? null);
     setEnrollments(enr ?? []);
+    setDataReady(true);
   }, []);
 
   useEffect(() => {
@@ -29,12 +33,13 @@ export function AuthProvider({ children }) {
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session);
       if (data.session?.user) await loadUserData(data.session.user.id);
+      else setDataReady(true);
       setLoading(false);
     });
     const { data: sub } = supabase.auth.onAuthStateChange(async (_e, sess) => {
       setSession(sess);
-      if (sess?.user) await loadUserData(sess.user.id);
-      else { setProfile(null); setEnrollments([]); }
+      if (sess?.user) { setDataReady(false); await loadUserData(sess.user.id); }
+      else { setProfile(null); setEnrollments([]); setDataReady(true); }
     });
     return () => sub.subscription.unsubscribe();
   }, [loadUserData]);
@@ -73,7 +78,7 @@ export function AuthProvider({ children }) {
   const enrolledGrade = enrollments?.[0]?.grade ?? null;
 
   const value = {
-    loading, isSupabaseConfigured,
+    loading, dataReady, isSupabaseConfigured,
     user, session, profile, enrollments,
     isAuthed, isAdmin, hasActiveEnrollment, enrolledGrade,
     signUp, signIn, signOut,

@@ -31,7 +31,7 @@ const REQUIRE_ENROLLMENT = true;
 
 export default function App() {
   const isMobile = window.innerWidth < 768;
-  const { loading, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
+  const { loading, dataReady, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
   const [page, setPage] = useState("landing");
   const [legalTab, setLegalTab] = useState("terms");
   const [view, setView] = useState("dash");
@@ -118,6 +118,10 @@ export default function App() {
   // page === "learn" — 접근 권한 확인
   if (!canLearn) {
     if (!isAuthed) return <AuthView onBack={() => setPage("landing")} />;
+    // 로그인 직후 수강권 조회가 끝나기 전엔 결제화면 대신 로더 (깜빡임 방지)
+    if (!dataReady) return (
+      <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
+    );
     return <CheckoutView onBack={() => setPage("landing")} />;
   }
 
