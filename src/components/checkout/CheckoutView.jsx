@@ -67,7 +67,15 @@ export default function CheckoutView({ onBack }) {
     setMsg("결제를 확인하는 중…");
     try {
       const { data, error } = await supabase.functions.invoke("verify-payment", { body: { paymentId, grade: g } });
-      if (error) throw error;
+      if (error) {
+        // 서버가 반환한 상세 에러(JSON body)를 최대한 뽑아 표시
+        let detail = error.message;
+        try {
+          const body = await error.context?.json?.();
+          if (body?.error) detail = body.detail ? `${body.error}: ${body.detail}` : body.error;
+        } catch { /* body 파싱 실패 시 기본 메시지 */ }
+        throw new Error(detail);
+      }
       if (data?.error) throw new Error(data.error);
       sessionStorage.removeItem(PENDING_KEY);
       setMsg("결제가 완료되었습니다. 학습을 시작합니다…");
