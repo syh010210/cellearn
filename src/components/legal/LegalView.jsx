@@ -18,7 +18,7 @@ export const BUSINESS = {
   mailOrderNo: "",              // 통신판매업 신고번호 (간이과세자 → 신고 면제 대상, 요건 벗어나면 신고 후 입력)
   address: "",                  // 사업장 소재지 (자택 또는 공유오피스 주소로 정정 후 입력)
   tel: "",                      // 고객센터 전화 (온라인 고객센터로 대체)
-  email: "syh010210@naver.com", // 고객센터 이메일
+  email: "support@cellearn.kr", // 고객센터 이메일
   domain: "cellearn.kr",
   host: "Vercel Inc.",          // 호스팅 제공자
   pg: "㈜코리아포트원(PortOne)", // 결제대행(PG)

@@ -3,7 +3,7 @@ import { MessageCircle, X, Send } from "lucide-react";
 import { UI } from "../../theme";
 
 // 문의 수신 주소 — 여기로 모든 문의가 메일로 전달됩니다.
-const SUPPORT_EMAIL = "syh010210@naver.com";
+const SUPPORT_EMAIL = "support@cellearn.kr";
 
 // 빠른 문의 주제 (누르면 메시지에 프리필)
 const QUICK = ["수강·결제 문의", "환불 문의", "학습/채점 오류", "기타 문의"];

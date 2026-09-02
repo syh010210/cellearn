@@ -718,7 +718,7 @@ export default function LandingPage({ onStart, onLegal }) {
             </div>
             <div>
               <div style={{ color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 12 }}>문의</div>
-              <div style={{ ...mono, fontSize: 13, color: UI.invMut, marginBottom: 8 }}>syh010210@naver.com</div>
+              <div style={{ ...mono, fontSize: 13, color: UI.invMut, marginBottom: 8 }}>support@cellearn.kr</div>
             </div>
           </div>
         </div>
