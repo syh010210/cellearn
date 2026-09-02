@@ -9,6 +9,13 @@
 .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
+/* 절대 참조 애니: 고정(자물쇠) 셀이 계속 고정임을 강조하는 맥동 글로우 */
+@keyframes cl-lock-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.55); }
+  50%      { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0.0); }
+}
+.cl-lock-pulse { animation: cl-lock-pulse 1.6s ease-in-out infinite; }
+
 html {
   scroll-behavior: smooth; /* 네비 앵커 클릭 시 부드럽게 스크롤 */
 }

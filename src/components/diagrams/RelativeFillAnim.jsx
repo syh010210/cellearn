@@ -562,17 +562,17 @@ export function AbsoluteFillDownAnim() {
               />,
             ];
           })}
-          {/* 비율(고정) 행 */}
+          {/* 비율(고정) 행 — 자동 채우기 내내 값·색이 변하지 않는 고정 기준 셀 */}
           <HeadCell>5</HeadCell>
           <DataCell>비율</DataCell>
-          <div style={{
+          <div className="cl-lock-pulse" style={{
             background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
             border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
-          }}>0.6 🔒</div>
-          <div style={{
+          }}>🔒 $B$5<br /><span style={{ fontSize: 13 }}>0.6</span></div>
+          <div className="cl-lock-pulse" style={{
             background: '#0b2a17', borderBottom: `1px solid ${C.border}`,
             border: `2px solid ${FIX}`, padding: '9px 4px', textAlign: 'center', fontSize: 15, fontWeight: 700, color: FIX,
-          }}>0.4 🔒</div>
+          }}>🔒 $C$5<br /><span style={{ fontSize: 13 }}>0.4</span></div>
           <DataCell dim>고정 기준값</DataCell>
         </div>
 
@@ -602,6 +602,15 @@ export function AbsoluteFillDownAnim() {
 
         <FillCursor cursor={cursor} />
       </div>
+
+      <WhyBox
+        title="🔒 표시된 비율 셀($B$5·$C$5)을 보세요 — 끝까지 그대로입니다"
+        lines={[
+          <>D 열은 <b style={{ color: '#3b82f6' }}>2 → 3 → 4</b> 로 한 칸씩 채워지지만,</>,
+          <><b style={{ color: FIX }}>🔒 비율 셀(0.6·0.4)은 위치도 값도 색도 전혀 바뀌지 않습니다.</b></>,
+          <>$로 고정했기 때문에, 모든 행이 <b style={{ color: FIX }}>항상 같은 $B$5·$C$5</b>를 곱해 계산합니다.</>,
+        ]}
+      />
     </Wrap>
   );
 }
