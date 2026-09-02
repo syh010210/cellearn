@@ -365,28 +365,20 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            {isMobile ? (
-              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 20px", display: "inline-block", fontSize: 14, color: UI.teal, fontWeight: 600 }}>
-                학습 기능은 PC에서 이용할 수 있어요
-              </div>
-            ) : (
-              <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto" }}>
-                <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-                <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
-                </a>
+            <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
+              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
+              </a>
+            </div>
+            {isMobile && (
+              <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
+                ※ 개념 학습·실습·채점은 PC에서 이용할 수 있어요.
               </div>
             )}
           </div>
-          <div style={{ flex: "1 1 460px", minWidth: 320 }}>
-            {isMobile ? (
-              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 24, textAlign: "center", color: UI.mut }}>
-                <Table2 size={40} strokeWidth={1.5} color={UI.teal} />
-                <div style={{ marginTop: 10, fontSize: 14 }}>PC에서 실제 미니 엑셀을 실습해 보세요</div>
-              </div>
-            ) : (
-              <HeroCarousel />
-            )}
+          <div style={{ flex: "1 1 460px", minWidth: 300 }}>
+            <HeroCarousel />
           </div>
         </div>
       </header>
