@@ -333,46 +333,50 @@ export default function LandingPage({ onStart }) {
         id="top"
         style={{
           maxWidth: 1180, margin: "0 auto", padding: "40px 24px 56px",
-          display: "flex", gap: 48, alignItems: "center", flexWrap: "wrap",
+          display: "flex", flexDirection: "column", gap: 32,
           backgroundImage: `linear-gradient(${UI.gridline} 1px, transparent 1px), linear-gradient(90deg, ${UI.gridline} 1px, transparent 1px)`,
           backgroundSize: "44px 44px",
         }}
       >
-        <div style={{ flex: "1 1 400px", minWidth: 300 }}>
-          <h1 style={{ fontSize: "clamp(30px,4.4vw,44px)", fontWeight: 700, lineHeight: 1.22, margin: "0 0 18px", letterSpacing: "-0.02em" }}>
-            2027년, 컴활 출제기준이 바뀝니다.<br />
-            <span style={{ color: UI.teal }}>반드시 올해 안에 끝내야 합니다.</span>
-          </h1>
-          <p style={{ color: UI.mut, fontSize: 17, lineHeight: 1.7, margin: "0 0 12px" }}>
-            지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
-            9월, 컴활 2급 실기 클래스가 열립니다.
-          </p>
-          <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 28px" }}>
-            강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
-            파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
-          </p>
-          {isMobile ? (
-            <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 20px", display: "inline-block", fontSize: 14, color: UI.teal, fontWeight: 600 }}>
-              학습 기능은 PC에서 이용할 수 있어요
-            </div>
-          ) : (
-            <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
-              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
-              </a>
-            </div>
-          )}
-        </div>
-        <div style={{ flex: "1 1 460px", minWidth: 320 }}>
-          {isMobile ? (
-            <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 24, textAlign: "center", color: UI.mut }}>
-              <Table2 size={40} strokeWidth={1.5} color={UI.teal} />
-              <div style={{ marginTop: 10, fontSize: 14 }}>PC에서 실제 미니 엑셀을 실습해 보세요</div>
-            </div>
-          ) : (
-            <HeroCarousel />
-          )}
+        {/* 헤드라인 — 히어로 전체 폭을 써서 문장별 한 줄 유지 */}
+        <h1 style={{ fontSize: "clamp(28px,4.4vw,44px)", fontWeight: 700, lineHeight: 1.22, margin: 0, letterSpacing: "-0.02em" }}>
+          <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap" }}>2027년, 컴활 출제기준이 바뀝니다.</span>
+          <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap", color: UI.teal }}>반드시 올해 안에 끝내야 합니다.</span>
+        </h1>
+
+        <div style={{ display: "flex", gap: 48, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ flex: "1 1 400px", minWidth: 300 }}>
+            <p style={{ color: UI.mut, fontSize: 17, lineHeight: 1.7, margin: "0 0 12px" }}>
+              지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
+              9월, 컴활 2급 실기 클래스가 열립니다.
+            </p>
+            <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 28px" }}>
+              강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
+              파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
+            </p>
+            {isMobile ? (
+              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "16px 20px", display: "inline-block", fontSize: 14, color: UI.teal, fontWeight: 600 }}>
+                학습 기능은 PC에서 이용할 수 있어요
+              </div>
+            ) : (
+              <div style={{ display: "flex", gap: 18, alignItems: "center" }}>
+                <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+                <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
+                </a>
+              </div>
+            )}
+          </div>
+          <div style={{ flex: "1 1 460px", minWidth: 320 }}>
+            {isMobile ? (
+              <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 24, textAlign: "center", color: UI.mut }}>
+                <Table2 size={40} strokeWidth={1.5} color={UI.teal} />
+                <div style={{ marginTop: 10, fontSize: 14 }}>PC에서 실제 미니 엑셀을 실습해 보세요</div>
+              </div>
+            ) : (
+              <HeroCarousel />
+            )}
+          </div>
         </div>
       </header>
 
