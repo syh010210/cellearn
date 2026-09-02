@@ -605,7 +605,10 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <h2 style={{ textAlign: "center", fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>수강료</h2>
-          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 40px" }}>결제 한 번으로 올해가 끝날 때까지</p>
+          <p style={{ textAlign: "center", color: UI.invMut, fontSize: 16, margin: "0 0 8px" }}>결제 한 번으로 올해가 끝날 때까지</p>
+          <p style={{ textAlign: "center", color: UI.lime, fontSize: 14, fontWeight: 600, margin: "0 0 40px" }}>
+            기본 이용 기간은 결제일부터 <b>2개월</b>이지만, <b>지금은 프로모션</b>으로 올해 말까지 열어드립니다. (내년부터 2개월 적용)
+          </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 16 }}>
             {/* 2급 — 지금 결제 가능 (현재의 주인공) */}
             <div style={{ position: "relative", background: UI.teal, border: `1px solid ${tealLine}`, borderRadius: UI.rLg, padding: "28px 26px" }}>

@@ -69,10 +69,22 @@ Deno.serve(async (req) => {
       return json({ error: "결제 기록 저장 실패", detail: payErr.message }, 500);
     }
 
-    // 5) 수강권 부여 — 프로모션: 구매 연도 12월 31일 23:59:59(KST)까지 "올해 끝까지"
+    // 5) 수강권 부여 — 기간 정책
+    //   · 기본값: 결제일부터 2개월 (내년부터 이 값 적용 예정)
+    //   · 프로모션(현재): 구매 연도 12월 31일 23:59:59(KST)까지 "올해 끝까지"
+    //   프로모션을 끄려면 PROMO_UNTIL_YEAR_END=false 로 바꾸면 기본 2개월이 적용된다.
+    const PROMO_UNTIL_YEAR_END = true;
+    const BASE_MONTHS = 2;
     const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
     const year = kstNow.getUTCFullYear();
-    const validTo = new Date(`${year}-12-31T23:59:59+09:00`);
+    let validTo: Date;
+    if (PROMO_UNTIL_YEAR_END) {
+      validTo = new Date(`${year}-12-31T23:59:59+09:00`);
+    } else {
+      // kstNow는 UTC필드에 KST 벽시계를 담고 있으므로 setUTCMonth로 개월 가산
+      validTo = new Date(kstNow);
+      validTo.setUTCMonth(validTo.getUTCMonth() + BASE_MONTHS);
+    }
     const { error: enrErr } = await admin.from("enrollments").insert({
       user_id: user.id, grade, payment_id: pay?.id, valid_to: validTo.toISOString(),
     });

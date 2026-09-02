@@ -404,13 +404,15 @@ export default function MiniExcel({ practice, autoplay = false }) {
   const XL_HDR_SEL = "#cfe6da"; // 선택된 셀의 행/열 머리 강조
 
   return (
-    <div style={{ marginTop: 20, background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", userSelect: "none", boxShadow: "0 2px 8px rgba(0,0,0,0.07)", fontFamily: FONT }}>
-      {/* 문제 설명 */}
-      <div style={{ background: "#e8f0ec", border: "1px solid #bfe0d2", borderRadius: 8, padding: "12px 16px", marginBottom: 20 }}>
-        <span style={{ color: "#123a33", fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>문제</span>
+    <div style={{ marginTop: 20, userSelect: "none", fontFamily: FONT }}>
+      {/* ── 문제 카드 (상단, 엑셀과 분리) ── */}
+      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderLeft: `4px solid ${XL}`, borderRadius: 8, padding: "14px 18px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
+        <span style={{ color: XL, fontSize: 11, fontWeight: 800, letterSpacing: 1 }}>문제</span>
         <p style={{ color: "#1c2f2a", fontSize: 15, fontWeight: 600, margin: "4px 0 0", lineHeight: 1.6 }}>{practice.instruction}</p>
       </div>
 
+      {/* ── 엑셀 카드 (하단) ── */}
+      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
       {/* 수식 입력창 (Excel 스타일) */}
       <div style={{ display: "flex", alignItems: "stretch", background: "#f5f5f5", border: "1px solid #d0d0d0", borderBottom: "none", borderRadius: "4px 4px 0 0" }}>
         <div style={{ minWidth: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", padding: "6px 8px", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -683,6 +685,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }
