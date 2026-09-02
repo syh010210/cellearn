@@ -262,7 +262,7 @@ function FaqSection() {
   );
 }
 
-export default function LandingPage({ onStart, onLegal }) {
+export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
   const isMobile = window.innerWidth < 768;
   const lessonCount = LESSONS.length;
   const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
@@ -325,7 +325,17 @@ export default function LandingPage({ onStart, onLegal }) {
             <a href="#faq" style={{ color: UI.mut, textDecoration: "none" }}>FAQ</a>
           </div>
         )}
-        <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>학습 시작</Btn>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {isAuthed && (
+            <button
+              onClick={onSignOut}
+              style={{ background: "transparent", border: `1px solid ${UI.line}`, color: UI.mut, padding: "9px 16px", borderRadius: UI.rMd, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: UI.font }}
+            >
+              로그아웃
+            </button>
+          )}
+          <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>{isAuthed ? "이어서 학습" : "학습 시작"}</Btn>
+        </div>
       </nav>
 
       {/* ===== H. 히어로 — 개정 긴급성 + 9월 2급 오픈 ===== */}

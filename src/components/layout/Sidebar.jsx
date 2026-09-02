@@ -3,7 +3,7 @@ import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared } from
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
-export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate, onExam }) {
+export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate, onExam, onHome }) {
   const examUnlocked = unlockAll || allDaysCleared(dayClears);
   const navBtn = (active, activeBg = UI.teal, activeColor = "#fff") => ({
     width: "100%",
@@ -28,7 +28,9 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
   return (
     <div style={{ width: 240, background: UI.surface, borderRight: `1px solid ${UI.line}`, display: "flex", flexDirection: "column", height: "100vh", position: "sticky", top: 0 }}>
       <div style={{ padding: "18px 18px", borderBottom: `1px solid ${UI.line}`, display: "flex", flexDirection: "column", gap: 4 }}>
-        <Logo size={22} />
+        <button type="button" onClick={onHome} title="홈으로" style={{ background: "none", border: "none", padding: 0, cursor: "pointer", alignSelf: "flex-start" }}>
+          <Logo size={22} />
+        </button>
         <span style={{ fontSize: 12, color: UI.faint, fontWeight: 600 }}>컴활 2급 실기</span>
       </div>
 

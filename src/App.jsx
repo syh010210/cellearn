@@ -17,7 +17,7 @@ import ExamView from "./components/exam/ExamView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
 import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared } from "./data/days";
-import { ArrowLeft, BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target } from "lucide-react";
+import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target } from "lucide-react";
 import { UI } from "./theme";
 
 const STEP_TABS = [
@@ -102,16 +102,8 @@ export default function App() {
 
   if (page === "landing") return (
     <div>
-      <LandingPage onStart={startLearning} onLegal={openLegal} />
+      <LandingPage onStart={startLearning} onLegal={openLegal} isAuthed={isAuthed} onSignOut={signOut} />
       <SupportWidget />
-      {!isMobile && isAuthed && (
-        <button
-          onClick={signOut}
-          style={{ position: "fixed", top: 18, right: 24, background: UI.panel, color: UI.mut, border: `1px solid ${UI.line}`, padding: "8px 16px", borderRadius: 999, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: UI.font, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
-        >
-          로그아웃
-        </button>
-      )}
     </div>
   );
 
@@ -139,16 +131,11 @@ export default function App() {
         wrongCount={totalWrong}
         onGate={openGate}
         onExam={() => setView("exam")}
+        onHome={() => setPage("landing")}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 상단 탭 — sticky 고정. 차시 탭은 엑셀 시트탭 모양 */}
         <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px 0", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
-          <button
-            onClick={() => setPage("landing")}
-            style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, marginBottom: 10, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI.font }}
-          >
-            <ArrowLeft size={15} strokeWidth={2} /> 홈
-          </button>
           {currentLesson && !lessonLocked && STEP_TABS.map(({ key, label, Icon }) => {
             const active = step === key;
             return (
