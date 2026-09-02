@@ -37,6 +37,13 @@ export default function CheckoutView({ onBack }) {
   const [msg, setMsg] = useState("");
   const product = PRODUCTS[grade];
 
+  // 프로필이 (비동기로) 로드되면 구매자 정보 자동 채움 — 이미 입력한 값은 보존
+  useEffect(() => {
+    if (profile?.name) setBuyerName((v) => v || profile.name);
+    if (profile?.phone) setBuyerPhone((v) => v || profile.phone);
+    if (profile?.target_grade) setGrade((g) => g || profile.target_grade);
+  }, [profile]);
+
   // 모바일 리다이렉트 복귀 처리 — 결제창이 페이지를 벗어났다가 ?portone=return 로 돌아옴
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
