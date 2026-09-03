@@ -146,7 +146,7 @@ export default function SupportWidget() {
           <div style={{ background: UI.teal, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "6px 0", letterSpacing: "-0.01em" }}>오픈 프로모션</div>
           <div style={{ padding: "10px 8px 11px" }}>
             <div style={{ fontSize: 11, color: UI.mut, fontWeight: 700, marginBottom: 4 }}>마감까지</div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: UI.teal, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>D-{dday}</div>
+            <div style={{ fontSize: 26, fontWeight: 800, color: UI.teal, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>D-{dday}</div>
             <div style={{ marginTop: 9, background: UI.lime, color: UI.teal, fontSize: 11.5, fontWeight: 800, borderRadius: UI.rPill, padding: "5px 0" }}>수강료 보기 →</div>
           </div>
         </div>
