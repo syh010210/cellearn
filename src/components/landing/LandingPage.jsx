@@ -304,11 +304,11 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
 
   // F. 학습 루프 (실제 순서가 있는 시퀀스)
   const loop = [
+    { Icon: CheckCircle2, title: "사전 점검 세션", desc: "지금까지 쌓인 누적 오답(퀴즈 · 실습)을 먼저 복습해 통과해야 오늘 차시가 열립니다." },
     { Icon: BookOpen, title: "개념 학습", desc: "차시별 핵심 개념을 카드로 익히고, 웹 미니 엑셀에서 바로 수식을 쳐 봅니다." },
     { Icon: Download, title: "실습 파일 작성", desc: "실제 시험과 같은 형식의 엑셀 파일을 내려받아 직접 문제를 풉니다." },
     { Icon: Upload, title: "업로드 자동 채점", desc: "작성한 파일을 올리면 셀 단위로 수식까지 비교해 즉시 채점됩니다." },
-    { Icon: RefreshCw, title: "복습 퀴즈", desc: "차시를 마치며 객관식 퀴즈로 오늘 배운 개념을 한 번 더 점검합니다." },
-    { Icon: XCircle, title: "오답노트 적립", desc: "실습 · 퀴즈에서 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
+    { Icon: RefreshCw, title: "복습 퀴즈 및 오답노트 적립", desc: "객관식 퀴즈로 오늘 배운 개념을 점검하고, 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
   ];
 
   const funcs = [
@@ -401,12 +401,12 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
               style={{
                 cursor: "pointer", margin: "0 0 20px",
                 background: UI.limeSoft, border: `1.5px solid ${UI.lime}`, borderRadius: UI.rLg,
-                padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
-                gap: 16, flexWrap: "wrap", boxShadow: "0 6px 22px rgba(40,90,80,0.10)",
+                padding: "16px 20px", display: "flex", flexDirection: "column", alignItems: "flex-start",
+                gap: 12, boxShadow: "0 6px 22px rgba(40,90,80,0.10)",
               }}
             >
-              <div style={{ minWidth: 200, flex: "1 1 240px" }}>
-                <div style={{ fontSize: "clamp(18px,2.1vw,22px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+              <div>
+                <div style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
                   눈으로만 보지 말고, 지금 직접 풀어보세요
                 </div>
                 <div style={{ fontSize: 14, color: UI.inkSoft, lineHeight: 1.5, marginTop: 5 }}>
