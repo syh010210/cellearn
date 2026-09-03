@@ -95,7 +95,7 @@ export function StatRankDiagram() {
   });
 
   // 함수 비교 카드 — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값
-  const FuncCard = ({ name, syntax, desc, formula, value, color, valColor, bg, border }) => (
+  const FuncCard = ({ name, syntax, desc, formula, value, valueSize = 24, color, valColor, bg, border }) => (
     <div style={{
       flex: 1, background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: 12,
       display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, textAlign: 'center',
@@ -104,7 +104,7 @@ export function StatRankDiagram() {
       <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
       <div style={{ color, fontSize: 12.5, opacity: 0.82, lineHeight: 1.5 }}>{desc}</div>
       <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.9 }}>{formula}</div>
-      <div style={{ color: valColor, fontSize: 24, fontWeight: 700 }}>{value}</div>
+      <div style={{ color: valColor, fontSize: valueSize, fontWeight: 700 }}>{value}</div>
     </div>
   );
 
@@ -134,16 +134,28 @@ export function StatRankDiagram() {
           <div style={{ display: 'flex', gap: 10 }}>
             <FuncCard
               name="RANK.EQ" syntax="구문: =RANK.EQ(값, 범위, [정렬])"
-              desc="동점이면 최상위 순위 부여 (다음 순위 건너뜀)"
+              desc="동점이면 공동으로 순위 부여 (실생활에서 쓰는 방식)"
               formula="=RANK.EQ(B3, $B$2:$B$5, 0)" value="= 2"
               color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
             />
             <FuncCard
               name="RANK.AVG" syntax="구문: =RANK.AVG(값, 범위, [정렬])"
               desc="동점이면 순위들의 평균 부여"
-              formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= 2.5"
+              formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= (2+3)/2 = 2.5" valueSize={17}
               color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
             />
+          </div>
+
+          {/* 정렬기준·절대참조 설명 — 카드 아래 빈 공간 활용 */}
+          <div style={{
+            marginTop: 12, background: C.bgDark, border: `1px solid ${C.border}`,
+            borderRadius: 8, padding: '12px 14px', fontSize: 13, color: C.textMuted, lineHeight: 1.7,
+          }}>
+            <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>정렬기준 (세 번째 인수)</div>
+            <div><b style={{ color: C.greenLight }}>0 = 내림차순</b> — 큰 값이 1등. 예) 시험 점수가 높은 순으로 순위를 매길 때</div>
+            <div style={{ marginBottom: 8 }}><b style={{ color: C.blueLight }}>1 = 오름차순</b> — 작은 값이 1등. 예) 달리기 기록이 빠른(=기록이 작은) 순으로 순위를 매길 때</div>
+            <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>참조범위를 절대참조($)로 고정하는 이유</div>
+            <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다. 자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
           </div>
         </div>
 
@@ -167,9 +179,6 @@ export function StatRankDiagram() {
         </div>
       </div>
 
-      <BottomBar>
-        <BLine color={C.blue} bold>정렬기준 0 = 내림차순(높을수록 1등) · 참조범위는 절대참조($)로 고정</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
