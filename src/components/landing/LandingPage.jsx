@@ -340,7 +340,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       </div>
 
       {/* ===== N. 네비 (상단 고정) ===== */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: UI.bg, borderBottom: `1px solid ${UI.line}` }}>
+      <div id="site-nav" style={{ position: "sticky", top: 0, zIndex: 50, background: UI.bg, borderBottom: `1px solid ${UI.line}` }}>
       <nav aria-label="주요 메뉴" style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Logo size={30} />
         {!isMobile && (
@@ -630,7 +630,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       </section>
 
       {/* ===== P. 가격 — 2급만 결제 가능, 1급은 10월 예정 ===== */}
-      <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px" }}>
+      <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px", scrollMarginTop: 66 }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 14 }}>
             <span style={{ display: "inline-block", background: UI.lime, color: UI.teal, fontSize: 13, fontWeight: 800, padding: "6px 16px", borderRadius: UI.rPill, letterSpacing: "-0.01em" }}>🎉 오픈 기념 프로모션</span>

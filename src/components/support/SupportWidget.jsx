@@ -126,19 +126,26 @@ export default function SupportWidget() {
       {/* 원형 버튼 위: 프로모션 D-day 강조 배지 (세로 카드형, 위젯이 닫혀 있을 때만) */}
       {!open && dday != null && (
         <div
-          onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+          onClick={() => {
+            const el = document.getElementById("pricing");
+            if (!el) return;
+            const nav = document.getElementById("site-nav");
+            const offset = nav ? nav.offsetHeight : 0;
+            const y = el.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: y, behavior: "smooth" });
+          }}
           role="button"
           aria-label={`오픈 프로모션 마감까지 D-${dday}, 수강료 보기`}
           style={{
-            position: "fixed", right: 24, bottom: 92, zIndex: 1000, width: 130,
+            position: "fixed", right: 24, bottom: 92, zIndex: 1000, width: 108,
             background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg,
             boxShadow: "0 10px 26px rgba(0, 0, 0, 0.16)", overflow: "hidden",
             fontFamily: UI.font, cursor: "pointer", textAlign: "center",
           }}
         >
           <div style={{ background: UI.teal, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "6px 0", letterSpacing: "-0.01em" }}>오픈 프로모션</div>
-          <div style={{ padding: "10px 10px 12px" }}>
-            <div style={{ fontSize: 11, color: UI.mut, fontWeight: 700, marginBottom: 4 }}>올해 끝까지 마감</div>
+          <div style={{ padding: "10px 8px 11px" }}>
+            <div style={{ fontSize: 11, color: UI.mut, fontWeight: 700, marginBottom: 4 }}>마감까지</div>
             <div style={{ fontSize: 32, fontWeight: 800, color: UI.teal, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>D-{dday}</div>
             <div style={{ marginTop: 9, background: UI.lime, color: UI.teal, fontSize: 11.5, fontWeight: 800, borderRadius: UI.rPill, padding: "5px 0" }}>수강료 보기 →</div>
           </div>
