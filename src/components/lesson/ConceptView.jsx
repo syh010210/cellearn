@@ -96,7 +96,7 @@ export default function ConceptView({ lesson, onNext }) {
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto" }}>
       <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 16 }}>
-        📖 개념 학습 · {idx + 1}/{lesson.concepts.length}
+        개념 학습 · {idx + 1}/{lesson.concepts.length}
       </div>
 
       <div key={idx} className="cl-fade-up" style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 28, marginBottom: 16 }}>

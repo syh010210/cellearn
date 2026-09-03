@@ -29,7 +29,7 @@ export default function TrialView({ lesson, onExit, onSignup }) {
           <span style={{ fontSize: 12, fontWeight: 700, color: UI.teal, background: UI.limeSoft, padding: "3px 10px", borderRadius: UI.rPill }}>무료 체험</span>
         </div>
         <div style={{ fontSize: 13.5, color: UI.mut, fontWeight: 600 }}>
-          1일차 · 3차시 <b style={{ color: UI.ink }}>{lesson.shortTitle || lesson.title}</b>
+          계산 작업 - <b style={{ color: UI.ink }}>{lesson.shortTitle || lesson.title}</b>
         </div>
         <button onClick={onExit} style={{ marginLeft: "auto", background: "transparent", border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 12px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 6, fontFamily: UI.font }}>
           <X size={15} strokeWidth={2} /> 체험 종료
