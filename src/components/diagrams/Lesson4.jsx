@@ -1,125 +1,141 @@
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupDiagram
 // ──────────────────────────────────────────────
+// ① 두 개의 표 — 세로 참조표를 VLOOKUP으로 검색 (대출금 내역 + 코드표)
 export function VlookupDiagram() {
-  const tableRows = [
-    { code: 'A-101', title: '파이썬 기초',           highlight: false },
-    { code: 'B-102', title: '자바스크립트 완전정복', highlight: true  },
-    { code: 'C-103', title: '리액트 실무',            highlight: false },
+  const data = [
+    ['[표1] 대출금 내역', '', '', ''],
+    ['접수코드', '고객명', '대출금액', '대출금리'],
+    ['001-M-1121', '김현민', '15,000,000', '4.2%'],
+    ['002-C-3241', '우지혜', '5,500,000', '3.0%'],
+    ['003-S-2345', '강수인', '6,400,000', '2.2%'],
+    ['', '', '', ''],
+    ['[코드표] 세로 참조표', '', '', ''],
+    ['코드', '대출상품', '대출금리', ''],
+    ['S', '학자금', '2.2%', ''],
+    ['C', '출산', '3.0%', ''],
+    ['M', '결혼자금', '4.2%', ''],
   ];
-
-  const cellBase = (highlight) => ({
-    background: highlight ? '#14532d' : C.bgDark,
-    border: `1px solid ${highlight ? C.green : C.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '9px 12px', fontSize: 15,
-    color: highlight ? C.greenLight : C.textMuted,
-    fontWeight: highlight ? 700 : 400,
-  });
-
+  const st = (ri, ci) => {
+    if (ri === 0 || ri === 6) return { bold: true, color: C.blueLight, bg: C.blueCard, align: 'left' };
+    if (ri === 1 || ri === 7) return { bold: true, color: C.textMuted, bg: '#0b1220' };
+    if (ri === 2 && ci === 3) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 채운 결과 4.2%
+    if (ri === 2 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };    // 기준 접수코드
+    if (ri === 10) return { bold: true, color: C.amberLight, bg: C.amberBg };               // 코드표에서 매칭된 M 행
+    return {};
+  };
   return (
     <Wrap>
-      <Title>데이터 검색 함수: VLOOKUP · HLOOKUP</Title>
-
-      <div style={{ display: 'flex', gap: 16 }}>
-        {/* Left: example */}
-        <div style={{ flex: 1.2 }}>
-          {/* Table */}
-          <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr' }}>
-            {[['도서코드', '도서명']].map(([h1, h2]) => ([
-              <div key="h1" style={{ ...cellBase(false), background: C.blueCard, color: C.blueLight, fontWeight: 700, fontSize: 15, border: `1px solid ${C.blueDim}` }}>{h1}</div>,
-              <div key="h2" style={{ ...cellBase(false), background: C.blueCard, color: C.blueLight, fontWeight: 700, fontSize: 15, border: `1px solid ${C.blueDim}` }}>{h2}</div>,
-            ]))}
-            {tableRows.map((row, i) => ([
-              <div key={`c${i}`} style={cellBase(row.highlight)}>{row.code}</div>,
-              <div key={`t${i}`} style={{
-                ...cellBase(row.highlight),
-                justifyContent: 'space-between', gap: 8,
-              }}>
-                <span>{row.title}</span>
-                {row.highlight && (
-                  <span style={{
-                    background: C.green, color: '#0a2e1c',
-                    fontSize: 12, fontWeight: 700,
-                    borderRadius: 4, padding: '2px 6px',
-                  }}>★ 검색결과</span>
-                )}
-              </div>,
-            ]))}
+      <Title>① 세로 참조표 → VLOOKUP</Title>
+      <Subtitle>기준값을 참조표의 첫 열에서 세로(↓)로 찾아 같은 행의 값을 가져옵니다</Subtitle>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <ExcelGrid data={data} cellStyle={st} minColW={78} firstColW={110} />
+        <div style={{ flex: '1 1 250px', minWidth: 230, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.75 }}>
+            접수코드 <b style={{ color: C.amberLight }}>001-M-1121</b>에서 코드 <b style={{ color: C.amberLight }}>M</b>을 뽑아,
+            <b style={{ color: C.blueLight }}> 코드표(세로)</b>의 첫 열에서 찾아 <b style={{ color: C.greenLight }}>대출금리 4.2%</b>를 반환합니다.
           </div>
-
-          {/* Flow description */}
-          <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-            <div style={{
-              background: C.amberBg, border: `1px solid ${C.amber}`,
-              borderRadius: 6, padding: 8, color: C.amberLight, fontSize: 15, width: '100%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>①&nbsp;&nbsp;A열에서 &#39;B-102&#39; 검색</div>
-            <div style={{ alignSelf: 'center' }}>
-              <ArrowDown color={C.amber} size={32} />
-            </div>
-            <div style={{
-              background: C.amberBg, border: `1px solid ${C.amber}`,
-              borderRadius: 6, padding: 8, color: C.amberLight, fontSize: 15, width: '100%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>②&nbsp;&nbsp;해당 행 2번째 열 반환</div>
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, color: C.text, lineHeight: 1.7 }}>
+            =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$9:$C$11</span>, 3, 0)
           </div>
-
-          {/* Formula */}
-          <div style={{
-            background: C.bgDark, border: `1px solid ${C.border}`,
-            borderRadius: 6, padding: 10, marginTop: 8,
-            color: C.textMuted, fontSize: 15, fontFamily: 'monospace', textAlign: 'center',
-          }}>
-            =VLOOKUP(&quot;B-102&quot;, A2:B4, 2, 0)
-          </div>
-
-          {/* Result */}
-          <div style={{
-            background: '#14532d', border: `1px solid ${C.green}`,
-            borderRadius: 6, padding: 10, marginTop: 4,
-            color: C.greenLight, fontSize: 16, fontWeight: 700, textAlign: 'center',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            &quot;자바스크립트 완전정복&quot;
-          </div>
-        </div>
-
-        {/* Right: comparison cards */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* VLOOKUP — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값 */}
-          <div style={{
-            background: C.blueCard, border: `2px solid ${C.blueDim}`,
-            borderRadius: 10, padding: '12px 14px',
-            display: 'flex', flexDirection: 'column', gap: 5,
-          }}>
-            <div style={{ color: C.blue, fontSize: 17, fontWeight: 700 }}>VLOOKUP</div>
-            <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 범위, 열 번호, 0)</div>
-            <div style={{ color: C.blueLight, fontSize: 14, opacity: 0.85 }}>첫 번째 열에서 세로(↓)로 찾아 같은 행의 지정 열 값 반환</div>
-            <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>예) =VLOOKUP(&quot;B-102&quot;, A2:B4, 2, 0)</div>
-            <div style={{ color: C.blueLight, fontSize: 15, fontWeight: 700 }}>→ &quot;자바스크립트 완전정복&quot;</div>
-          </div>
-
-          {/* HLOOKUP — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값 */}
-          <div style={{
-            background: '#251005', border: `2px solid ${C.orange}`,
-            borderRadius: 10, padding: '12px 14px',
-            display: 'flex', flexDirection: 'column', gap: 5,
-          }}>
-            <div style={{ color: C.orange, fontSize: 17, fontWeight: 700 }}>HLOOKUP</div>
-            <div style={{ color: C.orange, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 범위, 행 번호, 0)</div>
-            <div style={{ color: C.orangeLight, fontSize: 14, opacity: 0.85 }}>첫 번째 행에서 가로(→)로 찾아 같은 열의 지정 행 값 반환</div>
-            <div style={{ color: C.orangeLight, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>예) =HLOOKUP(&quot;2분기&quot;, A1:D2, 2, 0)</div>
-            <div style={{ color: C.orangeLight, fontSize: 15, fontWeight: 700 }}>→ 350</div>
-          </div>
+          <div style={{ color: C.greenLight, fontSize: 16, fontWeight: 700 }}>→ 4.2%</div>
+          <div style={{ color: C.textDim, fontSize: 12.5, lineHeight: 1.6 }}>참조표는 자동 채우기에도 안 밀리게 $A$9:$C$11 처럼 절대 참조로 고정합니다.</div>
         </div>
       </div>
-
       <BottomBar>
-        <BLine>=VLOOKUP(찾을 값, 범위, 열 번호, 0)  ·  =HLOOKUP(찾을 값, 범위, 행 번호, 0)</BLine>
-        <BLine color={C.blue} bold>※ 마지막 인수 0 = 정확히 일치</BLine>
+        <BLine>=VLOOKUP(찾을 값, 참조표, 열 번호, 0) — 참조표가 <b style={{ color: C.blueLight }}>세로</b>로 생겼을 때</BLine>
+      </BottomBar>
+    </Wrap>
+  );
+}
+
+// ② 두 개의 표 — 가로 참조표를 HLOOKUP으로 검색 (판매현황 + 상품단가표)
+export function HlookupTwoTableDiagram() {
+  const data = [
+    ['[표2] 매장별 상품판매현황', '', '', '', ''],
+    ['매장명', '사원명', '상품코드', '판매수량', '판매금액'],
+    ['서부', '안기자', 33, 5, '32,500,000'],
+    ['서부', '여규식', 11, 12, '18,000,000'],
+    ['남부', '오선길', 22, 23, '10,350,000'],
+    ['', '', '', '', ''],
+    ['[상품단가표] 가로 참조표', '', '', '', ''],
+    ['상품코드', 11, 22, 33, 44],
+    ['판매가', '1,500,000', '450,000', '6,500,000', '1,200,000'],
+    ['출고가', '1,275,000', '382,500', '5,525,000', '1,020,000'],
+  ];
+  const st = (ri, ci) => {
+    if (ri === 0 || ri === 6) return { bold: true, color: C.orangeLight, bg: '#3a1c08', align: 'left' };
+    if (ri === 1) return { bold: true, color: C.textMuted, bg: '#0b1220' };
+    if (ri === 7) return (ci === 3) ? { bold: true, color: C.amberLight, bg: C.amberBg } : { bold: true, color: C.textMuted, bg: '#0b1220' };
+    if (ri === 2 && ci === 4) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 판매금액 결과
+    if (ri === 2 && ci === 2) return { bold: true, color: C.amberLight, bg: C.amberBg };    // 상품코드 33 기준
+    if (ri === 8 && ci === 3) return { bold: true, color: C.greenLight, bg: C.greenBg };    // 33의 판매가
+    return {};
+  };
+  return (
+    <Wrap>
+      <Title>② 가로 참조표 → HLOOKUP</Title>
+      <Subtitle>기준값을 참조표의 첫 행에서 가로(→)로 찾아 같은 열의 값을 가져옵니다</Subtitle>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <ExcelGrid data={data} cellStyle={st} minColW={72} firstColW={118} />
+        <div style={{ flex: '1 1 250px', minWidth: 230, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.75 }}>
+            상품코드 <b style={{ color: C.amberLight }}>33</b>을 <b style={{ color: C.orangeLight }}>단가표(가로)</b>의 첫 행에서 찾아
+            <b style={{ color: C.greenLight }}> 판매가 6,500,000</b>을 가져온 뒤, 판매수량을 곱해 판매금액을 구합니다.
+          </div>
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, color: C.text, lineHeight: 1.7 }}>
+            =D3 * HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$8:$E$10</span>, 2, 0)
+          </div>
+          <div style={{ color: C.greenLight, fontSize: 16, fontWeight: 700 }}>→ 5 × 6,500,000 = 32,500,000</div>
+          <div style={{ color: C.textDim, fontSize: 12.5, lineHeight: 1.6 }}>참조표가 가로로 놓이면 VLOOKUP이 아니라 HLOOKUP을 씁니다.</div>
+        </div>
+      </div>
+      <BottomBar>
+        <BLine>=HLOOKUP(찾을 값, 참조표, 행 번호, 0) — 참조표가 <b style={{ color: C.orangeLight }}>가로</b>로 생겼을 때</BLine>
+      </BottomBar>
+    </Wrap>
+  );
+}
+
+// ③ 한 개의 표 — 기준값과 참조범위가 같은 표에 있는 VLOOKUP (영어회화 평가)
+export function VlookupOneTableDiagram() {
+  const data = [
+    ['[표4] 영어회화 평가 결과', '', ''],
+    ['사원코드', '성적', '성명'],
+    ['ds-043', 85, '정지호'],
+    ['ds-078', 56, '방정수'],
+    ['ds-053', 90, '도지영'],
+    ['ds-068', 78, '박철환'],
+  ];
+  const st = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard, align: 'left' };
+    if (ri === 1) return { bold: true, color: C.textMuted, bg: '#0b1220' };
+    if (ri === 4 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };   // 찾을 값 ds-053
+    if (ri === 4 && ci === 2) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 결과 도지영
+    return {};
+  };
+  return (
+    <Wrap>
+      <Title>③ 한 표 안에서 VLOOKUP</Title>
+      <Subtitle>기준값과 참조범위가 같은 표에 있는 경우 — 참조표를 따로 두지 않습니다</Subtitle>
+      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <ExcelGrid data={data} cellStyle={st} minColW={92} firstColW={104} />
+        <div style={{ flex: '1 1 250px', minWidth: 230, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.75 }}>
+            사원코드 <b style={{ color: C.amberLight }}>ds-053</b>을 이 표의 첫 열에서 찾아 같은 행의
+            <b style={{ color: C.greenLight }}> 성명 “도지영”</b>을 반환합니다. 참조표가 따로 없고 <b>한 표</b> 안에서 끝납니다.
+          </div>
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, color: C.text, lineHeight: 1.7 }}>
+            =VLOOKUP(<span style={{ color: C.amberLight }}>&quot;ds-053&quot;</span>, <span style={{ color: C.blueLight }}>$A$3:$C$6</span>, 3, 0)
+          </div>
+          <div style={{ color: C.greenLight, fontSize: 16, fontWeight: 700 }}>→ 도지영</div>
+          <div style={{ color: C.textDim, fontSize: 12.5, lineHeight: 1.6 }}>기준값(찾을 값)이 표의 첫 열에 있어야 VLOOKUP으로 찾을 수 있습니다.</div>
+        </div>
+      </div>
+      <BottomBar>
+        <BLine>기준값과 참조범위가 <b style={{ color: C.blueLight }}>같은 표</b>에 있으면 참조표 없이 바로 VLOOKUP</BLine>
       </BottomBar>
     </Wrap>
   );
