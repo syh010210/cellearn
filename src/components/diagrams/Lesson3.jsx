@@ -91,40 +91,51 @@ function FuncCard({ name, syntax, desc, formula, value, valueSize = 16, color, v
   );
 }
 
-export function StatRankDiagram() {
-  const rankRows = [
-    { name: '김철수', score: 95, eq: '1', avg: '1',   hl: false },
-    { name: '홍길동', score: 85, eq: '2', avg: '2.5', hl: true  },
-    { name: '박지수', score: 78, eq: '4', avg: '4',   hl: false },
-    { name: '이영희', score: 85, eq: '2', avg: '2.5', hl: true  },
-  ];
+// 엑셀식 표 셀 — 열·행 머리(회색) / 데이터 셀(옵션)
+const XL_HDR = {
+  background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 13,
+  border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '6px 4px',
+};
+const xlCell = (opts = {}) => ({
+  background: opts.bg || C.bgDark, color: opts.color || C.text, fontWeight: opts.bold ? 700 : 400,
+  fontSize: opts.size || 14.5, border: `1px solid ${opts.border || C.border}`,
+  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '7px 6px',
+});
 
-  const th = {
-    background: C.blueCard, color: C.blueLight, border: `1px solid ${C.blueDim}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '8px 6px', fontSize: 15, fontWeight: 700,
-  };
-  const td = (hl, extra = {}) => ({
-    background: hl ? '#0a2e1c' : C.bgDark, border: `1px solid ${hl ? C.green : C.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '7px 6px', fontSize: 15,
-    color: hl ? C.greenLight : C.text, fontWeight: hl ? 700 : 400, ...extra,
-  });
+export function StatRankDiagram() {
+  // 행 1 = 라벨, 행 2~5 = 데이터 (엑셀 A~D열, 1~5행)
+  const grid = [
+    ['이름', '점수', 'RANK.EQ', 'RANK.AVG'],
+    ['김철수', 95, '1', '1'],
+    ['홍길동', 85, '2', '2.5'],
+    ['박지수', 78, '4', '4'],
+    ['이영희', 85, '2', '2.5'],
+  ];
 
   return (
     <Wrap>
       <Title>순위 함수: RANK.EQ · RANK.AVG</Title>
 
-      {/* 순위 데이터 표 — 동점(홍길동·이영희 85점) */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '120px 90px 110px 110px' }}>
-          {['이름', '점수', 'RANK.EQ', 'RANK.AVG'].map(h => <div key={h} style={th}>{h}</div>)}
-          {rankRows.map(r => ([
-            <div key={`n${r.name}`} style={td(r.hl)}>{r.name}</div>,
-            <div key={`s${r.name}`} style={td(r.hl)}>{r.score}</div>,
-            <div key={`e${r.name}`} style={td(false, { color: C.amber, fontWeight: 700 })}>{r.eq}</div>,
-            <div key={`a${r.name}`} style={td(false, { color: C.blue, fontWeight: 700 })}>{r.avg}</div>,
-          ]))}
+      {/* 순위 데이터 표 (엑셀 열·행 머리 포함, 홍길동·이영희 85 동점) */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '36px 116px 78px 110px 110px' }}>
+          <div style={XL_HDR} />
+          {['A', 'B', 'C', 'D'].map(c => <div key={c} style={XL_HDR}>{c}</div>)}
+          {grid.map((row, ri) => {
+            const isLabel = ri === 0;
+            const tie = !isLabel && (row[0] === '홍길동' || row[0] === '이영희');
+            return [
+              <div key={`rh${ri}`} style={XL_HDR}>{ri + 1}</div>,
+              ...row.map((v, ci) => {
+                let st;
+                if (isLabel) st = xlCell({ bg: C.blueCard, color: C.blueLight, bold: true, border: C.blueDim });
+                else if (ci === 2) st = xlCell({ color: C.amber, bold: true });
+                else if (ci === 3) st = xlCell({ color: C.blue, bold: true });
+                else st = tie ? xlCell({ bg: '#0a2e1c', color: C.greenLight, bold: true, border: C.green }) : xlCell();
+                return <div key={`c${ri}-${ci}`} style={st}>{v}</div>;
+              }),
+            ];
+          })}
         </div>
       </div>
 
@@ -155,7 +166,8 @@ export function StatRankDiagram() {
         <div><b style={{ color: C.greenLight }}>0 = 내림차순</b> — 큰 값이 1등. 예) 시험 점수가 높은 순으로 순위를 매길 때</div>
         <div style={{ marginBottom: 8 }}><b style={{ color: C.blueLight }}>1 = 오름차순</b> — 작은 값이 1등. 예) 달리기 기록이 빠른(=기록이 작은) 순으로 순위를 매길 때</div>
         <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>참조범위를 절대참조($)로 고정하는 이유</div>
-        <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다. 자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
+        <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다.</div>
+        <div>자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
       </div>
     </Wrap>
   );
@@ -165,18 +177,33 @@ export function StatRankDiagram() {
 // StatLargeSmallDiagram — 특정 순위의 값 추출
 // ──────────────────────────────────────────────
 export function StatLargeSmallDiagram() {
+  const dataCol = [[2, 95], [3, 85], [4, 78], [5, 85]];
   return (
     <Wrap>
       <Title>특정 순위의 값 추출: LARGE · SMALL</Title>
-      <Subtitle>데이터 B2:B5 = 95 · 85 · 78 · 85 (내림차순: 95 · 85 · 85 · 78)</Subtitle>
+      <Subtitle>내림차순으로 정렬하면 95 · 85 · 85 · 78</Subtitle>
 
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        {/* 표 (제일 왼쪽) */}
+        <div style={{ flexShrink: 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '34px 66px' }}>
+            <div style={XL_HDR} />
+            <div style={XL_HDR}>B</div>
+            {dataCol.map(([r, v]) => ([
+              <div key={`r${r}`} style={XL_HDR}>{r}</div>,
+              <div key={`v${r}`} style={xlCell({ bold: true, size: 16 })}>{v}</div>,
+            ]))}
+          </div>
+        </div>
+
+        {/* LARGE (표 오른쪽) */}
         <FuncCard
           name="LARGE" syntax="구문: =LARGE(범위, K)"
           desc="범위에서 K번째로 큰 값"
           formula="=LARGE(B2:B5, 2)" value="= 85 (2번째로 큰 값)" valueSize={15}
           color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
         />
+        {/* SMALL (그 오른쪽) */}
         <FuncCard
           name="SMALL" syntax="구문: =SMALL(범위, K)"
           desc="범위에서 K번째로 작은 값"
@@ -186,7 +213,7 @@ export function StatLargeSmallDiagram() {
       </div>
 
       <BottomBar>
-        <BLine color={C.blue} bold>K = 1이면 가장 큰/작은 값 → LARGE(범위,1)=MAX · SMALL(범위,1)=MIN 과 같습니다</BLine>
+        <BLine color={C.blue} bold>K = 1이면 가장 큰/작은 값이므로 MAX · MIN과 같습니다</BLine>
       </BottomBar>
     </Wrap>
   );
