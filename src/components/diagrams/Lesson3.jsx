@@ -341,10 +341,10 @@ export function StatCondCountDiagram() {
           />
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Prob>직급이 &quot;대리&quot;이고 급여가 300만 이상인 직원은 몇 명?</Prob>
+          <Prob>직급이 &quot;대리&quot;이고 급여가 3,000,000원 이상인 직원은 몇 명?</Prob>
           <FuncCard
             name="COUNTIFS" syntax="구문: =COUNTIFS(범위1, 조건1, 범위2, 조건2, …)"
-            desc="COUNTIF에 조건을 여러 개(S) — 모든 조건을 동시에 만족하는 개수"
+            desc="COUNTIF + S(조건이 여러 개) — 여러 개의 조건을 동시에 만족하는 셀의 개수"
             formula={'=COUNTIFS(B2:B5, "대리", C2:C5, ">=3000000")'} value="= 2" valueSize={15}
             color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
           />
@@ -363,10 +363,10 @@ export function StatCondCountDiagram() {
           />
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Prob>&quot;영업부&quot;이고 성과급이 350,000 초과인 직원의 평균 성과급은?</Prob>
+          <Prob>부서가 &quot;영업부&quot;이고 성과급이 350,000원 초과인 직원의 평균 성과급은?</Prob>
           <FuncCard
             name="AVERAGEIFS" syntax="구문: =AVERAGEIFS(평균범위, 조건범위1, 조건1, …)"
-            desc="AVERAGEIF에 조건 여러 개(S) — 모든 조건 만족 행의 평균 · ⚠️ 평균범위 맨 앞!"
+            desc={<>AVERAGEIF + S(조건이 여러 개) — 여러 개의 조건을 동시에 만족하는 셀의 평균<br />⚠️ 평균범위는 맨 앞으로!</>}
             formula={'=AVERAGEIFS(E2:E5, D2:D5, "영업부", E2:E5, ">350000")'} value="= 450,000" valueSize={15}
             color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
           />
@@ -374,18 +374,18 @@ export function StatCondCountDiagram() {
       </div>
 
       {/* 조건 작성 규칙 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', fontSize: 13, color: C.textMuted, lineHeight: 1.7, marginBottom: 12 }}>
-        <div>조건은 <b style={{ color: C.text }}>&quot;대리&quot;  &quot;&gt;80&quot;</b> 처럼 따옴표로 감쌉니다 · AVERAGEIFS는 <b style={{ color: C.greenLight }}>평균범위가 맨 앞</b>(AVERAGEIF와 순서 다름!)</div>
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', fontSize: 13.5, color: C.textMuted, lineHeight: 1.7, marginBottom: 14 }}>
+        조건은 반드시 <b style={{ color: C.text }}>&quot;대리&quot;, &quot;&gt;80&quot;</b> 처럼 따옴표로 감쌉니다!
       </div>
 
-      {/* 함수를 조건으로 쓰기 (& 연결) — 별도 심화 문제 */}
-      <div style={{ background: '#0c2344', border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '12px 14px' }}>
-        <Prob>직급이 &quot;대리&quot;이고, 급여가 <b style={{ color: C.text }}>급여 평균</b>보다 큰 직원은 몇 명?</Prob>
-        <div style={{ marginTop: 8, color: C.blueLight, fontSize: 14, fontWeight: 700 }}>
+      {/* 함수를 조건으로 쓰기 — 문제는 박스 밖, 설명은 박스 안 */}
+      <Prob>직급이 &quot;대리&quot;이고, 급여가 <b style={{ color: C.text }}>급여 평균</b>보다 큰 직원은 몇 명?</Prob>
+      <div style={{ background: '#0c2344', border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '12px 14px', marginTop: 8 }}>
+        <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>
           =COUNTIFS(B2:B5, &quot;대리&quot;, C2:C5, &quot;&gt;&quot;&amp;AVERAGE(C2:C5))  <span style={{ color: C.greenLight }}>= 1</span>
         </div>
         <div style={{ marginTop: 8, color: C.textMuted, fontSize: 13, lineHeight: 1.75 }}>
-          조건에 <b style={{ color: C.text }}>&quot;평균보다 큰&quot;</b>처럼 계산 결과를 넣어야 할 때, 비교연산자 <b style={{ color: C.amber }}>&quot;&gt;&quot;</b>는 따옴표로 감싼 <b>텍스트</b>이고 <b style={{ color: C.amber }}>AVERAGE(C2:C5)</b>는 <b>숫자</b>라, 그냥 이어 쓰면 하나의 조건이 되지 않습니다. <b style={{ color: C.amber }}>&amp;</b>로 이어 붙여야 <b style={{ color: C.text }}>&quot;&gt;3325000&quot;</b> 같은 하나의 조건 문자열이 완성됩니다. (급여 평균 = 3,325,000)
+          <b style={{ color: C.text }}>&quot;평균보다 큰&quot;</b>처럼 함수를 써서 조건을 넣어야 할 때, 조건을 <b style={{ color: C.amber }}>&quot;&gt;AVERAGE(C2:C5)&quot;</b>처럼 통째로 따옴표 안에 쓰면 엑셀이 함수를 계산하지 않고 <b>글자 그대로</b> 인식합니다. 그렇다고 <b style={{ color: C.amber }}>&quot;&gt;&quot;AVERAGE(C2:C5)</b>처럼 그냥 붙이면 하나의 조건으로 합쳐지지 않습니다. 그래서 비교연산자 <b style={{ color: C.amber }}>&quot;&gt;&quot;</b>(따옴표 텍스트)와 <b style={{ color: C.amber }}>AVERAGE(C2:C5)</b>(숫자)를 <b style={{ color: C.amber }}>&amp;</b>로 이어 붙여야 <b style={{ color: C.text }}>&quot;&gt;3325000&quot;</b> 같은 하나의 조건 문자열이 완성됩니다. (급여 평균 = 3,325,000)
         </div>
       </div>
     </Wrap>
