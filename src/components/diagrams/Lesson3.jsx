@@ -6,10 +6,10 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } fro
 export function StatBasicDiagram() {
   const data = [80, 95, 70, 85, 75];
   const cards = [
-    { fn: 'AVERAGE', desc: '합계 ÷ 개수',      result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
-    { fn: 'MEDIAN',  desc: '정렬 후 가운데 값', result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
-    { fn: 'MAX',     desc: '가장 큰 값',        result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
-    { fn: 'MIN',     desc: '가장 작은 값',      result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
+    { fn: 'AVERAGE', syntax: '=AVERAGE(범위)', desc: '합계 ÷ 개수',      result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
+    { fn: 'MEDIAN',  syntax: '=MEDIAN(범위)',  desc: '정렬 후 가운데 값', result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
+    { fn: 'MAX',     syntax: '=MAX(범위)',     desc: '가장 큰 값',        result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
+    { fn: 'MIN',     syntax: '=MIN(범위)',     desc: '가장 작은 값',      result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
   ];
 
   return (
@@ -36,8 +36,9 @@ export function StatBasicDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
           }}>
             <div style={{ color: card.color, fontSize: 18, fontWeight: 700 }}>{card.fn}</div>
-            <div style={{ color: card.color, fontSize: 15, opacity: 0.85 }}>{card.desc}</div>
-            <div style={{ color: card.resColor, fontSize: 36, fontWeight: 700, marginTop: 8 }}>{card.result}</div>
+            <div style={{ color: card.color, fontSize: 13, fontWeight: 700, opacity: 0.95 }}>{card.syntax}</div>
+            <div style={{ color: card.color, fontSize: 14, opacity: 0.8 }}>{card.desc}</div>
+            <div style={{ color: card.resColor, fontSize: 34, fontWeight: 700, marginTop: 6 }}>{card.result}</div>
           </div>
         ))}
       </div>
@@ -116,9 +117,10 @@ export function StatRankDiagram() {
           <div style={{
             background: C.bgDark, border: `1px solid ${C.border}`,
             borderRadius: 6, padding: 8, marginTop: 8,
-            color: C.textMuted, fontSize: 15, textAlign: 'center',
+            color: C.textMuted, fontSize: 14, textAlign: 'center', lineHeight: 1.7,
           }}>
-            =RANK.EQ(B2, $B$2:$B$5, 0)  →  0 = 내림차순 (높을수록 1등)
+            <div>=RANK.EQ(B2, $B$2:$B$5, 0) → 0=내림차순(높을수록 1등)</div>
+            <div>=RANK.AVG(값, 범위, 0) → 동점 시 순위 평균 부여</div>
           </div>
         </div>
 
@@ -127,8 +129,11 @@ export function StatRankDiagram() {
 
         {/* Right: LARGE/SMALL */}
         <div style={{ flex: 1 }}>
-          <div style={{ color: C.blue, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
+          <div style={{ color: C.blue, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 4 }}>
             LARGE · SMALL 비교
+          </div>
+          <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, textAlign: 'center', marginBottom: 6 }}>
+            =LARGE(범위, K) / =SMALL(범위, K)
           </div>
           <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
             내림차순 정렬: 95 → 85 → 78 → 70
@@ -230,7 +235,8 @@ export function StatCountDiagram() {
             borderRadius: 10, padding: 12,
             display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>COUNT</div>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 3 }}>COUNT</div>
+            <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, textAlign: 'center', marginBottom: 4 }}>=COUNT(범위)</div>
             <div style={{ color: C.blueLight, fontSize: 15, textAlign: 'center', marginBottom: 8 }}>숫자 셀만 셉니다</div>
             <div style={{ ...rowStyle(true, '#1e3a5f', C.blueDim), color: C.blue, fontWeight: 700 }}>90  ✓ 카운트</div>
             <div style={rowStyle(false)}>결시  ✗ 제외</div>
@@ -250,7 +256,8 @@ export function StatCountDiagram() {
             borderRadius: 10, padding: 12,
             display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>COUNTA</div>
+            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 3 }}>COUNTA</div>
+            <div style={{ color: C.greenLight, fontSize: 12.5, fontWeight: 700, textAlign: 'center', marginBottom: 4 }}>=COUNTA(범위)</div>
             <div style={{ color: C.green, fontSize: 15, textAlign: 'center', marginBottom: 8 }}>비어있지 않은 셀</div>
             <div style={{ ...rowStyle(true, '#14532d', C.green), color: C.greenLight, fontWeight: 700 }}>90  ✓ 카운트</div>
             <div style={{ ...rowStyle(true, '#14532d', C.green), color: C.greenLight, fontWeight: 700 }}>결시  ✓ 카운트</div>
@@ -270,7 +277,8 @@ export function StatCountDiagram() {
             borderRadius: 10, padding: 12,
             display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{ color: C.textMuted, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>COUNTBLANK</div>
+            <div style={{ color: C.textMuted, fontSize: 18, fontWeight: 700, textAlign: 'center', marginBottom: 3 }}>COUNTBLANK</div>
+            <div style={{ color: C.textMuted, fontSize: 12.5, fontWeight: 700, textAlign: 'center', marginBottom: 4 }}>=COUNTBLANK(범위)</div>
             <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center', marginBottom: 8 }}>빈 셀만 셉니다</div>
             <div style={rowStyle(false)}>90  ✗ 제외</div>
             <div style={rowStyle(false)}>결시  ✗ 제외</div>
@@ -356,11 +364,12 @@ export function StatCondCountDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700, marginBottom: 4 }}>COUNTIF</div>
-            <div style={{ color: C.purple, fontSize: 14, marginBottom: 4 }}>
-              =COUNTIF(B2:B4, &quot;대리&quot;)
+            <div style={{ color: C.purpleLight, fontSize: 13, fontWeight: 700, marginBottom: 4 }}>구문: =COUNTIF(범위, 조건)</div>
+            <div style={{ color: C.purple, fontSize: 15, marginBottom: 6 }}>조건에 맞는 셀 개수</div>
+            <div style={{ color: C.purple, fontSize: 13, marginBottom: 6 }}>
+              예) =COUNTIF(B2:B4, &quot;대리&quot;)
             </div>
-            <div style={{ color: C.purple, fontSize: 15, marginBottom: 8 }}>조건에 맞는 셀 개수</div>
-            <div style={{ color: C.purpleLight, fontSize: 44, fontWeight: 700 }}>= 2</div>
+            <div style={{ color: C.purpleLight, fontSize: 40, fontWeight: 700 }}>= 2</div>
           </div>
 
           {/* AVERAGEIF */}
@@ -370,11 +379,12 @@ export function StatCondCountDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700, marginBottom: 4 }}>AVERAGEIF</div>
-            <div style={{ color: C.orange, fontSize: 13, marginBottom: 4 }}>
-              =AVERAGEIF(B2:B4, &quot;대리&quot;, C2:C4)
+            <div style={{ color: C.orange, fontSize: 13, fontWeight: 700, marginBottom: 4 }}>구문: =AVERAGEIF(조건범위, 조건, [평균범위])</div>
+            <div style={{ color: C.orange, fontSize: 15, marginBottom: 6 }}>조건에 맞는 행의 평균</div>
+            <div style={{ color: C.orange, fontSize: 12.5, marginBottom: 6 }}>
+              예) =AVERAGEIF(B2:B4, &quot;대리&quot;, C2:C4)
             </div>
-            <div style={{ color: C.orange, fontSize: 15, marginBottom: 8 }}>조건에 맞는 행의 평균</div>
-            <div style={{ color: C.orange, fontSize: 28, fontWeight: 700 }}>= 2,800,000</div>
+            <div style={{ color: C.orange, fontSize: 26, fontWeight: 700 }}>= 2,800,000</div>
           </div>
         </div>
       </div>
