@@ -123,17 +123,20 @@ export default function SupportWidget() {
         </div>
       )}
 
-      {/* 원형 버튼 위: 프로모션 D-day 배지 (위젯이 닫혀 있을 때만) */}
+      {/* 원형 버튼 위: 프로모션 D-day 원형 배지 (위젯이 닫혀 있을 때만) */}
       {!open && dday != null && (
         <div
+          className="cl-promo-pulse"
           style={{
             position: "fixed", right: 24, bottom: 92, zIndex: 1000,
-            background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd,
-            boxShadow: UI.shadow, padding: "8px 14px", textAlign: "center", fontFamily: UI.font, pointerEvents: "none",
+            width: 68, height: 68, borderRadius: "50%",
+            background: UI.lime, color: UI.teal, border: `2px solid ${UI.teal}`,
+            pointerEvents: "none", fontFamily: UI.font,
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
           }}
         >
-          <div style={{ fontSize: 11, color: UI.mut, fontWeight: 600, marginBottom: 1, whiteSpace: "nowrap" }}>프로모션 마감까지</div>
-          <div style={{ fontSize: 20, fontWeight: 800, color: UI.teal, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>D-{dday}</div>
+          <div style={{ fontSize: 10, fontWeight: 800, lineHeight: 1, marginBottom: 3, letterSpacing: "-0.01em" }}>마감까지</div>
+          <div style={{ fontSize: 21, fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>D-{dday}</div>
         </div>
       )}
 

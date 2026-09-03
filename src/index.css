@@ -16,6 +16,13 @@
 }
 .cl-lock-pulse { animation: cl-lock-pulse 1.6s ease-in-out infinite; }
 
+/* 프로모션 D-day 원형 배지 — 라임 글로우 맥동으로 시선 유도 (드롭섀도 유지) */
+@keyframes cl-promo-pulse {
+  0%, 100% { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18), 0 0 0 0 rgba(163, 230, 53, 0.7); }
+  50%      { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18), 0 0 0 9px rgba(163, 230, 53, 0.0); }
+}
+.cl-promo-pulse { animation: cl-promo-pulse 1.8s ease-in-out infinite; }
+
 html {
   scroll-behavior: smooth; /* 네비 앵커 클릭 시 부드럽게 스크롤 */
 }
