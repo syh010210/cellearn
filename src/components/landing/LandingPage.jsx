@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause, ChevronDown,
+  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause, ChevronDown, CalendarClock,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
 import { DAYS } from "../../data/days";
@@ -16,6 +16,17 @@ import { UI } from "../../theme";
 // - X(신규): 전 차시 완주 후 실전 모드 무제한 밴드.
 // - P: 2급만 결제 가능, 1급은 10월 오픈 예정 상태로 표기.
 const tealLine = "#2b5a50";
+
+// ── 시한성 문구/일정 (오픈 일정·프로모션이 바뀌면 이 블록만 수정) ──
+const SCHEDULE = {
+  grade2Open: "9월",       // 2급 오픈 시점 표현
+  grade2Soon: "이번 주말",  // 공지·FAQ 임박 표현
+  grade1Month: "10월",
+  itqMonth: "11월",
+  practicalMonth: "12월",
+  reformYear: 2027,        // 출제기준 개정 연도
+  promoEndYear: 2026,      // 프로모션(올해 말) 연도
+};
 
 function Btn({ children, onClick, variant = "dark", style, disabled }) {
   const base = { padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: disabled ? "default" : "pointer", border: "none", fontFamily: UI.font, whiteSpace: "nowrap", display: "inline-flex", alignItems: "center", gap: 8, opacity: disabled ? 0.55 : 1 };
@@ -45,6 +56,44 @@ function HoverCard({ children, style, hoverStyle, onClick }) {
 const mono = { fontFamily: UI.mono };
 // 숫자 표기 전용 — 깔끔한 본문 글꼴 + 균등폭 숫자 + 좁은 자간
 const num = { fontFamily: UI.font, fontWeight: 800, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" };
+
+// 화면 폭 반응형 판별 — 리사이즈·기기 회전에도 갱신 (초기 1회 측정 후 고정되지 않도록)
+function useIsMobile(bp = 768) {
+  const [m, setM] = useState(() => typeof window !== "undefined" && window.innerWidth < bp);
+  useEffect(() => {
+    const onResize = () => setM(window.innerWidth < bp);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [bp]);
+  return m;
+}
+
+// 프로모션(올해 말) 마감까지 D-day 카운트다운 — 12/31 23:59:59 기준
+function Countdown({ year }) {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000); // 1분마다 갱신
+    return () => clearInterval(t);
+  }, []);
+  const end = new Date(year, 11, 31, 23, 59, 59);
+  const ms = end - now;
+  if (ms <= 0) return null;
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  return (
+    <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: UI.limeSoft, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "10px 16px" }}>
+      <CalendarClock size={22} strokeWidth={1.75} color={UI.teal} style={{ flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 2 }}>지금 결제 시 <b style={{ color: UI.ink }}>올해 끝까지</b> · 프로모션 마감까지</div>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ ...num, fontSize: 26, color: UI.teal, lineHeight: 1 }}>D-{days}</span>
+          <span style={{ ...num, fontSize: 13.5, color: UI.mut }}>{String(hours).padStart(2, "0")}시간 {String(mins).padStart(2, "0")}분</span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // 히어로 시각물 — 3화면 자동 전환 캐러셀: 개념(엑셀 기본 구조) → 오답노트(퀴즈) → 복습 게이트.
 function CarouselCard({ label, children }) {
@@ -204,6 +253,8 @@ function HeroCarousel() {
             <button
               key={s.label}
               onClick={() => setI(idx)}
+              aria-pressed={active}
+              aria-label={`${s.label} 화면 보기`}
               style={{ background: active ? UI.teal : UI.surface, color: active ? "#fff" : UI.mut, border: `1px solid ${active ? UI.teal : UI.line}`, borderRadius: UI.rPill, padding: "5px 12px", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: UI.font }}
             >
               {s.label}
@@ -226,7 +277,7 @@ function HeroCarousel() {
 const FAQS = [
   { q: "PC에서만 학습할 수 있나요?", a: "개념 학습·실습·채점 기능은 PC(웹 브라우저)에서 이용합니다. 랜딩·커리큘럼·수강료 안내는 모바일에서도 볼 수 있어요." },
   { q: "수강 기간은 얼마나 되나요?", a: "결제한 급수를 올해 말까지 무제한으로 이용합니다. 기간 내에는 모든 차시·실습·복습·실전 모드를 자유롭게 반복할 수 있어요." },
-  { q: "급수는 어떻게 선택하나요?", a: "결제 시 2급 또는 1급 중 하나를 선택합니다. 2급은 이번 주말, 1급은 10월에 오픈 예정입니다." },
+  { q: "급수는 어떻게 선택하나요?", a: `결제 시 2급 또는 1급 중 하나를 선택합니다. 2급은 ${SCHEDULE.grade2Soon}, 1급은 ${SCHEDULE.grade1Month}에 오픈 예정입니다.` },
   { q: "실습은 어떻게 채점되나요?", a: "결과값이 아니라 셀에 입력한 수식 자체를 셀 단위로 비교해 정오답을 가립니다. 실제 시험처럼 수식을 정확히 써야 정답으로 인정됩니다." },
   { q: "다음 차시는 어떻게 열리나요?", a: "하루치 진도를 마친 뒤, 사전 점검 세션(누적 퀴즈 오답 재시험 + 누적 실습 오답 엑셀)을 모두 통과하면 다음 날 차시가 열립니다." },
   { q: "실전 모드는 무엇인가요?", a: "전 차시를 완주하면 열리는 모드로, 최근 기출 유형의 문제를 원하는 주제로 생성해 원하는 만큼 풀 수 있습니다. 시험 직전 감각 유지에 좋습니다." },
@@ -247,12 +298,14 @@ function FaqSection() {
               <div key={i} style={{ borderTop: i ? `1px solid ${UI.line}` : "none" }}>
                 <button
                   onClick={() => setOpen(isOpen ? -1 : i)}
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-panel-${i}`}
                   style={{ width: "100%", textAlign: "left", background: isOpen ? UI.panelAlt : UI.surface, border: "none", padding: "18px 20px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontFamily: UI.font }}
                 >
                   <span style={{ fontWeight: 700, fontSize: 15, color: UI.ink }}>{it.q}</span>
                   <ChevronDown size={18} strokeWidth={2} color={UI.mut} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
                 </button>
-                {isOpen && <div style={{ padding: "0 20px 18px", color: UI.mut, fontSize: 14, lineHeight: 1.75 }}>{it.a}</div>}
+                {isOpen && <div id={`faq-panel-${i}`} role="region" style={{ padding: "0 20px 18px", color: UI.mut, fontSize: 14, lineHeight: 1.75 }}>{it.a}</div>}
               </div>
             );
           })}
@@ -263,7 +316,7 @@ function FaqSection() {
 }
 
 export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useIsMobile();
   const lessonCount = LESSONS.length;
   const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
   const goPricing = () => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
@@ -309,12 +362,13 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       {/* ===== AB. 오픈 공지 바 ===== */}
       <div style={{ background: UI.teal, color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13.5 }}>
         <span style={{ ...mono, background: UI.lime, color: UI.teal, fontWeight: 700, fontSize: 11.5, padding: "2px 8px", borderRadius: UI.rSm, marginRight: 10 }}>OPEN</span>
-        이번 주말, 9월 컴활 2급 실기 클래스가 열립니다
+        {SCHEDULE.grade2Soon}, {SCHEDULE.grade2Open} 컴활 2급 실기 클래스가 열립니다
         <a href="#pricing" style={{ color: UI.lime, fontWeight: 700, textDecoration: "none", marginLeft: isMobile ? 0 : 10, display: isMobile ? "block" : "inline", marginTop: isMobile ? 4 : 0 }}>수강료 보기 →</a>
       </div>
 
-      {/* ===== N. 네비 ===== */}
-      <nav style={{ maxWidth: 1180, margin: "0 auto", padding: "18px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      {/* ===== N. 네비 (상단 고정) ===== */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: UI.bg, borderBottom: `1px solid ${UI.line}` }}>
+      <nav aria-label="주요 메뉴" style={{ maxWidth: 1180, margin: "0 auto", padding: "14px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <Logo size={30} />
         {!isMobile && (
           <div style={{ display: "flex", gap: 28, fontSize: 15, color: UI.mut }}>
@@ -337,6 +391,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
           <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>{isAuthed ? "이어서 학습" : "학습 시작"}</Btn>
         </div>
       </nav>
+      </div>
 
       {/* ===== H. 히어로 — 개정 긴급성 + 9월 2급 오픈 ===== */}
       <header
@@ -350,7 +405,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
       >
         {/* 헤드라인 — 히어로 전체 폭을 써서 문장별 한 줄 유지 */}
         <h1 style={{ fontSize: "clamp(30px,4.7vw,48px)", fontWeight: 700, lineHeight: 1.2, margin: 0, letterSpacing: "-0.02em" }}>
-          <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap" }}>2027년, 컴활 출제기준이 바뀝니다.</span>
+          <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap" }}>{SCHEDULE.reformYear}년, 컴활 출제기준이 바뀝니다.</span>
           <span style={{ display: "block", whiteSpace: isMobile ? "normal" : "nowrap", color: UI.teal }}>반드시 올해 안에 끝내야 합니다.</span>
         </h1>
 
@@ -358,18 +413,21 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
           <div style={{ flex: "1 1 400px", minWidth: 300, display: "flex", flexDirection: "column" }}>
             <p style={{ color: UI.ink, fontSize: 20, lineHeight: 1.65, margin: "0 0 18px", fontWeight: 500 }}>
               지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
-              9월, 컴활 2급 실기 클래스가 열립니다.
+              {SCHEDULE.grade2Open}, 컴활 2급 실기 클래스가 열립니다.
             </p>
             <p style={{ color: UI.mut, fontSize: 16.5, lineHeight: 1.75, margin: "0 0 30px" }}>
               강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
-              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                10월 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
-              </a>
+            <div style={{ marginTop: "auto" }}>
+              <Countdown year={SCHEDULE.promoEndYear} />
+              <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: 18, flexWrap: "wrap" }}>
+                <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+                <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  {SCHEDULE.grade1Month} 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
+                </a>
+              </div>
             </div>
             {isMobile && (
               <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
@@ -633,7 +691,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
             </div>
             {/* 1급 — 10월 오픈 예정 */}
             <div style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "28px 26px" }}>
-              <span style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: `1px solid ${tealLine}`, color: UI.invMut, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>10월 오픈 예정</span>
+              <span style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: `1px solid ${tealLine}`, color: UI.invMut, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>{SCHEDULE.grade1Month} 오픈 예정</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#cfd6d3", marginBottom: 6 }}>컴퓨터활용능력 실기 1급</div>
               <div style={{ ...num, fontSize: 36 }}>₩120,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> / 올해 끝까지</span></div>
               <div style={{ margin: "20px 0" }}>
@@ -643,14 +701,14 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
                   </div>
                 ))}
               </div>
-              <Btn variant="onDark" disabled style={{ width: "100%", justifyContent: "center" }}>10월에 열립니다</Btn>
+              <Btn variant="onDark" disabled style={{ width: "100%", justifyContent: "center" }}>{SCHEDULE.grade1Month}에 열립니다</Btn>
             </div>
           </div>
           <div style={{ fontSize: 13, color: UI.invMut, textAlign: "center", margin: "24px 0 12px" }}>이후 오픈 예정</div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
             {[
-              { month: "11월", title: "ITQ 엑셀" },
-              { month: "12월", title: "실무 엑셀" },
+              { month: SCHEDULE.itqMonth, title: "ITQ 엑셀" },
+              { month: SCHEDULE.practicalMonth, title: "실무 엑셀" },
             ].map((r) => (
               <div key={r.month} style={{ position: "relative", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "26px 22px 18px" }}>
                 <span style={{ position: "absolute", top: -1, left: 16, ...num, fontSize: 12, padding: "4px 10px", borderRadius: "0 0 8px 8px", background: UI.bg, color: UI.inkFaint, border: `1px solid ${UI.line}`, borderTop: "none" }}>{r.month}</span>
@@ -695,7 +753,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
         <h2 style={{ fontSize: "clamp(24px,3vw,30px)", fontWeight: 700, margin: "0 0 12px", letterSpacing: "-0.01em" }}>
           기출 유형이 통하는 마지막 해입니다
         </h2>
-        <p style={{ color: UI.invMut, fontSize: 16, margin: "0 0 26px" }}>2027년 출제기준 개정 전, 9월 2급 실기 클래스로 시작하세요.</p>
+        <p style={{ color: UI.invMut, fontSize: 16, margin: "0 0 26px" }}>{SCHEDULE.reformYear}년 출제기준 개정 전, {SCHEDULE.grade2Open} 2급 실기 클래스로 시작하세요.</p>
         <Btn variant="onDark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
       </section>
 
