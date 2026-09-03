@@ -266,7 +266,7 @@ export function ExcelCursorsAnim() {
   const caption = [
     '셀 안에 두면 선택 커서 — 클릭하면 그 셀이 선택됩니다.',
     '셀 테두리에 올리면 이동 커서 — 드래그하면 데이터가 통째로 이동합니다.',
-    '오른쪽 아래 핸들에 올리면 채우기 커서 — 드래그하면 수식·값이 복사됩니다.',
+    '오른쪽 아래 핸들에 올리면 채우기 커서 — 드래그하면 수식 · 값이 복사됩니다.',
   ][sel];
   const chips = ['① 선택 — 굵은 흰 십자', '② 이동 — 사방 화살표', '③ 채우기 — 얇은 검은 십자'];
   const chipBtn = (active) => ({
@@ -399,10 +399,10 @@ export function RelativeFillDownAnim() {
       </div>
 
       <WhyBox
-        title="아래로 자동 채우기를 할 때 D2 수식을 아래로 드래그하면 왜 B·C 열은 고정이고, 행 번호만 커질까?"
+        title="아래로 자동 채우기를 할 때 D2 수식을 아래로 드래그하면 왜 B · C 열은 고정이고, 행 번호만 커질까?"
         lines={[
           <>아래로 복사하면 <b style={{ color: FIX }}>세로줄(열)은 변하지 않습니다.</b></>,
-          <>그래서 <b style={{ color: FIX }}>B·C 열은 그대로 고정</b>돼요.</>,
+          <>그래서 <b style={{ color: FIX }}>B · C 열은 그대로 고정</b>돼요.</>,
           <>대신 아래로 내려가며 가로줄(행)이 바뀌므로 <b style={{ color: CHG }}>행 번호만 2 → 3 → 4 로 증가</b>합니다.</>,
         ]}
       />
@@ -500,10 +500,10 @@ export function RelativeFillRightAnim() {
       </div>
 
       <WhyBox
-        title="오른쪽으로 자동 채우기를 할 때 B5 수식을 오른쪽으로 드래그하면 왜 3·4행은 고정이고, 열 문자만 바뀔까?"
+        title="오른쪽으로 자동 채우기를 할 때 B5 수식을 오른쪽으로 드래그하면 왜 3 · 4행은 고정이고, 열 문자만 바뀔까?"
         lines={[
           <>오른쪽으로 복사하면 <b style={{ color: FIX }}>가로줄(행)은 변하지 않습니다.</b></>,
-          <>그래서 <b style={{ color: FIX }}>3행·4행은 그대로 고정</b>돼요.</>,
+          <>그래서 <b style={{ color: FIX }}>3행 · 4행은 그대로 고정</b>돼요.</>,
           <>대신 오른쪽으로 가며 세로줄(열)이 바뀌므로 <b style={{ color: CHG }}>열 문자만 B → C → D 로 이동</b>합니다.</>,
         ]}
       />
@@ -613,8 +613,8 @@ export function AbsoluteFillDownAnim() {
       <WhyBox
         title="수식 내의 빨간 비율 셀($B$5·$C$5)은 왜 고정해야 할까?"
         lines={[
-          <><b style={{ color: C.redLight }}>0.6·0.4</b>는 모든 사람의 <b style={{ color: FIX }}>실기·봉사 점수에 똑같이 곱해야 하는 공통 기준값</b>이에요.</>,
-          <>수식을 아래로 채울 때 이 셀이 함께 밀려 내려가면 <b style={{ color: C.redLight }}>비어 있는 6·7행을 참조</b>해 계산이 전부 틀어집니다.</>,
+          <><b style={{ color: C.redLight }}>0.6 · 0.4</b>는 모든 사람의 <b style={{ color: FIX }}>실기 · 봉사 점수에 똑같이 곱해야 하는 공통 기준값</b>이에요.</>,
+          <>수식을 아래로 채울 때 이 셀이 함께 밀려 내려가면 <b style={{ color: C.redLight }}>비어 있는 6 · 7행을 참조</b>해 계산이 전부 틀어집니다.</>,
           <>그래서 <b style={{ color: C.redLight }}>$B$5·$C$5로 고정</b>해, 어느 행을 채워도 항상 같은 비율을 곱하게 만듭니다.</>,
         ]}
       />

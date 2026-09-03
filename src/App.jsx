@@ -45,7 +45,8 @@ export default function App() {
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
-  const canLearn = gateBypassed || (isAuthed && (!REQUIRE_ENROLLMENT || hasActiveEnrollment));
+  // 관리자(role=admin)는 결제/수강권 없이도 학습·관리 화면에 접근할 수 있어야 한다.
+  const canLearn = gateBypassed || isAdmin || (isAuthed && (!REQUIRE_ENROLLMENT || hasActiveEnrollment));
 
   // 포트원 모바일 결제 리다이렉트 복귀(?portone=return) → 결제 화면으로 보내 검증 마무리
   useEffect(() => {
@@ -135,7 +136,7 @@ export default function App() {
         <div style={{ fontSize: 40, marginBottom: 12 }}>🖥️</div>
         <h2 style={{ fontSize: 19, fontWeight: 800, margin: "0 0 10px" }}>학습은 PC에서 이용해 주세요</h2>
         <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
-          결제·계정은 완료되었습니다. 개념 학습·미니 엑셀 실습·채점은 마우스와 넓은 화면이 필요해
+          결제 · 계정은 완료되었습니다. 개념 학습 · 미니 엑셀 실습 · 채점은 마우스와 넓은 화면이 필요해
           PC(웹 브라우저)에서 <b style={{ color: UI.ink }}>cellearn.kr</b>에 로그인하면 바로 이어집니다.
         </p>
         <button onClick={() => setPage("landing")} style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}>홈으로</button>

@@ -331,7 +331,7 @@ const BASIC_EXPLAIN = [
   {
     title: '③ 문제를 읽고 정렬 대화상자의 값을 맞게 넣습니다.',
     lines: [
-      <>정렬 기준이 <b>두 개</b>이므로 <b>[기준 추가]</b>로 기준을 쌓습니다. <b>첫째 기준</b> = 분류·셀 값·오름차순, <b>둘째 기준</b> = 가격·셀 값·내림차순.</>,
+      <>정렬 기준이 <b>두 개</b>이므로 <b>[기준 추가]</b>로 기준을 쌓습니다. <b>첫째 기준</b> = 분류 · 셀 값 · 오름차순, <b>둘째 기준</b> = 가격 · 셀 값 · 내림차순.</>,
       <>
         <b style={{ color: C.amber }}>정렬 기준이 여러 개인 경우 — 같은 뜻, 다른 말투에 주의</b>
         <div style={{ margin: '7px 0 8px', padding: '9px 13px', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, lineHeight: 1.95, color: C.textMuted, fontSize: 14 }}>
@@ -558,7 +558,7 @@ export function SortBasicStepsAnim() {
   return (
     <Wrap>
       <style>{'@keyframes sortFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}@keyframes sortCaret{50%{opacity:0}}'}</style>
-      <Title>기본 정렬 — 오름차순·내림차순</Title>
+      <Title>기본 정렬 — 오름차순 · 내림차순</Title>
 
       {/* 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '14px 18px', marginBottom: 16, fontSize: 17, color: C.text, lineHeight: 1.8 }}>
@@ -658,7 +658,7 @@ const C2_EXPLAIN = [
     title: '③ 사용자 지정 목록에 원하는 순서를 등록합니다.',
     lines: [
       <><b>목록 항목</b> 칸에 <b style={{ color: C.blueLight }}>문제에 나온 항목</b>을 순서대로 한 줄에 하나씩 입력하고 <b>[추가]</b> → <b>[확인]</b>.</>,
-      <><b>주의</b> — 글자·띄어쓰기가 <b style={{ color: C.redLight }}>데이터 값과 정확히 같아야</b> 그 순서를 찾습니다.</>,
+      <><b>주의</b> — 글자 · 띄어쓰기가 <b style={{ color: C.redLight }}>데이터 값과 정확히 같아야</b> 그 순서를 찾습니다.</>,
     ],
   },
   {
@@ -709,7 +709,7 @@ export function SortStepsAnim() {
   const hlCol = atFinal ? (step === 1 ? CAT_IDX : step === 2 ? 0 : -1) : -1;
 
   const phaseText = step === 1
-    ? '① 분류를 과학·역사·소설 순으로 정렬'
+    ? '① 분류를 과학 · 역사 · 소설 순으로 정렬'
     : step === 2
       ? '② 같은 분류 안에서 도서명이 연한 파랑인 행을 위로'
       : step >= 3
@@ -844,7 +844,7 @@ export function SortLeftRightDiagram() {
           </div>
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: 13, color: C.textMuted }}>
             <b style={{ color: C.blueLight }}>1행(제목)</b>을 기준으로 <b>열이 좌우로</b> 재배열 ↔<br />
-            (순번·성별·주소·이름 순서는 <b>사용자 지정 목록</b>으로 지정)
+            (순번 · 성별 · 주소 · 이름 순서는 <b>사용자 지정 목록</b>으로 지정)
           </div>
         </div>
       </div>

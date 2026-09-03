@@ -201,7 +201,7 @@ export function DbAverageDiagram() {
       </div>
 
       <BottomBar>
-        <BLine color={C.textMuted}>AND 조건 = 같은 행에 나란히  ·  OR 조건 = 서로 다른 행에 엇갈려 입력</BLine>
+        <BLine color={C.textMuted}>AND 조건 = 같은 행에 나란히 · OR 조건 = 서로 다른 행에 엇갈려 입력</BLine>
         <BLine color={C.blue} bold>DAVERAGE(범위, 필드, 조건범위) — 조건에 맞는 행의 지정 열 평균</BLine>
       </BottomBar>
     </Wrap>
@@ -308,7 +308,7 @@ export function DbCountDiagram() {
       </div>
 
       <BottomBar>
-        <BLine color={C.textMuted}>OR 조건 = 엇갈린 다른 행  ·  같은 행 = AND 조건  ·  숫자 열 지정 필수(DCOUNT)</BLine>
+        <BLine color={C.textMuted}>OR 조건 = 엇갈린 다른 행 · 같은 행 = AND 조건 · 숫자 열 지정 필수(DCOUNT)</BLine>
         <BLine color={C.blue} bold>텍스트 개수 세기: DCOUNT → DCOUNTA로 변경</BLine>
       </BottomBar>
     </Wrap>
@@ -401,7 +401,7 @@ export function DbMaxDiagram() {
       </div>
 
       <BottomBar>
-        <BLine color={C.textMuted}>*=글자수 무제한  ·  ?=정확히 한 글자  ·  조합: OLED*  /  *TV  /  *OLED*  /  OL??</BLine>
+        <BLine color={C.textMuted}>*=글자수 무제한  ·  ?=정확히 한 글자 · 조합: OLED*  /  *TV  /  *OLED*  /  OL??</BLine>
         <BLine color={C.blue} bold>DMAX(범위, 필드, 조건범위) — 조건에 맞는 행의 최댓값</BLine>
       </BottomBar>
     </Wrap>

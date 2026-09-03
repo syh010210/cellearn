@@ -286,7 +286,7 @@ function SubtotalRibbon({ onClick }) {
 }
 
 const FLOW_STEPS = [
-  { n: '①', label: '원본 데이터', desc: "'부서명'이 총무부·기획부·전산부 순서 없이 뒤섞여 있습니다. 이대로 부분합하면 같은 부서가 흩어져 부분합이 엉킵니다." },
+  { n: '①', label: '원본 데이터', desc: "'부서명'이 총무부 · 기획부 · 전산부 순서 없이 뒤섞여 있습니다. 이대로 부분합하면 같은 부서가 흩어져 부분합이 엉킵니다." },
   { n: '②', label: '부서명 기준 정렬', desc: '⚠️ 부분합보다 먼저! 그룹 열(부서명)로 정렬해 같은 부서끼리 연속으로 모읍니다.' },
   { n: '③', label: '[데이터]→[부분합]', desc: '표 안을 클릭하고 [데이터] 탭 → [개요] 그룹 → [부분합] 을 눌러 대화상자를 엽니다.' },
   { n: '④', label: '3요소 지정 → 확인', desc: "그룹화할 항목=부서명, 사용할 함수=합계, 부분합 계산 항목='기본급'·'총급여'만 체크하고 [확인]. 맨 아래 '데이터 아래에 요약 표시'는 기본으로 켜져 있으니 그대로 둡니다." },
@@ -343,7 +343,7 @@ export function SubtotalFlowAnim() {
             <div style={{ background: C.redDark, border: `1px solid ${C.red}`, borderRadius: 10, padding: '13px 15px' }}>
               <div style={{ color: C.redLight, fontWeight: 800, fontSize: 15, marginBottom: 6 }}>❌ 이래서 정렬이 먼저!</div>
               <div style={{ color: C.text, fontSize: 13.5, lineHeight: 1.75 }}>
-                부분합은 <b>부서명이 바뀌는 순간마다</b> 요약을 넣습니다. 정렬 전에는 같은 부서가 흩어져 있어 <b style={{ color: C.redLight }}>총무부·기획부·전산부 요약이 두 번씩</b> 쪼개져 만들어집니다. (총무부 요약이 7,700,000·3,700,000 으로 분리)
+                부분합은 <b>부서명이 바뀌는 순간마다</b> 요약을 넣습니다. 정렬 전에는 같은 부서가 흩어져 있어 <b style={{ color: C.redLight }}>총무부 · 기획부 · 전산부 요약이 두 번씩</b> 쪼개져 만들어집니다. (총무부 요약이 7,700,000 · 3,700,000 으로 분리)
               </div>
             </div>
             <div style={{ background: C.greenDark, border: `1px solid ${C.green}`, borderRadius: 10, padding: '13px 15px', marginTop: 10 }}>
@@ -374,7 +374,7 @@ export function SubtotalFlowAnim() {
         <div style={{ minWidth: 220 }}>
           {slot === 0 && (
             <div style={{ background: C.bgDark, border: `1px dashed ${C.border}`, borderRadius: 10, padding: '14px 16px', maxWidth: 280, color: C.textMuted, fontSize: 13.5, lineHeight: 1.75 }}>
-              같은 부서(총무부·기획부·전산부)가 표 <b>여기저기 흩어져</b> 있습니다. 정렬을 건너뛰고 바로 부분합하면 어떻게 될까요?
+              같은 부서(총무부 · 기획부 · 전산부)가 표 <b>여기저기 흩어져</b> 있습니다. 정렬을 건너뛰고 바로 부분합하면 어떻게 될까요?
               <button onClick={() => setShowBroken(true)} style={{
                 display: 'block', width: '100%', marginTop: 12,
                 background: C.redDark, color: C.redLight, border: `1px solid ${C.red}`,
@@ -498,7 +498,7 @@ export function SubtotalExamProblem() {
       </ProblemBox>
 
       <div style={{ fontSize: 14, color: C.text, lineHeight: 1.8, marginTop: 14 }}>
-        <b>"부서별 '총점'의 최댓값을 계산한 후"</b>에는 그룹화할 항목·사용할 함수·부분합 계산 항목이 모두 짝지어져 있습니다. 반면 <b>"'기획력', '실행력', '협업'의 평균을 계산"</b>에는 <b style={{ color: C.greenLight }}>그룹화할 항목이 없습니다</b>. 이처럼 문장에 없는 요소는 <b>앞(1차)에서 사용한 것을 그대로</b> 쓰면 됩니다. 즉 2차의 그룹화할 항목도 <b style={{ color: C.greenLight }}>부서</b>입니다.
+        <b>"부서별 '총점'의 최댓값을 계산한 후"</b>에는 그룹화할 항목 · 사용할 함수 · 부분합 계산 항목이 모두 짝지어져 있습니다. 반면 <b>"'기획력', '실행력', '협업'의 평균을 계산"</b>에는 <b style={{ color: C.greenLight }}>그룹화할 항목이 없습니다</b>. 이처럼 문장에 없는 요소는 <b>앞(1차)에서 사용한 것을 그대로</b> 쓰면 됩니다. 즉 2차의 그룹화할 항목도 <b style={{ color: C.greenLight }}>부서</b>입니다.
       </div>
 
       {/* 3요소를 문제에서 뽑아내는 표 */}
@@ -516,11 +516,11 @@ export function SubtotalExamProblem() {
           },
           {
             title: '2차 부분합', tint: C.blue,
-            phrase: <><b style={{ color: C.blueLight }}>'기획력·실행력·협업'</b>의 <b style={{ color: C.amberLight }}>평균</b>을 계산</>,
+            phrase: <><b style={{ color: C.blueLight }}>'기획력 · 실행력 · 협업'</b>의 <b style={{ color: C.amberLight }}>평균</b>을 계산</>,
             rows: [
               ['그룹화할 항목', '부서 (앞과 동일)', C.greenLight, '문장에 없음 → 앞의 것 그대로'],
               ['사용할 함수', '평균', C.amberLight, "'평균'을 계산"],
-              ['부분합 계산 항목', '기획력·실행력·협업', C.blueLight, '무엇의 평균? → 세 항목'],
+              ['부분합 계산 항목', '기획력 · 실행력 · 협업', C.blueLight, '무엇의 평균? → 세 항목'],
             ],
           },
         ].map((card) => (
@@ -580,7 +580,7 @@ export function SubtotalExamProblem() {
           </div>
           <div style={{ fontSize: 13, color: C.text, lineHeight: 1.75 }}>
             <b style={{ color: C.blueLight }}>경로</b> — 범위 선택 → [홈] 탭 → [스타일] 그룹 → <b>[표 서식]</b> → 스타일 클릭
-            <div style={{ marginTop: 6, color: C.textMuted }}>✔ 첫 행(부서·사원명…)이 <b>머리글</b>이 되도록 대화상자에서 <b>'머리글 포함'</b> 체크를 확인합니다.</div>
+            <div style={{ marginTop: 6, color: C.textMuted }}>✔ 첫 행(부서 · 사원명…)이 <b>머리글</b>이 되도록 대화상자에서 <b>'머리글 포함'</b> 체크를 확인합니다.</div>
           </div>
         </div>
       </div>

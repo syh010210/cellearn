@@ -17,7 +17,7 @@ export function ChartAnatomyDiagram() {
     ['①', '차트 제목', '차트 맨 위 이름. =A1 로 셀과 연동 가능'],
     ['②', '세로(값) 축 · 축 제목', '값의 눈금과 축 이름. 텍스트 방향 세로 지정 가능'],
     ['③', '데이터 계열 / 요소', '같은 색 막대 묶음이 계열, 막대 하나가 요소'],
-    ['④', '데이터 레이블', '막대에 표시하는 값·항목 이름'],
+    ['④', '데이터 레이블', '막대에 표시하는 값 · 항목 이름'],
     ['⑤', '범례', '계열의 색과 이름 안내. 위치(아래 등) 지정'],
     ['⑥', '그림 영역 / 눈금선', '막대가 그려지는 안쪽 영역과 보조선'],
   ];
@@ -145,12 +145,12 @@ const METHODS = [
   {
     tab: '② 데이터 선택 메뉴',
     desc: "차트 오른쪽 클릭 → [데이터 선택]. 계열/항목 목록에서 필요 없는 것을 골라 [제거]합니다. 가로 항목을 지우려면 '행/열 전환'을 쓰기도 합니다.",
-    tip: '특정 계열·항목을 콕 집어 제거할 때 확실합니다.',
+    tip: '특정 계열 · 항목을 콕 집어 제거할 때 확실합니다.',
   },
   {
     tab: '③ 범위 직접 선택',
     desc: "[데이터 선택]에서 '차트 데이터 범위'를 지운 뒤, 제목과 함께 원하는 항목만 다시 드래그합니다. 떨어진 범위는 Ctrl을 누른 채 추가 선택합니다.",
-    tip: '문제 그림과 똑같은 색·순서로 다시 만들 때 가장 정확합니다.',
+    tip: '문제 그림과 똑같은 색 · 순서로 다시 만들 때 가장 정확합니다.',
   },
 ];
 
@@ -159,7 +159,7 @@ export function ChartDataRangeDiagram() {
   return (
     <Wrap>
       <Title>데이터 범위 수정 — 3가지 방법</Title>
-      <Subtitle>차트에 넣을 항목·계열을 더하거나 빼는 방법. 상황에 맞게 고르세요</Subtitle>
+      <Subtitle>차트에 넣을 항목 · 계열을 더하거나 빼는 방법. 상황에 맞게 고르세요</Subtitle>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
         {METHODS.map((m, i) => (
           <button key={i} onClick={() => setT(i)} style={{
@@ -175,7 +175,7 @@ export function ChartDataRangeDiagram() {
         <div style={{ marginTop: 10, fontSize: 13, color: C.greenLight, fontWeight: 700 }}>👍 {METHODS[t].tip}</div>
       </div>
       <div style={{ background: C.bgDark, borderRadius: 8, padding: '10px 16px', marginTop: 14, textAlign: 'center', fontSize: 13, color: C.amberLight }}>
-        💡 차트 제목·축 제목은 요소를 선택하고 <b>수식 입력줄에 =셀주소</b>(예: =A1)를 넣으면 셀과 연동됩니다.
+        💡 차트 제목 · 축 제목은 요소를 선택하고 <b>수식 입력줄에 =셀주소</b>(예: =A1)를 넣으면 셀과 연동됩니다.
       </div>
     </Wrap>
   );

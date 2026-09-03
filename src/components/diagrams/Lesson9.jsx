@@ -117,7 +117,7 @@ export function ProductCodeDiagram() {
           <div style={{ fontSize: 16, fontWeight: 800, color: C.purpleLight, marginBottom: 6 }}>왜 셀 전체가 문자일까?</div>
           <div style={{ fontSize: 14.5, color: C.text, lineHeight: 1.7 }}>
             셀은 <b>숫자로만</b> 이루어져야 '숫자'로 계산됩니다. 문자 <span style={{ fontFamily: FONT, color: C.greenLight }}>BR</span> 이 섞이면
-            더하기·곱하기를 할 수 없으니, 엑셀은 셀 값을 통째로 <b style={{ color: C.purpleLight }}>문자(텍스트)</b>로 저장합니다.
+            더하기 · 곱하기를 할 수 없으니, 엑셀은 셀 값을 통째로 <b style={{ color: C.purpleLight }}>문자(텍스트)</b>로 저장합니다.
             그래서 이런 코드 셀은 <b>왼쪽 정렬</b>로 보입니다. (숫자는 오른쪽 정렬)
           </div>
         </div>
@@ -197,7 +197,7 @@ export function DateCodeDiagram() {
       </div>
 
       <div style={{ background: C.bgDark, borderRadius: 10, padding: '12px 16px', marginTop: 14, fontSize: 14.5, color: C.text, lineHeight: 1.75 }}>
-        글자를 한 번 쓰면(<b style={{ fontFamily: FONT, color: C.blue }}>m·d</b>) 한 자리, 두 번 쓰면(<b style={{ fontFamily: FONT, color: C.blue }}>mm·dd</b>) 두 자리로 <b>0을 채워</b> 표시합니다.
+        글자를 한 번 쓰면(<b style={{ fontFamily: FONT, color: C.blue }}>m · d</b>) 한 자리, 두 번 쓰면(<b style={{ fontFamily: FONT, color: C.blue }}>mm · dd</b>) 두 자리로 <b>0을 채워</b> 표시합니다.
         (예: 6월 → <span style={{ fontFamily: FONT }}>m</span>=6, <span style={{ fontFamily: FONT }}>mm</span>=06) · 고정 글자는 <b style={{ fontFamily: FONT }}>yyyy"년" mm"월" dd"일"</b> 처럼 " "로 감쌉니다.
       </div>
     </Wrap>
@@ -564,7 +564,7 @@ export function MergeCenterDiagram() {
       </div>
 
       <div style={{ background: C.bgDark, borderRadius: 10, padding: '12px 16px', marginTop: 16, fontSize: 14.5, color: C.text, lineHeight: 1.7 }}>
-        <b style={{ color: C.blueLight }}>병합</b>은 셀을 합쳐 참조·정렬·복사에 영향을 주고, <b style={{ color: C.amberLight }}>선택 영역의 가운데로</b>는 셀 구조를 그대로 두어 표가 안전합니다.
+        <b style={{ color: C.blueLight }}>병합</b>은 셀을 합쳐 참조 · 정렬 · 복사에 영향을 주고, <b style={{ color: C.amberLight }}>선택 영역의 가운데로</b>는 셀 구조를 그대로 두어 표가 안전합니다.
       </div>
     </Wrap>
   );

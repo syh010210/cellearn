@@ -25,11 +25,11 @@ const FIELDS = [
 
 // 단계: 필드가 순서대로 영역으로 들어간다
 const STEPS = [
-  { label: '원본 데이터', desc: '부서·직위별로 흩어진 급여 데이터. 그대로는 한눈에 비교하기 어렵다.' },
+  { label: '원본 데이터', desc: '부서 · 직위별로 흩어진 급여 데이터. 그대로는 한눈에 비교하기 어렵다.' },
   { label: '성명 → 필터', desc: "'성명'을 필터 영역에 놓으면 보고서 위쪽에서 특정 사람만 골라 볼 수 있다." },
   { label: '부서명 → 행', desc: "'부서명'을 행에 놓으면 각 부서가 한 가로줄을 차지한다. 그래서 기획부의 데이터는 가로로 읽는다." },
   { label: '직위 → 열', desc: "'직위'를 열에 놓으면 각 직위가 한 세로칸을 차지한다. 그래서 부장의 데이터는 세로로 읽는다." },
-  { label: '기본급·실수령액 → 값', desc: "숫자 필드를 값 영역에 놓으면 교차 지점마다 '합계'가 자동 계산된다." },
+  { label: '기본급 · 실수령액 → 값', desc: "숫자 필드를 값 영역에 놓으면 교차 지점마다 '합계'가 자동 계산된다." },
 ];
 
 const ZONE_META = [
@@ -90,7 +90,7 @@ export function PivotBuildAnim() {
   return (
     <Wrap>
       <Title>피벗 테이블 — 필드를 4개 영역에 끌어다 놓기</Title>
-      <Subtitle>원본의 '필드'를 필터·행·열·값 영역으로 옮기면 수많은 데이터가 요약표로 압축됩니다</Subtitle>
+      <Subtitle>원본의 '필드'를 필터 · 행 · 열 · 값 영역으로 옮기면 수많은 데이터가 요약표로 압축됩니다</Subtitle>
 
       <div style={{ textAlign: 'center', fontSize: 13, color: C.textDim, marginBottom: 8 }}>👇 단계를 눌러 진행해 보세요</div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
@@ -621,7 +621,7 @@ export function PivotStepsDiagram() {
     { n: '①', t: '원본 데이터 선택', d: '제목행 포함 표 전체. (A열 클릭 후 Ctrl+Shift+↓→)' },
     { n: '②', t: '[삽입] → [피벗 테이블]', d: '보고서 위치를 새 워크시트 / 기존 워크시트 중 선택' },
     { n: '③', t: '필드를 영역으로 드래그', d: '필터 · 행 · 열 · 값 4영역에 필드를 끌어다 놓기' },
-    { n: '④', t: '옵션 · 서식 다듬기', d: '총합계·빈 셀 표시·표시 형식·스타일 지정' },
+    { n: '④', t: '옵션 · 서식 다듬기', d: '총합계 · 빈 셀 표시 · 표시 형식 · 스타일 지정' },
   ];
   return (
     <Wrap>

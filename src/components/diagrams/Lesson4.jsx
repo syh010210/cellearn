@@ -148,7 +148,7 @@ export function MatchIndexDiagram() {
 
   return (
     <Wrap>
-      <Title>위치·추출 함수: MATCH · INDEX</Title>
+      <Title>위치 · 추출 함수: MATCH · INDEX</Title>
       <Subtitle>MATCH는 &apos;몇 번째?&apos;를 찾고 — INDEX는 &apos;그 번째 값&apos;을 꺼냅니다</Subtitle>
 
       <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
@@ -462,7 +462,7 @@ export function IndexMatchDiagram() {
 
       <BottomBar>
         <BLine>=INDEX(반환 범위, MATCH(찾을 값, 검색 범위, 0))</BLine>
-        <BLine color={C.blue} bold>※ VLOOKUP: 첫 열만 검색  ·  INDEX+MATCH: 어느 열이든 자유롭게</BLine>
+        <BLine color={C.blue} bold>※ VLOOKUP: 첫 열만 검색 · INDEX+MATCH: 어느 열이든 자유롭게</BLine>
       </BottomBar>
     </Wrap>
   );

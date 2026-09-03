@@ -55,7 +55,7 @@ export default function SignupView({ onSwitch, presetGrade = "2급" }) {
   return (
     <form onSubmit={submit}>
       <div style={S.title}>수강 신청 · 계정 만들기</div>
-      <div style={S.sub}>가입 후 결제하면 선택한 학습 과정의 학습·실습이 열립니다.</div>
+      <div style={S.sub}>가입 후 결제하면 선택한 학습 과정의 학습 · 실습이 열립니다.</div>
 
       {/* 학습 과정 — CTA로 자동 지정(읽기 전용) */}
       <label style={S.label}>학습 과정</label>
@@ -85,7 +85,7 @@ export default function SignupView({ onSwitch, presetGrade = "2급" }) {
 
       <label style={S.checkRow}>
         <input type="checkbox" checked={f.termsAgree} onChange={set("termsAgree")} />
-        <span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span>
+        <span>[필수] 이용약관 및 개인정보 수집 · 이용에 동의합니다.</span>
       </label>
       <label style={S.checkRow}>
         <input type="checkbox" checked={f.marketingAgree} onChange={set("marketingAgree")} />

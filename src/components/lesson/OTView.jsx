@@ -128,7 +128,7 @@ export default function OTView({ onStart, onComplete, otDone = false }) {
           훑어보지 말고 <b style={{ color: UI.ink }}>한 줄도 빠뜨리지 말고 꼼꼼히</b> 읽어 주세요.
         </p>
         <Callout tone="lime" icon={Lightbulb}>
-          여기서 다루는 예제가 곧 시험 문제의 원형입니다. <b>개념을 대충 넘기면 뒤의 실습·퀴즈·실전 모드가 모두 무너집니다.</b> 정독이 곧 합격의 지름길입니다.
+          여기서 다루는 예제가 곧 시험 문제의 원형입니다. <b>개념을 대충 넘기면 뒤의 실습 · 퀴즈 · 실전 모드가 모두 무너집니다.</b> 정독이 곧 합격의 지름길입니다.
         </Callout>
       </StepCard>
 

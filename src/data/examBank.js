@@ -20,10 +20,10 @@ export const CALC_SUBTYPES = [
 export const EXAM_SECTIONS = [
   { key: "기본1", label: "기본작업-1 · 데이터 입력", ready: false },
   { key: "기본2", label: "기본작업-2 · 서식", ready: false },
-  { key: "기본3", label: "기본작업-3 · 조건부서식(고급필터·텍스트나누기 준비중)", ready: true },
+  { key: "기본3", label: "기본작업-3 · 조건부서식(고급필터 · 텍스트나누기 준비중)", ready: true },
   { key: "계산", label: "계산작업 · 함수 5문제", ready: true },
-  { key: "분석1", label: "분석작업-1 · 정렬(부분합·통합·피벗 등 확장중)", ready: true },
-  { key: "분석2", label: "분석작업-2 · 정렬(부분합·통합·피벗 등 확장중)", ready: true },
+  { key: "분석1", label: "분석작업-1 · 정렬(부분합 · 통합 · 피벗 등 확장중)", ready: true },
+  { key: "분석2", label: "분석작업-2 · 정렬(부분합 · 통합 · 피벗 등 확장중)", ready: true },
   { key: "매크로", label: "매크로작업", ready: true },
   { key: "차트", label: "차트작업 · 종류 검사", ready: true },
 ];

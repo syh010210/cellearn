@@ -629,11 +629,11 @@ export function FilterMistakesDiagram() {
   const items = [
     {
       wrong: "조건 필드명을 원본과 다르게 적음 — 글자가 다르거나 '부서' 뒤에 눈에 안 보이는 공백이 남은 경우",
-      right: "조건 필드명을 원본과 글자·공백까지 똑같이 (원본에서 복사)",
-      why: "필드명이 원본과 한 글자·공백이라도 다르면 짝을 못 찾아 필터가 동작하지 않습니다.",
+      right: "조건 필드명을 원본과 글자 · 공백까지 똑같이 (원본에서 복사)",
+      why: "필드명이 원본과 한 글자 · 공백이라도 다르면 짝을 못 찾아 필터가 동작하지 않습니다.",
     },
     {
-      wrong: '조건 범위에 값 없는 빈 행·열까지 포함해 지정',
+      wrong: '조건 범위에 값 없는 빈 행 · 열까지 포함해 지정',
       right: '제목과 값이 있는 부분만 정확히 지정',
       why: "빈 행은 '조건 없음'으로 처리돼, 거를 기준이 없으니 표의 모든 데이터가 그대로 추출됩니다.",
     },
@@ -643,7 +643,7 @@ export function FilterMistakesDiagram() {
       why: '제목 행이 있어야 조건 제목과 짝지을 수 있습니다.',
     },
     {
-      wrong: "AND인데 조건을 위·아래 다른 행에 입력",
+      wrong: "AND인데 조건을 위 · 아래 다른 행에 입력",
       right: "모두 만족(AND)이면 같은 행에 나란히",
       why: '다른 행에 쓰면 OR(하나만 만족)로 처리됩니다.',
     },
@@ -656,7 +656,7 @@ export function FilterMistakesDiagram() {
   return (
     <Wrap>
       <Title>고급 필터 — 자주 하는 실수</Title>
-      <Subtitle>필드명·복사 위치·범위 지정에서 자주 틀립니다</Subtitle>
+      <Subtitle>필드명 · 복사 위치 · 범위 지정에서 자주 틀립니다</Subtitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {items.map((it, i) => (
@@ -709,7 +709,7 @@ export function CustomFilterMenu() {
   return (
     <Wrap>
       <Title>사용자 지정 자동 필터로 들어가는 길</Title>
-      <Subtitle>제목 ▼ → [숫자·텍스트·날짜 필터] → [사용자 지정 필터…]</Subtitle>
+      <Subtitle>제목 ▼ → [숫자 · 텍스트 · 날짜 필터] → [사용자 지정 필터…]</Subtitle>
 
       <div style={{ display: 'flex', gap: 14, justifyContent: 'center', alignItems: 'flex-start', flexWrap: 'wrap' }}>
         {/* 1차 드롭다운 */}

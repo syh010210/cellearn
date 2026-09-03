@@ -252,7 +252,7 @@ export function SumifDiagram() {
 
       <BottomBar>
         <BLine color={C.textMuted}>=SUMIF(조건 범위, 조건, 합계 범위)  — 조건에 맞는 행의 합계</BLine>
-        <BLine color={C.blue} bold>합계 범위 생략 시 조건 범위가 합계 범위로 사용됩니다  ·  F4 → $ 절대참조</BLine>
+        <BLine color={C.blue} bold>합계 범위 생략 시 조건 범위가 합계 범위로 사용됩니다 · F4 → $ 절대참조</BLine>
       </BottomBar>
     </Wrap>
   );

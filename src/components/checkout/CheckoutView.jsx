@@ -14,7 +14,7 @@ const PRODUCTS = {
 
 // 결제수단 — 카드 일반결제 + KG이니시스 간편결제. requestPayment에 병합할 파라미터를 반환.
 const METHODS = [
-  { key: "CARD", label: "신용·체크카드", params: { payMethod: "CARD" } },
+  { key: "CARD", label: "신용 · 체크카드", params: { payMethod: "CARD" } },
   { key: "KAKAOPAY", label: "카카오페이", params: { payMethod: "EASY_PAY", easyPay: { easyPayProvider: "KAKAOPAY" } } },
   { key: "NAVERPAY", label: "네이버페이", params: { payMethod: "EASY_PAY", easyPay: { easyPayProvider: "NAVERPAY" } } },
   { key: "TOSSPAY", label: "토스페이", params: { payMethod: "EASY_PAY", easyPay: { easyPayProvider: "TOSSPAY" } } },
@@ -115,13 +115,13 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   async function startCheckout() {
     setMsg("");
     if (!supabase || !STORE_ID || !CHANNEL_KEY) {
-      setMsg("결제 설정이 아직 없습니다. docs/SETUP.md의 Supabase·포트원 키를 .env에 넣어주세요.");
+      setMsg("결제 설정이 아직 없습니다. docs/SETUP.md의 Supabase · 포트원 키를 .env에 넣어주세요.");
       return;
     }
     const ph = phone.replace(/[^0-9]/g, "");
     if (!name.trim() || ph.length < 10) { setMsg("이름과 휴대폰 번호를 입력해 주세요."); return; }
     const mail = email.trim();
-    if (isGuest && !/^\S+@\S+\.\S+$/.test(mail)) { setMsg("결제 영수증·계정에 쓸 이메일을 정확히 입력해 주세요."); return; }
+    if (isGuest && !/^\S+@\S+\.\S+$/.test(mail)) { setMsg("결제 영수증 · 계정에 쓸 이메일을 정확히 입력해 주세요."); return; }
 
     setBusy(true);
     try {
@@ -230,7 +230,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         {onBack && phase === "form" && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
 
         <div style={{ fontSize: 23, fontWeight: 700 }}>수강 결제</div>
-        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습·실습이 열립니다.</div>
+        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습 · 실습이 열립니다.</div>
 
         {/* 진행 단계 표시 (게스트 결제-우선 흐름) */}
         {isGuest && (
@@ -269,7 +269,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="이름" style={inp} />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="휴대폰 번호 (- 없이 숫자만)" inputMode="numeric" style={inp} />
-              {isGuest && <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일 (영수증·로그인 아이디)" style={inp} />}
+              {isGuest && <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일 (영수증 · 로그인 아이디)" style={inp} />}
             </div>
 
             <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
@@ -300,7 +300,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
               <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="비밀번호 (6자 이상)" style={inp} />
               <label style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 6, fontSize: 13, color: UI.mut }}>
                 <input type="checkbox" checked={termsAgree} onChange={(e) => setTermsAgree(e.target.checked)} />
-                <span>[필수] 이용약관 및 개인정보 수집·이용에 동의합니다.</span>
+                <span>[필수] 이용약관 및 개인정보 수집 · 이용에 동의합니다.</span>
               </label>
               <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: UI.mut }}>
                 <input type="checkbox" checked={marketingAgree} onChange={(e) => setMarketingAgree(e.target.checked)} />

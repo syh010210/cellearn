@@ -19,14 +19,14 @@ export function DatetimeBasicDiagram() {
 
   return (
     <Wrap>
-      <Title>날짜·시간 자동 입력 및 단위 추출 함수</Title>
+      <Title>날짜 · 시간 자동 입력 및 단위 추출 함수</Title>
       <Subtitle>TODAY / NOW / YEAR / MONTH / DAY</Subtitle>
 
       <div style={{ display: 'flex', gap: 16 }}>
         {/* Left panel */}
         <div style={{ flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
           <div style={{ color: C.amber, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            실시간 날짜·시간 반환
+            실시간 날짜 · 시간 반환
           </div>
 
           {/* Table */}
@@ -119,7 +119,7 @@ export function DatetimeBasicDiagram() {
 export function DatetimeComposeDiagram() {
   return (
     <Wrap>
-      <Title>시간 분해 및 날짜·시간 조합 함수</Title>
+      <Title>시간 분해 및 날짜 · 시간 조합 함수</Title>
       <Subtitle>HOUR / MINUTE / SECOND ←→ DATE / TIME</Subtitle>
 
       <div style={{ display: 'flex', gap: 16 }}>
@@ -165,7 +165,7 @@ export function DatetimeComposeDiagram() {
         {/* Right panel — compose */}
         <div style={{ flex: 1, marginLeft: 12, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
           <div style={{ color: C.green, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            흩어진 숫자 → 날짜·시간 조합
+            흩어진 숫자 → 날짜 · 시간 조합
           </div>
 
           {/* DATE card */}
@@ -221,7 +221,7 @@ export function DatetimeComposeDiagram() {
       <BottomBar>
         <BLine>분해: HOUR(시)/MINUTE(분)/SECOND(초)&nbsp;&nbsp;←→&nbsp;&nbsp;조합: DATE(연월일)/TIME(시분초)</BLine>
         <BLine color={C.blue} bold>
-          DATE/TIME은 각 숫자 인수를 엑셀 표준 날짜·시간 형식으로 조합합니다
+          DATE/TIME은 각 숫자 인수를 엑셀 표준 날짜 · 시간 형식으로 조합합니다
         </BLine>
       </BottomBar>
     </Wrap>
@@ -352,7 +352,7 @@ export function WorkdayDiagram() {
 
   return (
     <Wrap>
-      <Title>WORKDAY — 주말·공휴일 제외 근무일 계산</Title>
+      <Title>WORKDAY — 주말 · 공휴일 제외 근무일 계산</Title>
       <Subtitle>=WORKDAY(시작일, 근무일수, [공휴일범위]) → 완료 예정일 반환</Subtitle>
 
       <div style={{ display: 'flex', gap: 16 }}>
@@ -466,7 +466,7 @@ export function WorkdayDiagram() {
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 12, height: 12, borderRadius: '50%', background: C.purple }} />
-              <span style={{ color: C.textMuted, fontSize: 13 }}>토·일(주말)</span>
+              <span style={{ color: C.textMuted, fontSize: 13 }}>토 · 일(주말)</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.green, border: `2px solid ${C.greenLight}` }} />
@@ -477,7 +477,7 @@ export function WorkdayDiagram() {
       </div>
 
       <BottomBar>
-        <BLine>WORKDAY 핵심 — 주말(토·일) 자동 제외&nbsp;&nbsp;·&nbsp;&nbsp;주중 공휴일은 세 번째 인수로 지정</BLine>
+        <BLine>WORKDAY 핵심 — 주말(토 · 일) 자동 제외&nbsp;&nbsp;·&nbsp;&nbsp;주중 공휴일은 세 번째 인수로 지정</BLine>
         <BLine color={C.blue} bold>
           결과가 일련번호로 보이면: Ctrl+1 → 표시 형식 → 날짜 선택
         </BLine>

@@ -502,14 +502,14 @@ const EXPLAIN = [
       <><b>수식을 쓰기 전에, 조건부 서식이 조건을 어떻게 읽는지부터 봅니다.</b> 엑셀은 <b>선택한 범위의 첫 번째 셀</b>부터 <b style={{ color: CHG }}>{'B11 → C11 → … → H11 → B12 → … → H18'}</b> 순서로, <b>자동으로 복사하듯 행과 열을 옮겨 가며</b> 조건을 판정합니다.</>,
       <>이 문제의 조건은 "<b>판매액이 2,000,000 이상</b>"이고, 판매액은 <b>F열</b>에 들어 있습니다. 그래서 조건이 참인지 거짓인지 실제로 읽어 보는 칸은 <b style={{ color: CHG }}>{'F11 → F12 → … → F18'}</b>, 즉 <b>F열의 11행부터 18행까지</b>입니다. 그리고 <b>행 전체</b>에 서식을 지정해야 하므로, 조건이 참이면 서식이 입혀지는 범위는 <b style={{ color: CHG }}>11행부터 18행까지</b>입니다. <b>이 범위를 먼저 머릿속에 그리는 게 시작</b>입니다.</>,
       <><b>바뀌면 안 되는 것은 고정($), 바뀌어야 하는 것은 그대로 둡니다.</b> 위에서 봤듯 <b>F열은 바뀌면 안 되므로 <span style={{ color: FIX }}>$를 붙여 고정($F)</span></b> 하고, <b>행 번호(11~18)는 바뀌어야 하므로 <span style={{ color: CHG }}>$를 붙이지 않습니다</span></b>. 이렇게 <b>맨 윗행(11) 기준</b>으로 한 줄만 쓰면 <b>{'=$F11>=2000000'}</b> — "F열은 그대로 두고 행만 바꿔 가며 2,000,000 이상인지 물어봐" 라는 뜻이 됩니다. (문자 비교면 <b>{'=$F11="합격"'}</b> 처럼 큰따옴표)</>,
-      <><b>왜 이렇게 읽어야 하나 — 거꾸로 하면?</b> F에 $를 안 붙이면 <b>엑셀이 오른쪽으로 옮겨가며 조건을 확인하기 때문에</b> 참조가 <b style={{ color: C.redLight }}>G·H…로 밀려</b> 판매액이 아닌 엉뚱한 열을 읽고, 행까지 고정하면(<b style={{ color: C.redLight }}>{'$F$11'}</b>) 모든 행이 <b>11행 하나만</b> 읽어 결과가 전부 같아집니다. 그래서 <b>열만 고정($F11)</b> 이어야 합니다.</>,
+      <><b>왜 이렇게 읽어야 하나 — 거꾸로 하면?</b> F에 $를 안 붙이면 <b>엑셀이 오른쪽으로 옮겨가며 조건을 확인하기 때문에</b> 참조가 <b style={{ color: C.redLight }}>G · H…로 밀려</b> 판매액이 아닌 엉뚱한 열을 읽고, 행까지 고정하면(<b style={{ color: C.redLight }}>{'$F$11'}</b>) 모든 행이 <b>11행 하나만</b> 읽어 결과가 전부 같아집니다. 그래서 <b>열만 고정($F11)</b> 이어야 합니다.</>,
       <>참조 종류 — <b>$F11</b>(열만 고정) · <b>$F$11</b>(완전 고정) · <b>F$11</b>(행만 고정). 입력 중 <b>F4</b> 로 순환합니다.</>,
     ],
   },
   {
     title: '④ 서식 적용',
     lines: [
-      <><b>[서식]</b> 을 누르면 <b>[셀 서식]</b> 대화상자가 뜨고, 기본으로 <b>글꼴 탭</b>이 열립니다. 글꼴 탭에서 지정할 수 있는 서식은 <b>글꼴 스타일</b>(굵게·기울임꼴 등) · <b>밑줄</b> · <b>글꼴 색</b> 입니다.</>,
+      <><b>[서식]</b> 을 누르면 <b>[셀 서식]</b> 대화상자가 뜨고, 기본으로 <b>글꼴 탭</b>이 열립니다. 글꼴 탭에서 지정할 수 있는 서식은 <b>글꼴 스타일</b>(굵게 · 기울임꼴 등) · <b>밑줄</b> · <b>글꼴 색</b> 입니다.</>,
       <>단, 조건을 만족하는 <b>행 전체에 색을 채우는 것(채우기 색)</b>은 글꼴 탭에 없습니다. 채우기 색을 지정하려면 <b>[채우기] 탭</b>으로 옮겨 지정할 색상을 선택해야 합니다.</>,
       <><b>[확인]</b> 을 누르면 조건이 <b>참인 행 전체</b>에 지정한 서식이 적용됩니다.</>,
     ],
@@ -546,7 +546,7 @@ function StepStage({ slot }) {
       <div style={{ ...ttl, color: C.green }}>완료 ✓</div>
       <div style={{ fontSize: 13, color: C.text, lineHeight: 1.7 }}>
         판매액이 <b style={{ color: C.blueLight }}>2,000,000 이상</b>인 행이
-        <span style={{ background: FMT_FILL, color: FMT_TEXT, fontWeight: 700, fontStyle: 'italic', borderRadius: 4, padding: '1px 6px', margin: '0 3px' }}>기울임꼴·연한 파랑 채우기</span>
+        <span style={{ background: FMT_FILL, color: FMT_TEXT, fontWeight: 700, fontStyle: 'italic', borderRadius: 4, padding: '1px 6px', margin: '0 3px' }}>기울임꼴 · 연한 파랑 채우기</span>
         로 강조되었습니다.
       </div>
     </div>
@@ -890,7 +890,7 @@ function CFProblem({ n, cond, note, answers, registerActive }) {
     <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 16px', marginBottom: 12 }}>
       <div style={{ fontSize: 15, color: C.text, lineHeight: 1.7, marginBottom: 4 }}>
         <span style={{ color: C.amber, fontWeight: 800, marginRight: 8, fontSize: 13 }}>문제 {n}</span>
-        <b style={{ color: C.blueLight }}>[B11:H18]</b>에서 {cond} 행 전체에 <b style={{ fontStyle: 'italic' }}>기울임꼴</b>·<b style={{ color: C.blueLight }}>연한 파랑</b> 서식을 지정하는 조건식을 작성하시오.
+        <b style={{ color: C.blueLight }}>[B11:H18]</b>에서 {cond} 행 전체에 <b style={{ fontStyle: 'italic' }}>기울임꼴</b> · <b style={{ color: C.blueLight }}>연한 파랑</b> 서식을 지정하는 조건식을 작성하시오.
         {note && <span style={{ color: C.textMuted }}> {note}</span>}
       </div>
       <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 10 }}>

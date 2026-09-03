@@ -148,7 +148,7 @@ export function ScenarioExamProblem() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', margin: '14px 0 8px' }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: C.amberLight }}>풀이</span>
         <span style={{ fontSize: 13, color: C.textMuted }}>
-          이익률·순이익합계 <b>이름 정의</b> → [데이터]→[가상 분석]→[시나리오 관리자] → [추가]로 '이익률 증가'(35%)·'이익률 감소'(25%) → [요약] 결과 셀=순이익합계
+          이익률 · 순이익합계 <b>이름 정의</b> → [데이터]→[가상 분석]→[시나리오 관리자] → [추가]로 '이익률 증가'(35%)·'이익률 감소'(25%) → [요약] 결과 셀=순이익합계
         </span>
       </div>
 

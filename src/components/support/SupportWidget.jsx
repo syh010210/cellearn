@@ -6,7 +6,7 @@ import { UI } from "../../theme";
 const SUPPORT_EMAIL = "support@cellearn.kr";
 
 // 빠른 문의 주제 (누르면 메시지에 프리필)
-const QUICK = ["수강·결제 문의", "환불 문의", "학습/채점 오류", "기타 문의"];
+const QUICK = ["수강 · 결제 문의", "환불 문의", "학습/채점 오류", "기타 문의"];
 
 // 올해 말(프로모션 마감, 12/31)까지 남은 일수 — 매 분 갱신. 지난 경우 null.
 function useDday() {

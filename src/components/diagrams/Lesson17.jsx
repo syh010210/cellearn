@@ -31,8 +31,8 @@ const RESULT = [['사과', 24], ['배', 21]];
 
 const STEPS = [
   { label: '결과 영역 선택', desc: "결과가 나올 표의 '제목 행 + 왼쪽 열'을 함께 드래그해 선택합니다." },
-  { label: '통합 열기·함수', desc: '[데이터] → [데이터 도구] → [통합]. 사용할 함수(여기서는 합계)를 고릅니다.' },
-  { label: '참조 영역 추가', desc: '표1·표2·표3의 데이터를 제목과 함께 드래그해 [추가]로 하나씩 넣습니다.' },
+  { label: '통합 열기 · 함수', desc: '[데이터] → [데이터 도구] → [통합]. 사용할 함수(여기서는 합계)를 고릅니다.' },
+  { label: '참조 영역 추가', desc: '표1 · 표2 · 표3의 데이터를 제목과 함께 드래그해 [추가]로 하나씩 넣습니다.' },
   { label: "'첫 행'·'왼쪽 열' 체크", desc: "두 옵션을 반드시 체크 → [확인]. 항목 이름을 기준으로 고유값끼리 합쳐집니다." },
 ];
 
@@ -68,7 +68,7 @@ export function ConsolidateAnim() {
   return (
     <Wrap>
       <Title>데이터 통합 — 여러 표를 하나로</Title>
-      <Subtitle>흩어진 표들을 항목 이름 기준으로 모아 합계·평균·최대·최소를 한 표에 계산합니다</Subtitle>
+      <Subtitle>흩어진 표들을 항목 이름 기준으로 모아 합계 · 평균 · 최대 · 최소를 한 표에 계산합니다</Subtitle>
 
       <div style={{ textAlign: 'center', fontSize: 13, color: C.textDim, marginBottom: 8 }}>👇 단계를 눌러 진행해 보세요</div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>
@@ -161,7 +161,7 @@ export function ConsolidateExamProblem() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: C.amberLight }}>풀이</span>
         <span style={{ fontSize: 13, color: C.textMuted }}>
-          [표4] 제목행+왼쪽열 선택 → [데이터]→[통합] → 함수 <b>합계</b> → 표1·표2·표3을 제목까지 [추가] → <b>'첫 행'·'왼쪽 열' 체크</b> → 확인
+          [표4] 제목행+왼쪽열 선택 → [데이터]→[통합] → 함수 <b>합계</b> → 표1 · 표2 · 표3을 제목까지 [추가] → <b>'첫 행'·'왼쪽 열' 체크</b> → 확인
         </span>
       </div>
 
@@ -176,7 +176,7 @@ export function ConsolidateWildcardDiagram() {
   const rows = [
     ['*교육과', "'교육과'로 끝나는 모든 값", '과학교육과, 체육교육과 …'],
     ['교육과*', "'교육과'로 시작하는 모든 값", '교육과1반, 교육과심화 …'],
-    ['*교육과*', "'교육과'를 포함하는 모든 값", '앞·뒤·가운데 어디든'],
+    ['*교육과*', "'교육과'를 포함하는 모든 값", '앞 · 뒤 · 가운데 어디든'],
     ['??교육과', "'교육과'로 끝나며 정확히 5글자", '체육교육과(O), 과학교육과(X)'],
   ];
   return (

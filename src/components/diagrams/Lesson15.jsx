@@ -31,7 +31,7 @@ function StepChip({ n, label, active, done, onClick }) {
 
 const STEPS = [
   { label: '① 결과 수식 연동', desc: "모서리(제목 행 × 왼쪽 열이 만나는 칸)에 만기액 결과 수식 '=B2'를 연동합니다." },
-  { label: '② 범위 선택', desc: '결과 수식이 있는 모서리부터 표 전체(기간·이율·빈 칸)를 드래그해 선택합니다.' },
+  { label: '② 범위 선택', desc: '결과 수식이 있는 모서리부터 표 전체(기간 · 이율 · 빈 칸)를 드래그해 선택합니다.' },
   { label: '③ 데이터 표 실행', desc: '[데이터] → [예측] → [가상 분석] → [데이터 표]를 엽니다.' },
   { label: '④ 입력 셀 지정', desc: '행 입력 셀 = 기간(가로) 원본, 열 입력 셀 = 이율(세로) 원본을 선택 → 확인.' },
 ];
@@ -50,7 +50,7 @@ export function DataTableTwoVarAnim() {
   return (
     <Wrap>
       <Title>데이터 표 — 두 변수(기간 × 이율)로 만기액 예측</Title>
-      <Subtitle>결과 수식을 모서리에 연동하고, 행·열 입력 셀만 지정하면 표 전체가 자동으로 채워집니다</Subtitle>
+      <Subtitle>결과 수식을 모서리에 연동하고, 행 · 열 입력 셀만 지정하면 표 전체가 자동으로 채워집니다</Subtitle>
 
       <div style={{ textAlign: 'center', fontSize: 13, color: C.textDim, marginBottom: 8 }}>👇 단계를 눌러 진행해 보세요</div>
       <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 12 }}>

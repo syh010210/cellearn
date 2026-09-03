@@ -57,7 +57,7 @@
         {
           "type": "image",
           "url": "/images/stat-rank.svg",
-          "alt": "RANK.EQ·RANK.AVG 동점 순위 처리 비교"
+          "alt": "RANK.EQ · RANK.AVG 동점 순위 처리 비교"
         },
         {
           "type": "text",
@@ -66,7 +66,7 @@
         {
           "type": "image",
           "url": "/images/stat-largesmall.svg",
-          "alt": "LARGE·SMALL K번째 값 추출"
+          "alt": "LARGE · SMALL K번째 값 추출"
         }
       ],
       "practice": {
@@ -111,7 +111,7 @@
         {
           "type": "image",
           "url": "/images/stat-count.svg",
-          "alt": "COUNT·COUNTA·COUNTBLANK — 같은 범위에서 세는 기준 비교"
+          "alt": "COUNT · COUNTA · COUNTBLANK — 같은 범위에서 세는 기준 비교"
         }
       ],
       "practice": {
@@ -171,7 +171,7 @@
         {
           "type": "image",
           "url": "/images/stat-condcount.svg",
-          "alt": "COUNTIF·AVERAGEIF — 조건에 맞는 행만 필터링하여 집계"
+          "alt": "COUNTIF · AVERAGEIF — 조건에 맞는 행만 필터링하여 집계"
         }
       ],
       "practice": {
@@ -229,7 +229,7 @@
         "COUNTIF"
       ],
       "answer": 2,
-      "explanation": "단일 조건 함수(SUMIF, AVERAGEIF)는 계산 범위가 마지막 인수이지만, 다중 조건 함수(SUMIFS, AVERAGEIFS)는 조건 범위·조건 쌍이 계속 추가될 수 있어 계산 범위가 가장 첫 번째 인수로 옵니다."
+      "explanation": "단일 조건 함수(SUMIF, AVERAGEIF)는 계산 범위가 마지막 인수이지만, 다중 조건 함수(SUMIFS, AVERAGEIFS)는 조건 범위 · 조건 쌍이 계속 추가될 수 있어 계산 범위가 가장 첫 번째 인수로 옵니다."
     },
     {
       "id": 3,
@@ -317,7 +317,7 @@
     },
     {
       "id": 10,
-      "question": "COUNTIFS·AVERAGEIFS에서 '급여가 평균보다 큰'처럼 함수 결과를 조건으로 넣을 때 올바른 작성은?",
+      "question": "COUNTIFS · AVERAGEIFS에서 '급여가 평균보다 큰'처럼 함수 결과를 조건으로 넣을 때 올바른 작성은?",
       "options": [
         "\">AVERAGE(C2:C10)\"",
         "\">\"&AVERAGE(C2:C10)",

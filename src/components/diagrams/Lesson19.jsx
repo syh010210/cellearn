@@ -27,7 +27,7 @@ const STEPS = [
   { icon: '⌨', label: '② 작업 수행', color: C.amber,
     desc: '문제에서 시킨 작업(수식 입력 후 자동 채우기, 서식 적용 등)을 한 번에 정확히 수행합니다.' },
   { icon: '⏹', label: '③ 기록 중지', color: C.green,
-    desc: '[기록 중지]를 눌러 끝냅니다. 이제 이 매크로를 도형·단추에 연결하면 클릭으로 실행됩니다.' },
+    desc: '[기록 중지]를 눌러 끝냅니다. 이제 이 매크로를 도형 · 단추에 연결하면 클릭으로 실행됩니다.' },
 ];
 
 export function MacroRecordAnim() {
@@ -88,7 +88,7 @@ export function MacroExamProblem() {
   };
   const macros = [
     { name: "'승점' 매크로", task: '[F3:F11]에 =승×3+무 입력 후 자동 채우기', shape: '십자형 도형에 연결', color: C.blue },
-    { name: "'서식' 매크로", task: '[A2:E2]에 글꼴색 파랑·채우기 노랑 적용', shape: '둥근 모서리 사각형에 연결', color: C.purple },
+    { name: "'서식' 매크로", task: '[A2:E2]에 글꼴색 파랑 · 채우기 노랑 적용', shape: '둥근 모서리 사각형에 연결', color: C.purple },
   ];
   return (
     <Wrap>
@@ -127,7 +127,7 @@ export function MacroConnectDiagram() {
   const cautions = [
     ['저장 위치는 ‘현재 통합 문서’', '개인용 매크로 통합 문서로 저장하면 채점이 안 됩니다.'],
     ['기록 전 표 밖 셀 선택', '표 안에서 시작하면 그 클릭까지 기록돼 결과가 어긋날 수 있습니다.'],
-    ['불필요한 클릭 금지', '화면 이동·헛클릭도 모두 녹화되니 필요한 작업만 한 번에.'],
+    ['불필요한 클릭 금지', '화면 이동 · 헛클릭도 모두 녹화되니 필요한 작업만 한 번에.'],
     ['실수하면 삭제 후 재기록', '[매크로] 목록에서 잘못된 매크로를 삭제하고 다시 기록합니다.'],
   ];
   return (

@@ -167,7 +167,7 @@ export function StatRankDiagram() {
         <div style={{ marginBottom: 8 }}><b style={{ color: C.blueLight }}>1 = 오름차순</b> — 작은 값이 1등. 예) 달리기 기록이 빠른(=기록이 작은) 순으로 순위를 매길 때</div>
         <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>참조범위를 절대참조($)로 고정하는 이유</div>
         <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다.</div>
-        <div>자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
+        <div>자동 채우기 · 복사를 하지 않는다면 고정할 필요가 없습니다.</div>
       </div>
     </Wrap>
   );

@@ -123,7 +123,7 @@ export default function ExamView() {
       {/* 분석작업 구성 (택2) */}
       <div style={card}>
         <div style={{ fontWeight: 700, color: UI.ink, marginBottom: 4 }}>분석작업 — 유형 2개 선택</div>
-        <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 12 }}>선택한 2개가 분석작업-1·2로 출제됩니다. (미선택 시 분석작업 제외)</div>
+        <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 12 }}>선택한 2개가 분석작업-1 · 2로 출제됩니다. (미선택 시 분석작업 제외)</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           {ANALYSIS_SUBTYPES.map((s) => {
             const avail = analysisSubs.find((a) => a.key === s.key)?.ready;
@@ -144,7 +144,7 @@ export default function ExamView() {
         <div style={{ fontWeight: 700, color: UI.ink, marginBottom: 10 }}>매크로 · 차트</div>
         <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, opacity: macroReady ? 1 : 0.5 }}>
           <input type="checkbox" checked={incMacro && macroReady} disabled={!macroReady} onChange={(e) => setIncMacro(e.target.checked)} />
-          <span>매크로작업 포함 <span style={{ fontSize: 12, color: UI.mut }}>(.xlsm 저장·제출)</span></span>
+          <span>매크로작업 포함 <span style={{ fontSize: 12, color: UI.mut }}>(.xlsm 저장 · 제출)</span></span>
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: 8, opacity: chartReady ? 1 : 0.5 }}>
           <input type="checkbox" checked={incChart && chartReady} disabled={!chartReady} onChange={(e) => setIncChart(e.target.checked)} />

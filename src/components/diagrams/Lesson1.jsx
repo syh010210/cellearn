@@ -325,7 +325,7 @@ export function AbsoluteRefDiagram() {
   return (
     <Wrap>
       <Title>절대 참조: $ 기호로 셀 주소를 고정하는 방법</Title>
-      <Subtitle>비율·단가처럼 항상 같은 셀을 참조해야 할 때 $ 기호를 붙여 고정합니다</Subtitle>
+      <Subtitle>비율 · 단가처럼 항상 같은 셀을 참조해야 할 때 $ 기호를 붙여 고정합니다</Subtitle>
 
       <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
         {/* Left panel: wrong */}
@@ -436,7 +436,7 @@ export function MixedRefDiagram() {
             원본 수식 {'=$A2*B$1'}
           </div>
           <div style={{ color: C.blueLight, fontSize: 15 }}>
-            B2 셀에 입력 후 오른쪽·아래 방향으로 자동 채우기
+            B2 셀에 입력 후 오른쪽 · 아래 방향으로 자동 채우기
           </div>
         </div>
 
@@ -513,7 +513,7 @@ export function MixedRefDiagram() {
 
       <BottomBar>
         <BLine>{'$A(A열 고정) + $1(1행 고정) → B, C, D열과 2, 3, 4행은 자동 이동'}</BLine>
-        <BLine>{'B2 셀 하나에 =$A2*B$1 입력 → 오른쪽·아래 전체를 한 번에 채울 수 있습니다'}</BLine>
+        <BLine>{'B2 셀 하나에 =$A2*B$1 입력 → 오른쪽 · 아래 전체를 한 번에 채울 수 있습니다'}</BLine>
       </BottomBar>
     </Wrap>
   );

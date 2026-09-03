@@ -248,13 +248,13 @@ function HeroCarousel() {
 }
 
 const FAQS = [
-  { q: "PC에서만 학습할 수 있나요?", a: "개념 학습·실습·채점 기능은 PC(웹 브라우저)에서 이용합니다. 랜딩·커리큘럼·수강료 안내는 모바일에서도 볼 수 있어요." },
-  { q: "수강 기간은 얼마나 되나요?", a: "결제한 급수를 올해 말까지 무제한으로 이용합니다. 기간 내에는 모든 차시·실습·복습·실전 모드를 자유롭게 반복할 수 있어요." },
+  { q: "PC에서만 학습할 수 있나요?", a: "개념 학습 · 실습 · 채점 기능은 PC(웹 브라우저)에서 이용합니다. 랜딩 · 커리큘럼 · 수강료 안내는 모바일에서도 볼 수 있어요." },
+  { q: "수강 기간은 얼마나 되나요?", a: "결제한 급수를 올해 말까지 무제한으로 이용합니다. 기간 내에는 모든 차시 · 실습 · 복습 · 실전 모드를 자유롭게 반복할 수 있어요." },
   { q: "급수는 어떻게 선택하나요?", a: `결제 시 2급 또는 1급 중 하나를 선택합니다. 2급은 ${SCHEDULE.grade2Soon}, 1급은 ${SCHEDULE.grade1Month}에 오픈 예정입니다.` },
   { q: "실습은 어떻게 채점되나요?", a: "결과값이 아니라 셀에 입력한 수식 자체를 셀 단위로 비교해 정오답을 가립니다. 실제 시험처럼 수식을 정확히 써야 정답으로 인정됩니다." },
   { q: "다음 차시는 어떻게 열리나요?", a: "하루치 진도를 마친 뒤, 사전 점검 세션(누적 퀴즈 오답 재시험 + 누적 실습 오답 엑셀)을 모두 통과하면 다음 날 차시가 열립니다." },
   { q: "실전 모드는 무엇인가요?", a: "전 차시를 완주하면 열리는 모드로, 최근 기출 유형의 문제를 원하는 주제로 생성해 원하는 만큼 풀 수 있습니다. 시험 직전 감각 유지에 좋습니다." },
-  { q: "환불이 되나요?", a: "환불·청약철회는 이용약관 및 환불정책에 따릅니다. 자세한 규정은 하단 정책 페이지를 참고해 주세요." },
+  { q: "환불이 되나요?", a: "환불 · 청약철회는 이용약관 및 환불정책에 따릅니다. 자세한 규정은 하단 정책 페이지를 참고해 주세요." },
 ];
 
 function FaqSection() {
@@ -308,7 +308,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
     { Icon: Download, title: "실습 파일 작성", desc: "실제 시험과 같은 형식의 엑셀 파일을 내려받아 직접 문제를 풉니다." },
     { Icon: Upload, title: "업로드 자동 채점", desc: "작성한 파일을 올리면 셀 단위로 수식까지 비교해 즉시 채점됩니다." },
     { Icon: RefreshCw, title: "복습 퀴즈", desc: "차시를 마치며 객관식 퀴즈로 오늘 배운 개념을 한 번 더 점검합니다." },
-    { Icon: XCircle, title: "오답노트 적립", desc: "실습·퀴즈에서 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
+    { Icon: XCircle, title: "오답노트 적립", desc: "실습 · 퀴즈에서 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
   ];
 
   const funcs = [
@@ -385,11 +385,11 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
         <div style={{ display: "flex", gap: 48, alignItems: "stretch", flexWrap: "wrap" }}>
           <div style={{ flex: "1 1 400px", minWidth: 300, display: "flex", flexDirection: "column" }}>
             <p style={{ color: UI.ink, fontSize: 20, lineHeight: 1.65, margin: "0 0 18px", fontWeight: 500 }}>
-              지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.
+              지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.<br />
               {SCHEDULE.grade2Open}, 컴활 2급 실기 클래스가 열립니다.
             </p>
             <p style={{ color: UI.mut, fontSize: 16.5, lineHeight: 1.75, margin: "0 0 30px" }}>
-              강의를 보기만 하는 학습이 아니라 — 직접 셀에 수식을 입력하고,
+              강의를 보기만 하는 학습이 아니라 직접 셀에 수식을 입력하고,
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
@@ -401,7 +401,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
             </div>
             {isMobile && (
               <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
-                ※ 수업은 PC에서만 수강할 수 있어요. (개념 학습·실습·채점)
+                ※ 수업은 PC에서만 수강할 수 있어요. (개념 학습 · 실습 · 채점)
               </div>
             )}
           </div>
@@ -465,7 +465,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               먼저 전 차시 <b style={{ color: UI.ink }}>퀴즈 오답</b>이 오답노트에서 모여 다시 출제되고, 이를 모두 맞혀야 합니다.
             </p>
             <p style={{ color: UI.mut, fontSize: 15.5, lineHeight: 1.75, margin: "0 0 24px" }}>
-              이어서 전 차시 <b style={{ color: UI.ink }}>실습에서 틀린 문제</b>만 모은 엑셀 파일을 풀어 제출·채점받습니다.
+              이어서 전 차시 <b style={{ color: UI.ink }}>실습에서 틀린 문제</b>만 모은 엑셀 파일을 풀어 제출 · 채점받습니다.
               퀴즈와 실습 두 복습을 모두 통과해야 오늘 차시가 잠금 해제됩니다.
               약한 유형은 익힐 때까지 반복해 만나므로, 진도만 나가고 잊어버리는 일이 없습니다.
             </p>
@@ -500,7 +500,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
                 <Unlock size={18} strokeWidth={1.5} color={UI.lime} style={{ flexShrink: 0 }} />
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>오늘 차시 잠금 해제</div>
-                  <div style={{ fontSize: 12.5, color: UI.invMut, marginTop: 2 }}>퀴즈·실습 두 복습을 모두 통과</div>
+                  <div style={{ fontSize: 12.5, color: UI.invMut, marginTop: 2 }}>퀴즈 · 실습 두 복습을 모두 통과</div>
                 </div>
               </div>
               {/* 잠긴 다음 차시 */}
@@ -558,8 +558,8 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               진도율과 정답률이 차시별로 쌓이기 때문에, 감이 아니라 데이터로 내 상태를 확인합니다.
             </p>
             {[
-              ["차시별 진도율·정답률 추적", "지금 어디까지 왔는지, 계획대로 가고 있는지 대시보드에서 한눈에 봅니다."],
-              ["취약 유형 자동 표시", "오답이 쌓이는 함수·유형이 드러나 어디를 더 풀어야 할지 명확해집니다."],
+              ["차시별 진도율 · 정답률 추적", "지금 어디까지 왔는지, 계획대로 가고 있는지 대시보드에서 한눈에 봅니다."],
+              ["취약 유형 자동 표시", "오답이 쌓이는 함수 · 유형이 드러나 어디를 더 풀어야 할지 명확해집니다."],
               ["수식 문자열까지 정확한 채점", "결과값이 아니라 입력한 수식을 셀 단위로 비교해 정오답을 가립니다."],
             ].map(([t, d]) => (
               <div key={t} style={{ display: "flex", gap: 14, marginBottom: 18 }}>
@@ -704,7 +704,7 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               컴활 출제 함수를<br />자체 엔진으로 구현
             </h2>
             <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.7, margin: "0 0 22px" }}>
-              외부 라이브러리 없이 만든 수식 엔진이 참조·재계산·오류 표현까지 실제 엑셀처럼 처리합니다. 컴활 실기 출제 범위 함수를 그대로 실습하세요.
+              외부 라이브러리 없이 만든 수식 엔진이 참조 · 재계산 · 오류 표현까지 실제 엑셀처럼 처리합니다. 컴활 실기 출제 범위 함수를 그대로 실습하세요.
             </p>
             <Btn variant="dark" onClick={onStart}>학습 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
           </div>
