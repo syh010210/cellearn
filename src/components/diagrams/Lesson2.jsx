@@ -326,7 +326,7 @@ export function StringCombineDiagram() {
 
   return (
     <Wrap>
-      <Title>{'& 연산자 · CONCAT — 문자열 연결'}</Title>
+      <Title>{'& 연산자 — 문자열 연결'}</Title>
       <Subtitle>
         {'& 연산자로 텍스트·셀·함수를 이어 붙일 수 있습니다. 텍스트는 반드시 큰따옴표(" ")로 감쌉니다'}
       </Subtitle>
@@ -355,25 +355,7 @@ export function StringCombineDiagram() {
             </div>
           </div>
         ))}
-
-        {/* CONCAT info box */}
-        <Card bg="#0c2344" border="#3b82f6" bw={2} style={{ marginTop: 6 }}>
-          <div style={{ fontWeight: 700, fontSize: 16, color: C.blue, textAlign: 'center', marginBottom: 8 }}>
-            CONCAT 함수 — 셀 범위 전체를 한 번에 연결
-          </div>
-          <div style={{ fontSize: 15, color: C.blueLight, textAlign: 'center', marginBottom: 6 }}>
-            {'=CONCAT(A1:A3)  →  A1, A2, A3의 내용을 차례로 이어 붙임'}
-          </div>
-          <div style={{ fontSize: 15, color: C.textDim, textAlign: 'center' }}>
-            {'& 연산자는 셀/값 하나씩  /  CONCAT 함수는 셀 범위 전체를 한 번에 처리'}
-          </div>
-        </Card>
       </div>
-
-      <BottomBar>
-        <BLine>{'=LEFT(텍스트, 개수)  ·  =MID(텍스트, 시작위치, 개수)  ·  =RIGHT(텍스트, 개수)'}</BLine>
-        <BLine>{'※ & 연산자로 텍스트를 이어 붙일 때, 숫자를 텍스트와 연결하면 자동으로 텍스트로 변환됩니다'}</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
