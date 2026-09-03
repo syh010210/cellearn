@@ -328,7 +328,7 @@ export function StringCombineDiagram() {
     <Wrap>
       <Title>{'& 연산자 — 문자열 연결'}</Title>
       <Subtitle>
-        {'& 연산자로 텍스트·셀·함수를 이어 붙일 수 있습니다. 텍스트는 반드시 큰따옴표(" ")로 감쌉니다'}
+        {'텍스트는 반드시 큰따옴표(" ")로 감쌉니다'}
       </Subtitle>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
