@@ -34,6 +34,15 @@ export const AVERAGE = (args) => {
   return nums.reduce((a, b) => a + b, 0) / nums.length;
 };
 
+export const MEDIAN = (args) => {
+  const nums = numbersOnly(args);
+  if (isErrorValue(nums)) return nums;
+  if (nums.length === 0) return makeError(ERRORS.NUM);
+  const sorted = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+};
+
 export const COUNT = (args) => {
   let c = 0;
   for (const a of args) {
@@ -49,6 +58,16 @@ export const COUNTA = (args) => {
   for (const a of args) {
     for (const v of flatten(a)) {
       if (v !== undefined && v !== null && v !== '') c++;
+    }
+  }
+  return c;
+};
+
+export const COUNTBLANK = (args) => {
+  let c = 0;
+  for (const a of args) {
+    for (const v of flatten(a)) {
+      if (v === undefined || v === null || v === '') c++;
     }
   }
   return c;
@@ -226,6 +245,20 @@ export const RANK_EQ = ([num, range, order]) => {
   const idx = sorted.indexOf(n);
   if (idx === -1) return makeError(ERRORS.NA);
   return idx + 1;
+};
+
+// 동점이면 해당 순위들의 평균을 부여
+export const RANK_AVG = ([num, range, order]) => {
+  const n = toNumber(num);
+  if (isErrorValue(n)) return n;
+  const nums = flatten(range).filter((v) => typeof v === 'number');
+  const desc = !order || toNumber(order) === 0;
+  const sorted = [...nums].sort((a, b) => (desc ? b - a : a - b));
+  const first = sorted.indexOf(n);
+  if (first === -1) return makeError(ERRORS.NA);
+  let last = first;
+  while (last + 1 < sorted.length && sorted[last + 1] === n) last++;
+  return ((first + 1) + (last + 1)) / 2;
 };
 
 export const SUMPRODUCT = (args) => {

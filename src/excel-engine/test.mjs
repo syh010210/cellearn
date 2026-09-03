@@ -126,6 +126,16 @@ function check(label, actual, expected) {
 
   s.setCellInput('E7', '=MOD(10,3)');
   check('MOD', s.getDisplayValue('E7'), 1);
+
+  s.setCellInput('E8', '=MEDIAN(C1:C3)');
+  check('MEDIAN', s.getDisplayValue('E8'), 90);
+
+  s.setCellInput('E9', '=RANK.AVG(C1,C1:C3,0)');
+  check('RANK.AVG 동점', s.getDisplayValue('E9'), 1.5);
+
+  s.setCellInput('F1', '90'); s.setCellInput('F3', '80');
+  s.setCellInput('G1', '=COUNTBLANK(F1:F4)');
+  check('COUNTBLANK', s.getDisplayValue('G1'), 2);
 }
 
 // ---- 텍스트 함수 ----
@@ -140,6 +150,12 @@ function check(label, actual, expected) {
   check('LEN', s.getDisplayValue('B3'), 7);
   s.setCellInput('B4', '="점수: "&90&"점"');
   check('문자열 연결', s.getDisplayValue('B4'), '점수: 90점');
+
+  s.setCellInput('C1', 'Excel Exam');
+  s.setCellInput('C2', '=SEARCH("e",C1)');
+  check('SEARCH 대소문자무시', s.getDisplayValue('C2'), 1);
+  s.setCellInput('C3', '=PROPER("hello world")');
+  check('PROPER', s.getDisplayValue('C3'), 'Hello World');
 }
 
 // ---- 찾기/참조 함수 ----

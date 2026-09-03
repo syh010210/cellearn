@@ -13,8 +13,10 @@ export const FUNCTIONS = {
   // 수학/통계
   SUM: math.SUM,
   AVERAGE: math.AVERAGE,
+  MEDIAN: math.MEDIAN,
   COUNT: math.COUNT,
   COUNTA: math.COUNTA,
+  COUNTBLANK: math.COUNTBLANK,
   SUMIF: math.SUMIF,
   SUMIFS: math.SUMIFS,
   COUNTIF: math.COUNTIF,
@@ -32,6 +34,7 @@ export const FUNCTIONS = {
   LARGE: math.LARGE,
   SMALL: math.SMALL,
   'RANK.EQ': math.RANK_EQ,
+  'RANK.AVG': math.RANK_AVG,
   SUMPRODUCT: math.SUMPRODUCT,
 
   // 텍스트
@@ -47,6 +50,8 @@ export const FUNCTIONS = {
   REPLACE: text.REPLACE,
   SUBSTITUTE: text.SUBSTITUTE,
   FIND: text.FIND,
+  SEARCH: text.SEARCH,
+  PROPER: text.PROPER,
   TEXT: text.TEXT_FN,
 
   // 날짜

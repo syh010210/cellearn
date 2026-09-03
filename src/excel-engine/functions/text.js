@@ -90,6 +90,20 @@ export const FIND = ([findText, withinText, start]) => {
   return idx + 1;
 };
 
+// SEARCH: FIND와 같지만 대소문자를 구분하지 않는다
+export const SEARCH = ([findText, withinText, start]) => {
+  const f = toStr(findText).toLowerCase();
+  const w = toStr(withinText).toLowerCase();
+  const st = start === undefined ? 1 : toNumber(start);
+  if (isErrorValue(st)) return st;
+  const idx = w.indexOf(f, st - 1);
+  if (idx === -1) return makeError(ERRORS.VALUE);
+  return idx + 1;
+};
+
+// PROPER: 각 단어(영문)의 첫 글자만 대문자로. 한글은 영향 없음
+export const PROPER = ([text]) => toStr(text).replace(/\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+
 // TEXT 함수: 컴활에서 자주 쓰는 기본 숫자 서식 코드 지원
 export const TEXT_FN = ([value, format]) => {
   const n = toNumber(value);
