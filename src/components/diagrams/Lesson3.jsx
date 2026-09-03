@@ -75,107 +75,100 @@ export function StatBasicDiagram() {
 // StatRankDiagram
 // ──────────────────────────────────────────────
 export function StatRankDiagram() {
-  const tableRows = [
-    { name: '김철수', score: 95, rank: '1', rankColor: C.green,  rankSize: 24, highlightName: true },
-    { name: '홍길동', score: 85, rank: '2', rankColor: C.amber,  rankSize: 20, highlightName: false },
-    { name: '박지수', score: 78, rank: '3', rankColor: C.amber,  rankSize: 20, highlightName: false },
-    { name: '이영희', score: 70, rank: '4', rankColor: C.amber,  rankSize: 20, highlightName: false },
+  const rankRows = [
+    { name: '김철수', score: 95, eq: '1', avg: '1',   hl: false },
+    { name: '홍길동', score: 85, eq: '2', avg: '2.5', hl: true  },
+    { name: '박지수', score: 78, eq: '4', avg: '4',   hl: false },
+    { name: '이영희', score: 85, eq: '2', avg: '2.5', hl: true  },
   ];
 
-  const largSmall = [
-    { value: 95, valueBg: '#0a2e1c', valueBorder: C.green,  valueColor: C.greenLight, label: '← LARGE( ,1)',   labelColor: C.green,       labelBold: false },
-    { value: 85, valueBg: C.blueCard, valueBorder: C.blueDim, valueColor: C.blue,      label: '← LARGE( ,2)  ★', labelColor: C.blue,        labelBold: true  },
-    { value: 78, valueBg: C.purpleCard, valueBorder: C.purple, valueColor: C.purpleLight, label: '← SMALL( ,2)  ★', labelColor: C.purple,    labelBold: true  },
-    { value: 70, valueBg: '#300a0a', valueBorder: C.red,    valueColor: C.redLight,   label: '← SMALL( ,1)',   labelColor: C.red,         labelBold: false },
-  ];
-
-  const cellStyle = (highlight) => ({
-    background: highlight ? '#0a2e1c' : C.bgDark,
-    border: `1px solid ${highlight ? C.green : C.border}`,
+  const th = {
+    background: C.blueCard, color: C.blueLight, border: `1px solid ${C.blueDim}`,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '8px 10px', fontSize: 16,
-    color: highlight ? C.greenLight : C.text,
-    fontWeight: highlight ? 700 : 400,
+    padding: '8px 6px', fontSize: 15, fontWeight: 700,
+  };
+  const td = (hl, extra = {}) => ({
+    background: hl ? '#0a2e1c' : C.bgDark, border: `1px solid ${hl ? C.green : C.border}`,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: '7px 6px', fontSize: 15,
+    color: hl ? C.greenLight : C.text, fontWeight: hl ? 700 : 400, ...extra,
   });
+
+  // 함수 비교 카드 — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값
+  const FuncCard = ({ name, syntax, desc, formula, value, color, valColor, bg, border }) => (
+    <div style={{
+      flex: 1, background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: 12,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, textAlign: 'center',
+    }}>
+      <div style={{ color, fontSize: 16, fontWeight: 700 }}>{name}</div>
+      <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
+      <div style={{ color, fontSize: 12.5, opacity: 0.82, lineHeight: 1.5 }}>{desc}</div>
+      <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.9 }}>{formula}</div>
+      <div style={{ color: valColor, fontSize: 24, fontWeight: 700 }}>{value}</div>
+    </div>
+  );
 
   return (
     <Wrap>
       <Title>순위·위치 함수: RANK.EQ · RANK.AVG · LARGE · SMALL</Title>
 
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Left: ranking table */}
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '160px 130px 120px' }}>
-            {/* Header */}
-            {['이름', '점수', 'RANK.EQ'].map(h => (
-              <div key={h} style={{
-                background: C.blueCard, color: C.blueLight,
-                border: `1px solid ${C.blueDim}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                padding: '10px 8px', fontSize: 16, fontWeight: 700,
-              }}>{h}</div>
-            ))}
-            {/* Rows */}
-            {tableRows.map((row) => (
-              [
-                <div key={`name-${row.name}`} style={cellStyle(row.highlightName)}>{row.name}</div>,
-                <div key={`score-${row.name}`} style={cellStyle(row.highlightName)}>{row.score}</div>,
-                <div key={`rank-${row.name}`} style={{
-                  ...cellStyle(false),
-                  color: row.rankColor, fontSize: row.rankSize, fontWeight: 700,
-                }}>{row.rank}</div>,
-              ]
-            ))}
-          </div>
+      {/* 순위 데이터 표 — 동점(홍길동·이영희 85점) */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '110px 80px 100px 100px' }}>
+          {['이름', '점수', 'RANK.EQ', 'RANK.AVG'].map(h => <div key={h} style={th}>{h}</div>)}
+          {rankRows.map(r => ([
+            <div key={`n${r.name}`} style={td(r.hl)}>{r.name}</div>,
+            <div key={`s${r.name}`} style={td(r.hl)}>{r.score}</div>,
+            <div key={`e${r.name}`} style={td(false, { color: C.amber, fontWeight: 700 })}>{r.eq}</div>,
+            <div key={`a${r.name}`} style={td(false, { color: C.blue, fontWeight: 700 })}>{r.avg}</div>,
+          ]))}
+        </div>
+      </div>
 
-          {/* Formula */}
-          <div style={{
-            background: C.bgDark, border: `1px solid ${C.border}`,
-            borderRadius: 6, padding: 8, marginTop: 8,
-            color: C.textMuted, fontSize: 14, textAlign: 'center', lineHeight: 1.7,
-          }}>
-            <div>=RANK.EQ(B2, $B$2:$B$5, 0) → 0=내림차순(높을수록 1등)</div>
-            <div>=RANK.AVG(값, 범위, 0) → 동점 시 순위 평균 부여</div>
+      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+        {/* 좌(넓게): RANK.EQ vs RANK.AVG */}
+        <div style={{ flex: 1.85 }}>
+          <div style={{ color: C.amber, fontSize: 15.5, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
+            RANK.EQ vs RANK.AVG — 동점(85점) 처리 비교
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <FuncCard
+              name="RANK.EQ" syntax="구문: =RANK.EQ(값, 범위, [정렬])"
+              desc="동점이면 최상위 순위 부여 (다음 순위 건너뜀)"
+              formula="=RANK.EQ(B3, $B$2:$B$5, 0)" value="= 2"
+              color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
+            />
+            <FuncCard
+              name="RANK.AVG" syntax="구문: =RANK.AVG(값, 범위, [정렬])"
+              desc="동점이면 순위들의 평균 부여"
+              formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= 2.5"
+              color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
+            />
           </div>
         </div>
 
-        {/* Vertical divider */}
-        <div style={{ width: 1, borderLeft: '1px dashed #334155', margin: '0 16px', alignSelf: 'stretch' }} />
-
-        {/* Right: LARGE/SMALL */}
+        {/* 우(좁게): LARGE vs SMALL */}
         <div style={{ flex: 1 }}>
-          <div style={{ color: C.blue, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 4 }}>
-            LARGE · SMALL 비교
+          <div style={{ color: C.purpleLight, fontSize: 15.5, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
+            LARGE vs SMALL
           </div>
-          <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, textAlign: 'center', marginBottom: 6 }}>
-            =LARGE(범위, K) / =SMALL(범위, K)
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <FuncCard
+              name="LARGE" syntax="=LARGE(범위, K)" desc="K번째로 큰 값"
+              formula="=LARGE(B2:B5, 2)" value="= 85"
+              color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
+            />
+            <FuncCard
+              name="SMALL" syntax="=SMALL(범위, K)" desc="K번째로 작은 값"
+              formula="=SMALL(B2:B5, 1)" value="= 78"
+              color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
+            />
           </div>
-          <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center', marginBottom: 12 }}>
-            내림차순 정렬: 95 → 85 → 78 → 70
-          </div>
-
-          {largSmall.map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-              <div style={{
-                width: 72, background: item.valueBg,
-                border: `2.5px solid ${item.valueBorder}`,
-                borderRadius: 6,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                minHeight: 44, fontSize: 24, fontWeight: 700, color: item.valueColor,
-              }}>
-                {item.value}
-              </div>
-              <div style={{ color: item.labelColor, fontSize: 15, fontWeight: item.labelBold ? 700 : 400 }}>
-                {item.label}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
 
       <BottomBar>
-        <BLine>=RANK.EQ(값, 범위, 0) → 높은 값이 1등  ·  =RANK.AVG: 동점 시 순위 평균 부여</BLine>
-        <BLine color={C.blue} bold>=LARGE(범위, k) → k번째로 큰 값  ·  =SMALL(범위, k) → k번째로 작은 값</BLine>
+        <BLine color={C.blue} bold>정렬기준 0 = 내림차순(높을수록 1등) · 참조범위는 절대참조($)로 고정</BLine>
       </BottomBar>
     </Wrap>
   );

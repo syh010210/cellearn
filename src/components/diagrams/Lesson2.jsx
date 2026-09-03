@@ -201,8 +201,8 @@ export function StringFindTrimDiagram() {
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
             <Card bg="#14532d" border="#22c55e" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, marginBottom: 4 }}>FIND</div>
-              <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
               <div style={{ fontWeight: 700, fontSize: 12.5, color: C.greenLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =FIND(찾을문자, 텍스트)</div>
+              <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =FIND("j","John_j")'}
               </div>
@@ -212,8 +212,8 @@ export function StringFindTrimDiagram() {
             </Card>
             <Card bg="#172554" border="#3b82f6" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight, marginBottom: 4 }}>SEARCH</div>
-              <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
               <div style={{ fontWeight: 700, fontSize: 12.5, color: C.blueLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =SEARCH(찾을문자, 텍스트)</div>
+              <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =SEARCH("J","John_j")'}
               </div>
