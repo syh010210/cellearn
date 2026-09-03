@@ -218,43 +218,62 @@ export function StatLargeSmallDiagram() {
 // StatCountDiagram
 // ──────────────────────────────────────────────
 export function StatCountDiagram() {
+  // 엑셀 A~D열, 1~5행 (1행 = 제목)
+  const grid = [
+    ['이름', '학년', '출석', '수강료'],
+    ['김민준', '초등학교 5학년', '출석', '100,000'],
+    ['이서연', '중학교 2학년', '', '150,000'],
+    ['박도윤', '고등학교 1학년', '', '200,000'],
+    ['최지우', '중학교 3학년', '출석', '200,000'],
+  ];
   return (
     <Wrap>
       <Title>개수 세기 함수: COUNT · COUNTA · COUNTBLANK</Title>
 
-      {/* 가로 데이터 표 (B2:B4) */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '40px repeat(3, 96px)' }}>
+      {/* 데이터 표 (A 이름 · B 학년 · C 출석 · D 수강료) */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '34px 92px 132px 66px 100px' }}>
           <div style={XL_HDR} />
-          {[2, 3, 4].map(r => <div key={r} style={XL_HDR}>{r}</div>)}
-          <div style={XL_HDR}>B</div>
-          <div style={xlCell({ bold: true, size: 18, color: C.blue })}>90</div>
-          <div style={xlCell({ bold: true, size: 16, color: C.orange })}>결시</div>
-          <div style={xlCell({ size: 14, color: C.textSlate })}>(빈칸)</div>
+          {['A', 'B', 'C', 'D'].map(c => <div key={c} style={XL_HDR}>{c}</div>)}
+          {grid.map((row, ri) => {
+            const isLabel = ri === 0;
+            return [
+              <div key={`rh${ri}`} style={XL_HDR}>{ri + 1}</div>,
+              ...row.map((v, ci) => {
+                const st = isLabel
+                  ? xlCell({ bg: C.blueCard, color: C.blueLight, bold: true, border: C.blueDim, size: 14 })
+                  : xlCell({ size: 14, color: ci === 3 ? C.text : C.textMuted, bold: ci === 3 });
+                return <div key={`c${ri}-${ci}`} style={st}>{v}</div>;
+              }),
+            ];
+          })}
         </div>
       </div>
-      <div style={{ textAlign: 'center', color: C.textDim, fontSize: 13.5, marginBottom: 14 }}>
-        90 = 숫자 · 결시 = 텍스트 · (빈칸) = 빈 셀
-      </div>
 
-      {/* FuncCards */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <FuncCard
-          name="COUNT" syntax="구문: =COUNT(범위)"
-          desc="숫자 셀만 셉니다 (90만 해당)"
-          formula="=COUNT(B2:B4)" value="= 1"
-          color={C.blue} valColor={C.blue} bg={C.blueCard} border={C.blueDim}
-        />
+        {/* COUNT — B(텍스트)와 D(숫자) 비교: 숫자만 셀 수 있음 */}
+        <div style={{ flex: 1, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+          <div style={{ color: C.blue, fontSize: 17, fontWeight: 700 }}>COUNT</div>
+          <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =COUNT(범위)</div>
+          <div style={{ color: C.blue, fontSize: 14, opacity: 0.85 }}>숫자가 든 셀만 셉니다</div>
+          <div style={{ marginTop: 2 }}>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.blue }}>=COUNT(B2:B5) <span style={{ color: C.redLight }}>= 0</span></div>
+            <div style={{ color: C.textDim, fontSize: 12.5, marginBottom: 6 }}>학년(B)은 텍스트 → 못 셈</div>
+            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.blue }}>=COUNT(D2:D5) <span style={{ color: C.greenLight }}>= 4</span></div>
+            <div style={{ color: C.textDim, fontSize: 12.5 }}>수강료(D)는 숫자 → 셈</div>
+          </div>
+        </div>
+
         <FuncCard
           name="COUNTA" syntax="구문: =COUNTA(범위)"
-          desc="비어있지 않은 셀 (90·결시)"
-          formula="=COUNTA(B2:B4)" value="= 2"
+          desc="비어있지 않은 모든 셀 (학년 B열)"
+          formula="=COUNTA(B2:B5)" value="= 4"
           color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
         />
         <FuncCard
           name="COUNTBLANK" syntax="구문: =COUNTBLANK(범위)"
-          desc="빈 셀만 셉니다 (빈칸)"
-          formula="=COUNTBLANK(B2:B4)" value="= 1"
+          desc="빈 셀만 셉니다 (출석 C열 · 3·4행)"
+          formula="=COUNTBLANK(C2:C5)" value="= 2"
           color={C.textMuted} valColor={C.text} bg={C.bg} border={C.textSlate}
         />
       </div>
