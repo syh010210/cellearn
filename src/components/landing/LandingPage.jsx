@@ -273,12 +273,12 @@ function FaqSection() {
                   onClick={() => setOpen(isOpen ? -1 : i)}
                   aria-expanded={isOpen}
                   aria-controls={`faq-panel-${i}`}
-                  style={{ width: "100%", textAlign: "left", background: isOpen ? UI.panelAlt : UI.surface, border: "none", padding: "18px 20px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontFamily: UI.font }}
+                  style={{ width: "100%", textAlign: "left", background: isOpen ? UI.panelAlt : UI.surface, border: "none", padding: isOpen ? "18px 20px 8px" : "18px 20px", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, fontFamily: UI.font }}
                 >
                   <span style={{ fontWeight: 700, fontSize: 15, color: UI.ink }}>{it.q}</span>
                   <ChevronDown size={18} strokeWidth={2} color={UI.mut} style={{ transform: isOpen ? "rotate(180deg)" : "none", transition: "transform .2s", flexShrink: 0 }} />
                 </button>
-                {isOpen && <div id={`faq-panel-${i}`} role="region" style={{ padding: "0 20px 18px", color: UI.mut, fontSize: 14, lineHeight: 1.75 }}>{it.a}</div>}
+                {isOpen && <div id={`faq-panel-${i}`} role="region" style={{ padding: "8px 20px 16px", color: UI.mut, fontSize: 14, lineHeight: 1.75 }}>{it.a}</div>}
               </div>
             );
           })}
