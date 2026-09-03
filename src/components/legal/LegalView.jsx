@@ -7,7 +7,6 @@ const mono = { fontFamily: UI.mono };
 
 // ─────────────────────────────────────────────────────────────
 // 사업자·서비스 정보 (단일 소스). 값이 비어 있으면 "—"(확인 필요)로 노출된다.
-// TODO(사용자 확인): companyName / ceo / address
 // ─────────────────────────────────────────────────────────────
 export const BUSINESS = {
   serviceName: "CellLearn",
@@ -16,7 +15,7 @@ export const BUSINESS = {
   bizNo: "189-56-01110",        // 사업자등록번호
   taxType: "간이과세자",         // 과세유형
   mailOrderNo: "",              // 통신판매업 신고번호 (간이과세자 → 신고 면제 대상, 요건 벗어나면 신고 후 입력)
-  address: "",                  // 사업장 소재지 (자택 또는 공유오피스 주소로 정정 후 입력)
+  address: "대구광역시 달서구 구마로 230, 105동 2304호", // 사업장 소재지
   tel: "",                      // 고객센터 전화 (온라인 고객센터로 대체)
   email: "support@cellearn.kr", // 고객센터 이메일
   domain: "cellearn.kr",

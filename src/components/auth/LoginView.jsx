@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { krAuthError } from "../../lib/authErrors";
 import { S } from "./authStyles";
 import PasswordInput from "./PasswordInput";
 
@@ -17,7 +18,7 @@ export default function LoginView({ onNeedAccount }) {
     setErr(""); setBusy(true);
     const { error } = await signIn({ email, password });
     setBusy(false);
-    if (error) setErr(error.message || "로그인에 실패했습니다.");
+    if (error) setErr(krAuthError(error, "로그인에 실패했습니다."));
   }
 
   return (

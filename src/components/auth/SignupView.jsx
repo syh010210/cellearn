@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { krAuthError } from "../../lib/authErrors";
 import { UI } from "../../theme";
 import { S } from "./authStyles";
 import MonthYearPicker from "./MonthYearPicker";
@@ -36,7 +37,7 @@ export default function SignupView({ onSwitch, presetGrade = "2급" }) {
     // 학습 과정은 눌러 들어온 CTA에 따라 자동 지정된다(폼에서 재선택하지 않음)
     const { error } = await signUp({ ...f, targetGrade: presetGrade });
     setBusy(false);
-    if (error) { setErr(error.message || "가입에 실패했습니다."); return; }
+    if (error) { setErr(krAuthError(error, "가입에 실패했습니다.")); return; }
     setDone(true);
   }
 

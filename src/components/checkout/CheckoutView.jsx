@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import * as PortOne from "@portone/browser-sdk/v2";
 import { useAuth } from "../../context/AuthContext";
+import { krAuthError } from "../../lib/authErrors";
 import { supabase } from "../../lib/supabase";
 import { UI } from "../../theme";
 import PasswordInput from "../auth/PasswordInput";
@@ -177,7 +178,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
       if (m.includes("email") && (m.includes("send") || m.includes("confirmation"))) {
         setMsg("결제는 정상 완료되었습니다. 다만 인증 메일 발송에 일시적 문제가 있어 계정 활성화가 지연되고 있어요. support@cellearn.kr 로 결제하신 이메일을 남겨 주시면 바로 처리해 드립니다.");
       } else {
-        setMsg(error.message || "계정 생성에 실패했습니다.");
+        setMsg(krAuthError(error, "계정 생성에 실패했습니다."));
       }
       return;
     }
@@ -197,7 +198,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
     if (otp.trim().length < 6) { setMsg("6자리 인증 코드를 입력해 주세요."); return; }
     setBusy(true);
     const { error } = await verifySignupOtp({ email: email.trim(), token: otp });
-    if (error) { setBusy(false); setMsg(error.message || "인증에 실패했습니다. 코드를 다시 확인해 주세요."); return; }
+    if (error) { setBusy(false); setMsg(krAuthError(error, "인증에 실패했습니다. 코드를 다시 확인해 주세요.")); return; }
     // 세션 발급됨(로그인 상태) → 결제 검증
     await finalize(paidId, grade);
   }
@@ -205,7 +206,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   async function resendCode() {
     setMsg("");
     const { error } = await resendSignupOtp({ email: email.trim() });
-    setMsg(error ? (error.message || "코드 재발송에 실패했습니다.") : "인증 코드를 다시 보냈습니다.");
+    setMsg(error ? krAuthError(error, "코드 재발송에 실패했습니다.") : "인증 코드를 다시 보냈습니다.");
   }
 
   const wrap = { minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "40px 24px", fontFamily: UI.font };
