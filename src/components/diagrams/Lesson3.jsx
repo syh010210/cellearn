@@ -6,10 +6,10 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } fro
 export function StatBasicDiagram() {
   const data = [80, 95, 70, 85, 75];
   const cards = [
-    { fn: 'AVERAGE', syntax: '=AVERAGE(범위)', desc: '합계 ÷ 개수',      example: '=AVERAGE(B2:B6)', result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
-    { fn: 'MEDIAN',  syntax: '=MEDIAN(범위)',  desc: '정렬 후 가운데 값', example: '=MEDIAN(B2:B6)',  result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
-    { fn: 'MAX',     syntax: '=MAX(범위)',     desc: '가장 큰 값',        example: '=MAX(B2:B6)',     result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
-    { fn: 'MIN',     syntax: '=MIN(범위)',     desc: '가장 작은 값',      example: '=MIN(B2:B6)',     result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
+    { fn: 'AVERAGE', syntax: '구문: =AVERAGE(범위)', desc: '범위 안의 숫자들의 평균', example: '=AVERAGE(B2:B6)', result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
+    { fn: 'MEDIAN',  syntax: '구문: =MEDIAN(범위)',  desc: '범위를 정렬한 가운데 값', example: '=MEDIAN(B2:B6)',  result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
+    { fn: 'MAX',     syntax: '구문: =MAX(범위)',     desc: '범위 안의 가장 큰 값',   example: '=MAX(B2:B6)',     result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
+    { fn: 'MIN',     syntax: '구문: =MIN(범위)',     desc: '범위 안의 가장 작은 값', example: '=MIN(B2:B6)',     result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
   ];
 
   const hdrCell = {
@@ -24,7 +24,7 @@ export function StatBasicDiagram() {
   return (
     <Wrap>
       <Title>기본 통계 함수: AVERAGE · MEDIAN · MAX · MIN</Title>
-      <Subtitle>예시 데이터 (B2:B6)</Subtitle>
+      <Subtitle>예시 데이터</Subtitle>
 
       {/* Data as a real Excel-like table — 열 머리 2~6, 행 머리 B */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
@@ -63,14 +63,9 @@ export function StatBasicDiagram() {
         ))}
       </div>
 
-      {/* MEDIAN note */}
-      <div style={{ textAlign: 'center', color: C.textDim, fontSize: 15, marginBottom: 4 }}>
-        MEDIAN 계산: 70 · 75 · [80] · 85 · 95  →  가운데 값 = 80
-      </div>
-
       <BottomBar>
         <BLine>=AVERAGE(범위)  ·  =MEDIAN(범위)  ·  =MAX(범위)  ·  =MIN(범위)</BLine>
-        <BLine color={C.blue} bold>※ 모두 숫자 범위 하나(예: B2:B6)를 인수로 받습니다</BLine>
+        <BLine color={C.blue} bold>모두 숫자 범위 하나(예: B2:B6)를 인수로 받습니다</BLine>
       </BottomBar>
     </Wrap>
   );
