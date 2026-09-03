@@ -20,8 +20,8 @@ export default function OTView({ onStart }) {
         </div>
       </div>
       <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.75, margin: "0 0 26px" }}>
-        컴활 2급 실기를 <b style={{ color: UI.ink }}>7일 완성</b>으로 설계했습니다. 하루하루 정해진 루틴을 그대로 따라오면
-        됩니다. 이 페이지만 한 번 읽어두면, 앞으로 무엇을 어떤 순서로 하는지 헷갈릴 일이 없습니다.
+        컴퓨터 활용능력 2급 실기 수업을 <b style={{ color: UI.ink }}>7일 완성</b>으로 설계했습니다. 하루하루 정해진 루틴을
+        그대로 따라오면 됩니다.
       </p>
 
       {/* ── 하루의 흐름 다이어그램 */}
@@ -34,12 +34,12 @@ export default function OTView({ onStart }) {
           <FlowArrow />
           <FlowPill icon={Upload} label="엑셀 실습" sub="저장 후 업로드" tone="teal" />
           <FlowArrow />
-          <FlowPill icon={PenLine} label="퀴즈" sub="오답 해설 확인" tone="teal" />
+          <FlowPill icon={PenLine} label="퀴즈" sub="오답은 해설 확인" tone="teal" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 16, padding: "10px 14px", background: UI.panelAlt, border: `1px dashed ${UI.line}`, borderRadius: UI.rMd }}>
           <Repeat size={16} strokeWidth={2} color={UI.teal} style={{ flexShrink: 0 }} />
           <span style={{ fontSize: 13.5, color: UI.mut, lineHeight: 1.6 }}>
-            이 흐름이 <b style={{ color: UI.ink }}>7일간 반복</b>됩니다. 단, <b style={{ color: UI.ink }}>첫날 첫 차시</b>는 되돌아볼 지난 수업이 없으므로 사전 점검 없이 바로 개념 학습으로 시작합니다.
+            이 흐름이 <b style={{ color: UI.ink }}>7일간 반복</b>됩니다. 단, <b style={{ color: UI.ink }}>첫날 첫 차시</b>는 사전 점검 없이 바로 개념 학습으로 시작합니다.
           </span>
         </div>
       </div>
@@ -50,17 +50,16 @@ export default function OTView({ onStart }) {
       <StepCard
         n={1} icon={ClipboardCheck} tone="amber"
         title="사전 점검 세션"
-        badge="매 수업 시작 시 · 첫날 첫 차시 제외"
       >
         <p style={{ margin: "0 0 12px" }}>
-          매 수업은 <b style={{ color: UI.ink }}>사전 점검</b>으로 문을 엽니다. 바로 지난 일자에서 <b style={{ color: UI.ink }}>틀렸던 것만 모아</b> 다시 확인하는 세션입니다.
+          매 수업 시작 시, <b style={{ color: UI.ink }}>그동안 틀렸던 것들을 모아</b> 다시 확인하는 세션입니다. 전날 하루가 아니라 <b style={{ color: UI.ink }}>지금까지 누적된 오답 전체</b>가 대상입니다.
         </p>
         <ul style={ulStyle}>
-          <li>지난 일자 <b style={{ color: UI.ink }}>차시별 퀴즈에서 틀린 문제</b>만 다시 테스트</li>
-          <li>지난 일자 <b style={{ color: UI.ink }}>엑셀 실습에서 틀린 문제</b>가 있으면 그 문제만 다시 풀어 제출</li>
+          <li>그동안 <b style={{ color: UI.ink }}>차시별 퀴즈에서 틀린 문제</b>만 다시 테스트</li>
+          <li>그동안 <b style={{ color: UI.ink }}>엑셀 실습에서 틀린 문제</b>가 있으면 그 문제만 다시 풀어 제출</li>
         </ul>
         <Callout tone="amber" icon={AlertTriangle}>
-          이 오답들을 <b>모두 맞혀야</b> 날짜가 바뀌어 <b>다음 날의 수업으로 넘어갈 수 있습니다.</b> 그래서 오늘 틀린 문제는 반드시 내일 다시 만나게 됩니다.
+          이 오답들을 <b>모두 맞고 날짜가 바뀌면</b> 다음 날의 수업으로 넘어갈 수 있습니다. 그래서 틀린 문제는 반드시 또 다시 만나게 됩니다.
         </Callout>
       </StepCard>
 
@@ -111,7 +110,7 @@ export default function OTView({ onStart }) {
           개념을 꼼꼼히 읽었다면 어렵지 않게 풀 수 있습니다.
         </p>
         <Callout tone="lime" icon={Lightbulb}>
-          채점을 하면 <b>틀린 문제마다 해설</b>이 붙습니다. 반드시 해설을 읽고 왜 틀렸는지 확인하세요. 이 오답 역시 다음 날 사전 점검에서 다시 만납니다.
+          채점을 하면 <b>틀린 문제마다 해설</b>이 붙습니다. 반드시 해설을 읽고 왜 틀렸는지 확인하세요. 이 오답 역시 다음 날 사전 점검 세션에서 다시 만납니다.
         </Callout>
       </StepCard>
 
