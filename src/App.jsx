@@ -14,6 +14,7 @@ import CheckoutView from "./components/checkout/CheckoutView";
 import AdminView from "./components/admin/AdminView";
 import DayGateView from "./components/lesson/DayGateView";
 import ExamView from "./components/exam/ExamView";
+import OTView from "./components/lesson/OTView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
 import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared } from "./data/days";
@@ -156,6 +157,7 @@ export default function App() {
         wrongCount={totalWrong}
         onGate={openGate}
         onExam={() => setView("exam")}
+        onOT={() => setView("ot")}
         onHome={() => setPage("landing")}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
@@ -194,6 +196,7 @@ export default function App() {
 
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
+          {view === "ot" && <OTView onStart={() => selectLesson(1)} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "exam" && (
             (isAdmin || allDaysCleared(dayClears))

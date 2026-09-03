@@ -1,9 +1,9 @@
-import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck, Target } from "lucide-react";
+import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
 import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared } from "../../data/days";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
-export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate, onExam, onHome }) {
+export default function Sidebar({ lessons, current, onSelect, progress, dayClears, unlockAll = false, onDash, onWrong, wrongCount, onGate, onExam, onOT, onHome }) {
   const examUnlocked = unlockAll || allDaysCleared(dayClears);
   const navBtn = (active, activeBg = UI.teal, activeColor = "#fff") => ({
     width: "100%",
@@ -50,6 +50,11 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
             : <Lock size={16} strokeWidth={1.5} />}
           실전 모드
           {!examUnlocked && <span style={{ marginLeft: "auto", fontSize: 11, color: UI.faint }}>완주 후</span>}
+        </button>
+
+        <div style={{ borderTop: `1px solid ${UI.line}`, margin: "10px 4px 6px" }} />
+        <button onClick={onOT} style={navBtn(current === "ot")}>
+          <GraduationCap size={17} strokeWidth={current === "ot" ? 2 : 1.5} color={current === "ot" ? "#fff" : UI.teal} /> OT · 학습 안내
         </button>
 
         {DAYS.map((d) => {
