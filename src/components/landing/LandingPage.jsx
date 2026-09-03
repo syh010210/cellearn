@@ -415,7 +415,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); onTrial(); }}
-                style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 20px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(20,60,50,0.22)" }}
+                style={{ background: UI.lime, color: UI.teal, border: `1.5px solid ${UI.teal}`, padding: "12px 20px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(40,90,80,0.14)" }}
               >
                 <Play size={17} strokeWidth={2.5} /> 무료로 수업 체험하기 <ArrowRight size={17} strokeWidth={2.5} />
               </button>
