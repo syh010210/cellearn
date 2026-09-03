@@ -266,20 +266,20 @@ export function StatCountDiagram() {
 
         <FuncCard
           name="COUNTA" syntax="구문: =COUNTA(범위)"
-          desc="비어있지 않은 모든 셀 (학년 B열)"
+          desc="비어있지 않은 모든 셀만 셉니다"
           formula="=COUNTA(B2:B5)" value="= 4"
           color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
         />
         <FuncCard
           name="COUNTBLANK" syntax="구문: =COUNTBLANK(범위)"
-          desc="빈 셀만 셉니다 (출석 C열 · 3·4행)"
+          desc="빈 셀만 셉니다"
           formula="=COUNTBLANK(C2:C5)" value="= 2"
           color={C.textMuted} valColor={C.text} bg={C.bg} border={C.textSlate}
         />
       </div>
 
       <BottomBar>
-        <BLine color={C.blue} bold>COUNT: 숫자만 · COUNTA: 숫자+텍스트 모두 · COUNTBLANK: 빈 셀만</BLine>
+        <BLine color={C.blue} bold>셀에 숫자가 있어도 문자와 함께 있으면(예: 중학교 2학년) 텍스트 데이터로 취급되어 COUNT에서 제외됩니다</BLine>
       </BottomBar>
     </Wrap>
   );

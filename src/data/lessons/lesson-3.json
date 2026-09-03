@@ -115,27 +115,47 @@
         }
       ],
       "practice": {
-        "instruction": "출석부 데이터를 이용하여 [C3] 셀에 응시자 수(점수가 입력된 셀)를 구하세요.",
-        "cols": ["A", "B", "C"],
+        "instruction": "학생 출석부입니다. [F2] 셀에 출석한 학생 수(출석 칸에 값이 있는 셀)를, [F3] 셀에 미출석 학생 수(출석 칸이 빈 셀)를 구하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F"],
         "rows": [
           [
-            { "val": "성명", "editable": false },
-            { "val": "시험점수", "editable": false },
-            { "val": "항목", "editable": false }
+            { "val": "이름", "editable": false },
+            { "val": "학년", "editable": false },
+            { "val": "출석", "editable": false },
+            { "val": "수강료", "editable": false },
+            { "val": "항목", "editable": false },
+            { "val": "결과", "editable": false }
           ],
           [
-            { "val": "강감찬", "editable": false },
-            { "val": 90, "editable": false },
-            { "val": "응시자수", "editable": false }
+            { "val": "김민준", "editable": false },
+            { "val": "초등학교 5학년", "editable": false },
+            { "val": "출석", "editable": false },
+            { "val": 100000, "editable": false },
+            { "val": "출석한 학생 수", "editable": false },
+            { "val": "", "editable": true, "answer": "=COUNTA(C2:C5)", "result": 2 }
           ],
           [
-            { "val": "이순신", "editable": false },
-            { "val": "결시", "editable": false },
-            { "val": "", "editable": true, "answer": "=COUNT(B2:B4)", "result": 2 }
+            { "val": "이서연", "editable": false },
+            { "val": "중학교 2학년", "editable": false },
+            { "val": "", "editable": false },
+            { "val": 150000, "editable": false },
+            { "val": "미출석 학생 수", "editable": false },
+            { "val": "", "editable": true, "answer": "=COUNTBLANK(C2:C5)", "result": 2 }
           ],
           [
-            { "val": "유관순", "editable": false },
-            { "val": 80, "editable": false },
+            { "val": "박도윤", "editable": false },
+            { "val": "고등학교 1학년", "editable": false },
+            { "val": "", "editable": false },
+            { "val": 200000, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "최지우", "editable": false },
+            { "val": "중학교 3학년", "editable": false },
+            { "val": "출석", "editable": false },
+            { "val": 200000, "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ]
         ]
