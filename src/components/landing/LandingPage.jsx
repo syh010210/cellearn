@@ -407,10 +407,10 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
             >
               <div>
                 <div style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-                  눈으로만 보지 말고, 지금 직접 풀어보세요
+                  먼저 해보고, 결제는 그다음에 결정하세요
                 </div>
                 <div style={{ fontSize: 14, color: UI.inkSoft, lineHeight: 1.5, marginTop: 5 }}>
-                  <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시 — 개념 4강 + 퀴즈 10문제를 그대로 체험
+                  <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시를 실제 수업 그대로 가져왔어요. 직접 풀어보고 결제할지 판단해 보세요.
                 </div>
               </div>
               <button
