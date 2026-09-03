@@ -191,7 +191,7 @@ export function StringFindTrimDiagram() {
         {/* Left panel: FIND vs SEARCH (TRIM보다 넓게) */}
         <div style={{
           flex: 1.8, background: C.bgDark, border: `1px solid ${C.border}`,
-          borderRadius: 10, padding: '14px 16px',
+          borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column',
         }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: C.amber, textAlign: 'center', marginBottom: 12 }}>
             FIND  vs  SEARCH  비교
@@ -246,9 +246,9 @@ export function StringFindTrimDiagram() {
             })}
           </div>
 
-          {/* Explanations */}
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 14, color: C.textSlate }}>
+          {/* Explanations — 아래 남는 공간에 여유 있게(가운데) 배치 */}
+          <div style={{ textAlign: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
+            <div style={{ fontSize: 14.5, color: C.textSlate }}>
               찾는 문자가 없으면  #VALUE!  오류 반환
             </div>
           </div>
@@ -264,7 +264,7 @@ export function StringFindTrimDiagram() {
           </div>
           <div style={{ fontWeight: 700, fontSize: 13.5, color: C.purpleLight, textAlign: 'center', marginBottom: 12 }}>구문: =TRIM(텍스트)</div>
 
-          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 6 }}>입력 값 (A2) <span style={{ fontSize: 11.5, color: C.textSlate }}>— 공백은 이해를 돕기 위해 _ 로 표시</span></div>
+          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 6 }}>입력 값 (A2) <span style={{ color: C.textSlate }}>— 공백은 이해를 돕기 위해 _ 로 표시</span></div>
           <div style={{
             background: '#450a0a', border: `1px solid #ef4444`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center',
@@ -283,8 +283,8 @@ export function StringFindTrimDiagram() {
             <span style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight }}>{'=TRIM(A2)'}</span>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'center', margin: '8px 0' }}>
-            <ArrowDown color="#a855f7" size={28} />
+          <div style={{ display: 'flex', justifyContent: 'center', margin: '2px 0' }}>
+            <ArrowDown color="#a855f7" size={26} />
           </div>
 
           <div style={{ fontSize: 14, color: C.textDim, marginBottom: 6 }}>결과 값</div>
