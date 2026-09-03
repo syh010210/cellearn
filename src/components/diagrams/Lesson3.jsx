@@ -51,14 +51,14 @@ export function StatBasicDiagram() {
         {cards.map(card => (
           <div key={card.fn} style={{
             flex: 1, background: card.bg, border: `2px solid ${card.border}`,
-            borderRadius: 10, padding: 14,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            borderRadius: 10, padding: '12px 14px',
+            display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5,
           }}>
-            <div style={{ color: card.color, fontSize: 18, fontWeight: 700 }}>{card.fn}</div>
+            <div style={{ color: card.color, fontSize: 17, fontWeight: 700 }}>{card.fn}</div>
             <div style={{ color: card.color, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>{card.syntax}</div>
-            <div style={{ color: card.color, fontSize: 13.5, opacity: 0.8 }}>{card.desc}</div>
-            <div style={{ color: card.color, fontSize: 12.5, fontWeight: 700, opacity: 0.9 }}>{card.example}</div>
-            <div style={{ color: card.resColor, fontSize: 30, fontWeight: 700, marginTop: 2 }}>{card.result}</div>
+            <div style={{ color: card.color, fontSize: 14, opacity: 0.85 }}>{card.desc}</div>
+            <div style={{ color: card.color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{card.example}</div>
+            <div style={{ color: card.resColor, fontSize: 15, fontWeight: 700 }}>{card.result}</div>
           </div>
         ))}
       </div>
