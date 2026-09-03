@@ -32,9 +32,14 @@ export function isDayCleared(day, dayClears) {
   return !!dayClears?.[day];
 }
 
-// 일차가 열려 있는가: 1일차는 항상 열림, 이후는 직전 일차가 클리어되어야 열림
+// OT(학습 안내)를 끝까지 읽으면 day 0 클리어로 기록한다 → 1일차 잠금 해제 기준.
+export function isOTDone(dayClears) {
+  return !!dayClears?.[0];
+}
+
+// 일차가 열려 있는가: 직전 일차가 클리어되어야 열림.
+// 1일차는 직전이 day 0(=OT)이므로, OT를 확인해야 열린다.
 export function isDayUnlocked(day, dayClears) {
-  if (day <= 1) return true;
   return !!dayClears?.[day - 1];
 }
 

@@ -17,8 +17,8 @@ import ExamView from "./components/exam/ExamView";
 import OTView from "./components/lesson/OTView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
-import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared } from "./data/days";
-import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target } from "lucide-react";
+import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
+import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
 import { UI } from "./theme";
 
 const STEP_TABS = [
@@ -158,6 +158,7 @@ export default function App() {
         onGate={openGate}
         onExam={() => setView("exam")}
         onOT={() => setView("ot")}
+        otDone={isOTDone(dayClears)}
         onHome={() => setPage("landing")}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
@@ -196,7 +197,7 @@ export default function App() {
 
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
-          {view === "ot" && <OTView onStart={() => selectLesson(1)} />}
+          {view === "ot" && <OTView otDone={isOTDone(dayClears)} onComplete={() => clearDay(0)} onStart={() => selectLesson(1)} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "exam" && (
             (isAdmin || allDaysCleared(dayClears))
@@ -223,7 +224,7 @@ export default function App() {
               onExit={() => setView("dash")}
             />
           )}
-          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} />}
+          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} />}
           {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} />}
           {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
           {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
@@ -234,10 +235,29 @@ export default function App() {
 }
 
 // 잠긴 차시 진입 시 안내 — 이전 일차 마무리 시험을 먼저 통과해야 함
-function LockNotice({ lesson, progress, onGate, onDash }) {
+function LockNotice({ lesson, progress, onGate, onDash, onOT }) {
   const d = getDay(lesson.id);
   const prevDay = d ? d.day - 1 : null;
   const prevComplete = prevDay ? isDayComplete(prevDay, progress) : false;
+
+  // 1일차는 직전이 OT(day 0). 마무리 시험이 아니라 학습 안내(OT)를 먼저 봐야 열린다.
+  if (d?.day === 1) {
+    return (
+      <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
+        <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.tealSoft, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <GraduationCap size={24} strokeWidth={2} color={UI.teal} />
+        </div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: UI.ink }}>먼저 학습 안내(OT)를 확인해 주세요</h2>
+        <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
+          앞으로 7일간 무엇을 어떤 순서로 하는지 <b style={{ color: UI.ink }}>OT · 학습 안내</b>에서 확인하고
+          각 단계를 체크하면 <b style={{ color: UI.ink }}>1일차 수업이 열립니다.</b>
+        </p>
+        <button onClick={onOT} style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+          <GraduationCap size={17} strokeWidth={2} /> 학습 안내 보러 가기
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
       <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.panelAlt, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
