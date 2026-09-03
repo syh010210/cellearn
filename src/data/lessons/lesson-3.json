@@ -52,12 +52,21 @@
       "contentBlocks": [
         {
           "type": "text",
-          "text": "데이터의 서열이나 특정 순위의 값을 추출하는 함수입니다."
+          "text": "데이터의 **서열(순위)** 을 매기는 함수입니다. 공동 순위를 어떻게 처리하느냐에 따라 RANK.EQ와 RANK.AVG로 나뉩니다."
         },
         {
           "type": "image",
           "url": "/images/stat-rank.svg",
-          "alt": "RANK.EQ 순위 표와 LARGE·SMALL k번째 값 시각화"
+          "alt": "RANK.EQ·RANK.AVG 동점 순위 처리 비교"
+        },
+        {
+          "type": "text",
+          "text": "특정 순위에 해당하는 **값**을 뽑아내는 함수입니다. K번째로 큰 값은 LARGE, K번째로 작은 값은 SMALL을 사용합니다."
+        },
+        {
+          "type": "image",
+          "url": "/images/stat-largesmall.svg",
+          "alt": "LARGE·SMALL K번째 값 추출"
         }
       ],
       "practice": {

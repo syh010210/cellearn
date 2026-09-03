@@ -74,6 +74,23 @@ export function StatBasicDiagram() {
 // ──────────────────────────────────────────────
 // StatRankDiagram
 // ──────────────────────────────────────────────
+// 함수 비교 카드 — 왼쪽 정렬 · 표준 순서(함수명→구문→설명→수식→값)
+// 텍스트 크기는 2차시 FIND/SEARCH 카드와 맞춤(함수명 17 · 구문 12.5 · 설명 14 · 수식 14 · 값 16)
+function FuncCard({ name, syntax, desc, formula, value, valueSize = 16, color, valColor, bg, border }) {
+  return (
+    <div style={{
+      flex: 1, background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: '12px 14px',
+      display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5,
+    }}>
+      <div style={{ color, fontSize: 17, fontWeight: 700 }}>{name}</div>
+      <div style={{ color, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
+      <div style={{ color, fontSize: 14, opacity: 0.85 }}>{desc}</div>
+      <div style={{ color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{formula}</div>
+      <div style={{ color: valColor, fontSize: valueSize, fontWeight: 700 }}>{value}</div>
+    </div>
+  );
+}
+
 export function StatRankDiagram() {
   const rankRows = [
     { name: '김철수', score: 95, eq: '1', avg: '1',   hl: false },
@@ -94,27 +111,13 @@ export function StatRankDiagram() {
     color: hl ? C.greenLight : C.text, fontWeight: hl ? 700 : 400, ...extra,
   });
 
-  // 함수 비교 카드 — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값
-  const FuncCard = ({ name, syntax, desc, formula, value, valueSize = 24, color, valColor, bg, border }) => (
-    <div style={{
-      flex: 1, background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: 12,
-      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, textAlign: 'center',
-    }}>
-      <div style={{ color, fontSize: 16, fontWeight: 700 }}>{name}</div>
-      <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
-      <div style={{ color, fontSize: 12.5, opacity: 0.82, lineHeight: 1.5 }}>{desc}</div>
-      <div style={{ color, fontSize: 12, fontWeight: 700, opacity: 0.9 }}>{formula}</div>
-      <div style={{ color: valColor, fontSize: valueSize, fontWeight: 700 }}>{value}</div>
-    </div>
-  );
-
   return (
     <Wrap>
-      <Title>순위·위치 함수: RANK.EQ · RANK.AVG · LARGE · SMALL</Title>
+      <Title>순위 함수: RANK.EQ · RANK.AVG</Title>
 
       {/* 순위 데이터 표 — 동점(홍길동·이영희 85점) */}
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '110px 80px 100px 100px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '120px 90px 110px 110px' }}>
           {['이름', '점수', 'RANK.EQ', 'RANK.AVG'].map(h => <div key={h} style={th}>{h}</div>)}
           {rankRows.map(r => ([
             <div key={`n${r.name}`} style={td(r.hl)}>{r.name}</div>,
@@ -125,60 +128,66 @@ export function StatRankDiagram() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-        {/* 좌(넓게): RANK.EQ vs RANK.AVG */}
-        <div style={{ flex: 1.85 }}>
-          <div style={{ color: C.amber, fontSize: 15.5, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            RANK.EQ vs RANK.AVG — 동점(85점) 처리 비교
-          </div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <FuncCard
-              name="RANK.EQ" syntax="구문: =RANK.EQ(값, 범위, [정렬])"
-              desc="동점이면 공동으로 순위 부여 (실생활에서 쓰는 방식)"
-              formula="=RANK.EQ(B3, $B$2:$B$5, 0)" value="= 2"
-              color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
-            />
-            <FuncCard
-              name="RANK.AVG" syntax="구문: =RANK.AVG(값, 범위, [정렬])"
-              desc="동점이면 순위들의 평균 부여"
-              formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= (2+3)/2 = 2.5" valueSize={17}
-              color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
-            />
-          </div>
-
-          {/* 정렬기준·절대참조 설명 — 카드 아래 빈 공간 활용 */}
-          <div style={{
-            marginTop: 12, background: C.bgDark, border: `1px solid ${C.border}`,
-            borderRadius: 8, padding: '12px 14px', fontSize: 13, color: C.textMuted, lineHeight: 1.7,
-          }}>
-            <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>정렬기준 (세 번째 인수)</div>
-            <div><b style={{ color: C.greenLight }}>0 = 내림차순</b> — 큰 값이 1등. 예) 시험 점수가 높은 순으로 순위를 매길 때</div>
-            <div style={{ marginBottom: 8 }}><b style={{ color: C.blueLight }}>1 = 오름차순</b> — 작은 값이 1등. 예) 달리기 기록이 빠른(=기록이 작은) 순으로 순위를 매길 때</div>
-            <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>참조범위를 절대참조($)로 고정하는 이유</div>
-            <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다. 자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
-          </div>
-        </div>
-
-        {/* 우(좁게): LARGE vs SMALL */}
-        <div style={{ flex: 1 }}>
-          <div style={{ color: C.purpleLight, fontSize: 15.5, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            LARGE vs SMALL
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <FuncCard
-              name="LARGE" syntax="=LARGE(범위, K)" desc="K번째로 큰 값"
-              formula="=LARGE(B2:B5, 2)" value="= 85"
-              color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
-            />
-            <FuncCard
-              name="SMALL" syntax="=SMALL(범위, K)" desc="K번째로 작은 값"
-              formula="=SMALL(B2:B5, 1)" value="= 78"
-              color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
-            />
-          </div>
-        </div>
+      <div style={{ color: C.amber, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
+        RANK.EQ vs RANK.AVG — 동점(85점) 처리 비교
+      </div>
+      <div style={{ display: 'flex', gap: 12 }}>
+        <FuncCard
+          name="RANK.EQ" syntax="구문: =RANK.EQ(값, 범위, [정렬])"
+          desc="동점이면 공동으로 순위 부여 (실생활에서 쓰는 방식)"
+          formula="=RANK.EQ(B3, $B$2:$B$5, 0)" value="= 2"
+          color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
+        />
+        <FuncCard
+          name="RANK.AVG" syntax="구문: =RANK.AVG(값, 범위, [정렬])"
+          desc="동점이면 순위들의 평균 부여"
+          formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= (2+3)/2 = 2.5" valueSize={15}
+          color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
+        />
       </div>
 
+      {/* 정렬기준·절대참조 설명 */}
+      <div style={{
+        marginTop: 12, background: C.bgDark, border: `1px solid ${C.border}`,
+        borderRadius: 8, padding: '12px 14px', fontSize: 13.5, color: C.textMuted, lineHeight: 1.7,
+      }}>
+        <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>정렬기준 (세 번째 인수)</div>
+        <div><b style={{ color: C.greenLight }}>0 = 내림차순</b> — 큰 값이 1등. 예) 시험 점수가 높은 순으로 순위를 매길 때</div>
+        <div style={{ marginBottom: 8 }}><b style={{ color: C.blueLight }}>1 = 오름차순</b> — 작은 값이 1등. 예) 달리기 기록이 빠른(=기록이 작은) 순으로 순위를 매길 때</div>
+        <div style={{ color: C.amber, fontWeight: 700, marginBottom: 4 }}>참조범위를 절대참조($)로 고정하는 이유</div>
+        <div>수식을 여러 셀에 <b style={{ color: C.text }}>자동 채우기</b>로 복사할 때, 순위를 비교하는 범위가 밀려버리면 안 되므로 <b style={{ color: C.text }}>$로 고정</b>합니다. 자동 채우기·복사를 하지 않는다면 고정할 필요가 없습니다.</div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ──────────────────────────────────────────────
+// StatLargeSmallDiagram — 특정 순위의 값 추출
+// ──────────────────────────────────────────────
+export function StatLargeSmallDiagram() {
+  return (
+    <Wrap>
+      <Title>특정 순위의 값 추출: LARGE · SMALL</Title>
+      <Subtitle>데이터 B2:B5 = 95 · 85 · 78 · 85 (내림차순: 95 · 85 · 85 · 78)</Subtitle>
+
+      <div style={{ display: 'flex', gap: 12 }}>
+        <FuncCard
+          name="LARGE" syntax="구문: =LARGE(범위, K)"
+          desc="범위에서 K번째로 큰 값"
+          formula="=LARGE(B2:B5, 2)" value="= 85 (2번째로 큰 값)" valueSize={15}
+          color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
+        />
+        <FuncCard
+          name="SMALL" syntax="구문: =SMALL(범위, K)"
+          desc="범위에서 K번째로 작은 값"
+          formula="=SMALL(B2:B5, 1)" value="= 78 (가장 작은 값)" valueSize={15}
+          color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
+        />
+      </div>
+
+      <BottomBar>
+        <BLine color={C.blue} bold>K = 1이면 가장 큰/작은 값 → LARGE(범위,1)=MAX · SMALL(범위,1)=MIN 과 같습니다</BLine>
+      </BottomBar>
     </Wrap>
   );
 }
