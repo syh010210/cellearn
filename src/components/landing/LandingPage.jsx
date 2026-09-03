@@ -288,7 +288,7 @@ function FaqSection() {
   );
 }
 
-export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
+export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSignOut }) {
   const isMobile = useIsMobile();
   const lessonCount = LESSONS.length;
   const [showMoreDays, setShowMoreDays] = useState(false); // 커리큘럼 5~7일차 펼치기
@@ -361,6 +361,12 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               로그아웃
             </button>
           )}
+          <button
+            onClick={onTrial}
+            style={{ background: "transparent", border: `1px solid ${UI.teal}`, color: UI.teal, padding: "9px 16px", borderRadius: UI.rMd, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            <Play size={14} strokeWidth={2} /> 수업 체험
+          </button>
           <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>{isAuthed ? "이어서 학습" : "학습 시작"}</Btn>
         </div>
       </nav>
@@ -393,8 +399,9 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 14, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
               <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+              <Btn variant="outline" onClick={onTrial}><Play size={16} strokeWidth={2} /> 1일차 수업 무료 체험</Btn>
               <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
                 {SCHEDULE.grade1Month} 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
               </a>

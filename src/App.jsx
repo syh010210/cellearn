@@ -15,6 +15,7 @@ import AdminView from "./components/admin/AdminView";
 import DayGateView from "./components/lesson/DayGateView";
 import ExamView from "./components/exam/ExamView";
 import OTView from "./components/lesson/OTView";
+import TrialView from "./components/lesson/TrialView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
 import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
@@ -105,6 +106,11 @@ export default function App() {
   if (page === "auth") return <AuthView onBack={() => setPage("landing")} initialMode={authMode} presetGrade={selectedGrade || "2급"} />;
   if (page === "checkout") return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} onNeedLogin={() => { setAuthMode("login"); setPage("auth"); }} />;
   if (page === "admin") return <AdminView onBack={() => setPage("landing")} />;
+  // 무료 수업 체험 — 로그인·결제 없이 1일차 3차시(통계 함수)의 개념+퀴즈를 그대로 열어준다.
+  if (page === "trial") {
+    const trialLesson = LESSONS.find((l) => l.id === 3);
+    return <TrialView lesson={trialLesson} onExit={() => setPage("landing")} onSignup={() => startLearning("2급")} />;
+  }
   if (page === "legal") return (
     <>
       <LegalView initial={legalTab} onBack={() => setPage("landing")} />
@@ -114,7 +120,7 @@ export default function App() {
 
   if (page === "landing") return (
     <div>
-      <LandingPage onStart={startLearning} onLegal={openLegal} isAuthed={isAuthed} onSignOut={signOut} />
+      <LandingPage onStart={startLearning} onTrial={() => { setPage("trial"); window.scrollTo({ top: 0 }); }} onLegal={openLegal} isAuthed={isAuthed} onSignOut={signOut} />
       <SupportWidget />
     </div>
   );
