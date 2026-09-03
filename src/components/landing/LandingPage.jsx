@@ -406,11 +406,11 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
               }}
             >
               <div>
-                <div style={{ fontSize: "clamp(16px,2vw,22px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
-                  먼저 해보고, 결제는 그다음에 결정하세요
+                <div style={{ fontSize: "clamp(15px,1.9vw,20px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em", whiteSpace: "nowrap" }}>
+                  직접 먼저 풀어보고, 결제는 그다음에 결정하세요
                 </div>
                 <div style={{ fontSize: 14, color: UI.inkSoft, lineHeight: 1.5, marginTop: 5 }}>
-                  <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시를 실제 수업 그대로 가져왔어요. 직접 풀어보고 결제할지 판단해 보세요.
+                  <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시를 실제 수업 그대로 가져왔어요.
                 </div>
               </div>
               <button
