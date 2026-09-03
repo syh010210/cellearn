@@ -37,31 +37,31 @@ export function StringExtractDiagram() {
           })}
         </div>
 
-        {/* Bracket annotations — 세 함수 동일 형식(설명 → 몇 번째 위치) */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
+        {/* Bracket annotations — 세 함수 한 줄에 나란히 (라벨/수식 세로 배치) */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'nowrap' }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#14532d', border: '1px solid #22c55e',
-            borderRadius: 6, padding: '8px 16px',
+            borderRadius: 6, padding: '8px 14px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>LEFT · 왼쪽 3글자</span>
-            <span style={{ fontSize: 15, color: C.green }}>{'=LEFT("ABC456XYZ", 3)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.greenLight, whiteSpace: 'nowrap' }}>LEFT · 왼쪽 3글자</span>
+            <span style={{ fontSize: 14.5, color: C.green, whiteSpace: 'nowrap' }}>{'=LEFT("ABC456XYZ", 3)'}</span>
           </div>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#2e1065', border: '1px solid #a855f7',
-            borderRadius: 6, padding: '8px 16px',
+            borderRadius: 6, padding: '8px 14px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight }}>MID · 4번째부터 2글자</span>
-            <span style={{ fontSize: 15, color: C.purple }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.purpleLight, whiteSpace: 'nowrap' }}>MID · 4번째부터 2글자</span>
+            <span style={{ fontSize: 14.5, color: C.purple, whiteSpace: 'nowrap' }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
           </div>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#431407', border: '1px solid #f97316',
-            borderRadius: 6, padding: '8px 16px',
+            borderRadius: 6, padding: '8px 14px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.orange }}>RIGHT · 오른쪽 3글자</span>
-            <span style={{ fontSize: 15, color: C.orangeLight }}>{'=RIGHT("ABC456XYZ", 3)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.orange, whiteSpace: 'nowrap' }}>RIGHT · 오른쪽 3글자</span>
+            <span style={{ fontSize: 14.5, color: C.orangeLight, whiteSpace: 'nowrap' }}>{'=RIGHT("ABC456XYZ", 3)'}</span>
           </div>
         </div>
 
@@ -96,11 +96,6 @@ export function StringExtractDiagram() {
           </Card>
         </div>
       </div>
-
-      <BottomBar>
-        <BLine>{'=LEFT(텍스트, 개수)  ·  =MID(텍스트, 시작위치, 개수)  ·  =RIGHT(텍스트, 개수)'}</BLine>
-        <BLine color={C.blue} bold>{'※ MID 함수 시작 위치는 1번부터 셉니다 — MID("ABC", 2, 1) = "B"'}</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
@@ -157,11 +152,11 @@ export function StringLenCaseDiagram() {
             {row.fn}
           </Cell>,
           <Cell key={`fml${row.fn}`} bg={C.bgDark} border={C.border}
-            style={{ fontSize: 14, color: C.textMuted, fontFamily: 'monospace', justifyContent: 'flex-start', padding: '6px 10px' }}>
+            style={{ fontSize: 14, color: C.textMuted, justifyContent: 'flex-start', padding: '6px 10px' }}>
             {row.formula}
           </Cell>,
           <Cell key={`res${row.fn}`} bg={C.bgDark} border={C.border}
-            style={{ fontWeight: 700, fontSize: row.resultSize, color: C.amber, fontFamily: 'monospace' }}>
+            style={{ fontWeight: 700, fontSize: row.resultSize, color: C.amber }}>
             {row.result}
           </Cell>,
           <Cell key={`desc${row.fn}`} bg={C.bgDark} border={C.border}
@@ -202,7 +197,7 @@ export function StringFindTrimDiagram() {
             <Card bg="#14532d" border="#22c55e" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, marginBottom: 4 }}>FIND</div>
               <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
-              <div style={{ fontSize: 14, color: C.textMuted, fontFamily: 'monospace', marginBottom: 6 }}>
+              <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'=FIND("j","John_j")'}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>
@@ -212,7 +207,7 @@ export function StringFindTrimDiagram() {
             <Card bg="#172554" border="#3b82f6" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight, marginBottom: 4 }}>SEARCH</div>
               <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
-              <div style={{ fontSize: 14, color: C.textMuted, fontFamily: 'monospace', marginBottom: 6 }}>
+              <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'=SEARCH("J","John_j")'}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.blueLight }}>
@@ -234,7 +229,7 @@ export function StringFindTrimDiagram() {
                   <div style={{
                     width: 48, minHeight: 48, background: bg, border: `2px solid ${border}`,
                     borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: 18, color, fontFamily: 'monospace',
+                    fontWeight: 700, fontSize: 18, color,
                   }}>
                     {ch}
                   </div>
@@ -271,7 +266,7 @@ export function StringFindTrimDiagram() {
           <div style={{
             background: '#450a0a', border: `1px solid #ef4444`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center',
-            fontFamily: 'monospace', fontSize: 16, color: C.redLight, fontStyle: 'italic',
+            fontSize: 16, color: C.redLight, fontStyle: 'italic',
           }}>
             {"  컴활  2급  "}
           </div>
@@ -282,7 +277,6 @@ export function StringFindTrimDiagram() {
           <div style={{
             background: '#1e0f47', border: `1px solid #a855f7`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center', marginTop: 10,
-            fontFamily: 'monospace',
           }}>
             <span style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight }}>{'=TRIM(A2)'}</span>
           </div>
@@ -295,7 +289,7 @@ export function StringFindTrimDiagram() {
           <div style={{
             background: '#052e16', border: `1px solid #22c55e`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center',
-            fontFamily: 'monospace', fontSize: 16, color: C.greenLight,
+            fontSize: 16, color: C.greenLight,
           }}>
             {"컴활 2급"}
           </div>
@@ -346,7 +340,7 @@ export function StringCombineDiagram() {
               <div style={{
                 flex: 1, background: C.bgDark, border: `1px solid ${C.border}`,
                 borderRadius: 8, padding: '10px 14px',
-                fontFamily: 'monospace', fontSize: 15, color: C.text,
+                fontSize: 15, color: C.text,
               }}>
                 {ex.formula}
               </div>
@@ -354,7 +348,7 @@ export function StringCombineDiagram() {
               <div style={{
                 background: '#14532d', border: `1px solid #22c55e`,
                 borderRadius: 8, padding: '10px 14px',
-                fontFamily: 'monospace', fontWeight: 700, fontSize: 16, color: C.greenLight,
+                fontWeight: 700, fontSize: 16, color: C.greenLight,
                 whiteSpace: 'nowrap',
               }}>
                 {ex.result}
