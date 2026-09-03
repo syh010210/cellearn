@@ -279,7 +279,7 @@ export function StatCountDiagram() {
       </div>
 
       <BottomBar>
-        <BLine color={C.blue} bold>셀에 숫자가 있어도 문자와 함께 있으면(예: 중학교 2학년) 텍스트 데이터로 취급되어 COUNT에서 제외됩니다</BLine>
+        <BLine color={C.blue} bold>셀에 숫자가 있어도 문자와 함께 있으면(예: 중학교 2학년) 문자 데이터로 취급되어 COUNT 함수로 셀 수 없습니다</BLine>
       </BottomBar>
     </Wrap>
   );
