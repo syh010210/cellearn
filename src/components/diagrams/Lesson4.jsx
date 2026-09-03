@@ -89,26 +89,30 @@ export function VlookupDiagram() {
 
         {/* Right: comparison cards */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* VLOOKUP */}
+          {/* VLOOKUP — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값 */}
           <div style={{
             background: C.blueCard, border: `2px solid ${C.blueDim}`,
-            borderRadius: 10, padding: 16,
-            display: 'flex', flexDirection: 'column', gap: 6,
+            borderRadius: 10, padding: '12px 14px',
+            display: 'flex', flexDirection: 'column', gap: 5,
           }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700, textAlign: 'center' }}>VLOOKUP</div>
-            <div style={{ color: C.blueLight, fontSize: 16, textAlign: 'center' }}>첫 번째 열 ↓ 검색</div>
-            <div style={{ color: C.textMuted, fontSize: 15, textAlign: 'center' }}>같은 행의 지정 열 번호 반환</div>
+            <div style={{ color: C.blue, fontSize: 17, fontWeight: 700 }}>VLOOKUP</div>
+            <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 범위, 열 번호, 0)</div>
+            <div style={{ color: C.blueLight, fontSize: 14, opacity: 0.85 }}>첫 번째 열에서 세로(↓)로 찾아 같은 행의 지정 열 값 반환</div>
+            <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>예) =VLOOKUP(&quot;B-102&quot;, A2:B4, 2, 0)</div>
+            <div style={{ color: C.blueLight, fontSize: 15, fontWeight: 700 }}>→ &quot;자바스크립트 완전정복&quot;</div>
           </div>
 
-          {/* HLOOKUP */}
+          {/* HLOOKUP — 표준 순서: 함수명 → 구문 → 설명 → 수식 → 값 */}
           <div style={{
             background: '#251005', border: `2px solid ${C.orange}`,
-            borderRadius: 10, padding: 16,
-            display: 'flex', flexDirection: 'column', gap: 6,
+            borderRadius: 10, padding: '12px 14px',
+            display: 'flex', flexDirection: 'column', gap: 5,
           }}>
-            <div style={{ color: C.orange, fontSize: 18, fontWeight: 700, textAlign: 'center' }}>HLOOKUP</div>
-            <div style={{ color: C.orangeLight, fontSize: 16, textAlign: 'center' }}>첫 번째 행 → 검색</div>
-            <div style={{ color: C.textMuted, fontSize: 15, textAlign: 'center' }}>같은 열의 지정 행 번호 반환</div>
+            <div style={{ color: C.orange, fontSize: 17, fontWeight: 700 }}>HLOOKUP</div>
+            <div style={{ color: C.orange, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 범위, 행 번호, 0)</div>
+            <div style={{ color: C.orangeLight, fontSize: 14, opacity: 0.85 }}>첫 번째 행에서 가로(→)로 찾아 같은 열의 지정 행 값 반환</div>
+            <div style={{ color: C.orangeLight, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>예) =HLOOKUP(&quot;2분기&quot;, A1:D2, 2, 0)</div>
+            <div style={{ color: C.orangeLight, fontSize: 15, fontWeight: 700 }}>→ 350</div>
           </div>
         </div>
       </div>
@@ -158,9 +162,10 @@ export function MatchIndexDiagram() {
           borderRadius: 10, padding: 16,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ color: C.purpleLight, fontSize: 20, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            ① MATCH
-          </div>
+          {/* 표준 순서: 함수명 → 구문 → 설명 → (아래 목록 시각화) → 수식 → 값 */}
+          <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700, marginBottom: 2 }}>① MATCH</div>
+          <div style={{ color: C.purpleLight, fontSize: 12.5, fontWeight: 700, opacity: 0.95, marginBottom: 2 }}>구문: =MATCH(찾을 값, 범위, 0)</div>
+          <div style={{ color: C.purpleLight, fontSize: 13.5, opacity: 0.85, marginBottom: 10 }}>값이 범위에서 몇 번째 위치인지 반환</div>
           {matchList.map((item, i) => (
             <div key={i} style={listItemStyle(item.highlight, C.purpleCard, C.purple, C.purpleLight)}>
               {item.label}
@@ -199,9 +204,10 @@ export function MatchIndexDiagram() {
           borderRadius: 10, padding: 16,
           display: 'flex', flexDirection: 'column',
         }}>
-          <div style={{ color: C.greenLight, fontSize: 20, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            ② INDEX
-          </div>
+          {/* 표준 순서: 함수명 → 구문 → 설명 → (아래 목록 시각화) → 수식 → 값 */}
+          <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700, marginBottom: 2 }}>② INDEX</div>
+          <div style={{ color: C.greenLight, fontSize: 12.5, fontWeight: 700, opacity: 0.95, marginBottom: 2 }}>구문: =INDEX(범위, 행 번호)</div>
+          <div style={{ color: C.greenLight, fontSize: 13.5, opacity: 0.85, marginBottom: 10 }}>범위에서 지정한 위치(행 번호)의 값을 반환</div>
           {indexList.map((item, i) => (
             <div key={i} style={listItemStyle(item.highlight, '#14532d', C.green, C.greenLight)}>
               {item.label}
