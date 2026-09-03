@@ -28,12 +28,9 @@ export function AuthProvider({ children }) {
       supabase.from("profiles").select("*").eq("id", userId).single(),
       supabase.from("enrollments").select("*").gt("valid_to", new Date().toISOString()),
     ]);
-    // 단일 세션 체크: DB의 active_session이 이 기기 토큰과 다르면 다른 기기가 로그인한 것 → 로그아웃
-    const localTok = localStorage.getItem(SESSION_KEY);
-    if (prof?.active_session && localTok && prof.active_session !== localTok) {
-      await supabase.auth.signOut();
-      return; // profile/enrollment 세팅하지 않음 (onAuthStateChange가 상태 정리)
-    }
+    // 단일 세션 검사는 여기서 하지 않는다. 방금 로그인해 claimSession 이 새 토큰을 쓰는
+    // 순간과 겹치면(레이스) 자기 자신을 로그아웃시켜 로그인이 안 되는 문제가 있었다.
+    // 페이지 로드 시점 검사는 enforceSingleSession 이, 실시간 감지는 아래 realtime 채널이 담당한다.
     setProfile(prof ?? null);
     setEnrollments(enr ?? []);
     setDataReady(true);
