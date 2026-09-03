@@ -37,10 +37,10 @@ export function StringExtractDiagram() {
           })}
         </div>
 
-        {/* Bracket annotations — 세 함수 한 줄에 나란히 (라벨/수식 세로 배치) */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 14, flexWrap: 'nowrap' }}>
+        {/* Bracket annotations — 아래 함수 카드와 같은 3열 정렬(각 flex:1) */}
+        <div style={{ display: 'flex', gap: 16 }}>
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#14532d', border: '1px solid #22c55e',
             borderRadius: 6, padding: '8px 14px',
           }}>
@@ -48,7 +48,7 @@ export function StringExtractDiagram() {
             <span style={{ fontSize: 14.5, color: C.green, whiteSpace: 'nowrap' }}>{'=LEFT("ABC456XYZ", 3)'}</span>
           </div>
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#2e1065', border: '1px solid #a855f7',
             borderRadius: 6, padding: '8px 14px',
           }}>
@@ -56,7 +56,7 @@ export function StringExtractDiagram() {
             <span style={{ fontSize: 14.5, color: C.purple, whiteSpace: 'nowrap' }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
           </div>
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
             background: '#431407', border: '1px solid #f97316',
             borderRadius: 6, padding: '8px 14px',
           }}>
@@ -141,9 +141,9 @@ export function StringLenCaseDiagram() {
       <Title>문자열 길이 · 대소문자 변환 함수</Title>
       <Subtitle>LEN — 글자 수 반환 / UPPER — 대문자 / LOWER — 소문자 / PROPER — 단어 첫 글자 대문자</Subtitle>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr 1fr 108px 1.1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '86px 1fr 126px 1.4fr' }}>
         {/* Header row */}
-        {['함수', '구문', '입력 수식', '결과', '설명'].map(h => (
+        {['함수', '입력 수식', '결과', '구문 · 설명'].map(h => (
           <Cell key={h} bg="#0c2344" border="#3b82f6" bw={2}
             style={{ fontWeight: 700, fontSize: 16, color: '#93c5fd' }}>
             {h}
@@ -155,10 +155,6 @@ export function StringLenCaseDiagram() {
             style={{ fontWeight: 700, fontSize: 17, color: row.fnColor }}>
             {row.fn}
           </Cell>,
-          <Cell key={`syn${row.fn}`} bg={C.bgDark} border={C.border}
-            style={{ fontWeight: 700, fontSize: 14, color: row.fnColor, justifyContent: 'flex-start', padding: '6px 10px' }}>
-            {row.syntax}
-          </Cell>,
           <Cell key={`fml${row.fn}`} bg={C.bgDark} border={C.border}
             style={{ fontSize: 14, color: C.textMuted, justifyContent: 'flex-start', padding: '6px 10px' }}>
             {row.formula}
@@ -168,8 +164,9 @@ export function StringLenCaseDiagram() {
             {row.result}
           </Cell>,
           <Cell key={`desc${row.fn}`} bg={C.bgDark} border={C.border}
-            style={{ fontSize: 15, color: C.textMuted, justifyContent: 'flex-start', padding: '6px 10px' }}>
-            {row.desc}
+            style={{ flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: 3, padding: '6px 10px' }}>
+            <span style={{ fontWeight: 700, fontSize: 14, color: row.fnColor }}>{row.syntax}</span>
+            <span style={{ fontSize: 13.5, color: C.textMuted }}>{row.desc}</span>
           </Cell>,
         ])}
       </div>
