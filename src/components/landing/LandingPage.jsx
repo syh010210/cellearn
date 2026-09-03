@@ -361,12 +361,6 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
               로그아웃
             </button>
           )}
-          <button
-            onClick={onTrial}
-            style={{ background: "transparent", border: `1px solid ${UI.teal}`, color: UI.teal, padding: "9px 16px", borderRadius: UI.rMd, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6 }}
-          >
-            <Play size={14} strokeWidth={2} /> 수업 체험
-          </button>
           <Btn variant="dark" onClick={onStart} style={{ padding: "10px 18px", fontSize: 14 }}>{isAuthed ? "이어서 학습" : "학습 시작"}</Btn>
         </div>
       </nav>
@@ -399,45 +393,31 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            {/* 무료 체험 바로가기 — 크게 강조 (문단과 CTA 버튼 사이) */}
+            {/* 무료 체험 바로가기 — 문단과 CTA 버튼 사이, 컴팩트한 가로 배너 */}
             <div
               onClick={onTrial}
               role="button"
               tabIndex={0}
               style={{
-                cursor: "pointer", margin: "0 0 26px",
+                cursor: "pointer", margin: "0 0 20px",
                 background: UI.limeSoft, border: `1.5px solid ${UI.lime}`, borderRadius: UI.rLg,
-                padding: "22px 24px", display: "flex", flexDirection: "column", gap: 14,
-                boxShadow: "0 6px 22px rgba(40,90,80,0.10)",
+                padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between",
+                gap: 16, flexWrap: "wrap", boxShadow: "0 6px 22px rgba(40,90,80,0.10)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: UI.teal, background: "#fff", padding: "5px 12px", borderRadius: UI.rPill, border: `1px solid ${UI.lime}`, display: "inline-flex", alignItems: "center", gap: 6 }}>
-                  <Play size={13} strokeWidth={2.5} /> 무료 체험
-                </span>
-                <span style={{ fontSize: 13.5, color: UI.teal, fontWeight: 700 }}>결제 전 · 회원가입 없이 · 실제 수업 그대로</span>
+              <div style={{ minWidth: 200, flex: "1 1 240px" }}>
+                <div style={{ fontSize: "clamp(18px,2.1vw,22px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
+                  눈으로만 보지 말고, 지금 직접 풀어보세요
+                </div>
+                <div style={{ fontSize: 14, color: UI.inkSoft, lineHeight: 1.5, marginTop: 5 }}>
+                  <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시 — 개념 4강 + 퀴즈 10문제를 그대로 체험
+                </div>
               </div>
-
-              <div style={{ fontSize: "clamp(22px,2.6vw,28px)", fontWeight: 800, color: UI.ink, lineHeight: 1.3, letterSpacing: "-0.02em" }}>
-                눈으로만 보지 말고, 지금 직접 풀어보세요
-              </div>
-              <div style={{ fontSize: 15.5, color: UI.inkSoft, lineHeight: 1.65 }}>
-                <b style={{ color: UI.ink }}>계산 작업 · 통계 함수</b> 한 차시를 통째로 열어뒀어요 —
-                개념 강의 <b style={{ color: UI.ink }}>4강</b> + 복습 퀴즈 <b style={{ color: UI.ink }}>10문제</b>.
-                회원가입도, 결제도 없이 실제 수업 화면을 그대로 체험할 수 있습니다.
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {["개념 강의 4강", "4지선다 퀴즈 10문제", "자동 채점 미리보기", "실제 학습 화면 그대로"].map((t) => (
-                  <span key={t} style={{ fontSize: 12.5, fontWeight: 600, color: UI.teal, background: "#fff", border: `1px solid ${UI.line}`, padding: "5px 11px", borderRadius: UI.rPill }}>✓ {t}</span>
-                ))}
-              </div>
-
               <button
                 onClick={(e) => { e.stopPropagation(); onTrial(); }}
-                style={{ marginTop: 2, alignSelf: "flex-start", background: UI.teal, color: "#fff", border: "none", padding: "14px 26px", borderRadius: UI.rMd, fontSize: 16.5, fontWeight: 800, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 9, boxShadow: "0 4px 14px rgba(20,60,50,0.22)" }}
+                style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 20px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap", boxShadow: "0 4px 14px rgba(20,60,50,0.22)" }}
               >
-                <Play size={19} strokeWidth={2.5} /> 무료로 수업 체험하기 <ArrowRight size={19} strokeWidth={2.5} />
+                <Play size={17} strokeWidth={2.5} /> 무료로 수업 체험하기 <ArrowRight size={17} strokeWidth={2.5} />
               </button>
             </div>
 
