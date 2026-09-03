@@ -356,7 +356,7 @@ export function StatCondCountDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700, marginBottom: 4 }}>COUNTIF</div>
-            <div style={{ color: C.purple, fontSize: 14, fontFamily: 'monospace', marginBottom: 4 }}>
+            <div style={{ color: C.purple, fontSize: 14, marginBottom: 4 }}>
               =COUNTIF(B2:B4, &quot;대리&quot;)
             </div>
             <div style={{ color: C.purple, fontSize: 15, marginBottom: 8 }}>조건에 맞는 셀 개수</div>
@@ -370,7 +370,7 @@ export function StatCondCountDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'center',
           }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700, marginBottom: 4 }}>AVERAGEIF</div>
-            <div style={{ color: C.orange, fontSize: 13, fontFamily: 'monospace', marginBottom: 4 }}>
+            <div style={{ color: C.orange, fontSize: 13, marginBottom: 4 }}>
               =AVERAGEIF(B2:B4, &quot;대리&quot;, C2:C4)
             </div>
             <div style={{ color: C.orange, fontSize: 15, marginBottom: 8 }}>조건에 맞는 행의 평균</div>
@@ -388,7 +388,7 @@ export function StatCondCountDiagram() {
         <div style={{ color: C.textMuted, fontSize: 17, fontWeight: 700, textAlign: 'center' }}>
           COUNTIFS · AVERAGEIFS — 복수 조건
         </div>
-        <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center', fontFamily: 'monospace' }}>
+        <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center' }}>
           =COUNTIFS(직급범위, &quot;대리&quot;,  급여범위, &quot;&gt;2700000&quot;)
         </div>
         <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center' }}>

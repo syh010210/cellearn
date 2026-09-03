@@ -14,44 +14,6 @@
           "type": "image",
           "url": "/images/stat-basic.svg",
           "alt": "AVERAGE, MEDIAN, MAX, MIN 함수 — 같은 데이터에서 결과값 비교"
-        },
-        {
-          "type": "heading",
-          "text": "AVERAGE — 평균"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =AVERAGE(범위)",
-            "범위 내 숫자들의 합계를 개수로 나눈 평균을 계산합니다.",
-            "예) =AVERAGE(B2:B6) → B2부터 B6까지 숫자의 평균"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "MAX / MIN — 최댓값 / 최솟값"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =MAX(범위) / =MIN(범위)",
-            "MAX는 범위에서 가장 큰 값을, MIN은 가장 작은 값을 반환합니다.",
-            "예) =MAX(C2:C10) → C2:C10 중 최댓값"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "MEDIAN — 중간값"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =MEDIAN(범위)",
-            "데이터를 크기 순으로 정렬했을 때 **정중앙**에 위치한 값을 반환합니다.",
-            "데이터 개수가 짝수이면 중앙 두 값의 평균을 반환합니다.",
-            "예) {70, 80, 90, 100} → MEDIAN = (80+90)/2 = **85**",
-            "※ 자동 채우기 시 범위가 고정되어야 한다면 **F4** 키로 절대 참조($) 처리!"
-          ]
         }
       ],
       "practice": {
@@ -96,47 +58,6 @@
           "type": "image",
           "url": "/images/stat-rank.svg",
           "alt": "RANK.EQ 순위 표와 LARGE·SMALL k번째 값 시각화"
-        },
-        {
-          "type": "heading",
-          "text": "RANK.EQ — 공동 순위 시 최상위 순위 부여"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =RANK.EQ(값, 참조범위, [정렬기준])",
-            "정렬기준: **0 또는 생략** = 내림차순(높을수록 1등), **1** = 오름차순(낮을수록 1등)",
-            "동점자가 여럿이면 **모두 같은 순위**로 표시하고, 다음 순위는 건너뜁니다.",
-            "예) 점수 {90, 85, 85, 70} → 순위: 1, **2, 2**, 4 (3위 없음)",
-            "⚠️ **참조범위는 반드시 절대 참조($)**로 고정해야 자동 채우기 시 밀리지 않습니다."
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "RANK.AVG — 공동 순위 시 평균 순위 부여"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =RANK.AVG(값, 참조범위, [정렬기준])",
-            "동점자가 여럿이면 해당 순위들의 **평균**을 각자에게 부여합니다.",
-            "예) 점수 {90, 85, 85, 70} → 순위: 1, **2.5, 2.5**, 4 (2위+3위 평균 = 2.5)",
-            "통계적으로 공정한 순위 표기가 필요한 경우(스포츠 기록, 학술 분석 등)에 사용합니다.",
-            "참조범위 절대 참조($) 필수 — RANK.EQ와 동일한 주의사항 적용"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "LARGE / SMALL — K번째 큰 값 / 작은 값"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =LARGE(범위, K) / =SMALL(범위, K)",
-            "LARGE: 범위에서 K번째로 큰 값, SMALL: K번째로 작은 값을 반환합니다.",
-            "예) =LARGE(B2:B10, 2) → B2:B10에서 **2번째로 큰 값**",
-            "예) =SMALL(B2:B10, 1) → B2:B10에서 가장 작은 값 (=MIN과 동일)"
-          ]
         }
       ],
       "practice": {
@@ -182,42 +103,6 @@
           "type": "image",
           "url": "/images/stat-count.svg",
           "alt": "COUNT·COUNTA·COUNTBLANK — 같은 범위에서 세는 기준 비교"
-        },
-        {
-          "type": "heading",
-          "text": "COUNT — 숫자 셀만 카운트"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =COUNT(범위)",
-            "오직 **숫자, 날짜, 시간** 데이터가 입력된 셀의 개수만 셉니다. (문자 제외)",
-            "예) {90, '결시', 80} → COUNT = **2** (숫자인 90, 80만 카운트)"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "COUNTA — 비어있지 않은 모든 셀 카운트"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =COUNTA(범위)",
-            "비어있지 않은 **모든 셀**(All)의 개수를 셉니다. 문자, 숫자 불문합니다.",
-            "예) {90, '결시', 80} → COUNTA = **3** (세 셀 모두 데이터 있음)"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "COUNTBLANK — 빈 셀만 카운트"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =COUNTBLANK(범위)",
-            "비어있는 **빈 셀**(Blank)의 개수만 셉니다.",
-            "예) {90, '', 80} → COUNTBLANK = **1** (가운데 빈 셀 1개)"
-          ]
         }
       ],
       "practice": {
@@ -258,56 +143,6 @@
           "type": "image",
           "url": "/images/stat-condcount.svg",
           "alt": "COUNTIF·AVERAGEIF — 조건에 맞는 행만 필터링하여 집계"
-        },
-        {
-          "type": "heading",
-          "text": "COUNTIF — 단일 조건 개수"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =COUNTIF(범위, 조건)",
-            "지정한 범위에서 조건을 만족하는 셀의 개수를 구합니다.",
-            "예) =COUNTIF(B2:B10, \"대리\") → B2:B10에서 '대리'인 셀 개수"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "COUNTIFS — 다중 조건 개수"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =COUNTIFS(범위1, 조건1, 범위2, 조건2, ...)",
-            "여러 조건을 **동시에 만족(AND)**하는 셀의 개수를 구합니다.",
-            "예) =COUNTIFS(B2:B10, \"대리\", C2:C10, \">2500000\")"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "AVERAGEIF — 단일 조건 평균"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =AVERAGEIF(조건범위, 조건, [평균범위])",
-            "조건에 맞는 셀을 찾아 지정된 **평균범위**의 평균을 구합니다.",
-            "평균범위 생략 시 조건범위를 평균범위로 사용합니다.",
-            "예) =AVERAGEIF(B2:B4, \"대리\", C2:C4) → '대리' 직급의 급여 평균"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "AVERAGEIFS — 다중 조건 평균 ⚠️ 인수 순서 주의!"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =AVERAGEIFS(평균범위, 조건범위1, 조건1, 조건범위2, 조건2, ...)",
-            "⚠️ AVERAGEIF와 달리 **계산할 평균범위가 맨 앞**에 옵니다!",
-            "여러 조건을 동시에 만족하는 데이터의 평균을 계산합니다.",
-            "예) =AVERAGEIFS(C2:C10, B2:B10, \"대리\", D2:D10, \"서울\")"
-          ]
         }
       ],
       "practice": {
