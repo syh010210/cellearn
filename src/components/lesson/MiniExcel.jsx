@@ -103,7 +103,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
   }, [autoplay]);
 
   useEffect(() => {
-    function onMouseMove(e) {
+    function onPointerMove(e) {
       if (!isDraggingRef.current && !isRangeDraggingRef.current) return;
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const td = el?.closest?.("td[data-ri]");
@@ -116,7 +116,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
       setHoverCell({ ri, ci });
     }
 
-    function onMouseUp() {
+    function onPointerUp() {
       // 수식 범위 선택 드래그 완료
       if (isRangeDraggingRef.current) {
         const src = rangeStartRef.current;
@@ -182,11 +182,14 @@ export default function MiniExcel({ practice, autoplay = false }) {
       setHoverCell(null);
     }
 
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
+    // Pointer Events로 마우스·터치·펜을 모두 처리 (태블릿 지원)
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
     return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
     };
   }, []);
 
@@ -201,12 +204,14 @@ export default function MiniExcel({ practice, autoplay = false }) {
     );
   }
 
-  // 수식 모드 중 셀 mousedown: 범위 선택 드래그 시작 (즉시 삽입하지 않고 mouseup 시 삽입)
-  function handleCellMouseDown(e, ri, ci) {
+  // 수식 모드 중 셀 pointerdown: 범위 선택 드래그 시작 (즉시 삽입하지 않고 pointerup 시 삽입)
+  function handleCellPointerDown(e, ri, ci) {
     cancelAuto();
     if (isFormulaMode()) {
       e.preventDefault();
-      // 드래그 시작 시점의 커서 위치 저장 — mouseup 시 이 위치에 범위 주소 삽입
+      // 터치 드래그가 스크롤로 가로채이지 않도록 포인터 캡처
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
+      // 드래그 시작 시점의 커서 위치 저장 — pointerup 시 이 위치에 범위 주소 삽입
       rangeDragCursorRef.current = inputRef.current?.selectionStart ?? inputVal.length;
       isRangeDraggingRef.current = true;
       rangeStartRef.current = { ri, ci };
@@ -321,6 +326,8 @@ export default function MiniExcel({ practice, autoplay = false }) {
     e.preventDefault();
     e.stopPropagation();
     if (isFormulaMode()) return;
+    // 터치로 핸들을 끌 때 스크롤 대신 드래그가 유지되도록 포인터 캡처
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
     if (selected) {
       const selRi = selected.ri, selCi = selected.ci;
       const trimmed = inputVal.trim();
@@ -444,7 +451,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
         />
         {selected && selCell?.editable && (
           <button
-            onMouseDown={(e) => e.preventDefault()}
+            onPointerDown={(e) => e.preventDefault()}
             onClick={() => {
               commitInput(selected.ri, selected.ci, inputVal);
               setSelected(null);
@@ -490,7 +497,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
       )}
 
       {/* 테이블 */}
-      <div style={{ overflowX: "auto", border: "1px solid #d0d0d0", borderRadius: "0 0 4px 4px", marginBottom: 16 }}>
+      <div style={{ overflowX: "auto", border: "1px solid #d0d0d0", borderRadius: "0 0 4px 4px", marginBottom: 16, touchAction: (dragging || rangeSelecting) ? "none" : "auto" }}>
         <table style={{ borderCollapse: "collapse", fontSize: 14, fontFamily: FONT }}>
           <thead>
             <tr>
@@ -609,7 +616,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
                       key={ci}
                       data-ri={ri}
                       data-ci={ci}
-                      onMouseDown={(e) => handleCellMouseDown(e, ri, ci)}
+                      onPointerDown={(e) => handleCellPointerDown(e, ri, ci)}
                       onClick={() => selectCell(ri, ci)}
                       onDoubleClick={() => enterEditMode(ri, ci)}
                       style={{
@@ -637,9 +644,9 @@ export default function MiniExcel({ practice, autoplay = false }) {
                       </div>
                       {isSel && cell.editable && (
                         <div
-                          onMouseDown={(e) => handleFillDragStart(e, ri, ci)}
+                          onPointerDown={(e) => handleFillDragStart(e, ri, ci)}
                           title="드래그하여 자동 채우기"
-                          style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: XL, border: "1px solid #fff", cursor: "crosshair", zIndex: 10 }}
+                          style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: XL, border: "1px solid #fff", cursor: "crosshair", zIndex: 10, touchAction: "none" }}
                         />
                       )}
                     </td>
