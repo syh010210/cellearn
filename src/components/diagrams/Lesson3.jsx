@@ -289,68 +289,95 @@ export function StatCountDiagram() {
 // StatCondCountDiagram
 // ──────────────────────────────────────────────
 export function StatCondCountDiagram() {
-  // B=직급, C=급여 (대리 2명 강조)
-  const rows = [
-    ['과장', '4,000,000', false],
-    ['대리', '3,000,000', true],
-    ['대리', '2,600,000', true],
+  // A 이름 · B 직급 · C 급여 · D 부서 · E 성과급 (2~5행)
+  const grid = [
+    ['이름', '직급', '급여', '부서', '성과급'],
+    ['김대리', '대리', '3,500,000', '영업부', '500,000'],
+    ['박과장', '과장', '4,000,000', '인사부', '900,000'],
+    ['이대리', '대리', '2,800,000', '영업부', '300,000'],
+    ['최대리', '대리', '3,000,000', '영업부', '400,000'],
   ];
+
+  const Prob = ({ children }) => (
+    <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderLeft: `4px solid ${C.amber}`, borderRadius: 6, padding: '8px 12px', fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>
+      <span style={{ color: C.amber, fontWeight: 800, marginRight: 6, fontSize: 11.5 }}>문제</span>{children}
+    </div>
+  );
+
   return (
     <Wrap>
       <Title>조건부 집계: COUNTIF · COUNTIFS · AVERAGEIF · AVERAGEIFS</Title>
 
-      {/* 데이터 표 (B=직급 / C=급여, '대리' 강조) */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '36px 120px 132px' }}>
+      {/* 데이터 표 (열 머리 A~E / 제목 행 분리) */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '32px 78px 62px 100px 70px 92px' }}>
           <div style={XL_HDR} />
-          <div style={XL_HDR}>B (직급)</div>
-          <div style={XL_HDR}>C (급여)</div>
-          {rows.map(([t, s, hl], i) => ([
-            <div key={`r${i}`} style={XL_HDR}>{i + 2}</div>,
-            <div key={`t${i}`} style={hl ? xlCell({ bg: C.purpleCard, color: C.purpleLight, bold: true, border: C.purple }) : xlCell({ color: C.textMuted })}>{t}</div>,
-            <div key={`s${i}`} style={hl ? xlCell({ bg: C.purpleCard, color: C.purpleLight, bold: true, border: C.purple }) : xlCell({ color: C.textMuted })}>{s}</div>,
-          ]))}
+          {['A', 'B', 'C', 'D', 'E'].map(c => <div key={c} style={XL_HDR}>{c}</div>)}
+          {grid.map((row, ri) => {
+            const isLabel = ri === 0;
+            return [
+              <div key={`rh${ri}`} style={XL_HDR}>{ri + 1}</div>,
+              ...row.map((v, ci) => {
+                const num = ci === 2 || ci === 4;
+                const st = isLabel
+                  ? xlCell({ bg: C.blueCard, color: C.blueLight, bold: true, border: C.blueDim, size: 13.5 })
+                  : xlCell({ size: 13.5, color: num ? C.text : C.textMuted, bold: num });
+                return <div key={`c${ri}-${ci}`} style={st}>{v}</div>;
+              }),
+            ];
+          })}
         </div>
       </div>
-      <div style={{ textAlign: 'center', color: C.purple, fontWeight: 700, fontSize: 13.5, marginBottom: 14 }}>
-        조건: 직급 = &quot;대리&quot; 인 행만 집계
-      </div>
 
-      {/* 단일 조건 */}
+      {/* B·C열 → COUNTIF / COUNTIFS */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-        <FuncCard
-          name="COUNTIF" syntax="구문: =COUNTIF(범위, 조건)"
-          desc="조건에 맞는 셀 개수"
-          formula={'=COUNTIF(B2:B4, "대리")'} value="= 2"
-          color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
-        />
-        <FuncCard
-          name="AVERAGEIF" syntax="구문: =AVERAGEIF(조건범위, 조건, [평균범위])"
-          desc="조건에 맞는 행의 평균"
-          formula={'=AVERAGEIF(B2:B4, "대리", C2:C4)'} value="= 2,800,000" valueSize={15}
-          color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
-        />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Prob>직급(B)이 &quot;대리&quot;인 직원은 몇 명?</Prob>
+          <FuncCard
+            name="COUNTIF" syntax="구문: =COUNTIF(범위, 조건)"
+            desc="조건에 맞는 셀 개수"
+            formula={'=COUNTIF(B2:B5, "대리")'} value="= 3"
+            color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
+          />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Prob>&quot;대리&quot;이면서 급여(C)가 급여 평균보다 큰 직원은 몇 명?</Prob>
+          <FuncCard
+            name="COUNTIFS" syntax="구문: =COUNTIFS(범위1, 조건1, 범위2, 조건2, …)"
+            desc="여러 조건 동시 만족(AND) 개수"
+            formula={'=COUNTIFS(B2:B5, "대리", C2:C5, ">"&AVERAGE(C2:C5))'} value="= 1" valueSize={15}
+            color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
+          />
+        </div>
       </div>
 
-      {/* 다중 조건 (S 붙음) */}
-      <div style={{ display: 'flex', gap: 12 }}>
-        <FuncCard
-          name="COUNTIFS" syntax="구문: =COUNTIFS(범위1, 조건1, 범위2, 조건2, …)"
-          desc="여러 조건 동시 만족(AND) 개수"
-          formula={'=COUNTIFS(B2:B4, "대리", C2:C4, ">2700000")'} value="= 1" valueSize={15}
-          color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
-        />
-        <FuncCard
-          name="AVERAGEIFS" syntax="구문: =AVERAGEIFS(평균범위, 조건범위1, 조건1, …)"
-          desc="여러 조건 평균 · ⚠️ 평균범위가 맨 앞!"
-          formula={'=AVERAGEIFS(C2:C4, B2:B4, "대리")'} value="= 2,800,000" valueSize={15}
-          color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
-        />
+      {/* D·E열 → AVERAGEIF / AVERAGEIFS */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Prob>부서(D)가 &quot;영업부&quot;인 직원의 평균 성과급(E)은?</Prob>
+          <FuncCard
+            name="AVERAGEIF" syntax="구문: =AVERAGEIF(조건범위, 조건, [평균범위])"
+            desc="조건에 맞는 행의 평균"
+            formula={'=AVERAGEIF(D2:D5, "영업부", E2:E5)'} value="= 400,000" valueSize={15}
+            color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
+          />
+        </div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Prob>&quot;영업부&quot;이고 성과급이 350,000 초과인 직원의 평균 성과급은?</Prob>
+          <FuncCard
+            name="AVERAGEIFS" syntax="구문: =AVERAGEIFS(평균범위, 조건범위1, 조건1, …)"
+            desc="여러 조건 평균 · ⚠️ 평균범위가 맨 앞!"
+            formula={'=AVERAGEIFS(E2:E5, D2:D5, "영업부", E2:E5, ">350000")'} value="= 450,000" valueSize={15}
+            color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
+          />
+        </div>
       </div>
 
-      <BottomBar>
-        <BLine color={C.blue} bold>조건은 &quot;대리&quot;  &quot;&gt;80&quot; 처럼 따옴표로 감쌉니다 · AVERAGEIFS는 평균범위가 맨 앞(AVERAGEIF와 순서 다름!)</BLine>
-      </BottomBar>
+      {/* & 연산자 설명 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', fontSize: 13, color: C.textMuted, lineHeight: 1.7 }}>
+        <div>조건은 <b style={{ color: C.text }}>&quot;대리&quot;  &quot;&gt;80&quot;</b> 처럼 따옴표로 감쌉니다 · AVERAGEIFS는 <b style={{ color: C.greenLight }}>평균범위가 맨 앞</b>(AVERAGEIF와 순서 다름!)</div>
+        <div style={{ marginTop: 4 }}>조건 안에 <b style={{ color: C.text }}>함수·셀 값</b>을 넣으려면 <b style={{ color: C.amber }}>&amp;</b> 로 이어 붙입니다. 예) <b style={{ color: C.text }}>&quot;&gt;&quot;&amp;AVERAGE(C2:C5)</b> → &quot;급여 평균 초과&quot; 조건</div>
+      </div>
     </Wrap>
   );
 }
