@@ -188,9 +188,9 @@ export function StringFindTrimDiagram() {
       <Title>FIND · SEARCH · TRIM 함수</Title>
 
       <div style={{ display: 'flex', gap: 12 }}>
-        {/* Left panel: FIND vs SEARCH */}
+        {/* Left panel: FIND vs SEARCH (TRIM보다 넓게) */}
         <div style={{
-          flex: 1, background: C.bgDark, border: `1px solid ${C.border}`,
+          flex: 1.8, background: C.bgDark, border: `1px solid ${C.border}`,
           borderRadius: 10, padding: '14px 16px',
         }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: C.amber, textAlign: 'center', marginBottom: 12 }}>
@@ -202,7 +202,7 @@ export function StringFindTrimDiagram() {
             <Card bg="#14532d" border="#22c55e" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, marginBottom: 4 }}>FIND</div>
               <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: C.greenLight, marginBottom: 6 }}>구문: =FIND(찾을문자, 텍스트)</div>
+              <div style={{ fontWeight: 700, fontSize: 12.5, color: C.greenLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =FIND(찾을문자, 텍스트)</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =FIND("j","John_j")'}
               </div>
@@ -213,7 +213,7 @@ export function StringFindTrimDiagram() {
             <Card bg="#172554" border="#3b82f6" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight, marginBottom: 4 }}>SEARCH</div>
               <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
-              <div style={{ fontWeight: 700, fontSize: 13, color: C.blueLight, marginBottom: 6 }}>구문: =SEARCH(찾을문자, 텍스트)</div>
+              <div style={{ fontWeight: 700, fontSize: 12.5, color: C.blueLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =SEARCH(찾을문자, 텍스트)</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =SEARCH("J","John_j")'}
               </div>
@@ -248,12 +248,6 @@ export function StringFindTrimDiagram() {
 
           {/* Explanations */}
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.amber, marginBottom: 4 }}>
-              {'FIND("j") = 6  (소문자 j는 6번째)'}
-            </div>
-            <div style={{ fontSize: 15, color: C.blue, marginBottom: 4 }}>
-              {'SEARCH("J") = 1  (대소문자 무시 → J와 j 같음)'}
-            </div>
             <div style={{ fontSize: 14, color: C.textSlate }}>
               찾는 문자가 없으면  #VALUE!  오류 반환
             </div>
@@ -270,16 +264,16 @@ export function StringFindTrimDiagram() {
           </div>
           <div style={{ fontWeight: 700, fontSize: 13.5, color: C.purpleLight, textAlign: 'center', marginBottom: 12 }}>구문: =TRIM(텍스트)</div>
 
-          <div style={{ fontSize: 14, color: C.textDim, marginBottom: 6 }}>입력 값 (A2)</div>
+          <div style={{ fontSize: 13, color: C.textDim, marginBottom: 6 }}>입력 값 (A2) <span style={{ fontSize: 11.5, color: C.textSlate }}>— 공백은 이해를 돕기 위해 _ 로 표시</span></div>
           <div style={{
             background: '#450a0a', border: `1px solid #ef4444`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center',
-            fontSize: 16, color: C.redLight, fontStyle: 'italic',
+            fontSize: 17, fontWeight: 700, color: C.redLight,
           }}>
-            {"  컴활  2급  "}
+            {"__컴활_2급__"}
           </div>
           <div style={{ fontSize: 14, color: C.textDim, textAlign: 'center', marginTop: 8 }}>
-            앞 공백 2칸 · 단어 사이 공백 2칸 · 뒤 공백 2칸
+            앞 공백 2칸 · 단어 사이 공백 1칸 · 뒤 공백 2칸
           </div>
 
           <div style={{
@@ -297,9 +291,9 @@ export function StringFindTrimDiagram() {
           <div style={{
             background: '#052e16', border: `1px solid #22c55e`,
             borderRadius: 8, padding: '10px 12px', textAlign: 'center',
-            fontSize: 16, color: C.greenLight,
+            fontSize: 17, fontWeight: 700, color: C.greenLight,
           }}>
-            {"컴활 2급"}
+            {"컴활_2급"}
           </div>
           <div style={{ fontSize: 14, color: C.textMuted, textAlign: 'center', marginTop: 8 }}>
             앞뒤 공백 모두 제거 · 단어 사이 공백 1칸만 유지
