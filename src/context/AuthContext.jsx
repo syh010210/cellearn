@@ -71,9 +71,12 @@ export function AuthProvider({ children }) {
       } else setDataReady(true);
       setLoading(false);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange(async (_e, sess) => {
+    // ⚠️ 이 콜백은 Supabase 내부 auth 락 안에서 실행된다. 여기서 다른 supabase 호출을
+    // await 하면 signInWithPassword 가 같은 락을 기다리며 데드락 → 로그인이 "확인 중…"에서
+    // 멈춘다. 반드시 setTimeout(0)으로 락 밖에서 실행하고, 콜백 자체는 async/await 를 쓰지 않는다.
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, sess) => {
       setSession(sess);
-      if (sess?.user) { setDataReady(false); await loadUserData(sess.user.id); }
+      if (sess?.user) { setDataReady(false); setTimeout(() => loadUserData(sess.user.id), 0); }
       else { setProfile(null); setEnrollments([]); setDataReady(true); }
     });
     return () => sub.subscription.unsubscribe();
