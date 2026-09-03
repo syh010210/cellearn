@@ -6,39 +6,59 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } fro
 export function StatBasicDiagram() {
   const data = [80, 95, 70, 85, 75];
   const cards = [
-    { fn: 'AVERAGE', syntax: '=AVERAGE(범위)', desc: '합계 ÷ 개수',      result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
-    { fn: 'MEDIAN',  syntax: '=MEDIAN(범위)',  desc: '정렬 후 가운데 값', result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
-    { fn: 'MAX',     syntax: '=MAX(범위)',     desc: '가장 큰 값',        result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
-    { fn: 'MIN',     syntax: '=MIN(범위)',     desc: '가장 작은 값',      result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
+    { fn: 'AVERAGE', syntax: '=AVERAGE(범위)', desc: '합계 ÷ 개수',      example: '=AVERAGE(B2:B6)', result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
+    { fn: 'MEDIAN',  syntax: '=MEDIAN(범위)',  desc: '정렬 후 가운데 값', example: '=MEDIAN(B2:B6)',  result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
+    { fn: 'MAX',     syntax: '=MAX(범위)',     desc: '가장 큰 값',        example: '=MAX(B2:B6)',     result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
+    { fn: 'MIN',     syntax: '=MIN(범위)',     desc: '가장 작은 값',      example: '=MIN(B2:B6)',     result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
   ];
+
+  const hdrCell = {
+    background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 14,
+    border: `1px solid ${C.border}`, textAlign: 'center', padding: '6px 8px',
+  };
+  const valCell = {
+    background: C.bgDark, color: C.text, fontWeight: 700, fontSize: 22,
+    border: `1px solid ${C.border}`, textAlign: 'center', padding: '8px',
+  };
 
   return (
     <Wrap>
       <Title>기본 통계 함수: AVERAGE · MEDIAN · MAX · MIN</Title>
-      <Subtitle>예시 데이터 (B2:B6) : 80, 95, 70, 85, 75</Subtitle>
+      <Subtitle>예시 데이터 (B2:B6)</Subtitle>
 
-      {/* Data cells */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
-        {data.map((v, i) => (
-          <Cell key={i} style={{ width: 72, fontWeight: 700, fontSize: 24, color: C.text, borderRadius: 6, border: `2px solid ${C.textSlate}` }}>
-            {v}
-          </Cell>
-        ))}
+      {/* Data as a real Excel-like table — 열 머리 2~6, 행 머리 B */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+        <table style={{ borderCollapse: 'collapse' }}>
+          <tbody>
+            <tr>
+              <td style={{ ...hdrCell, width: 42 }} />
+              {[2, 3, 4, 5, 6].map(r => (
+                <td key={r} style={{ ...hdrCell, width: 66 }}>{r}</td>
+              ))}
+            </tr>
+            <tr>
+              <td style={hdrCell}>B</td>
+              {data.map((v, i) => (
+                <td key={i} style={valCell}>{v}</td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div style={{ textAlign: 'center', color: C.textDim, fontSize: 15, marginBottom: 16 }}>B2:B6</div>
 
       {/* Four result cards */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
         {cards.map(card => (
           <div key={card.fn} style={{
             flex: 1, background: card.bg, border: `2px solid ${card.border}`,
-            borderRadius: 10, padding: 16,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+            borderRadius: 10, padding: 14,
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
           }}>
             <div style={{ color: card.color, fontSize: 18, fontWeight: 700 }}>{card.fn}</div>
-            <div style={{ color: card.color, fontSize: 13, fontWeight: 700, opacity: 0.95 }}>{card.syntax}</div>
-            <div style={{ color: card.color, fontSize: 14, opacity: 0.8 }}>{card.desc}</div>
-            <div style={{ color: card.resColor, fontSize: 34, fontWeight: 700, marginTop: 6 }}>{card.result}</div>
+            <div style={{ color: card.color, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>{card.syntax}</div>
+            <div style={{ color: card.color, fontSize: 13.5, opacity: 0.8 }}>{card.desc}</div>
+            <div style={{ color: card.color, fontSize: 12.5, fontWeight: 700, opacity: 0.9 }}>{card.example}</div>
+            <div style={{ color: card.resColor, fontSize: 30, fontWeight: 700, marginTop: 2 }}>{card.result}</div>
           </div>
         ))}
       </div>
