@@ -14,42 +14,6 @@
           "type": "image",
           "url": "/images/string-extract.svg",
           "alt": "LEFT, RIGHT, MID 함수 추출 범위 시각화"
-        },
-        {
-          "type": "heading",
-          "text": "LEFT 함수 — 왼쪽에서 추출"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =LEFT(텍스트, 개수)",
-            "문자열의 가장 왼쪽(첫 번째)부터 지정한 개수만큼 문자를 반환합니다.",
-            "예) =LEFT(\"ABC456XYZ\", 3) → **\"ABC\"**"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "RIGHT 함수 — 오른쪽에서 추출"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =RIGHT(텍스트, 개수)",
-            "문자열의 가장 오른쪽(마지막)부터 지정한 개수만큼 문자를 반환합니다.",
-            "예) =RIGHT(\"ABC456XYZ\", 3) → **\"XYZ\"**"
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "MID 함수 — 중간에서 추출"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**구문**: =MID(텍스트, 시작위치, 개수)",
-            "시작위치는 **1번**부터 셉니다. 지정한 위치부터 지정한 개수만큼 반환합니다.",
-            "예) =MID(\"ABC456XYZ\", 4, 2) → **\"45\"** (4번째 글자부터 2글자)"
-          ]
         }
       ],
       "practice": {

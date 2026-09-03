@@ -45,7 +45,7 @@ export function StringExtractDiagram() {
             borderRadius: 6, padding: '8px 16px',
           }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>LEFT · 왼쪽 3글자</span>
-            <span style={{ fontSize: 15, color: C.green }}>→ 1~3번째 ①②③</span>
+            <span style={{ fontSize: 15, color: C.green }}>{'=LEFT("ABC456XYZ", 3)'}</span>
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -53,7 +53,7 @@ export function StringExtractDiagram() {
             borderRadius: 6, padding: '8px 16px',
           }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight }}>MID · 4번째부터 2글자</span>
-            <span style={{ fontSize: 15, color: C.purple }}>→ 4~5번째 ④⑤</span>
+            <span style={{ fontSize: 15, color: C.purple }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
           </div>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
@@ -61,37 +61,34 @@ export function StringExtractDiagram() {
             borderRadius: 6, padding: '8px 16px',
           }}>
             <span style={{ fontWeight: 700, fontSize: 15, color: C.orange }}>RIGHT · 오른쪽 3글자</span>
-            <span style={{ fontSize: 15, color: C.orangeLight }}>→ 7~9번째 ⑦⑧⑨</span>
+            <span style={{ fontSize: 15, color: C.orangeLight }}>{'=RIGHT("ABC456XYZ", 3)'}</span>
           </div>
         </div>
 
         {/* Three function cards */}
         <div style={{ display: 'flex', gap: 16 }}>
           <Card bg="#14532d" border="#22c55e" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight, marginBottom: 6 }}>
-              {'=LEFT("ABC456XYZ", 3)'}
-            </div>
-            <div style={{ fontSize: 15, color: C.green, marginBottom: 8 }}>왼쪽부터 3글자 추출</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight, marginBottom: 6 }}>구문: =LEFT(텍스트, 개수)</div>
+            <div style={{ fontSize: 14, color: C.green, lineHeight: 1.6, marginBottom: 10 }}>문자열의 가장 왼쪽(첫 번째)부터 지정한 개수만큼 문자를 반환합니다.</div>
+            <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>왼쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#22c55e" size={28} />
               <span style={{ fontWeight: 700, fontSize: 17, color: C.greenLight }}>"ABC"</span>
             </div>
           </Card>
           <Card bg="#2e1065" border="#a855f7" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight, marginBottom: 6 }}>
-              {'=MID("ABC456XYZ", 4, 2)'}
-            </div>
-            <div style={{ fontSize: 15, color: C.purple, marginBottom: 8 }}>4번째 위치에서 2글자 추출</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight, marginBottom: 6 }}>구문: =MID(텍스트, 시작위치, 개수)</div>
+            <div style={{ fontSize: 14, color: C.purple, lineHeight: 1.6, marginBottom: 10 }}>시작위치는 1번부터 셉니다. 지정한 위치부터 지정한 개수만큼 반환합니다.</div>
+            <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>4번째 위치에서 2글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#a855f7" size={28} />
               <span style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight }}>"45"</span>
             </div>
           </Card>
           <Card bg="#431407" border="#f97316" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.orange, marginBottom: 6 }}>
-              {'=RIGHT("ABC456XYZ", 3)'}
-            </div>
-            <div style={{ fontSize: 15, color: C.orange, marginBottom: 8 }}>오른쪽부터 3글자 추출</div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.orange, marginBottom: 6 }}>구문: =RIGHT(텍스트, 개수)</div>
+            <div style={{ fontSize: 14, color: C.orange, lineHeight: 1.6, marginBottom: 10 }}>문자열의 가장 오른쪽(마지막)부터 지정한 개수만큼 문자를 반환합니다.</div>
+            <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>오른쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#fb923c" size={28} />
               <span style={{ fontWeight: 700, fontSize: 17, color: C.orange }}>"XYZ"</span>
