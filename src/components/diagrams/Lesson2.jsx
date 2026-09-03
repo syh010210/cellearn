@@ -104,6 +104,7 @@ export function StringLenCaseDiagram() {
   const rows = [
     {
       fn: 'LEN', fnBg: '#172554', fnBorder: '#3b82f6', fnColor: C.blueLight,
+      syntax: '=LEN(텍스트)',
       formula: '=LEN("Excel Exam")',
       result: '10',
       resultSize: 24,
@@ -111,6 +112,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'UPPER', fnBg: '#14532d', fnBorder: '#22c55e', fnColor: C.greenLight,
+      syntax: '=UPPER(텍스트)',
       formula: '=UPPER("hello world")',
       result: 'HELLO WORLD',
       resultSize: 15,
@@ -118,6 +120,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'LOWER', fnBg: '#431407', fnBorder: '#f97316', fnColor: C.orange,
+      syntax: '=LOWER(텍스트)',
       formula: '=LOWER("EXCEL EXAM")',
       result: 'excel exam',
       resultSize: 15,
@@ -125,6 +128,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'PROPER', fnBg: '#2e1065', fnBorder: '#a855f7', fnColor: C.purpleLight,
+      syntax: '=PROPER(텍스트)',
       formula: '=PROPER("hello world")',
       result: 'Hello World',
       resultSize: 15,
@@ -137,9 +141,9 @@ export function StringLenCaseDiagram() {
       <Title>문자열 길이 · 대소문자 변환 함수</Title>
       <Subtitle>LEN — 글자 수 반환 / UPPER — 대문자 / LOWER — 소문자 / PROPER — 단어 첫 글자 대문자</Subtitle>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr 140px 1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '78px 1fr 1fr 108px 1.1fr' }}>
         {/* Header row */}
-        {['함수', '입력 수식', '결과', '설명'].map(h => (
+        {['함수', '구문', '입력 수식', '결과', '설명'].map(h => (
           <Cell key={h} bg="#0c2344" border="#3b82f6" bw={2}
             style={{ fontWeight: 700, fontSize: 16, color: '#93c5fd' }}>
             {h}
@@ -150,6 +154,10 @@ export function StringLenCaseDiagram() {
           <Cell key={`fn${row.fn}`} bg={row.fnBg} border={row.fnBorder} bw={2}
             style={{ fontWeight: 700, fontSize: 17, color: row.fnColor }}>
             {row.fn}
+          </Cell>,
+          <Cell key={`syn${row.fn}`} bg={C.bgDark} border={C.border}
+            style={{ fontWeight: 700, fontSize: 14, color: row.fnColor, justifyContent: 'flex-start', padding: '6px 10px' }}>
+            {row.syntax}
           </Cell>,
           <Cell key={`fml${row.fn}`} bg={C.bgDark} border={C.border}
             style={{ fontSize: 14, color: C.textMuted, justifyContent: 'flex-start', padding: '6px 10px' }}>
@@ -197,8 +205,9 @@ export function StringFindTrimDiagram() {
             <Card bg="#14532d" border="#22c55e" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, marginBottom: 4 }}>FIND</div>
               <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: C.greenLight, marginBottom: 6 }}>구문: =FIND(찾을문자, 텍스트)</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
-                {'=FIND("j","John_j")'}
+                {'예) =FIND("j","John_j")'}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>
                 → 6  (소문자 j)
@@ -207,8 +216,9 @@ export function StringFindTrimDiagram() {
             <Card bg="#172554" border="#3b82f6" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight, marginBottom: 4 }}>SEARCH</div>
               <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
+              <div style={{ fontWeight: 700, fontSize: 13, color: C.blueLight, marginBottom: 6 }}>구문: =SEARCH(찾을문자, 텍스트)</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
-                {'=SEARCH("J","John_j")'}
+                {'예) =SEARCH("J","John_j")'}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.blueLight }}>
                 → 1  (대소문자 무시)
@@ -258,9 +268,10 @@ export function StringFindTrimDiagram() {
           flex: 1, background: C.bgDark, border: `1px solid #a855f7`,
           borderRadius: 10, padding: '14px 16px',
         }}>
-          <div style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight, textAlign: 'center', marginBottom: 12 }}>
+          <div style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight, textAlign: 'center', marginBottom: 6 }}>
             TRIM 함수 — 불필요한 공백 제거
           </div>
+          <div style={{ fontWeight: 700, fontSize: 13.5, color: C.purpleLight, textAlign: 'center', marginBottom: 12 }}>구문: =TRIM(텍스트)</div>
 
           <div style={{ fontSize: 14, color: C.textDim, marginBottom: 6 }}>입력 값 (A2)</div>
           <div style={{
@@ -299,9 +310,6 @@ export function StringFindTrimDiagram() {
         </div>
       </div>
 
-      <BottomBar>
-        <BLine>{'=FIND(찾을텍스트, 문자열)  ·  =SEARCH(찾을텍스트, 문자열)  ·  =TRIM(텍스트)'}</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
