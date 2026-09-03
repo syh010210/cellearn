@@ -308,7 +308,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
     { Icon: BookOpen, title: "개념 학습", desc: "차시별 핵심 개념을 카드로 익히고, 웹 미니 엑셀에서 바로 수식을 쳐 봅니다." },
     { Icon: Download, title: "실습 파일 작성", desc: "실제 시험과 같은 형식의 엑셀 파일을 내려받아 직접 문제를 풉니다." },
     { Icon: Upload, title: "업로드 자동 채점", desc: "작성한 파일을 올리면 셀 단위로 수식까지 비교해 즉시 채점됩니다." },
-    { Icon: RefreshCw, title: "복습 퀴즈 및 오답노트 적립", desc: "객관식 퀴즈로 오늘 배운 개념을 점검하고, 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
+    { Icon: RefreshCw, title: "복습 퀴즈 및 오답노트", desc: "객관식 퀴즈로 오늘 배운 개념을 점검하고, 틀린 문제는 차시별 오답노트에 자동으로 쌓입니다." },
   ];
 
   const funcs = [
