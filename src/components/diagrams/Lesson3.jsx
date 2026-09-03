@@ -181,35 +181,37 @@ export function StatLargeSmallDiagram() {
   return (
     <Wrap>
       <Title>특정 순위의 값 추출: LARGE · SMALL</Title>
-      <Subtitle>내림차순으로 정렬하면 95 · 85 · 85 · 78</Subtitle>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-        {/* 표 (제일 왼쪽) */}
-        <div style={{ flexShrink: 0 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '34px 66px' }}>
-            <div style={XL_HDR} />
-            <div style={XL_HDR}>B</div>
+      <div style={{ display: 'flex', gap: 16, alignItems: 'stretch', justifyContent: 'center' }}>
+        {/* 표 (제일 왼쪽) — 크게, 세로 가운데 */}
+        <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '46px 88px' }}>
+            <div style={{ ...XL_HDR, fontSize: 15, padding: '10px 6px' }} />
+            <div style={{ ...XL_HDR, fontSize: 15, padding: '10px 6px' }}>B</div>
             {dataCol.map(([r, v]) => ([
-              <div key={`r${r}`} style={XL_HDR}>{r}</div>,
-              <div key={`v${r}`} style={xlCell({ bold: true, size: 16 })}>{v}</div>,
+              <div key={`r${r}`} style={{ ...XL_HDR, fontSize: 15, padding: '10px 6px' }}>{r}</div>,
+              <div key={`v${r}`} style={xlCell({ bold: true, size: 20 })}>{v}</div>,
             ]))}
           </div>
         </div>
 
-        {/* LARGE (표 오른쪽) */}
-        <FuncCard
-          name="LARGE" syntax="구문: =LARGE(범위, K)"
-          desc="범위에서 K번째로 큰 값"
-          formula="=LARGE(B2:B5, 2)" value="= 85 (2번째로 큰 값)" valueSize={15}
-          color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
-        />
-        {/* SMALL (그 오른쪽) */}
-        <FuncCard
-          name="SMALL" syntax="구문: =SMALL(범위, K)"
-          desc="범위에서 K번째로 작은 값"
-          formula="=SMALL(B2:B5, 1)" value="= 78 (가장 작은 값)" valueSize={15}
-          color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
-        />
+        {/* LARGE / SMALL — 고정 폭으로 과하게 커지지 않게 */}
+        <div style={{ width: 250, display: 'flex' }}>
+          <FuncCard
+            name="LARGE" syntax="구문: =LARGE(범위, K)"
+            desc="범위에서 K번째로 큰 값"
+            formula="=LARGE(B2:B5, 2)" value="= 85 (2번째로 큰 값)" valueSize={15}
+            color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
+          />
+        </div>
+        <div style={{ width: 250, display: 'flex' }}>
+          <FuncCard
+            name="SMALL" syntax="구문: =SMALL(범위, K)"
+            desc="범위에서 K번째로 작은 값"
+            formula="=SMALL(B2:B5, 1)" value="= 78 (가장 작은 값)" valueSize={15}
+            color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
+          />
+        </div>
       </div>
 
       <BottomBar>
