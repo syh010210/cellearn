@@ -37,31 +37,31 @@ export function StringExtractDiagram() {
           })}
         </div>
 
-        {/* Bracket annotations — 아래 함수 카드와 같은 3열 정렬(각 flex:1) */}
+        {/* Bracket annotations — 아래 함수 카드와 같은 3열, 각 박스는 한 줄 표기 */}
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             background: '#14532d', border: '1px solid #22c55e',
-            borderRadius: 6, padding: '8px 14px',
+            borderRadius: 6, padding: '8px 10px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.greenLight, whiteSpace: 'nowrap' }}>LEFT · 왼쪽 3글자</span>
-            <span style={{ fontSize: 14.5, color: C.green, whiteSpace: 'nowrap' }}>{'=LEFT("ABC456XYZ", 3)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 13.5, color: C.greenLight, whiteSpace: 'nowrap' }}>왼쪽 3글자</span>
+            <span style={{ fontSize: 13.5, color: C.green, whiteSpace: 'nowrap' }}>{'=LEFT("ABC456XYZ", 3)'}</span>
           </div>
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             background: '#2e1065', border: '1px solid #a855f7',
-            borderRadius: 6, padding: '8px 14px',
+            borderRadius: 6, padding: '8px 10px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.purpleLight, whiteSpace: 'nowrap' }}>MID · 4번째부터 2글자</span>
-            <span style={{ fontSize: 14.5, color: C.purple, whiteSpace: 'nowrap' }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 13.5, color: C.purpleLight, whiteSpace: 'nowrap' }}>4번째부터 2글자</span>
+            <span style={{ fontSize: 13.5, color: C.purple, whiteSpace: 'nowrap' }}>{'=MID("ABC456XYZ", 4, 2)'}</span>
           </div>
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             background: '#431407', border: '1px solid #f97316',
-            borderRadius: 6, padding: '8px 14px',
+            borderRadius: 6, padding: '8px 10px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 14.5, color: C.orange, whiteSpace: 'nowrap' }}>RIGHT · 오른쪽 3글자</span>
-            <span style={{ fontSize: 14.5, color: C.orangeLight, whiteSpace: 'nowrap' }}>{'=RIGHT("ABC456XYZ", 3)'}</span>
+            <span style={{ fontWeight: 700, fontSize: 13.5, color: C.orange, whiteSpace: 'nowrap' }}>오른쪽 3글자</span>
+            <span style={{ fontSize: 13.5, color: C.orangeLight, whiteSpace: 'nowrap' }}>{'=RIGHT("ABC456XYZ", 3)'}</span>
           </div>
         </div>
 
