@@ -27,7 +27,7 @@ export function StringExtractDiagram() {
                 <div style={{
                   width: 72, minHeight: 64, background: s.bg, border: `2px solid ${s.border}`,
                   borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 700, fontSize: 28, color: s.color, fontFamily: 'monospace',
+                  fontWeight: 700, fontSize: 28, color: s.color,
                 }}>
                   {ch}
                 </div>
@@ -37,69 +37,64 @@ export function StringExtractDiagram() {
           })}
         </div>
 
-        {/* Bracket annotations */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 32 }}>
+        {/* Bracket annotations — 세 함수 동일 형식(설명 → 몇 번째 위치) */}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
+            display: 'flex', alignItems: 'center', gap: 8,
             background: '#14532d', border: '1px solid #22c55e',
-            borderRadius: 6, padding: '6px 14px',
+            borderRadius: 6, padding: '8px 16px',
           }}>
-            <span style={{ fontSize: 18, color: C.green }}>{'['}</span>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>
-              LEFT(, 3): 1~3번째
-            </span>
-            <span style={{ fontSize: 18, color: C.green }}>{'  ①~③'}</span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: C.greenLight }}>LEFT · 왼쪽 3글자</span>
+            <span style={{ fontSize: 15, color: C.green }}>→ 1~3번째 ①②③</span>
           </div>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
+            display: 'flex', alignItems: 'center', gap: 8,
             background: '#2e1065', border: '1px solid #a855f7',
-            borderRadius: 6, padding: '6px 14px',
+            borderRadius: 6, padding: '8px 16px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight }}>
-              MID(4, 2): ④~⑤
-            </span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight }}>MID · 4번째부터 2글자</span>
+            <span style={{ fontSize: 15, color: C.purple }}>→ 4~5번째 ④⑤</span>
           </div>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
+            display: 'flex', alignItems: 'center', gap: 8,
             background: '#431407', border: '1px solid #f97316',
-            borderRadius: 6, padding: '6px 14px',
+            borderRadius: 6, padding: '8px 16px',
           }}>
-            <span style={{ fontWeight: 700, fontSize: 15, color: C.orange }}>
-              RIGHT(, 3): 7~9번째  ⑦~⑨
-            </span>
+            <span style={{ fontWeight: 700, fontSize: 15, color: C.orange }}>RIGHT · 오른쪽 3글자</span>
+            <span style={{ fontSize: 15, color: C.orangeLight }}>→ 7~9번째 ⑦⑧⑨</span>
           </div>
         </div>
 
         {/* Three function cards */}
         <div style={{ display: 'flex', gap: 16 }}>
           <Card bg="#14532d" border="#22c55e" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight, fontFamily: 'monospace', marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight, marginBottom: 6 }}>
               {'=LEFT("ABC456XYZ", 3)'}
             </div>
             <div style={{ fontSize: 15, color: C.green, marginBottom: 8 }}>왼쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#22c55e" size={28} />
-              <span style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, fontFamily: 'monospace' }}>"ABC"</span>
+              <span style={{ fontWeight: 700, fontSize: 17, color: C.greenLight }}>"ABC"</span>
             </div>
           </Card>
           <Card bg="#2e1065" border="#a855f7" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight, fontFamily: 'monospace', marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight, marginBottom: 6 }}>
               {'=MID("ABC456XYZ", 4, 2)'}
             </div>
             <div style={{ fontSize: 15, color: C.purple, marginBottom: 8 }}>4번째 위치에서 2글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#a855f7" size={28} />
-              <span style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight, fontFamily: 'monospace' }}>"45"</span>
+              <span style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight }}>"45"</span>
             </div>
           </Card>
           <Card bg="#431407" border="#f97316" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.orange, fontFamily: 'monospace', marginBottom: 6 }}>
+            <div style={{ fontWeight: 700, fontSize: 15, color: C.orange, marginBottom: 6 }}>
               {'=RIGHT("ABC456XYZ", 3)'}
             </div>
             <div style={{ fontSize: 15, color: C.orange, marginBottom: 8 }}>오른쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <ArrowRight color="#fb923c" size={28} />
-              <span style={{ fontWeight: 700, fontSize: 17, color: C.orange, fontFamily: 'monospace' }}>"XYZ"</span>
+              <span style={{ fontWeight: 700, fontSize: 17, color: C.orange }}>"XYZ"</span>
             </div>
           </Card>
         </div>
