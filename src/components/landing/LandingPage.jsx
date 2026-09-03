@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   BookOpen, Table2, CheckCircle2, XCircle, BarChart3, ArrowRight, ArrowUpRight,
-  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause, ChevronDown, CalendarClock,
+  Lock, Unlock, RefreshCw, Download, Upload, CalendarDays, Repeat, Play, Pause, ChevronDown,
 } from "lucide-react";
 import { LESSONS } from "../../data/lessons";
 import { DAYS } from "../../data/days";
@@ -66,33 +66,6 @@ function useIsMobile(bp = 768) {
     return () => window.removeEventListener("resize", onResize);
   }, [bp]);
   return m;
-}
-
-// 프로모션(올해 말) 마감까지 D-day 카운트다운 — 12/31 23:59:59 기준
-function Countdown({ year }) {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 60000); // 1분마다 갱신
-    return () => clearInterval(t);
-  }, []);
-  const end = new Date(year, 11, 31, 23, 59, 59);
-  const ms = end - now;
-  if (ms <= 0) return null;
-  const days = Math.floor(ms / 86400000);
-  const hours = Math.floor((ms % 86400000) / 3600000);
-  const mins = Math.floor((ms % 3600000) / 60000);
-  return (
-    <div style={{ display: "inline-flex", alignItems: "center", gap: 12, background: UI.limeSoft, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "10px 16px" }}>
-      <CalendarClock size={22} strokeWidth={1.75} color={UI.teal} style={{ flexShrink: 0 }} />
-      <div>
-        <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 2 }}>지금 결제 시 <b style={{ color: UI.ink }}>올해 끝까지</b> · 프로모션 마감까지</div>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ ...num, fontSize: 26, color: UI.teal, lineHeight: 1 }}>D-{days}</span>
-          <span style={{ ...num, fontSize: 13.5, color: UI.mut }}>{String(hours).padStart(2, "0")}시간 {String(mins).padStart(2, "0")}분</span>
-        </div>
-      </div>
-    </div>
-  );
 }
 
 // 히어로 시각물 — 3화면 자동 전환 캐러셀: 개념(엑셀 기본 구조) → 오답노트(퀴즈) → 복습 게이트.
@@ -420,18 +393,15 @@ export default function LandingPage({ onStart, onLegal, isAuthed, onSignOut }) {
               파일로 채점받고, 틀린 문제를 다 맞혀야 다음 수업이 열리는 <b style={{ color: UI.ink }}>실기 전용</b> 학습입니다.
             </p>
 
-            <div style={{ marginTop: "auto" }}>
-              <Countdown year={SCHEDULE.promoEndYear} />
-              <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: 18, flexWrap: "wrap" }}>
-                <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
-                <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                  {SCHEDULE.grade1Month} 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
-                </a>
-              </div>
+            <div style={{ display: "flex", gap: 18, alignItems: "center", marginTop: "auto", flexWrap: "wrap" }}>
+              <Btn variant="dark" onClick={goPricing}>2급 실기 시작하기 <ArrowRight size={18} strokeWidth={2} /></Btn>
+              <a href="#pricing" style={{ color: UI.teal, fontWeight: 700, fontSize: 15, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                {SCHEDULE.grade1Month} 1급 오픈 예정 <ArrowRight size={16} strokeWidth={2} />
+              </a>
             </div>
             {isMobile && (
               <div style={{ marginTop: 14, fontSize: 13, color: UI.mut }}>
-                ※ 개념 학습·실습·채점은 PC에서 이용할 수 있어요.
+                ※ 수업은 PC에서만 수강할 수 있어요. (개념 학습·실습·채점)
               </div>
             )}
           </div>

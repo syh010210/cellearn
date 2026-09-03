@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { UI } from "../../theme";
 
@@ -8,12 +8,26 @@ const SUPPORT_EMAIL = "support@cellearn.kr";
 // 빠른 문의 주제 (누르면 메시지에 프리필)
 const QUICK = ["수강·결제 문의", "환불 문의", "학습/채점 오류", "기타 문의"];
 
+// 올해 말(프로모션 마감, 12/31)까지 남은 일수 — 매 분 갱신. 지난 경우 null.
+function useDday() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(t);
+  }, []);
+  const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
+  const ms = end - now;
+  if (ms <= 0) return null;
+  return Math.floor(ms / 86400000);
+}
+
 // 떠 있는 원형 고객센터 위젯 — 백엔드 없이 메일로 문의를 전달한다.
 export default function SupportWidget() {
   const [open, setOpen] = useState(false);
   const [topic, setTopic] = useState("");
   const [msg, setMsg] = useState("");
   const [replyTo, setReplyTo] = useState("");
+  const dday = useDday();
 
   function send() {
     const subject = `[CellLearn 문의]${topic ? " " + topic : ""}`;
@@ -109,19 +123,46 @@ export default function SupportWidget() {
         </div>
       )}
 
-      {/* 원형 버튼 */}
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label={open ? "고객센터 닫기" : "고객센터 열기"}
-        style={{
-          position: "fixed", right: 24, bottom: 24, zIndex: 1000,
-          width: 56, height: 56, borderRadius: UI.rPill, border: "none", cursor: "pointer",
-          background: UI.teal, color: "#fff", boxShadow: UI.shadow,
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        {open ? <X size={24} strokeWidth={2} /> : <MessageCircle size={24} strokeWidth={2} />}
-      </button>
+      {/* 원형 버튼 위: 프로모션 D-day 배지 (위젯이 닫혀 있을 때만) */}
+      {!open && dday != null && (
+        <div
+          style={{
+            position: "fixed", right: 24, bottom: 92, zIndex: 1000,
+            background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rMd,
+            boxShadow: UI.shadow, padding: "8px 14px", textAlign: "center", fontFamily: UI.font, pointerEvents: "none",
+          }}
+        >
+          <div style={{ fontSize: 11, color: UI.mut, fontWeight: 600, marginBottom: 1, whiteSpace: "nowrap" }}>프로모션 마감까지</div>
+          <div style={{ fontSize: 20, fontWeight: 800, color: UI.teal, letterSpacing: "-0.02em", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>D-{dday}</div>
+        </div>
+      )}
+
+      {/* 우하단: 문의 안내 라벨 + 원형 버튼 */}
+      <div style={{ position: "fixed", right: 24, bottom: 24, zIndex: 1000, display: "flex", alignItems: "center", gap: 10 }}>
+        {!open && (
+          <span
+            onClick={() => setOpen(true)}
+            style={{
+              background: UI.surface, border: `1px solid ${UI.line}`, boxShadow: UI.shadow,
+              color: UI.ink, fontSize: 13, fontWeight: 700, padding: "9px 14px", borderRadius: UI.rPill,
+              whiteSpace: "nowrap", fontFamily: UI.font, cursor: "pointer",
+            }}
+          >
+            궁금한 점, 문의하세요
+          </span>
+        )}
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label={open ? "고객센터 닫기" : "고객센터 문의 열기"}
+          style={{
+            width: 56, height: 56, borderRadius: UI.rPill, border: "none", cursor: "pointer",
+            background: UI.teal, color: "#fff", boxShadow: UI.shadow, flexShrink: 0,
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          {open ? <X size={24} strokeWidth={2} /> : <MessageCircle size={24} strokeWidth={2} />}
+        </button>
+      </div>
     </>
   );
 }
