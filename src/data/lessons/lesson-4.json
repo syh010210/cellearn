@@ -118,16 +118,16 @@
       }
     },
     {
-      "heading": "2. 유사 일치 — 구간으로 값 찾기 (HLOOKUP · AVERAGE)",
+      "heading": "2. 유사 일치 — 구간으로 값 찾기 (가로 기준표 · HLOOKUP)",
       "contentBlocks": [
         {
           "type": "text",
-          "text": "찾을 값이 딱 떨어지는 코드·이름이면 마지막 인수를 **FALSE**(정확히 일치)로 씁니다. 반대로 점수·금액처럼 특정 **구간**에 속하는지 볼 때는 마지막 인수를 **생략하거나 TRUE**로 두는 **유사 일치**를 씁니다. 실기에서는 보통 구간 값이 **가로 기준표**로 주어져 **HLOOKUP**과 함께, **AVERAGE·ROUNDUP** 같은 함수를 중첩해 출제됩니다."
+          "text": "찾을 값이 딱 떨어지는 코드·이름이면 마지막 인수를 **FALSE**(정확히 일치)로 씁니다. 반대로 점수·금액처럼 특정 **구간**에 속하는지 볼 때는 마지막 인수를 **생략하거나 TRUE**로 두는 **유사 일치**를 씁니다. 실기에서는 보통 구간 값이 **가로 기준표**로 주어져 **HLOOKUP**과 함께 출제되며, AVERAGE·ROUNDUP 같은 함수를 중첩하기도 합니다."
         },
         {
           "type": "image",
           "url": "/diagram/lookup-vlookup-approx",
-          "alt": "본선 시험 결과 표와 가로 기준표를 이용해 두 과목 평균이 속한 구간의 평가를 HLOOKUP 유사 일치로 찾는 예시"
+          "alt": "학생 성적표와 가로 기준표를 이용해 총점이 속한 구간의 등급을 HLOOKUP 유사 일치로 찾는 예시"
         },
         {
           "type": "heading",
@@ -144,28 +144,31 @@
         }
       ],
       "practice": {
-        "instruction": "[표4]에서 이론[B2:B3]과 실습[C2:C3]의 평균과 [B5:E7] 영역의 기준표를 이용하여 각 학생의 평가[D2:D3]를 구하시오. (AVERAGE, HLOOKUP 함수 사용 · D2 입력 후 D3로 자동 채우기)",
-        "cols": ["A", "B", "C", "D", "E"],
+        "instruction": "[표1]에서 총점[B2:B3]과 [B5:F6] 영역의 가로 기준표를 이용하여 각 학생의 등급[C2:C3]을 구하시오. (HLOOKUP 유사 일치 · C2 입력 후 C3로 자동 채우기)",
+        "cols": ["A", "B", "C", "D", "E", "F"],
         "rows": [
           [
-            { "val": "성명", "editable": false },
-            { "val": "이론", "editable": false },
-            { "val": "실습", "editable": false },
-            { "val": "평가", "editable": false },
+            { "val": "이름", "editable": false },
+            { "val": "총점", "editable": false },
+            { "val": "등급", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "이철영", "editable": false },
-            { "val": 65, "editable": false },
-            { "val": 98, "editable": false },
-            { "val": "", "editable": true, "answer": "=HLOOKUP(AVERAGE(B2,C2),$B$5:$E$7,3,TRUE)", "result": "B" },
+            { "val": "정지호", "editable": false },
+            { "val": 88, "editable": false },
+            { "val": "", "editable": true, "answer": "=HLOOKUP(B2,$B$5:$F$6,2,TRUE)", "result": "우" },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "허영수", "editable": false },
-            { "val": 85, "editable": false },
-            { "val": 100, "editable": false },
-            { "val": "", "editable": true, "answer": "=HLOOKUP(AVERAGE(B3,C3),$B$5:$E$7,3,TRUE)", "result": "A" },
+            { "val": "방정수", "editable": false },
+            { "val": 73, "editable": false },
+            { "val": "", "editable": true, "answer": "=HLOOKUP(B3,$B$5:$F$6,2,TRUE)", "result": "미" },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
@@ -173,28 +176,24 @@
             { "val": "", "editable": false },
             { "val": "", "editable": false },
             { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "평균점수", "editable": false },
+            { "val": "기준점수", "editable": false },
             { "val": 0, "editable": false },
+            { "val": 60, "editable": false },
             { "val": 70, "editable": false },
             { "val": 80, "editable": false },
             { "val": 90, "editable": false }
           ],
           [
-            { "val": "장학금", "editable": false },
-            { "val": "0원", "editable": false },
-            { "val": "100,000원", "editable": false },
-            { "val": "150,000원", "editable": false },
-            { "val": "200,000원", "editable": false }
-          ],
-          [
-            { "val": "평가", "editable": false },
-            { "val": "D", "editable": false },
-            { "val": "C", "editable": false },
-            { "val": "B", "editable": false },
-            { "val": "A", "editable": false }
+            { "val": "등급", "editable": false },
+            { "val": "가", "editable": false },
+            { "val": "양", "editable": false },
+            { "val": "미", "editable": false },
+            { "val": "우", "editable": false },
+            { "val": "수", "editable": false }
           ]
         ]
       }
