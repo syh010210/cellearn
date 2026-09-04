@@ -351,20 +351,26 @@ export function HlookupTwoTableDiagram() {
   );
 }
 
-// ③ 두 개의 표(따로) — 세로 참조 범위 + 유사 일치 (총점 구간 → 등급)
+// ③(개념학습2) 세로 참조 범위 + 유사 일치 — 왼쪽 표 2개 고정, 오른쪽 박스+버튼 인터랙티브
 export function VlookupApproxDiagram() {
+  const [active, setActive] = useState(null);
+
+  // 일치 옵션(유사 일치)을 누르면 등급 3개가 2초 간격으로 하나씩 채워짐
+  const [revealed, setRevealed] = useState(0);
+  useEffect(() => {
+    if (active !== '일치 옵션') { setRevealed(0); return; }
+    setRevealed(0);
+    const id = setInterval(() => setRevealed((n) => (n >= 3 ? n : n + 1)), 2000);
+    return () => clearInterval(id);
+  }, [active]);
+  const ANS = ['수', '양', '우']; // 김하늘 92→수, 이준호 68→양, 박서연 85→우
+
   const score = [
     ['학번', '이름', '총점', '등급'],
-    ['S01', '김하늘', 92, '수'],
-    ['S02', '이준호', 68, '양'],
-    ['S03', '박서연', 85, '우'],
+    ['S01', '김하늘', 92, ''],
+    ['S02', '이준호', 68, ''],
+    ['S03', '박서연', 85, ''],
   ];
-  const scoreSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 1 && ci === 2) return { bold: true, color: C.amberLight, bg: C.amberBg };
-    if (ri === 1 && ci === 3) return { bold: true, color: C.greenLight, bg: C.greenBg };
-    return {};
-  };
   const grade = [
     ['기준점수', '등급'],
     [0, '가'],
@@ -373,17 +379,60 @@ export function VlookupApproxDiagram() {
     [80, '우'],
     [90, '수'],
   ];
-  const gradeSt = (ri, ci) => {
+
+  const WHITE = '#ffffff';
+  const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
+  const tabs = [
+    { key: '찾을 값', color: C.amberLight },
+    { key: '참조 범위', color: C.blueLight },
+    { key: '열 번호', color: C.greenLight },
+    { key: '일치 옵션', color: WHITE },
+  ];
+
+  const explain = {
+    '찾을 값': '총점입니다. 등급표의 첫 열(기준점수)에서 이 점수가 속한 구간을 찾습니다.',
+    '참조 범위': '찾을 값이 총점이기 때문에 참조 범위의 첫 열(기준점수)로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n유사 일치는 첫 열이 반드시 오름차순으로 정렬돼 있어야 합니다.',
+    '열 번호': '각 학생의 등급을 구하라고 했기 때문에, 반환할 등급이 지정한 참조 범위의 두 번째 열에 있으니 2입니다.',
+    '일치 옵션': '총점과 똑같은 값이 없어도, 총점보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간의 등급을 가져옵니다. \n(유사 일치 · TRUE)',
+  };
+
+  // 성적표: 총점(C3:C5) 형광펜(열 번호 탭 제외) / 등급(D3:D5) 일치 옵션 때 2초 간격 채우기
+  const scoreSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 5 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };
-    if (ri === 5 && ci === 1) return { bold: true, color: C.greenLight, bg: C.greenBg };
+    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
+    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
+
+  const rangeSides = (ri, ci, boxes) => {
+    const s = {};
+    for (const b of boxes) {
+      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
+      if (ri === b.r1) s.bt = b.color;
+      if (ri === b.r2) s.bb = b.color;
+      if (ci === b.c1) s.bl = b.color;
+      if (ci === b.c2) s.br = b.color;
+    }
+    return s;
+  };
+  // 등급표(데이터 인덱스 1..5): 참조 범위=B12:C16(첫 열 연한 채우기), 열 번호=C12:C16(초록), 일치 옵션=B12:B16(흰)
+  const gradeSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    let boxes = [];
+    let fillFirstCol = false;
+    if (active === '참조 범위') { boxes = [{ r1: 1, r2: 5, c1: 0, c2: 1, color: C.blueLight }]; fillFirstCol = true; }
+    else if (active === '열 번호') boxes = [{ r1: 1, r2: 5, c1: 0, c2: 1, color: C.blueLight }, { r1: 1, r2: 5, c1: 1, c2: 1, color: C.greenLight }];
+    else if (active === '일치 옵션') boxes = [{ r1: 1, r2: 5, c1: 0, c2: 0, color: WHITE }];
+    const sides = rangeSides(ri, ci, boxes);
+    if (fillFirstCol && ci === 0 && ri >= 1) sides.bg = LIGHT_BLUE;
+    return sides;
+  };
+
   return (
     <Wrap>
       <Title>세로 참조 범위 + 유사 일치 → VLOOKUP</Title>
 
-      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
           [표1]에서 <b style={{ color: C.amberLight }}>총점[C3:C5]</b>과
@@ -396,7 +445,7 @@ export function VlookupApproxDiagram() {
         </div>
       </div>
 
-      {/* 왼쪽: 표 2개 · 오른쪽: 풀이 박스 */}
+      {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 칠판 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -409,31 +458,47 @@ export function VlookupApproxDiagram() {
           </div>
         </div>
 
-        {/* VLOOKUP 풀이 박스 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP (유사 일치)</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>마지막 인수를 TRUE(또는 생략)로 두면 유사 일치. 찾을 값보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간을 매칭</div>
-          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight }}>$B$12:$C$16</span>, <span style={{ color: C.greenLight }}>2</span>, TRUE)
-            <span style={{ color: C.greenLight }}> → 수</span>
-          </div>
-          {[
-            { label: '찾을 값', code: 'C3', color: C.amberLight,
-              desc: '총점(92)입니다. 등급표에서 이 점수가 어느 구간에 속하는지 찾습니다.' },
-            { label: '참조 범위', code: '$B$12:$C$16', color: C.blueLight,
-              desc: '등급 기준표입니다. \n유사 일치에서는 첫 열(기준점수)이 반드시 오름차순(0→60→70→80→90)으로 정렬돼 있어야 제대로 동작합니다. \n제목행(기준점수·등급)은 범위에서 빼고 B12부터 선택합니다.' },
-            { label: '열 번호', code: '2', color: C.greenLight,
-              desc: '반환할 값이 등급이므로, 선택한 범위에서 등급이 있는 열 번호 2를 넣습니다.' },
-            { label: '마지막 인수', code: 'TRUE', color: C.text,
-              desc: '유사 일치입니다. 92와 똑같은 값이 없어도, 92보다 크지 않은 값 중 가장 큰 90을 찾아 그 등급 ‘수’를 가져옵니다. 생략하거나 1을 써도 같습니다. (0·FALSE로 하면 정확히 일치라 92를 못 찾아 오류가 납니다.)' },
-          ].map((p) => (
-            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
-              <span style={{ color: C.text }}> — {p.desc}</span>
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* VLOOKUP (유사 일치) 박스 */}
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP (유사 일치)</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>마지막 인수를 TRUE(또는 생략)로 두면 유사 일치. 찾을 값보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간을 매칭</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$12:$C$16</span>, <span style={{ color: C.greenLight }}>2</span>, TRUE)</div>
+              <div style={{ color: C.greenLight }}>→ 수</div>
             </div>
-          ))}
+          </div>
+
+          {/* 안내 문구 */}
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
+
+          {/* 인수 버튼 4개 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setActive(t.key)}
+                style={{
+                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                  border: `2px solid ${t.color}`,
+                  background: active === t.key ? t.color : 'transparent',
+                  color: active === t.key ? '#0b1220' : t.color,
+                }}>
+                {t.key}
+              </button>
+            ))}
+          </div>
+
+          {/* 칠판 — 가장 긴 설명 크기로 고정 */}
+          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
+            {tabs.map((t) => (
+              <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+                <span style={{ color: t.color === WHITE ? C.text : t.color, fontWeight: 700 }}>{t.key}</span>
+                <span style={{ color: C.text }}> — {explain[t.key]}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </Wrap>
