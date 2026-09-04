@@ -373,9 +373,9 @@ export function StatCondCountDiagram() {
         </div>
       </div>
 
-      {/* 조건 작성 규칙 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '12px 14px', fontSize: 13.5, color: C.textMuted, lineHeight: 1.7, marginBottom: 14 }}>
-        조건은 반드시 <b style={{ color: C.text }}>&quot;대리&quot;, &quot;&gt;80&quot;</b> 처럼 따옴표로 감쌉니다!
+      {/* 조건 작성 규칙 — 빨간 강조 */}
+      <div style={{ background: C.redBg, border: `2px solid ${C.red}`, borderRadius: 8, padding: '14px 16px', fontSize: 17, fontWeight: 700, color: C.redLight, lineHeight: 1.7, marginBottom: 14, textAlign: 'center' }}>
+        조건은 반드시 <b style={{ color: '#ffffff' }}>&quot;대리&quot;, &quot;&gt;80&quot;</b> 처럼 따옴표로 감쌉니다!
       </div>
 
       {/* 함수를 조건으로 쓰기 — 문제는 박스 밖, 설명은 박스 안 */}
