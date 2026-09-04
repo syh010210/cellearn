@@ -5,51 +5,69 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, E
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
 // ──────────────────────────────────────────────
 export function VlookupHlookupIntroDiagram() {
-  const args = [
-    { label: '찾을 값', color: C.amberLight,
-      desc: '참조 범위에서 찾을 기준값입니다.' },
-    { label: '참조 범위', color: C.blueLight,
-      desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 범위입니다. \n찾을 값이 참조 범위의 첫 행 또는 첫 열에 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n수식을 자동 채우기로 복사할 때 범위가 밀리지 않도록 $로 고정합니다.' },
-    { label: '행 · 열 번호', color: C.greenLight,
-      desc: '반환할 값이 참조 범위에서 몇 번째 행 또는 열에 있는지를 숫자로 넣습니다.' },
-    { label: '마지막 인수', color: C.text,
-      desc: '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \nIFERROR와 함께 쓰는 경우에 예외가 발생하는데, 이는 나중에 설명합니다.' },
-  ];
+  const SEARCH = 'rgba(96,165,250,0.18)'; // 첫 열/행(검색 영역) 연한 파랑
+
+  // VLOOKUP 미니 예시: 'B'를 첫 열에서 찾아 → 같은 행의 3열(성과급률) 반환
+  const vData = [['등급', '직무', '성과급률'], ['A', '영업', '5.0%'], ['B', '관리', '3.5%'], ['C', '지원', '2.0%']];
+  const vSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ci === 0) return ri === 2 ? { bold: true, bg: C.amberLight, color: '#0b1220' } : { bg: SEARCH };
+    if (ri === 2 && ci === 2) return { bold: true, bg: C.greenBg, color: C.greenLight };
+    return {};
+  };
+
+  // HLOOKUP 미니 예시: 'B'를 첫 행에서 찾아 → 같은 열의 2행(판매단가) 반환
+  const hData = [['상품코드', 'A', 'B', 'C'], ['판매단가', '8,000', '4,500', '6,000']];
+  const hSt = (ri, ci) => {
+    if (ci === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
+    if (ri === 0) return ci === 2 ? { bold: true, bg: C.amberLight, color: '#0b1220' } : { bg: SEARCH };
+    if (ri === 1 && ci === 2) return { bold: true, bg: C.greenBg, color: C.greenLight };
+    return {};
+  };
+
   return (
     <Wrap>
       <Title>VLOOKUP · HLOOKUP — 공통 원리</Title>
 
-      {/* 핵심 원리 강조 배너 (별표 대신 색·굵기로 강조) */}
+      {/* 핵심 원리 강조 배너 */}
       <div style={{ background: C.blueCard, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '11px 16px', margin: '0 0 18px', textAlign: 'center', color: C.text, fontSize: 16.5, fontWeight: 700, lineHeight: 1.6 }}>
         찾을 값이 <span style={{ color: C.blueLight }}>반드시 참조 범위의 첫 행 또는 첫 열</span>에 오도록 참조 범위를 잡는 것이 핵심입니다.
       </div>
 
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         {/* VLOOKUP */}
-        <div style={{ flex: '1 1 300px', minWidth: 280, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ flex: '1 1 320px', minWidth: 300, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
           <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>참조 범위의 데이터가 세로 방향으로 나열된 형태</div>
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 열에서 세로 방향으로 찾아 같은 행의 지정한 열에 있는 값을 반환</div>
+          <div style={{ textAlign: 'center', marginTop: 2 }}>
+            <ExcelGrid data={vData} cellStyle={vSt} minColW={58} firstColW={58} />
+          </div>
+          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6, textAlign: 'center' }}>
+            <span style={{ color: C.amberLight, fontWeight: 700 }}>‘B’</span>를 <b style={{ color: C.blueLight }}>첫 열</b>에서 찾아 → 같은 행의 <span style={{ color: C.greenLight, fontWeight: 700 }}>3.5%</span> 반환
+          </div>
         </div>
         {/* HLOOKUP */}
-        <div style={{ flex: '1 1 300px', minWidth: 280, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ flex: '1 1 320px', minWidth: 300, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
           <div style={{ color: C.orangeLight, fontSize: 14, fontWeight: 700 }}>참조 범위의 데이터가 가로 방향으로 나열된 형태</div>
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
-          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 행에서 가로 방향으로 찾아 같은 열의 지정한 행에 있는 값을 반환</div>
+          <div style={{ textAlign: 'center', marginTop: 2 }}>
+            <ExcelGrid data={hData} cellStyle={hSt} minColW={62} firstColW={70} />
+          </div>
+          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6, textAlign: 'center' }}>
+            <span style={{ color: C.amberLight, fontWeight: 700 }}>‘B’</span>를 <b style={{ color: C.blueLight }}>첫 행</b>에서 찾아 → 같은 열의 <span style={{ color: C.greenLight, fontWeight: 700 }}>4,500</span> 반환
+          </div>
         </div>
       </div>
 
-      {/* 공통 인수 설명 */}
-      <div style={{ marginTop: 16, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>두 함수에서 공통되는 네 개의 인수</div>
-        {args.map((p) => (
-          <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-            <span style={{ color: p.color, fontWeight: 700 }}>{p.label}</span>
-            <span style={{ color: C.text }}> — {p.desc}</span>
-          </div>
-        ))}
+      {/* 색상 범례 + 상세 안내 */}
+      <div style={{ marginTop: 16, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '12px 16px', fontSize: 13.5, color: C.textMuted, lineHeight: 1.8, textAlign: 'center' }}>
+        <span style={{ color: C.amberLight, fontWeight: 700 }}>찾을 값</span> ·{' '}
+        <span style={{ color: C.blueLight, fontWeight: 700 }}>참조 범위</span> ·{' '}
+        <span style={{ color: C.greenLight, fontWeight: 700 }}>행 · 열 번호</span> ·{' '}
+        <span style={{ color: C.text, fontWeight: 700 }}>일치 옵션</span>
+        <br />네 인수가 각각 무엇인지는 아래 예시 <b style={{ color: C.text }}>①②③</b>에서 버튼을 눌러 하나씩 확인하세요.
       </div>
     </Wrap>
   );
