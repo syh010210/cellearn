@@ -99,10 +99,12 @@ export function VlookupDiagram() {
     );
   };
 
-  // 표1: 찾을 값·일치 옵션 탭에서 사원코드(A3:A5)의 다섯 번째 문자만 형광펜
+  const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
+
+  // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 모든 탭에서 형광펜으로 표시
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if ((active === '찾을 값' || active === '일치 옵션') && ci === 0) return { bold: true, content: hi(val) };
+    if (ci === 0) return { bold: true, content: hi(val) };
     return {};
   };
 
@@ -118,14 +120,17 @@ export function VlookupDiagram() {
     }
     return s;
   };
-  // 등급표: 참조 범위=A12:C14, 열 번호=C12:C14(초록), 일치 옵션=A12:A14(흰) — 모두 바깥쪽 테두리만
+  // 등급표: 참조 범위=A12:C14(첫 열 연한 채우기), 열 번호=C12:C14(초록), 일치 옵션=A12:A14(흰) — 모두 바깥쪽 테두리만
   const codeSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     let boxes = [];
-    if (active === '참조 범위') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 2, color: C.blueLight }];
+    let fillFirstCol = false;
+    if (active === '참조 범위') { boxes = [{ r1: 1, r2: 3, c1: 0, c2: 2, color: C.blueLight }]; fillFirstCol = true; }
     else if (active === '열 번호') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 2, color: C.blueLight }, { r1: 1, r2: 3, c1: 2, c2: 2, color: C.greenLight }];
     else if (active === '일치 옵션') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 0, color: WHITE }];
-    return rangeSides(ri, ci, boxes);
+    const sides = rangeSides(ri, ci, boxes);
+    if (fillFirstCol && ci === 0 && ri >= 1) sides.bg = LIGHT_BLUE;
+    return sides;
   };
 
   return (
@@ -199,35 +204,76 @@ export function VlookupDiagram() {
   );
 }
 
-// ② 두 개의 표(따로) — 가로 참조 범위를 HLOOKUP으로 검색 (판매현황 + 상품단가표)
+// ② 가로 참조 범위 HLOOKUP — 왼쪽 표 2개 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function HlookupTwoTableDiagram() {
+  const [active, setActive] = useState('찾을 값');
+
   const sales = [
     ['판매일', '판매사원', '상품코드', '판매수량', '판매금액'],
     ['3월 2일', '한지민', 'B', 12, '54,000'],
     ['3월 5일', '공유', 'D', 20, '30,000'],
     ['3월 9일', '수지', 'A', 7, '56,000'],
   ];
-  const salesSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
-    if (ri === 1 && ci === 4) return { bold: true, color: C.greenLight, bg: C.greenBg };
-    if (ri === 1 && ci === 2) return { bold: true, color: C.amberLight, bg: C.amberBg };
-    return {};
-  };
   const price = [
     ['상품코드', 'A', 'B', 'C', 'D'],
     ['판매단가', '8,000', '4,500', '6,000', '1,500'],
     ['매입단가', '5,600', '3,000', '4,200', '1,000'],
   ];
-  const priceSt = (ri, ci) => {
-    if (ri === 0) return (ci === 2) ? { bold: true, color: C.amberLight, bg: C.amberBg } : { bold: true, color: C.orangeLight, bg: '#3a1c08' };
-    if (ri === 1 && ci === 2) return { bold: true, color: C.greenLight, bg: C.greenBg };
+
+  const WHITE = '#ffffff';
+  const LIGHT_ORANGE = 'rgba(251,146,60,0.22)';
+  const tabs = [
+    { key: '찾을 값', color: C.amberLight },
+    { key: '참조 범위', color: C.orangeLight },
+    { key: '행 번호', color: C.greenLight },
+    { key: '일치 옵션', color: WHITE },
+  ];
+  const activeColor = tabs.find((t) => t.key === active).color;
+
+  const explain = {
+    '찾을 값': '상품코드입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.',
+    '참조 범위': '찾을 값이 상품코드이기 때문에 참조 범위의 첫 행으로 오도록 하여, 왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '행 번호': '판매금액은 판매단가와 판매수량을 곱한 값이므로, 반환할 판매단가가 참조 범위의 두 번째 행에 있으니 2입니다.',
+    '일치 옵션': '찾을 값이 참조 범위의 첫 행에 전부 있습니다. (정확히 일치 · FALSE)',
+  };
+
+  // 표2: 상품코드 열(C3:C5)을 모든 탭에서 형광펜으로 표시
+  const salesSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
+    if (ci === 2) return { bold: true, bg: C.amberLight, color: '#0b1220' };
     return {};
   };
+
+  const rangeSides = (ri, ci, boxes) => {
+    const s = {};
+    for (const b of boxes) {
+      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
+      if (ri === b.r1) s.bt = b.color;
+      if (ri === b.r2) s.bb = b.color;
+      if (ci === b.c1) s.bl = b.color;
+      if (ci === b.c2) s.br = b.color;
+    }
+    return s;
+  };
+  // 단가표: 이름 열(A)은 항상 라벨색. 참조 범위=B12:E14(첫 행 연한 채우기), 행 번호=B13:E13(초록), 일치 옵션=B12:E12(흰)
+  const priceSt = (ri, ci) => {
+    if (ci === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
+    let boxes = [];
+    let fillFirstRow = false;
+    if (active === '참조 범위') { boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.orangeLight }]; fillFirstRow = true; }
+    else if (active === '행 번호') boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.orangeLight }, { r1: 1, r2: 1, c1: 1, c2: 4, color: C.greenLight }];
+    else if (active === '일치 옵션') boxes = [{ r1: 0, r2: 0, c1: 1, c2: 4, color: WHITE }];
+    const sides = rangeSides(ri, ci, boxes);
+    if (fillFirstRow && ri === 0 && ci >= 1) sides.bg = LIGHT_ORANGE;
+    return sides;
+  };
+
   return (
     <Wrap>
       <Title>② 가로 참조 범위 → HLOOKUP</Title>
+      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
-      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
           [표2]에서 <b style={{ color: C.amberLight }}>상품코드[C3:C5]</b>와
@@ -240,7 +286,7 @@ export function HlookupTwoTableDiagram() {
         </div>
       </div>
 
-      {/* 왼쪽: 표 2개 · 오른쪽: 풀이 박스 */}
+      {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -253,31 +299,40 @@ export function HlookupTwoTableDiagram() {
           </div>
         </div>
 
-        {/* HLOOKUP 풀이 박스 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
-          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
-          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
-          <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
-            <div style={{ color: C.greenLight }}>→ 12 × 4,500 = 54,000</div>
-          </div>
-          {[
-            { label: '찾을 값', code: 'C3', color: C.amberLight,
-              desc: '상품코드(B)입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.' },
-            { label: '참조 범위', code: '$B$12:$E$14', color: C.orangeLight,
-              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 행(상품코드 A·B·C·D)에 찾을 값이 있어야 제대로 찾습니다. \n왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니라 행 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 B열부터 선택합니다.' },
-            { label: '행 번호', code: '2', color: C.greenLight,
-              desc: '반환할 값이 판매단가이므로, 선택한 범위에서 판매단가가 있는 행 번호 2를 넣습니다.' },
-            { label: '마지막 인수', code: 'FALSE', color: C.text,
-              desc: '찾을 값들이 참조 범위 첫 행에 하나하나 그대로 들어 있으면 정확히 일치, FALSE를 씁니다. 코드처럼 딱 떨어지는 값이 여기에 해당하며 0을 써도 같습니다. \n반대로 첫 행이 구간으로 잡혀 있으면 유사 일치(TRUE·생략)를 쓰고, 이때는 첫 행이 오름차순으로 정렬돼 있어야 합니다.' },
-          ].map((p) => (
-            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
-              <span style={{ color: C.text }}> — {p.desc}</span>
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* HLOOKUP 박스 (구문 + 수식) */}
+          <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
+            <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
+            <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+              <div style={{ color: C.greenLight }}>→ 12 × 4,500 = 54,000</div>
             </div>
-          ))}
+          </div>
+
+          {/* 인수 버튼 4개 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setActive(t.key)}
+                style={{
+                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                  border: `2px solid ${t.color}`,
+                  background: active === t.key ? t.color : 'transparent',
+                  color: active === t.key ? '#0b1220' : t.color,
+                }}>
+                {t.key}
+              </button>
+            ))}
+          </div>
+
+          {/* 선택한 인수 설명 */}
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+            <span style={{ color: C.text }}> — {explain[active]}</span>
+          </div>
         </div>
       </div>
     </Wrap>
