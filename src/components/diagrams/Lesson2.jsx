@@ -215,7 +215,7 @@ export function StringFindTrimDiagram() {
               <div style={{ fontWeight: 700, fontSize: 12.5, color: C.blueLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =SEARCH(찾을문자, 텍스트)</div>
               <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
-                {'예) =SEARCH("J","John_j")'}
+                {'예) =SEARCH("j","John_j")'}
               </div>
               <div style={{ fontWeight: 700, fontSize: 15, color: C.blueLight }}>
                 → 1  (대소문자 무시)
@@ -318,9 +318,9 @@ export function StringCombineDiagram() {
       result: '"EXCEL-2급"',
     },
     {
-      label: '예제 3  (셀 참조 + & 조합)',
-      formula: '="("  &  LOWER("컴활")  &  ")"  &  " "  &  "2급"',
-      result: '"(컴활) 2급"',
+      label: '예제 3  (셀 참조 + & 조합, A3 = "excel")',
+      formula: '="("  &  PROPER(A3)  &  ")"  &  " "  &  "2급"',
+      result: '"(Excel) 2급"',
     },
   ];
 
