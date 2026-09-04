@@ -62,11 +62,11 @@ export function VlookupDiagram() {
         {/* VLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, 0)
+            =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)
             <span style={{ color: C.greenLight }}> → 5.0%</span>
           </div>
           {[
@@ -76,6 +76,8 @@ export function VlookupDiagram() {
               desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 열(A·B·C)에 찾을 값이 있어야 제대로 찾습니다. \n만약 찾을 값이 사원코드의 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다. \n제목행(등급·직무·성과급률)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다.' },
             { label: '열 번호', code: '3', color: C.greenLight,
               desc: '반환할 값이 성과급률이므로, 선택한 범위에서 성과급률이 있는 열 번호 3을 넣습니다.' },
+            { label: '마지막 인수', code: 'FALSE', color: C.text,
+              desc: '정확히 일치하는 값만 찾습니다. 코드·이름처럼 딱 떨어지는 값을 찾을 때 쓰며, 0을 써도 같습니다. (생략하거나 TRUE로 하면 유사 일치가 되어 참조 범위의 첫 열이 정렬돼 있어야 합니다.)' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
@@ -149,12 +151,12 @@ export function HlookupTwoTableDiagram() {
         {/* HLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
-          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 0)</div>
+          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, FALSE)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
-            <span style={{ color: C.greenLight }}> → 12 × 4,500 = 54,000</span>
+            <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+            <div style={{ color: C.greenLight }}>→ 12 × 4,500 = 54,000</div>
           </div>
           {[
             { label: '찾을 값', code: 'C3', color: C.amberLight,
@@ -163,6 +165,8 @@ export function HlookupTwoTableDiagram() {
               desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 행(상품코드 A·B·C·D)에 찾을 값이 있어야 제대로 찾습니다. \n왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니라 행 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 B열부터 선택합니다.' },
             { label: '행 번호', code: '2', color: C.greenLight,
               desc: '반환할 값이 판매단가이므로, 선택한 범위에서 판매단가가 있는 행 번호 2를 넣습니다.' },
+            { label: '마지막 인수', code: 'FALSE', color: C.text,
+              desc: '정확히 일치하는 값만 찾습니다. 코드처럼 딱 떨어지는 값을 찾을 때 쓰며, 0을 써도 같습니다. (생략하거나 TRUE로 하면 유사 일치가 되어 참조 범위의 첫 행이 정렬돼 있어야 합니다.)' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
@@ -175,7 +179,96 @@ export function HlookupTwoTableDiagram() {
   );
 }
 
-// ③ 한 개의 표 — 기준값과 참조 범위가 같은 표에 있는 VLOOKUP (영어회화 평가)
+// ③ 두 개의 표(따로) — 세로 참조 범위 + 유사 일치 (총점 구간 → 등급)
+export function VlookupApproxDiagram() {
+  const score = [
+    ['학번', '이름', '총점', '등급'],
+    ['S01', '김하늘', 92, '수'],
+    ['S02', '이준호', 68, '양'],
+    ['S03', '박서연', 85, '우'],
+  ];
+  const scoreSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ri === 1 && ci === 2) return { bold: true, color: C.amberLight, bg: C.amberBg };
+    if (ri === 1 && ci === 3) return { bold: true, color: C.greenLight, bg: C.greenBg };
+    return {};
+  };
+  const grade = [
+    ['기준점수', '등급'],
+    [0, '가'],
+    [60, '양'],
+    [70, '미'],
+    [80, '우'],
+    [90, '수'],
+  ];
+  const gradeSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ri === 5 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };
+    if (ri === 5 && ci === 1) return { bold: true, color: C.greenLight, bg: C.greenBg };
+    return {};
+  };
+  return (
+    <Wrap>
+      <Title>③ 세로 참조 범위 + 유사 일치 → VLOOKUP</Title>
+
+      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표1]에서 <b style={{ color: C.amberLight }}>총점[C3:C5]</b>과
+          <b style={{ color: C.blueLight }}> [B12:C16]</b> 영역의 표를 이용하여 각 학생의
+          <b style={{ color: C.greenLight }}> 등급[D3:D5]</b>을 구하시오.
+        </div>
+        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
+          <div>▶ 등급은 총점이 속한 구간의 값임 (90 이상 ‘수’, 80~89 ‘우’, 70~79 ‘미’, 60~69 ‘양’, 그 미만 ‘가’)</div>
+          <div>▶ VLOOKUP 함수 사용 (유사 일치)</div>
+        </div>
+      </div>
+
+      {/* 왼쪽: 표 2개 · 오른쪽: 풀이 박스 */}
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 학생 성적표 — 기준값이 있는 표</TableCaption>
+            <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={70} firstColW={70} />
+          </div>
+          <div>
+            <TableCaption color={C.blueLight}>[등급 기준표] 세로 참조 범위 (첫 열 오름차순)</TableCaption>
+            <ExcelGrid data={grade} startRow={11} startCol={1} cellStyle={gradeSt} minColW={78} firstColW={92} />
+          </div>
+        </div>
+
+        {/* VLOOKUP 풀이 박스 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP (유사 일치)</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, TRUE)</div>
+          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>마지막 인수를 TRUE(또는 생략)로 두면 유사 일치. 찾을 값보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간을 매칭</div>
+          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+            =VLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight }}>$B$12:$C$16</span>, <span style={{ color: C.greenLight }}>2</span>, TRUE)
+            <span style={{ color: C.greenLight }}> → 수</span>
+          </div>
+          {[
+            { label: '찾을 값', code: 'C3', color: C.amberLight,
+              desc: '총점(92)입니다. 등급표에서 이 점수가 어느 구간에 속하는지 찾습니다.' },
+            { label: '참조 범위', code: '$B$12:$C$16', color: C.blueLight,
+              desc: '등급 기준표입니다. \n유사 일치에서는 첫 열(기준점수)이 반드시 오름차순(0→60→70→80→90)으로 정렬돼 있어야 제대로 동작합니다. \n제목행(기준점수·등급)은 범위에서 빼고 B12부터 선택합니다.' },
+            { label: '열 번호', code: '2', color: C.greenLight,
+              desc: '반환할 값이 등급이므로, 선택한 범위에서 등급이 있는 열 번호 2를 넣습니다.' },
+            { label: '마지막 인수', code: 'TRUE', color: C.text,
+              desc: '유사 일치입니다. 92와 똑같은 값이 없어도, 92보다 크지 않은 값 중 가장 큰 90을 찾아 그 등급 ‘수’를 가져옵니다. 생략하거나 1을 써도 같습니다. (0·FALSE로 하면 정확히 일치라 92를 못 찾아 오류가 납니다.)' },
+          ].map((p) => (
+            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
+              <span style={{ color: C.text }}> — {p.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ④ 한 개의 표 — 기준값과 참조 범위가 같은 표에 있는 VLOOKUP + MIN (상품 만족도)
 export function VlookupOneTableDiagram() {
   const data = [
     ['상품명', '만족도', '카테고리'],
@@ -192,7 +285,7 @@ export function VlookupOneTableDiagram() {
   };
   return (
     <Wrap>
-      <Title>③ 한 표 안에서 VLOOKUP</Title>
+      <Title>④ 한 표 안에서 VLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -201,7 +294,6 @@ export function VlookupOneTableDiagram() {
           <b style={{ color: C.greenLight }}> 카테고리[C9]</b>를 구하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 찾을 값과 결과가 모두 [표3] 안에 있으므로, 따로 떨어진 참조 범위 없이 표 안에서 끝남</div>
           <div>▶ VLOOKUP, MIN 함수 사용</div>
         </div>
       </div>
