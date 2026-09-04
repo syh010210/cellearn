@@ -225,10 +225,10 @@ export function HlookupTwoTableDiagram() {
   ];
 
   const WHITE = '#ffffff';
-  const LIGHT_ORANGE = 'rgba(251,146,60,0.22)';
+  const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
   const tabs = [
     { key: '찾을 값', color: C.amberLight },
-    { key: '참조 범위', color: C.orangeLight },
+    { key: '참조 범위', color: C.blueLight },
     { key: '행 번호', color: C.greenLight },
     { key: '일치 옵션', color: WHITE },
   ];
@@ -264,11 +264,11 @@ export function HlookupTwoTableDiagram() {
     if (ci === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
     let boxes = [];
     let fillFirstRow = false;
-    if (active === '참조 범위') { boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.orangeLight }]; fillFirstRow = true; }
-    else if (active === '행 번호') boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.orangeLight }, { r1: 1, r2: 1, c1: 1, c2: 4, color: C.greenLight }];
+    if (active === '참조 범위') { boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.blueLight }]; fillFirstRow = true; }
+    else if (active === '행 번호') boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.blueLight }, { r1: 1, r2: 1, c1: 1, c2: 4, color: C.greenLight }];
     else if (active === '일치 옵션') boxes = [{ r1: 0, r2: 0, c1: 1, c2: 4, color: WHITE }];
     const sides = rangeSides(ri, ci, boxes);
-    if (fillFirstRow && ri === 0 && ci >= 1) sides.bg = LIGHT_ORANGE;
+    if (fillFirstRow && ri === 0 && ci >= 1) sides.bg = LIGHT_BLUE;
     return sides;
   };
 
@@ -280,7 +280,7 @@ export function HlookupTwoTableDiagram() {
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
           [표2]에서 <b style={{ color: C.amberLight }}>상품코드[C3:C5]</b>와
-          <b style={{ color: C.orangeLight }}> [B12:E14]</b> 영역의 표를 이용하여 각 건의
+          <b style={{ color: C.blueLight }}> [B12:E14]</b> 영역의 표를 이용하여 각 건의
           <b style={{ color: C.greenLight }}> 판매금액[E3:E5]</b>을 계산하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
@@ -310,7 +310,7 @@ export function HlookupTwoTableDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+              <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
               <div style={{ color: C.greenLight }}>→ 12 × 4,500 = 54,000</div>
             </div>
           </div>
