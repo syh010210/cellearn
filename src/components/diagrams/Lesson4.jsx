@@ -7,12 +7,7 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, E
 export function VlookupHlookupIntroDiagram() {
   return (
     <Wrap>
-      <Title>VLOOKUP · HLOOKUP — 공통 원리</Title>
-
-      {/* 핵심 원리 강조 배너 */}
-      <div style={{ background: C.blueCard, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '11px 16px', margin: '0 0 16px', textAlign: 'center', color: C.text, fontSize: 16.5, fontWeight: 700, lineHeight: 1.6 }}>
-        찾을 값이 <span style={{ color: C.blueLight }}>반드시 참조 범위의 첫 행 또는 첫 열</span>에 오도록 참조 범위를 잡는 것이 핵심입니다.
-      </div>
+      <Title>VLOOKUP · HLOOKUP</Title>
 
       {/* 두 함수 설명 카드 */}
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
@@ -48,13 +43,13 @@ export function VlookupDiagram() {
     const id = setInterval(() => setRevealed((n) => (n >= 3 ? n : n + 1)), 2000);
     return () => clearInterval(id);
   }, [active]);
-  const ANS = ['2.0%', '3.5%', '5.0%']; // 박서준(C)·김민지(B)·이도현(A)
+  const ANS = ['2.0%', '5.0%', '3.5%']; // 박서준(C)·김민지(A)·이도현(B)
 
   const loan = [
     ['사원코드', '사원명', '판매액', '성과급률'],
     ['103-C-2201', '박서준', '24,000,000', ''],
-    ['102-B-3302', '김민지', '9,800,000', ''],
-    ['101-A-4503', '이도현', '13,500,000', ''],
+    ['101-A-4503', '김민지', '9,800,000', ''],
+    ['102-B-3302', '이도현', '13,500,000', ''],
   ];
   const code = [
     ['등급', '직무', '성과급률'],
@@ -76,7 +71,7 @@ export function VlookupDiagram() {
     '찾을 값': '사원코드의 다섯 번째 문자입니다.',
     '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자이기 때문에 참조 범위의 첫 열로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
     '열 번호': '각 사원의 성과급률을 계산하라고 했기 때문에, 반환할 값이 지정한 참조 범위의 세 번째 열에 있으니 3입니다.',
-    '일치 옵션': '찾을 값이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
+    '일치 옵션': '찾을 값(C,A,B)이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
   };
 
   // 사원코드 문자열에서 다섯 번째 글자(A·B·C)에만 형광펜 배경
@@ -124,7 +119,7 @@ export function VlookupDiagram() {
 
   return (
     <Wrap>
-      <Title>① 세로 참조 범위 → VLOOKUP</Title>
+      <Title>참조 범위에서 나열된 데이터의 방향이 세로이면 VLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -149,6 +144,13 @@ export function VlookupDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[등급표] 세로 참조 범위</TableCaption>
             <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64} />
+            {/* 칠판(초록 배경)의 빈 공간에 열 위치 라벨 — A열 아래 '첫 열', C열 아래 '3번째' */}
+            <div style={{ display: 'flex', marginTop: 4, fontSize: 13.5, fontWeight: 700 }}>
+              <div style={{ width: 35 }} />
+              <div style={{ width: 73, textAlign: 'center', color: C.blueLight }}>{active === '참조 범위' ? '첫 열' : ' '}</div>
+              <div style={{ width: 90 }} />
+              <div style={{ width: 90, textAlign: 'center', color: C.greenLight }}>{active === '열 번호' ? '3번째' : ' '}</div>
+            </div>
           </div>
         </div>
 
