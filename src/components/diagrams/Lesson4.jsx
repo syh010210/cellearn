@@ -1,18 +1,5 @@
 import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, TableCaption, C } from './shared.jsx';
 
-// 함수 설명 박스 — 표준 순서(함수명 → 구문 → 설명 → 수식 → 값). 페이지 기본 글꼴 사용(모노스페이스 금지).
-function FnBox({ name, syntax, desc, formula, value, color, tint, border, valueSize = 17 }) {
-  return (
-    <div style={{ flex: '1 1 250px', minWidth: 240, background: tint, border: `2px solid ${border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div style={{ color, fontSize: 18, fontWeight: 700 }}>{name}</div>
-      <div style={{ color, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
-      <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>{desc}</div>
-      <div style={{ color, fontSize: 14.5, fontWeight: 700 }}>{formula}</div>
-      <div style={{ color: C.greenLight, fontSize: valueSize, fontWeight: 700 }}>{value}</div>
-    </div>
-  );
-}
-
 // ──────────────────────────────────────────────
 // VlookupDiagram
 // ──────────────────────────────────────────────
@@ -44,7 +31,7 @@ export function VlookupDiagram() {
   return (
     <Wrap>
       <Title>① 세로 참조 범위 → VLOOKUP</Title>
-      <Subtitle>실제 시험에서는 위 문제처럼 MID 등 다양한 함수를 조합해 찾을 값을 만들어 풀어야 합니다</Subtitle>
+      <Subtitle>실제 시험에서는 위 문제처럼 MID 등 다양한 함수를 이용해 찾을 값을 만들어 풀어야 합니다</Subtitle>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -95,15 +82,12 @@ export function VlookupDiagram() {
               <span style={{ color: C.text }}> — {p.desc}</span>
             </div>
           ))}
-          <div style={{ background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '9px 12px', color: C.textMuted, fontSize: 13, lineHeight: 1.7, marginTop: 2 }}>
-            <b style={{ color: C.blueLight }}>참조 범위는 왜 $로 고정?</b> 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.
+          <div style={{ fontSize: 13.5, lineHeight: 1.7 }}>
+            <span style={{ color: C.blueLight, fontWeight: 700 }}>참조 범위는 왜 $로 고정?</span>
+            <span style={{ color: C.text }}> — 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.</span>
           </div>
         </div>
       </div>
-
-      <BottomBar>
-        <BLine>사원코드에서 등급(A)을 뽑아 등급표에서 찾음 — 참조 범위의 데이터가 <b style={{ color: C.blueLight }}>세로</b>로 나열돼 있어서 VLOOKUP</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
@@ -135,7 +119,22 @@ export function HlookupTwoTableDiagram() {
   return (
     <Wrap>
       <Title>② 가로 참조 범위 → HLOOKUP</Title>
-      <Subtitle>참조 범위의 첫 행에서 가로(→)로 찾아 같은 열의 값을 가져옵니다</Subtitle>
+      <Subtitle>참조 범위의 데이터가 가로로 나열돼 있으면, 첫 행에서 찾아 같은 열의 값을 가져옵니다</Subtitle>
+
+      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표2]에서 <b style={{ color: C.amberLight }}>도서코드[C3:C5]</b>와
+          <b style={{ color: C.orangeLight }}> [B12:E14]</b> 영역의 표를 이용하여 각 지점의
+          <b style={{ color: C.greenLight }}> 매출액[E3:E5]</b>을 계산하시오.
+        </div>
+        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
+          <div>▶ 매출액은 판매부수와 도서의 정가를 곱한 값임</div>
+          <div>▶ HLOOKUP 함수 사용</div>
+        </div>
+      </div>
+
+      {/* 왼쪽: 표 2개 · 오른쪽: 풀이 박스 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
@@ -147,16 +146,36 @@ export function HlookupTwoTableDiagram() {
             <ExcelGrid data={price} startRow={12} cellStyle={priceSt} minColW={80} firstColW={74} />
           </div>
         </div>
-        <FnBox color={C.orange} tint="#2a1608" border={C.orange}
-          name="HLOOKUP"
-          syntax="구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 0)"
-          desc="참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환"
-          formula="=D3*HLOOKUP(C3, $B$12:$E$14, 2, 0)"
-          value="→ 8 × 18,000 = 144,000" valueSize={15} />
+
+        {/* HLOOKUP 풀이 박스 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
+          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 0)</div>
+          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
+          <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
+          <div style={{ color: C.text, fontSize: 14.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+            =D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
+            <span style={{ color: C.greenLight }}> → 8 × 18,000 = 144,000</span>
+          </div>
+          {[
+            { label: '찾을 값', code: 'C3', color: C.amberLight,
+              desc: '도서코드(22)입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.' },
+            { label: '참조 범위', code: '$B$12:$E$14', color: C.orangeLight,
+              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 행(도서코드 11·22·33·44)에 찾을 값이 있어야 제대로 찾습니다. \n왼쪽 이름 열(도서코드·정가·원가)은 실제 데이터가 아니라 행 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 B열부터 선택합니다.' },
+            { label: '행 번호', code: '2', color: C.greenLight,
+              desc: '반환할 값이 정가이므로, 선택한 범위에서 정가가 있는 행 번호 2를 넣습니다.' },
+          ].map((p) => (
+            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
+              <span style={{ color: C.text }}> — {p.desc}</span>
+            </div>
+          ))}
+          <div style={{ fontSize: 13.5, lineHeight: 1.7 }}>
+            <span style={{ color: C.orangeLight, fontWeight: 700 }}>참조 범위는 왜 $로 고정?</span>
+            <span style={{ color: C.text }}> — 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.</span>
+          </div>
+        </div>
       </div>
-      <BottomBar>
-        <BLine>도서코드로 단가표에서 정가를 찾아 판매부수와 곱함 — 참조 범위의 데이터가 <b style={{ color: C.orangeLight }}>가로</b>로 나열돼 있어서 HLOOKUP</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
