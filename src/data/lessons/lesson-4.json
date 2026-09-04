@@ -47,6 +47,10 @@
           "alt": "상품 만족도 표 한 표 안에서 만족도가 가장 낮은 상품의 카테고리를 VLOOKUP과 MIN으로 찾는 예시"
         },
         {
+          "type": "text",
+          "text": "한 셀에만 수식을 입력하는 경우라 참조 범위를 $로 고정할 필요가 없습니다."
+        },
+        {
           "type": "heading",
           "text": "꼭 기억할 핵심 두 가지"
         },
@@ -54,51 +58,59 @@
           "type": "numbered",
           "items": [
             "찾을 값이 **반드시 참조 범위의 첫 행 또는 첫 열**에 오도록 참조 범위를 잡습니다.",
-            "**모든 찾을 값**이 참조 범위의 첫 행·열에 순서와 상관없이 그대로 들어 있으면 **FALSE(정확히 일치)**를 씁니다. 반대로 찾을 값이 첫 행·열에 그대로 있지 않고 ‘이상·미만’ 같은 구간으로 잡혀 있으면 **TRUE(유사 일치)**를 씁니다. 유사 일치는 개념학습2로 넘어가서 직접 확인해 봅시다."
+            "찾을 값이 참조 범위의 첫 행이나 열에 순서와 상관없이 전부 들어 있으면 **FALSE(정확히 일치)**를 씁니다. **TRUE(유사 일치)**는 개념학습2로 넘어가서 직접 확인해 봅시다."
           ]
         }
       ],
       "practice": {
-        "instruction": "위 예시처럼 [등급표]가 따로 있습니다. 각 사원의 등급에 해당하는 상여금을 VLOOKUP으로 가져오세요. [C2] 셀에 수식을 입력한 뒤 [C3]까지 자동 채우기 하세요. (참조 범위는 $로 고정)",
-        "cols": ["A", "B", "C"],
+        "instruction": "[표1]에서 각 사원의 등급[C2:C3]과 [A6:C8] 영역의 [등급표]를 이용하여 상여금[D2:D3]을 구하시오. (VLOOKUP 함수 사용 · D2에 입력한 뒤 D3로 자동 채우기)",
+        "cols": ["A", "B", "C", "D"],
         "rows": [
           [
             { "val": "사원명", "editable": false },
+            { "val": "부서", "editable": false },
             { "val": "등급", "editable": false },
             { "val": "상여금", "editable": false }
           ],
           [
             { "val": "김유신", "editable": false },
+            { "val": "영업1팀", "editable": false },
             { "val": "A", "editable": false },
-            { "val": "", "editable": true, "answer": "=VLOOKUP(B2,$A$6:$B$8,2,0)", "result": 500000 }
+            { "val": "", "editable": true, "answer": "=VLOOKUP(C2,$A$6:$C$8,3,0)", "result": 500000 }
           ],
           [
             { "val": "이순신", "editable": false },
+            { "val": "관리팀", "editable": false },
             { "val": "C", "editable": false },
-            { "val": "", "editable": true, "answer": "=VLOOKUP(B3,$A$6:$B$8,2,0)", "result": 200000 }
+            { "val": "", "editable": true, "answer": "=VLOOKUP(C3,$A$6:$C$8,3,0)", "result": 200000 }
           ],
           [
+            { "val": "", "editable": false },
             { "val": "", "editable": false },
             { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "등급", "editable": false },
+            { "val": "직무", "editable": false },
             { "val": "상여금", "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "A", "editable": false },
+            { "val": "영업", "editable": false },
             { "val": 500000, "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "B", "editable": false },
+            { "val": "관리", "editable": false },
             { "val": 350000, "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "C", "editable": false },
+            { "val": "지원", "editable": false },
             { "val": 200000, "editable": false },
             { "val": "", "editable": false }
           ]

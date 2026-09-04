@@ -560,11 +560,6 @@ export function VlookupOneTableDiagram() {
           </div>
         </div>
       </div>
-
-      {/* 한 셀만 계산 → $ 고정 불필요 안내 (칠판 아래, 다이어그램 하단) */}
-      <div style={{ marginTop: 12, color: C.textDim, fontSize: 13, lineHeight: 1.6, textAlign: 'center' }}>
-        한 셀에만 수식을 입력하는 경우라 참조 범위를 $로 고정할 필요가 없습니다.
-      </div>
     </Wrap>
   );
 }

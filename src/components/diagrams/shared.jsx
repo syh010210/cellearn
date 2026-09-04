@@ -125,7 +125,8 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
     border: `1px solid ${C.border}`, padding: '6px 4px', textAlign: 'center', whiteSpace: 'nowrap',
   };
   return (
-    <div style={{ overflowX: 'auto', border: `1px solid ${C.border}`, borderRadius: 6, display: 'inline-block', maxWidth: '100%' }}>
+    <div style={{ display: 'inline-block', maxWidth: '100%' }}>
+      <div style={{ overflowX: 'auto', border: `1px solid ${C.border}`, borderRadius: 6, maxWidth: '100%' }}>
       <table style={{ borderCollapse: 'collapse', fontFamily: FONT }}>
         <thead>
           <tr>
@@ -165,24 +166,30 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               })}
             </tr>
           ))}
-          {labelRow && (
+        </tbody>
+      </table>
+      </div>
+      {/* 라벨 행: 테두리 없는 별도 표. 같은 min-width라 위 표 컬럼과 정확히 정렬 */}
+      {labelRow && (
+        <table style={{ borderCollapse: 'collapse', fontFamily: FONT, marginLeft: 1 }}>
+          <tbody>
             <tr>
-              <td style={{ border: 'none', background: 'transparent', padding: '3px 6px' }} />
+              <td style={{ minWidth: 26, padding: '3px 4px', border: 'none' }} />
               {Array.from({ length: nCols }, (_, ci) => {
                 const lab = labelRow[ci];
                 return (
                   <td key={ci} style={{
-                    border: 'none', background: 'transparent',
-                    padding: '3px 6px', fontSize: 13.5, fontWeight: 700,
-                    textAlign: 'center', whiteSpace: 'nowrap',
-                    color: (lab && lab.color) || C.text,
+                    minWidth: ci === 0 ? (firstColW || minColW) : minColW,
+                    padding: '3px 4px', border: 'none',
+                    fontSize: 13.5, fontWeight: 700, textAlign: 'center',
+                    whiteSpace: 'nowrap', color: (lab && lab.color) || C.text,
                   }}>{(lab && lab.text) || ' '}</td>
                 );
               })}
             </tr>
-          )}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
