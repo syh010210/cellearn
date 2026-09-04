@@ -65,7 +65,7 @@ export function VlookupDiagram() {
           <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 15, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
             =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, 0)
             <span style={{ color: C.greenLight }}> → 5.0%</span>
           </div>
@@ -152,7 +152,7 @@ export function HlookupTwoTableDiagram() {
           <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 0)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 14.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
             =D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
             <span style={{ color: C.greenLight }}> → 12 × 4,500 = 54,000</span>
           </div>
@@ -178,16 +178,16 @@ export function HlookupTwoTableDiagram() {
 // ③ 한 개의 표 — 기준값과 참조 범위가 같은 표에 있는 VLOOKUP (영어회화 평가)
 export function VlookupOneTableDiagram() {
   const data = [
-    ['만족도', '상품명', '카테고리'],
-    [4.5, '아메리카노', '음료'],
-    [3.2, '크로플', '디저트'],
-    [4.8, '카페라떼', '음료'],
-    [2.9, '머핀', '디저트'],
+    ['상품명', '만족도', '카테고리'],
+    ['아메리카노', 4.5, '음료'],
+    ['크로플', 3.2, '디저트'],
+    ['카페라떼', 4.8, '음료'],
+    ['머핀', 2.9, '디저트'],
   ];
   const st = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 4 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };   // 찾을 값 MIN=2.9
-    if (ri === 4 && ci === 1) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 결과 머핀
+    if (ri === 4 && ci === 1) return { bold: true, color: C.amberLight, bg: C.amberBg };   // 찾을 값 MIN=2.9
+    if (ri === 4 && ci === 2) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 결과 디저트
     return {};
   };
   return (
@@ -197,11 +197,11 @@ export function VlookupOneTableDiagram() {
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표4]에서 <b style={{ color: C.amberLight }}>만족도[A3:A6]</b>가 가장 낮은 상품의
-          <b style={{ color: C.greenLight }}> 상품명[C9]</b>을 구하시오.
+          [표3]에서 <b style={{ color: C.amberLight }}>만족도[B3:B6]</b>가 가장 낮은 상품의
+          <b style={{ color: C.greenLight }}> 카테고리[C9]</b>를 구하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 찾을 값과 결과가 모두 [표4] 안에 있으므로, 따로 떨어진 참조 범위 없이 표 전체가 참조 범위임</div>
+          <div>▶ 찾을 값과 결과가 모두 [표3] 안에 있으므로, 따로 떨어진 참조 범위 없이 표 안에서 끝남</div>
           <div>▶ VLOOKUP, MIN 함수 사용</div>
         </div>
       </div>
@@ -209,7 +209,7 @@ export function VlookupOneTableDiagram() {
       {/* 왼쪽: 표 · 오른쪽: 풀이 박스 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div>
-          <TableCaption color={C.blueLight}>[표4] 기준값과 참조 범위가 같은 표</TableCaption>
+          <TableCaption color={C.blueLight}>[표3] 기준값과 참조 범위가 같은 표</TableCaption>
           <ExcelGrid data={data} startRow={2} cellStyle={st} minColW={92} firstColW={92} />
         </div>
 
@@ -217,19 +217,19 @@ export function VlookupOneTableDiagram() {
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
           <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
-          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 첫 열에서 찾아 같은 행의 상품명을 반환</div>
+          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 15, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>MIN(A3:A6)</span>, <span style={{ color: C.blueLight }}>A3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
-            <span style={{ color: C.greenLight }}> → 머핀</span>
+          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+            =VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
+            <span style={{ color: C.greenLight }}> → 디저트</span>
           </div>
           {[
-            { label: '찾을 값', code: 'MIN(A3:A6)', color: C.amberLight,
-              desc: '만족도 중 가장 낮은 값(2.9)을 MIN으로 먼저 구합니다. 이 값을 표의 첫 열에서 세로로 찾습니다.' },
-            { label: '참조 범위', code: 'A3:C6', color: C.blueLight,
-              desc: '기준값(만족도)과 결과(상품명)가 같은 표에 있으므로, 따로 떨어진 참조 범위 없이 이 표 자체가 참조 범위입니다. \n첫 열(만족도)에 찾을 값이 있어야 제대로 찾습니다. \n제목행(만족도·상품명·카테고리)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A3부터 선택합니다.' },
+            { label: '찾을 값', code: 'MIN(B3:B6)', color: C.amberLight,
+              desc: '만족도 중 가장 낮은 값(2.9)을 MIN으로 먼저 구합니다. 이 값을 참조 범위의 첫 열(만족도)에서 세로로 찾습니다.' },
+            { label: '참조 범위', code: 'B3:C6', color: C.blueLight,
+              desc: 'VLOOKUP은 찾을 값이 참조 범위의 첫 열에 있어야 합니다. \n찾을 값이 만족도이므로, 만족도(B열)가 첫 열이 되도록 상품명(A열)은 빼고 B열부터 선택합니다. \n같은 표 안에 있어도 찾을 값 왼쪽 열(상품명)은 VLOOKUP으로 가져올 수 없습니다.' },
             { label: '열 번호', code: '2', color: C.greenLight,
-              desc: '반환할 값이 상품명이므로, 선택한 범위에서 상품명이 있는 열 번호 2를 넣습니다.' },
+              desc: '반환할 값이 카테고리이므로, 선택한 범위(B~C열)에서 카테고리가 있는 열 번호 2를 넣습니다.' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>

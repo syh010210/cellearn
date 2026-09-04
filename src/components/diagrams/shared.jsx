@@ -121,8 +121,8 @@ export function colLetter(i) {
 export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW }) {
   const nCols = Math.max(...data.map((r) => r.length));
   const th = {
-    background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 12,
-    border: `1px solid ${C.border}`, padding: '3px 6px', textAlign: 'center', whiteSpace: 'nowrap',
+    background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 13,
+    border: `1px solid ${C.border}`, padding: '6px 4px', textAlign: 'center', whiteSpace: 'nowrap',
   };
   return (
     <div style={{ overflowX: 'auto', border: `1px solid ${C.border}`, borderRadius: 6, display: 'inline-block', maxWidth: '100%' }}>
@@ -144,11 +144,11 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                 const st = cellStyle ? (cellStyle(ri, ci, val) || {}) : {};
                 return (
                   <td key={ci} style={{
-                    border: `1px solid ${C.border}`, padding: '4px 8px', fontSize: 12.5,
-                    background: st.bg || 'transparent',
+                    border: `1px solid ${C.border}`, padding: '7px 6px', fontSize: 14.5,
+                    background: st.bg || C.bgDark,
                     color: st.color || (st.dim ? C.textDim : C.text),
                     fontWeight: st.bold ? 700 : 400,
-                    textAlign: st.align || (typeof val === 'number' || /^[\d,.\-%₩]+$/.test(String(val)) ? 'right' : 'left'),
+                    textAlign: st.align || 'center',
                     whiteSpace: 'nowrap',
                   }}>{val === null ? '' : val}</td>
                 );
