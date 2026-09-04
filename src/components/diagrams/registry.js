@@ -1,7 +1,7 @@
 import { ExcelBasicDiagram, RelativeDownDiagram, RelativeRightDiagram, AbsoluteRefDiagram, MixedRefDiagram } from './Lesson1.jsx';
 import { StringExtractDiagram, StringLenCaseDiagram, StringFindTrimDiagram, StringCombineDiagram } from './Lesson2.jsx';
 import { StatBasicDiagram, StatRankDiagram, StatLargeSmallDiagram, StatCountDiagram, StatCondCountDiagram } from './Lesson3.jsx';
-import { VlookupDiagram, HlookupTwoTableDiagram, VlookupApproxDiagram, VlookupOneTableDiagram, MatchIndexDiagram, ChooseDiagram, IndexMatchDiagram } from './Lesson4.jsx';
+import { VlookupHlookupIntroDiagram, VlookupDiagram, HlookupTwoTableDiagram, VlookupApproxDiagram, VlookupOneTableDiagram, MatchIndexDiagram, ChooseDiagram, IndexMatchDiagram } from './Lesson4.jsx';
 import { DbSumDiagram, DbAverageDiagram, DbCountDiagram, DbMaxDiagram } from './Lesson5.jsx';
 import { MathBasicDiagram, MathRoundDiagram, SumifDiagram, SumifsDiagram } from './Lesson6.jsx';
 import { DatetimeBasicDiagram, DatetimeComposeDiagram, WeekdayDiagram, WorkdayDiagram } from './Lesson7.jsx';
@@ -118,6 +118,7 @@ export const DIAGRAM_REGISTRY = {
   '/images/stat-count.svg':            StatCountDiagram,
   '/images/stat-condcount.svg':        StatCondCountDiagram,
 
+  '/diagram/lookup-common':            VlookupHlookupIntroDiagram,
   '/images/lookup-vlookup.svg':        VlookupDiagram,
   '/diagram/lookup-hlookup-2table':    HlookupTwoTableDiagram,
   '/diagram/lookup-vlookup-approx':    VlookupApproxDiagram,

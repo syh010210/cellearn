@@ -1,6 +1,56 @@
 import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, TableCaption, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
+// VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
+// ──────────────────────────────────────────────
+export function VlookupHlookupIntroDiagram() {
+  const args = [
+    { label: '찾을 값', color: C.amberLight,
+      desc: '참조 범위에서 찾을 기준값입니다. MID·MIN 같은 다른 함수로 만들어 넣기도 합니다.' },
+    { label: '참조 범위', color: C.blueLight,
+      desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 표입니다. \n★ 반드시 찾을 값이 참조 범위의 첫 열(VLOOKUP)·첫 행(HLOOKUP)에 있어야 합니다. \n표의 제목행·이름열은 실제 데이터가 아니라 이름일 뿐이므로 빼고 데이터부터 선택합니다. \n수식을 자동 채우기로 복사할 때 범위가 밀리지 않도록 $로 고정합니다.' },
+    { label: '열·행 번호', color: C.greenLight,
+      desc: '반환할 값이 참조 범위에서 몇 번째 열(VLOOKUP)·행(HLOOKUP)에 있는지를 숫자로 넣습니다.' },
+    { label: '마지막 인수', color: C.text,
+      desc: '찾을 값이 첫 열·행에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 열·행이 점수처럼 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다.' },
+  ];
+  return (
+    <Wrap>
+      <Title>VLOOKUP · HLOOKUP — 공통 원리</Title>
+      <Subtitle>찾을 값을 참조 범위에서 찾아, 지정한 번호의 값을 가져오는 함수</Subtitle>
+
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+        {/* VLOOKUP */}
+        <div style={{ flex: '1 1 300px', minWidth: 280, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
+          <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>세로 참조 범위 — 기준값이 첫 열</div>
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)</div>
+          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 열에서 세로로 찾아 같은 행의 지정 열 값을 반환</div>
+        </div>
+        {/* HLOOKUP */}
+        <div style={{ flex: '1 1 300px', minWidth: 280, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
+          <div style={{ color: C.orangeLight, fontSize: 14, fontWeight: 700 }}>가로 참조 범위 — 기준값이 첫 행</div>
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=HLOOKUP(찾을 값, 참조 범위, 행 번호, FALSE)</div>
+          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 행에서 가로로 찾아 같은 열의 지정 행 값을 반환</div>
+        </div>
+      </div>
+
+      {/* 공통 인수 설명 */}
+      <div style={{ marginTop: 16, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>네 개의 인수 — 두 함수 공통</div>
+        {args.map((p) => (
+          <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+            <span style={{ color: p.color, fontWeight: 700 }}>{p.label}</span>
+            <span style={{ color: C.text }}> — {p.desc}</span>
+          </div>
+        ))}
+      </div>
+    </Wrap>
+  );
+}
+
+// ──────────────────────────────────────────────
 // VlookupDiagram
 // ──────────────────────────────────────────────
 // ① 두 개의 표(따로) — 세로 참조 범위를 VLOOKUP으로 검색 (대출금 내역 + 코드표)
