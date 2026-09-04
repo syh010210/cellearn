@@ -661,7 +661,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
       <section id="pricing" style={{ background: UI.greenDeep, color: "#fff", padding: "64px 24px", scrollMarginTop: 66 }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 14 }}>
-            <span style={{ display: "inline-block", background: UI.lime, color: UI.teal, fontSize: 13, fontWeight: 800, padding: "6px 16px", borderRadius: UI.rPill, letterSpacing: "-0.01em" }}>🎉 오픈 기념 프로모션</span>
+            <span style={{ display: "inline-block", background: UI.lime, color: UI.teal, fontSize: 13, fontWeight: 800, padding: "6px 16px", borderRadius: UI.rPill, letterSpacing: "-0.01em" }}>오픈 기념 프로모션</span>
           </div>
           <h2 style={{ textAlign: "center", fontSize: "clamp(26px,3.4vw,34px)", fontWeight: 800, margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.25 }}>
             지금 결제하면, <span style={{ color: UI.lime }}>올해 끝까지</span>

@@ -58,11 +58,51 @@ export function VlookupDiagram() {
         </div>
         <FnBox color={C.blue} tint={C.blueCard} border={C.blueDim}
           name="VLOOKUP"
-          syntax="구문: =VLOOKUP(찾을 값, 참조표, 열 번호, 0)"
-          desc="참조표의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환"
+          syntax="구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)"
+          desc="참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환"
           formula="=VLOOKUP(MID(A3,5,1), $A$12:$C$14, 3, 0)"
           value="→ 5.0%" />
       </div>
+
+      {/* 실제 문제처럼 — 문항 */}
+      <div style={{ marginTop: 18, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px' }}>
+        <div style={{ color: C.amberLight, fontSize: 13.5, fontWeight: 700, marginBottom: 6 }}>［문제］</div>
+        <div style={{ color: C.text, fontSize: 15, lineHeight: 1.75 }}>
+          [표1]의 <b style={{ color: C.amberLight }}>사원코드</b>는 「지점-<b style={{ color: C.amberLight }}>등급</b>-일련번호」 형식으로,
+          왼쪽에서 <b style={{ color: C.amberLight }}>5번째 글자</b>가 등급(A·B·C)입니다. 이 등급을
+          <b style={{ color: C.blueLight }}> [등급표]</b>에서 찾아 <b style={{ color: C.greenLight }}>성과급률</b>을
+          [D3] 셀에 구하시오.
+        </div>
+      </div>
+
+      {/* 수식 뜯어보기 */}
+      <div style={{ marginTop: 14, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ color: C.blueLight, fontSize: 16, fontWeight: 700 }}>수식 뜯어보기</div>
+        <div style={{ color: C.text, fontSize: 15.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em' }}>
+          =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, 0)
+        </div>
+        {[
+          { label: '찾을 값', code: 'MID(A3,5,1)', color: C.amberLight,
+            desc: '사원코드 A3("101-A-2201")에서 5번째 글자 한 개(등급 "A")만 뽑습니다. 사원코드 전체는 등급표에 없으므로, 등급 문자만 추출해야 [등급표]의 첫 열에서 찾을 수 있습니다.' },
+          { label: '참조 범위', code: '$A$12:$C$14', color: C.blueLight,
+            desc: '값을 찾아올 [등급표]의 범위입니다. 첫 열(등급 A·B·C)에 찾을 값이 있어야 VLOOKUP이 세로로 찾을 수 있습니다.' },
+          { label: '열 번호', code: '3', color: C.greenLight,
+            desc: '참조 범위에서 왼쪽부터 3번째 열(성과급률)의 값을 반환합니다. 등급 "A" → 5.0%.' },
+        ].map((p) => (
+          <div key={p.label} style={{ display: 'flex', gap: 12, alignItems: 'baseline' }}>
+            <div style={{ flex: '0 0 138px' }}>
+              <span style={{ color: p.color, fontSize: 14, fontWeight: 700 }}>{p.label}</span>
+              <span style={{ color: p.color, fontSize: 13, fontWeight: 700, opacity: 0.9 }}> {p.code}</span>
+            </div>
+            <div style={{ flex: 1, color: C.text, fontSize: 14, lineHeight: 1.7 }}>{p.desc}</div>
+          </div>
+        ))}
+        {/* 참조 범위 고정($) 설명 */}
+        <div style={{ background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '10px 14px', color: C.textMuted, fontSize: 13.5, lineHeight: 1.75 }}>
+          <b style={{ color: C.blueLight }}>참조 범위는 왜 $로 고정할까?</b> [D4]·[D5]로 <b>수식을 복사(자동 채우기)</b>할 때 참조 범위가 함께 밀려 내려가면 안 되므로 <b style={{ color: C.blueLight }}>$A$12:$C$14</b>처럼 절대 참조로 고정합니다. 반대로 <b>자동 채우기 없이 한 칸만 계산</b>하는 문제라면 참조 범위를 고정할 필요가 없습니다.
+        </div>
+      </div>
+
       <BottomBar>
         <BLine>사원코드에서 등급(A)을 뽑아 등급표에서 찾음 — 참조표가 <b style={{ color: C.blueLight }}>세로</b>라서 VLOOKUP</BLine>
       </BottomBar>
