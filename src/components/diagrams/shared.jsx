@@ -142,15 +142,18 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               {Array.from({ length: nCols }, (_, ci) => {
                 const val = row[ci] ?? '';
                 const st = cellStyle ? (cellStyle(ri, ci, val) || {}) : {};
-                const base = `1px solid ${C.border}`;
-                // st.border = 네 변 모두 / st.bt·br·bb·bl = 변별 테두리(범위 바깥쪽만 그릴 때)
-                const bAll = st.border ? `2px solid ${st.border}` : null;
+                // 강조 테두리는 box-shadow(inset)로 그려 셀 크기를 바꾸지 않는다 (레이아웃 밀림 방지)
+                // st.border = 네 변 모두 / st.bt·br·bb·bl = 변별 테두리(범위 바깥쪽만)
+                const bd = st.border;
+                const sh = [];
+                if (st.bt || bd) sh.push(`inset 0 2px 0 0 ${st.bt || bd}`);
+                if (st.br || bd) sh.push(`inset -2px 0 0 0 ${st.br || bd}`);
+                if (st.bb || bd) sh.push(`inset 0 -2px 0 0 ${st.bb || bd}`);
+                if (st.bl || bd) sh.push(`inset 2px 0 0 0 ${st.bl || bd}`);
                 return (
                   <td key={ci} style={{
-                    borderTop: st.bt ? `2px solid ${st.bt}` : (bAll || base),
-                    borderRight: st.br ? `2px solid ${st.br}` : (bAll || base),
-                    borderBottom: st.bb ? `2px solid ${st.bb}` : (bAll || base),
-                    borderLeft: st.bl ? `2px solid ${st.bl}` : (bAll || base),
+                    border: `1px solid ${C.border}`,
+                    boxShadow: sh.length ? sh.join(', ') : undefined,
                     padding: '7px 6px', fontSize: 14.5,
                     background: st.bg || C.bgDark,
                     color: st.color || (st.dim ? C.textDim : C.text),

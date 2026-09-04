@@ -108,15 +108,6 @@ export function VlookupHlookupIntroDiagram() {
               </button>
             ))}
           </div>
-          {/* 칠판: 가장 긴 설명 크기로 고정 */}
-          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
-            {tabs.map((t) => (
-              <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-                <span style={{ color: t.color === WHITE ? C.text : t.color, fontWeight: 700 }}>{t.key}</span>
-                <span style={{ color: C.text }}> — {explain[t.key]}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </Wrap>
@@ -132,9 +123,9 @@ export function VlookupDiagram() {
 
   const loan = [
     ['사원코드', '사원명', '판매액', '성과급률'],
-    ['101-A-2201', '박서준', '24,000,000', '5.0%'],
-    ['102-B-3302', '김민지', '9,800,000', '3.5%'],
-    ['103-C-4503', '이도현', '13,500,000', '2.0%'],
+    ['103-C-2201', '박서준', '24,000,000', ''],
+    ['102-B-3302', '김민지', '9,800,000', ''],
+    ['101-A-4503', '이도현', '13,500,000', ''],
   ];
   const code = [
     ['등급', '직무', '성과급률'],
@@ -240,7 +231,7 @@ export function VlookupDiagram() {
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
               <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
-              <div style={{ color: C.greenLight }}>→ 5.0%</div>
+              <div style={{ color: C.greenLight }}>→ 2.0%</div>
             </div>
           </div>
 
@@ -284,9 +275,9 @@ export function HlookupTwoTableDiagram() {
 
   const sales = [
     ['판매일', '판매사원', '상품코드', '판매수량', '판매금액'],
-    ['3월 2일', '한지민', 'B', 12, '54,000'],
-    ['3월 5일', '공유', 'D', 20, '30,000'],
-    ['3월 9일', '수지', 'A', 7, '56,000'],
+    ['3월 2일', '한지민', 'B', 12, ''],
+    ['3월 5일', '공유', 'D', 20, ''],
+    ['3월 9일', '수지', 'A', 7, ''],
   ];
   const price = [
     ['상품코드', 'A', 'B', 'C', 'D'],
@@ -579,7 +570,7 @@ export function VlookupOneTableDiagram() {
       </div>
 
       {/* 왼쪽: 표(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div>
           <TableCaption color={C.blueLight}>[표3] 기준값과 참조 범위가 같은 표</TableCaption>
           <ExcelGrid data={data} startRow={2} cellStyle={st} minColW={92} firstColW={92} />
@@ -588,8 +579,9 @@ export function VlookupOneTableDiagram() {
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
           {/* VLOOKUP + MIN 박스 */}
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
             <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
               <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
@@ -626,6 +618,22 @@ export function VlookupOneTableDiagram() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* 네 개의 인수 — 공통 설명 */}
+      <div style={{ marginTop: 18, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>네 개의 인수</div>
+        {[
+          { label: '찾을 값', color: C.amberLight, desc: '참조 범위에서 찾을 기준값입니다.' },
+          { label: '참조 범위', color: C.blueLight, desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 범위입니다. \n찾을 값이 참조 범위의 첫 행 또는 첫 열에 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n수식을 자동 채우기로 복사할 때 범위가 밀리지 않도록 $로 고정합니다.' },
+          { label: '행 · 열 번호', color: C.greenLight, desc: '반환할 값이 참조 범위에서 몇 번째 행 또는 열에 있는지를 숫자로 넣습니다.' },
+          { label: '마지막 인수', color: C.text, desc: '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \nIFERROR와 함께 쓰는 경우에 예외가 발생하는데, 이는 나중에 설명합니다.' },
+        ].map((p) => (
+          <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+            <span style={{ color: p.color, fontWeight: 700 }}>{p.label}</span>
+            <span style={{ color: C.text }}> — {p.desc}</span>
+          </div>
+        ))}
       </div>
     </Wrap>
   );
