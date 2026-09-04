@@ -351,11 +351,11 @@ export function HlookupTwoTableDiagram() {
   );
 }
 
-// ③(개념학습2) 세로 참조 범위 + 유사 일치 — 왼쪽 표 2개 고정, 오른쪽 박스+버튼 인터랙티브
+// (개념학습2) 가로 기준표 + 유사 일치 — 실전형: HLOOKUP + AVERAGE (본선 시험 결과 → 평가)
 export function VlookupApproxDiagram() {
   const [active, setActive] = useState(null);
 
-  // 일치 옵션(유사 일치)을 누르면 등급 3개가 2초 간격으로 하나씩 채워짐
+  // 일치 옵션(유사 일치)을 누르면 평가 3개가 2초 간격으로 하나씩 채워짐
   const [revealed, setRevealed] = useState(0);
   useEffect(() => {
     if (active !== '일치 옵션') { setRevealed(0); return; }
@@ -363,21 +363,18 @@ export function VlookupApproxDiagram() {
     const id = setInterval(() => setRevealed((n) => (n >= 3 ? n : n + 1)), 2000);
     return () => clearInterval(id);
   }, [active]);
-  const ANS = ['수', '양', '우']; // 김하늘 92→수, 이준호 68→양, 박서연 85→우
+  const ANS = ['B', 'A', 'C']; // 이철영 81.5→B, 허영수 92.5→A, 하지회 77.5→C
 
   const score = [
-    ['학번', '이름', '총점', '등급'],
-    ['S01', '김하늘', 92, ''],
-    ['S02', '이준호', 68, ''],
-    ['S03', '박서연', 85, ''],
+    ['성명', '이론', '실습', '평가'],
+    ['이철영', 65, 98, ''],
+    ['허영수', 85, 100, ''],
+    ['하지회', 65, 90, ''],
   ];
-  const grade = [
-    ['기준점수', '등급'],
-    [0, '가'],
-    [60, '양'],
-    [70, '미'],
-    [80, '우'],
-    [90, '수'],
+  const base = [
+    ['평균점수', 0, 70, 80, 90],
+    ['장학금', '0원', '100,000원', '150,000원', '200,000원'],
+    ['평가', 'D', 'C', 'B', 'A'],
   ];
 
   const WHITE = '#ffffff';
@@ -385,21 +382,21 @@ export function VlookupApproxDiagram() {
   const tabs = [
     { key: '찾을 값', color: C.amberLight },
     { key: '참조 범위', color: C.blueLight },
-    { key: '열 번호', color: C.greenLight },
+    { key: '행 번호', color: C.greenLight },
     { key: '일치 옵션', color: WHITE },
   ];
 
   const explain = {
-    '찾을 값': '총점입니다. 등급표의 첫 열(기준점수)에서 이 점수가 속한 구간을 찾습니다.',
-    '참조 범위': '찾을 값이 총점이기 때문에 참조 범위의 첫 열(기준점수)로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n유사 일치는 첫 열이 반드시 오름차순으로 정렬돼 있어야 합니다.',
-    '열 번호': '각 학생의 등급을 구하라고 했기 때문에, 반환할 등급이 지정한 참조 범위의 두 번째 열에 있으니 2입니다.',
-    '일치 옵션': '총점과 똑같은 값이 없어도, 총점보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간의 등급을 가져옵니다. \n(유사 일치 · TRUE)',
+    '찾을 값': 'AVERAGE로 두 과목(이론·실습)의 평균을 먼저 구합니다. 이 평균을 기준표 첫 행에서 가로로 찾습니다.',
+    '참조 범위': '찾을 값이 평균점수이기 때문에 참조 범위의 첫 행(평균점수)으로 오도록 하여, 왼쪽 이름 열(평균점수·장학금·평가)은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n유사 일치는 첫 행이 반드시 오름차순으로 정렬돼 있어야 합니다.',
+    '행 번호': '반환할 값이 평가이므로, 참조 범위에서 평가가 있는 세 번째 행이라 3입니다.',
+    '일치 옵션': '평균과 똑같은 값이 없어도, 평균보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간의 평가를 가져옵니다. \n(유사 일치 · TRUE)',
   };
 
-  // 성적표: 총점(C3:C5) 형광펜(열 번호 탭 제외) / 등급(D3:D5) 일치 옵션 때 2초 간격 채우기
+  // 시험결과: 이론·실습(B·C) 형광펜(행 번호 탭 제외) / 평가(D) 일치 옵션 때 2초 간격 채우기
   const scoreSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
+    if ((ci === 1 || ci === 2) && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
     if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
@@ -415,33 +412,33 @@ export function VlookupApproxDiagram() {
     }
     return s;
   };
-  // 등급표(데이터 인덱스 1..5): 참조 범위=B12:C16(첫 열 연한 채우기), 열 번호=C12:C16(초록), 일치 옵션=B12:B16(흰)
-  const gradeSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+  // 기준표(가로): 이름 열(A)은 라벨. 참조 범위=B8:E10(첫 행 연한 채우기), 행 번호=B10:E10(초록), 일치 옵션=B8:E8(흰)
+  const baseSt = (ri, ci) => {
+    if (ci === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
     let boxes = [];
-    let fillFirstCol = false;
-    if (active === '참조 범위') { boxes = [{ r1: 1, r2: 5, c1: 0, c2: 1, color: C.blueLight }]; fillFirstCol = true; }
-    else if (active === '열 번호') boxes = [{ r1: 1, r2: 5, c1: 0, c2: 1, color: C.blueLight }, { r1: 1, r2: 5, c1: 1, c2: 1, color: C.greenLight }];
-    else if (active === '일치 옵션') boxes = [{ r1: 1, r2: 5, c1: 0, c2: 0, color: WHITE }];
+    let fillFirstRow = false;
+    if (active === '참조 범위') { boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.blueLight }]; fillFirstRow = true; }
+    else if (active === '행 번호') boxes = [{ r1: 0, r2: 2, c1: 1, c2: 4, color: C.blueLight }, { r1: 2, r2: 2, c1: 1, c2: 4, color: C.greenLight }];
+    else if (active === '일치 옵션') boxes = [{ r1: 0, r2: 0, c1: 1, c2: 4, color: WHITE }];
     const sides = rangeSides(ri, ci, boxes);
-    if (fillFirstCol && ci === 0 && ri >= 1) sides.bg = LIGHT_BLUE;
+    if (fillFirstRow && ri === 0 && ci >= 1) sides.bg = LIGHT_BLUE;
     return sides;
   };
 
   return (
     <Wrap>
-      <Title>세로 참조 범위 + 유사 일치 → VLOOKUP</Title>
+      <Title>가로 기준표 + 유사 일치 → HLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표1]에서 <b style={{ color: C.amberLight }}>총점[C3:C5]</b>과
-          <b style={{ color: C.blueLight }}> [B12:C16]</b> 영역의 표를 이용하여 각 학생의
-          <b style={{ color: C.greenLight }}> 등급[D3:D5]</b>을 구하시오.
+          [표4]에서 <b style={{ color: C.amberLight }}>이론[B3:B5]</b>과 <b style={{ color: C.amberLight }}>실습[C3:C5]</b>의 평균점수와
+          <b style={{ color: C.blueLight }}> [B8:E10]</b> 영역의 기준표를 이용하여 각 학생의
+          <b style={{ color: C.greenLight }}> 평가[D3:D5]</b>를 표시하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 등급은 총점이 속한 구간의 값임 (90 이상 ‘수’, 80~89 ‘우’, 70~79 ‘미’, 60~69 ‘양’, 그 미만 ‘가’)</div>
-          <div>▶ VLOOKUP 함수 사용 (유사 일치)</div>
+          <div>▶ 두 과목 평균이 0 이상 70 미만이면 ‘D’, 70 이상 80 미만이면 ‘C’, 80 이상 90 미만이면 ‘B’, 90 이상이면 ‘A’</div>
+          <div>▶ AVERAGE, HLOOKUP 함수 사용</div>
         </div>
       </div>
 
@@ -449,25 +446,25 @@ export function VlookupApproxDiagram() {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.blueLight}>[표1] 학생 성적표 — 찾는 값이 있는 표</TableCaption>
-            <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={70} firstColW={70} />
+            <TableCaption color={C.blueLight}>[표4] 본선 시험 결과 — 찾는 값이 있는 표</TableCaption>
+            <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={64} firstColW={72} />
           </div>
           <div>
-            <TableCaption color={C.blueLight}>[등급 기준표] 세로 참조 범위 (첫 열 오름차순)</TableCaption>
-            <ExcelGrid data={grade} startRow={11} startCol={1} cellStyle={gradeSt} minColW={78} firstColW={92} />
+            <TableCaption color={C.orangeLight}>[기준표] 가로 참조 범위 (첫 행 오름차순)</TableCaption>
+            <ExcelGrid data={base} startRow={8} cellStyle={baseSt} minColW={82} firstColW={72} />
           </div>
         </div>
 
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* VLOOKUP (유사 일치) 박스 */}
-          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP (유사 일치)</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>마지막 인수를 TRUE(또는 생략)로 두면 유사 일치. 찾을 값보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간을 매칭</div>
-            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$12:$C$16</span>, <span style={{ color: C.greenLight }}>2</span>, TRUE)</div>
-              <div style={{ color: C.greenLight }}>→ 수</div>
+          {/* HLOOKUP + AVERAGE 박스 */}
+          <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP + AVERAGE</div>
+            <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>두 과목 평균을 AVERAGE로 구해 찾을 값으로 쓰고, 기준표 첫 행에서 그 구간을 유사 일치로 찾아 평가를 반환</div>
+            <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=HLOOKUP(<span style={{ color: C.amberLight }}>AVERAGE(B3,C3)</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$8:$E$10</span>, <span style={{ color: C.greenLight }}>3</span>, TRUE)</div>
+              <div style={{ color: C.greenLight }}>→ B</div>
             </div>
           </div>
 
