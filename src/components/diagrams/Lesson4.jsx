@@ -86,7 +86,7 @@ export function VlookupDiagram() {
 
   const explain = {
     '찾을 값': '사원코드의 다섯 번째 문자입니다.',
-    '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자이기 때문에 참조 범위의 첫 열로 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자이기 때문에 참조 범위의 첫 열로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
     '열 번호': '각 사원의 성과급률을 계산하라고 했기 때문에, 반환할 값이 지정한 참조 범위의 세 번째 열에 있으니 3입니다.',
     '일치 옵션': '찾을 값이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
   };
@@ -236,7 +236,7 @@ export function HlookupTwoTableDiagram() {
 
   const explain = {
     '찾을 값': '상품코드입니다.',
-    '참조 범위': '찾을 값이 상품코드이기 때문에 참조 범위의 첫 행으로 오도록 하여, 왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '참조 범위': '찾을 값이 상품코드이기 때문에 참조 범위의 첫 행으로 오도록 하여, 왼쪽 표의 제목 열은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
     '행 번호': '각 건의 판매금액을 계산하라고 했기 때문에, 반환할 판매단가가 지정한 참조 범위의 두 번째 행에 있으니 2입니다.',
     '일치 옵션': '찾을 값이 참조 범위의 첫 행에 전부 있습니다. (정확히 일치 · FALSE)',
   };
@@ -460,7 +460,7 @@ export function VlookupOneTableDiagram() {
 
   const explain = {
     '찾을 값': '만족도 중 가장 낮은 값입니다.',
-    '참조 범위': '찾을 값이 만족도이기 때문에 참조 범위의 첫 열로 오도록 하여, 왼쪽 상품명은 찾을 값 왼쪽이라 VLOOKUP으로 가져올 수 없으므로 빼고 만족도부터 선택합니다.',
+    '참조 범위': '찾을 값이 만족도이기 때문에 참조 범위의 첫 열로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. 상품명 열은 만족도 열이 참조 범위의 첫 열이므로 지정할 수 없습니다.',
     '열 번호': '가장 낮은 만족도의 카테고리를 구하라고 했기 때문에, 반환할 카테고리가 지정한 참조 범위의 두 번째 열에 있으니 2입니다.',
     '일치 옵션': '찾을 값이 참조 범위의 첫 열에 있습니다. (정확히 일치 · FALSE)',
   };
@@ -493,7 +493,7 @@ export function VlookupOneTableDiagram() {
 
   return (
     <Wrap>
-      <Title>③ 한 표 안에서 VLOOKUP</Title>
+      <Title>③ 표 하나에서</Title>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -518,7 +518,6 @@ export function VlookupOneTableDiagram() {
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
             <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
               <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
