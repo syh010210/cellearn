@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, TableCaption, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
@@ -12,7 +13,7 @@ export function VlookupHlookupIntroDiagram() {
     { label: '행 · 열 번호', color: C.greenLight,
       desc: '반환할 값이 참조 범위에서 몇 번째 행 또는 열에 있는지를 숫자로 넣습니다.' },
     { label: '마지막 인수', color: C.text,
-      desc: '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \n예외로 IFERROR와 함께 쓰는 경우가 있는데, 이는 나중에 설명합니다.' },
+      desc: '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \nIFERROR와 함께 쓰는 경우에 예외가 발생하는데, 이는 나중에 설명합니다.' },
   ];
   return (
     <Wrap>
@@ -57,37 +58,63 @@ export function VlookupHlookupIntroDiagram() {
 // ──────────────────────────────────────────────
 // VlookupDiagram
 // ──────────────────────────────────────────────
-// ① 두 개의 표(따로) — 세로 참조 범위를 VLOOKUP으로 검색 (대출금 내역 + 코드표)
+// ① 세로 참조 범위 VLOOKUP — 인수 버튼을 눌러 설명·강조 표가 바뀌는 인터랙티브
 export function VlookupDiagram() {
+  const [active, setActive] = useState('찾을 값');
+
   const loan = [
     ['사원코드', '사원명', '판매액', '성과급률'],
     ['101-A-2201', '박서준', '24,000,000', '5.0%'],
     ['102-B-3302', '김민지', '9,800,000', '3.5%'],
     ['103-C-4503', '이도현', '13,500,000', '2.0%'],
   ];
-  const loanSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 1 && ci === 3) return { bold: true, color: C.greenLight, bg: C.greenBg };
-    if (ri === 1 && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };
-    return {};
-  };
   const code = [
     ['등급', '직무', '성과급률'],
     ['A', '영업', '5.0%'],
     ['B', '관리', '3.5%'],
     ['C', '지원', '2.0%'],
   ];
-  const codeSt = (ri) => {
+
+  const WHITE = '#ffffff';
+  const tabs = [
+    { key: '찾을 값', color: C.amberLight },
+    { key: '참조 범위', color: C.blueLight },
+    { key: '열 번호', color: C.greenLight },
+    { key: '일치 옵션', color: WHITE },
+  ];
+  const activeColor = tabs.find((t) => t.key === active).color;
+
+  const explain = {
+    '찾을 값': '사원코드의 다섯 번째 문자입니다.',
+    '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자이기 때문에 참조 범위의 첫 열로 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '열 번호': '각 사원의 성과급률을 계산하라고 했기 때문에, 반환할 값이 지정한 참조 범위의 세 번째 열에 있으니 3입니다.',
+    '일치 옵션': '찾을 값이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
+  };
+
+  // 표1: 찾을 값·일치 옵션 탭에서 사원코드 열(A3:A5, 다섯 번째 문자 A·B·C 포함) 노란색 배경
+  const loanSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 1) return { bold: true, color: C.amberLight, bg: C.amberBg };
+    if ((active === '찾을 값' || active === '일치 옵션') && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };
     return {};
   };
+  // 등급표: 참조 범위=A12:C14 파란 채우기 / 열 번호=C12:C14 초록 테두리 / 일치 옵션=A12:A14 흰 테두리
+  const codeSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (active === '참조 범위') return { bg: C.blueBg };
+    if (active === '열 번호') return ci === 2 ? { bg: C.blueBg, border: C.green } : { bg: C.blueBg };
+    if (active === '일치 옵션') return ci === 0 ? { border: WHITE } : {};
+    return {};
+  };
+
+  const showLoan = active === '찾을 값' || active === '일치 옵션';
+  const showCode = active === '참조 범위' || active === '열 번호' || active === '일치 옵션';
+
   return (
     <Wrap>
       <Title>① 세로 참조 범위 → VLOOKUP</Title>
-      <Subtitle>실제 시험에서는 위 문제처럼 MID 등 다양한 함수를 이용해 찾을 값을 만들어 풀어야 합니다</Subtitle>
+      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
-      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
           [표1]에서 <b style={{ color: C.amberLight }}>사원코드[A3:A5]</b>의 다섯 번째 문자와
@@ -100,49 +127,54 @@ export function VlookupDiagram() {
         </div>
       </div>
 
-      {/* 왼쪽: 표 2개 · 오른쪽: 풀이 박스 */}
+      {/* VLOOKUP 박스 (구문 + 수식) */}
+      <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+        <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
+        <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+        <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
+        <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+        <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+          <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
+          <div style={{ color: C.greenLight }}>→ 5.0%</div>
+        </div>
+      </div>
+
+      {/* 인수 버튼 4개 */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+        {tabs.map((t) => (
+          <button key={t.key} onClick={() => setActive(t.key)}
+            style={{
+              flex: 1, padding: '9px 8px', borderRadius: 8, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: 14.5, fontWeight: 700,
+              border: `2px solid ${t.color}`,
+              background: active === t.key ? t.color : 'transparent',
+              color: active === t.key ? '#0b1220' : t.color,
+            }}>
+            {t.key}
+          </button>
+        ))}
+      </div>
+
+      {/* 선택한 인수 설명 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', marginBottom: 14, fontSize: 15, lineHeight: 1.7 }}>
+        <span style={{ color: activeColor, fontWeight: 700 }}>{active}</span>
+        <span style={{ color: C.text }}> — {explain[active]}</span>
+      </div>
+
+      {/* 선택한 인수에 따라 강조되는 표 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {showLoan && (
           <div>
-            <TableCaption color={C.blueLight}>[표1] 사원 실적표 — 기준값이 있는 표</TableCaption>
+            <TableCaption color={C.blueLight}>[표1] 사원 실적표</TableCaption>
             <ExcelGrid data={loan} startRow={2} cellStyle={loanSt} minColW={78} firstColW={104} />
           </div>
+        )}
+        {showCode && (
           <div>
             <TableCaption color={C.blueLight}>[등급표] 세로 참조 범위</TableCaption>
             <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64} />
           </div>
-        </div>
-
-        {/* VLOOKUP 풀이 박스 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)</div>
-          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
-          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
-            <div style={{ color: C.greenLight }}>→ 5.0%</div>
-          </div>
-          {[
-            { label: '찾을 값', code: 'MID(A3,5,1)', color: C.amberLight,
-              desc: '코드 전체는 등급표에 없으므로, 사원코드에서 다섯 번째 글자(등급) 한 개만 뽑아와야 찾을 수 있습니다.' },
-            { label: '참조 범위', code: '$A$12:$C$14', color: C.blueLight,
-              desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 참조 범위입니다. \n★ 반드시 앞서 적은 찾을 값이 선택하는 참조 범위의 첫 열에 있어야 합니다. \n표의 제목행은 실제 데이터가 아니고 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다. \n만약 찾을 값이 사원코드의 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다.' },
-            { label: '열 번호', code: '3', color: C.greenLight,
-              desc: '반환할 값이 성과급률이므로, 선택한 범위에서 성과급률이 있는 열 번호 3을 넣습니다.' },
-            { label: '마지막 인수', code: 'FALSE', color: C.text,
-              desc: '찾을 값들이 참조 범위 첫 열에 하나하나 그대로 들어 있으면 정확히 일치, FALSE를 씁니다. 코드·이름처럼 딱 떨어지는 값이 여기에 해당하며 0을 써도 같습니다. \n반대로 첫 열이 점수처럼 구간으로 잡혀 있으면 유사 일치(TRUE·생략)를 쓰고, 이때는 첫 열이 오름차순으로 정렬돼 있어야 합니다.' },
-          ].map((p) => (
-            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
-              <span style={{ color: C.text }}> — {p.desc}</span>
-            </div>
-          ))}
-          <div style={{ fontSize: 13.5, lineHeight: 1.7 }}>
-            <span style={{ color: C.blueLight, fontWeight: 700 }}>참조 범위는 왜 $로 고정?</span>
-            <span style={{ color: C.text }}> — 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.</span>
-          </div>
-        </div>
+        )}
       </div>
     </Wrap>
   );
@@ -205,7 +237,7 @@ export function HlookupTwoTableDiagram() {
         {/* HLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
-          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, FALSE)</div>
+          <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -294,7 +326,7 @@ export function VlookupApproxDiagram() {
         {/* VLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP (유사 일치)</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, TRUE)</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>마지막 인수를 TRUE(또는 생략)로 두면 유사 일치. 찾을 값보다 크지 않은 값 중 가장 큰 값을 찾아 그 구간을 매칭</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -362,7 +394,7 @@ export function VlookupOneTableDiagram() {
         {/* VLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>

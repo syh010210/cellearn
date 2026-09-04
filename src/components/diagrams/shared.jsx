@@ -144,7 +144,8 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                 const st = cellStyle ? (cellStyle(ri, ci, val) || {}) : {};
                 return (
                   <td key={ci} style={{
-                    border: `1px solid ${C.border}`, padding: '7px 6px', fontSize: 14.5,
+                    border: st.border ? `2px solid ${st.border}` : `1px solid ${C.border}`,
+                    padding: '7px 6px', fontSize: 14.5,
                     background: st.bg || C.bgDark,
                     color: st.color || (st.dim ? C.textDim : C.text),
                     fontWeight: st.bold ? 700 : 400,
