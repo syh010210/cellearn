@@ -66,8 +66,8 @@ export function VlookupDiagram() {
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)
-            <span style={{ color: C.greenLight }}> → 5.0%</span>
+            <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
+            <div style={{ color: C.greenLight }}>→ 5.0%</div>
           </div>
           {[
             { label: '찾을 값', code: 'MID(A3,5,1)', color: C.amberLight,
@@ -209,7 +209,7 @@ export function VlookupApproxDiagram() {
   };
   return (
     <Wrap>
-      <Title>③ 세로 참조 범위 + 유사 일치 → VLOOKUP</Title>
+      <Title>세로 참조 범위 + 유사 일치 → VLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -285,7 +285,7 @@ export function VlookupOneTableDiagram() {
   };
   return (
     <Wrap>
-      <Title>④ 한 표 안에서 VLOOKUP</Title>
+      <Title>③ 한 표 안에서 VLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -308,12 +308,12 @@ export function VlookupOneTableDiagram() {
         {/* VLOOKUP 풀이 박스 */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
-            <span style={{ color: C.greenLight }}> → 디저트</span>
+            <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+            <div style={{ color: C.greenLight }}>→ 디저트</div>
           </div>
           {[
             { label: '찾을 값', code: 'MIN(B3:B6)', color: C.amberLight,

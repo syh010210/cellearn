@@ -29,15 +29,6 @@
           "alt": "상품 판매현황 표와 가로 상품 단가표를 이용해 상품코드를 HLOOKUP으로 찾아 판매단가를 구하고 판매금액을 계산하는 예시"
         },
         {
-          "type": "text",
-          "text": "찾을 값이 딱 떨어지는 코드·이름이면 마지막 인수를 **FALSE**(정확히 일치)로 씁니다. 반대로 점수처럼 특정 **구간**에 속하는지 볼 때는 마지막 인수를 **생략하거나 TRUE**로 두는 **유사 일치**를 씁니다. 이때는 참조 범위의 첫 열이 반드시 오름차순으로 정렬돼 있어야 합니다."
-        },
-        {
-          "type": "image",
-          "url": "/diagram/lookup-vlookup-approx",
-          "alt": "학생 성적표와 세로 등급 기준표를 이용해 총점이 속한 구간의 등급을 VLOOKUP 유사 일치로 찾는 예시"
-        },
-        {
           "type": "heading",
           "text": "② 한 표 안에서 찾는 형태"
         },
@@ -50,7 +41,7 @@
           "type": "bullets",
           "items": [
             "**VLOOKUP + MIN**",
-            "구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)",
+            "구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, FALSE)",
             "찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환"
           ]
         }
@@ -83,7 +74,70 @@
       }
     },
     {
-      "heading": "2. 위치 찾기와 데이터 추출 (INDEX, MATCH)",
+      "heading": "2. VLOOKUP 유사 일치 — 구간으로 값 찾기",
+      "contentBlocks": [
+        {
+          "type": "text",
+          "text": "찾을 값이 딱 떨어지는 코드·이름이면 마지막 인수를 **FALSE**(정확히 일치)로 씁니다. 반대로 점수처럼 특정 **구간**에 속하는지 볼 때는 마지막 인수를 **생략하거나 TRUE**로 두는 **유사 일치**를 씁니다. 이때는 참조 범위의 첫 열이 반드시 오름차순으로 정렬돼 있어야 합니다."
+        },
+        {
+          "type": "image",
+          "url": "/diagram/lookup-vlookup-approx",
+          "alt": "학생 성적표와 세로 등급 기준표를 이용해 총점이 속한 구간의 등급을 VLOOKUP 유사 일치로 찾는 예시"
+        },
+        {
+          "type": "heading",
+          "text": "유사 일치 사용 규칙"
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "마지막 인수를 **생략하거나 TRUE(=1)** 로 두면 유사 일치입니다.",
+            "찾을 값보다 **크지 않은 값 중 가장 큰 값**을 찾아 그 구간을 매칭합니다.",
+            "참조 범위의 **첫 열이 오름차순으로 정렬**돼 있어야 정확히 동작합니다.",
+            "점수→등급, 금액→등급처럼 **구간별 분류**에 주로 사용합니다."
+          ]
+        }
+      ],
+      "practice": {
+        "instruction": "성적 등급 기준표입니다. [C2] 셀에 VLOOKUP 유사 일치(마지막 인수 TRUE)를 사용하여 총점 85점이 속한 구간의 등급을 구하세요.",
+        "cols": ["A", "B", "C"],
+        "rows": [
+          [
+            { "val": "기준점수", "editable": false },
+            { "val": "등급", "editable": false },
+            { "val": "85점의 등급", "editable": false }
+          ],
+          [
+            { "val": 0, "editable": false },
+            { "val": "가", "editable": false },
+            { "val": "", "editable": true, "answer": "=VLOOKUP(85,A2:B6,2,TRUE)", "result": "우" }
+          ],
+          [
+            { "val": 60, "editable": false },
+            { "val": "양", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": 70, "editable": false },
+            { "val": "미", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": 80, "editable": false },
+            { "val": "우", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": 90, "editable": false },
+            { "val": "수", "editable": false },
+            { "val": "", "editable": false }
+          ]
+        ]
+      }
+    },
+    {
+      "heading": "3. 위치 찾기와 데이터 추출 (INDEX, MATCH)",
       "contentBlocks": [
         {
           "type": "text",
@@ -149,7 +203,7 @@
       }
     },
     {
-      "heading": "3. VLOOKUP의 한계를 극복하는 INDEX + MATCH 조합",
+      "heading": "4. VLOOKUP의 한계를 극복하는 INDEX + MATCH 조합",
       "contentBlocks": [
         {
           "type": "text",
@@ -218,7 +272,7 @@
       }
     },
     {
-      "heading": "4. 인덱스 번호로 값 선택하기 (CHOOSE)",
+      "heading": "5. 인덱스 번호로 값 선택하기 (CHOOSE)",
       "contentBlocks": [
         {
           "type": "text",
