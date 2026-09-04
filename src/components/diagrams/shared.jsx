@@ -142,16 +142,22 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               {Array.from({ length: nCols }, (_, ci) => {
                 const val = row[ci] ?? '';
                 const st = cellStyle ? (cellStyle(ri, ci, val) || {}) : {};
+                const base = `1px solid ${C.border}`;
+                // st.border = 네 변 모두 / st.bt·br·bb·bl = 변별 테두리(범위 바깥쪽만 그릴 때)
+                const bAll = st.border ? `2px solid ${st.border}` : null;
                 return (
                   <td key={ci} style={{
-                    border: st.border ? `2px solid ${st.border}` : `1px solid ${C.border}`,
+                    borderTop: st.bt ? `2px solid ${st.bt}` : (bAll || base),
+                    borderRight: st.br ? `2px solid ${st.br}` : (bAll || base),
+                    borderBottom: st.bb ? `2px solid ${st.bb}` : (bAll || base),
+                    borderLeft: st.bl ? `2px solid ${st.bl}` : (bAll || base),
                     padding: '7px 6px', fontSize: 14.5,
                     background: st.bg || C.bgDark,
                     color: st.color || (st.dim ? C.textDim : C.text),
                     fontWeight: st.bold ? 700 : 400,
                     textAlign: st.align || 'center',
                     whiteSpace: 'nowrap',
-                  }}>{val === null ? '' : val}</td>
+                  }}>{st.content !== undefined ? st.content : (val === null ? '' : val)}</td>
                 );
               })}
             </tr>

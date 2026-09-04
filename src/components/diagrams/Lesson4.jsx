@@ -58,7 +58,7 @@ export function VlookupHlookupIntroDiagram() {
 // ──────────────────────────────────────────────
 // VlookupDiagram
 // ──────────────────────────────────────────────
-// ① 세로 참조 범위 VLOOKUP — 인수 버튼을 눌러 설명·강조 표가 바뀌는 인터랙티브
+// ① 세로 참조 범위 VLOOKUP — 왼쪽 표 2개 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function VlookupDiagram() {
   const [active, setActive] = useState('찾을 값');
 
@@ -91,23 +91,42 @@ export function VlookupDiagram() {
     '일치 옵션': '찾을 값이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
   };
 
-  // 표1: 찾을 값·일치 옵션 탭에서 사원코드 열(A3:A5, 다섯 번째 문자 A·B·C 포함) 노란색 배경
-  const loanSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if ((active === '찾을 값' || active === '일치 옵션') && ci === 0) return { bold: true, color: C.amberLight, bg: C.amberBg };
-    return {};
+  // 사원코드 문자열에서 다섯 번째 글자(A·B·C)에만 형광펜 배경
+  const hi = (s) => {
+    const str = String(s);
+    return (
+      <span>{str.slice(0, 4)}<span style={{ background: C.amberLight, color: '#0b1220', borderRadius: 3, padding: '1px 3px', fontWeight: 700 }}>{str.slice(4, 5)}</span>{str.slice(5)}</span>
+    );
   };
-  // 등급표: 참조 범위=A12:C14 파란 채우기 / 열 번호=C12:C14 초록 테두리 / 일치 옵션=A12:A14 흰 테두리
-  const codeSt = (ri, ci) => {
+
+  // 표1: 찾을 값·일치 옵션 탭에서 사원코드(A3:A5)의 다섯 번째 문자만 형광펜
+  const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (active === '참조 범위') return { bg: C.blueBg };
-    if (active === '열 번호') return ci === 2 ? { bg: C.blueBg, border: C.green } : { bg: C.blueBg };
-    if (active === '일치 옵션') return ci === 0 ? { border: WHITE } : {};
+    if ((active === '찾을 값' || active === '일치 옵션') && ci === 0) return { bold: true, content: hi(val) };
     return {};
   };
 
-  const showLoan = active === '찾을 값' || active === '일치 옵션';
-  const showCode = active === '참조 범위' || active === '열 번호' || active === '일치 옵션';
+  // 범위 바깥쪽 변에만 테두리를 그려 '범위를 감싼 것'처럼 보이게 (ri·ci는 data 인덱스)
+  const rangeSides = (ri, ci, boxes) => {
+    const s = {};
+    for (const b of boxes) {
+      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
+      if (ri === b.r1) s.bt = b.color;
+      if (ri === b.r2) s.bb = b.color;
+      if (ci === b.c1) s.bl = b.color;
+      if (ci === b.c2) s.br = b.color;
+    }
+    return s;
+  };
+  // 등급표: 참조 범위=A12:C14, 열 번호=C12:C14(초록), 일치 옵션=A12:A14(흰) — 모두 바깥쪽 테두리만
+  const codeSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    let boxes = [];
+    if (active === '참조 범위') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 2, color: C.blueLight }];
+    else if (active === '열 번호') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 2, color: C.blueLight }, { r1: 1, r2: 3, c1: 2, c2: 2, color: C.greenLight }];
+    else if (active === '일치 옵션') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 0, color: WHITE }];
+    return rangeSides(ri, ci, boxes);
+  };
 
   return (
     <Wrap>
@@ -127,54 +146,54 @@ export function VlookupDiagram() {
         </div>
       </div>
 
-      {/* VLOOKUP 박스 (구문 + 수식) */}
-      <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-        <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
-        <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-        <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
-        <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-        <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-          <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
-          <div style={{ color: C.greenLight }}>→ 5.0%</div>
-        </div>
-      </div>
-
-      {/* 인수 버튼 4개 */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
-        {tabs.map((t) => (
-          <button key={t.key} onClick={() => setActive(t.key)}
-            style={{
-              flex: 1, padding: '9px 8px', borderRadius: 8, cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: 14.5, fontWeight: 700,
-              border: `2px solid ${t.color}`,
-              background: active === t.key ? t.color : 'transparent',
-              color: active === t.key ? '#0b1220' : t.color,
-            }}>
-            {t.key}
-          </button>
-        ))}
-      </div>
-
-      {/* 선택한 인수 설명 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', marginBottom: 14, fontSize: 15, lineHeight: 1.7 }}>
-        <span style={{ color: activeColor, fontWeight: 700 }}>{active}</span>
-        <span style={{ color: C.text }}> — {explain[active]}</span>
-      </div>
-
-      {/* 선택한 인수에 따라 강조되는 표 */}
+      {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        {showLoan && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.blueLight}>[표1] 사원 실적표</TableCaption>
+            <TableCaption color={C.blueLight}>[표1] 사원 실적표 — 기준값이 있는 표</TableCaption>
             <ExcelGrid data={loan} startRow={2} cellStyle={loanSt} minColW={78} firstColW={104} />
           </div>
-        )}
-        {showCode && (
           <div>
             <TableCaption color={C.blueLight}>[등급표] 세로 참조 범위</TableCaption>
             <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64} />
           </div>
-        )}
+        </div>
+
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* VLOOKUP 박스 (구문 + 수식) */}
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
+              <div style={{ color: C.greenLight }}>→ 5.0%</div>
+            </div>
+          </div>
+
+          {/* 인수 버튼 4개 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setActive(t.key)}
+                style={{
+                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                  border: `2px solid ${t.color}`,
+                  background: active === t.key ? t.color : 'transparent',
+                  color: active === t.key ? '#0b1220' : t.color,
+                }}>
+                {t.key}
+              </button>
+            ))}
+          </div>
+
+          {/* 선택한 인수 설명 */}
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+            <span style={{ color: C.text }}> — {explain[active]}</span>
+          </div>
+        </div>
       </div>
     </Wrap>
   );
