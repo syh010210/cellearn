@@ -101,10 +101,10 @@ export function VlookupDiagram() {
 
   const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
 
-  // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 모든 탭에서 형광펜으로 표시
+  // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 형광펜으로 표시 (열 번호 탭에서는 숨김)
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 0) return { bold: true, content: hi(val) };
+    if (ci === 0 && active !== '열 번호') return { bold: true, content: hi(val) };
     return {};
   };
 
@@ -237,10 +237,10 @@ export function HlookupTwoTableDiagram() {
     '일치 옵션': '찾을 값이 참조 범위의 첫 행에 전부 있습니다. (정확히 일치 · FALSE)',
   };
 
-  // 표2: 상품코드 열(C3:C5)을 모든 탭에서 형광펜으로 표시
+  // 표2: 상품코드 열(C3:C5)을 형광펜으로 표시 (행 번호 탭에서는 숨김)
   const salesSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
-    if (ci === 2) return { bold: true, bg: C.amberLight, color: '#0b1220' };
+    if (ci === 2 && active !== '행 번호') return { bold: true, bg: C.amberLight, color: '#0b1220' };
     return {};
   };
 
@@ -428,8 +428,10 @@ export function VlookupApproxDiagram() {
   );
 }
 
-// ④ 한 개의 표 — 기준값과 참조 범위가 같은 표에 있는 VLOOKUP + MIN (상품 만족도)
+// ③ 한 표 안에서 VLOOKUP + MIN — 왼쪽 표 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function VlookupOneTableDiagram() {
+  const [active, setActive] = useState('찾을 값');
+
   const data = [
     ['상품명', '만족도', '카테고리'],
     ['아메리카노', 4.5, '음료'],
@@ -437,17 +439,56 @@ export function VlookupOneTableDiagram() {
     ['카페라떼', 4.8, '음료'],
     ['머핀', 2.9, '디저트'],
   ];
+
+  const WHITE = '#ffffff';
+  const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
+  const tabs = [
+    { key: '찾을 값', color: C.amberLight },
+    { key: '참조 범위', color: C.blueLight },
+    { key: '열 번호', color: C.greenLight },
+    { key: '일치 옵션', color: WHITE },
+  ];
+  const activeColor = tabs.find((t) => t.key === active).color;
+
+  const explain = {
+    '찾을 값': '만족도 중 가장 낮은 값을 MIN으로 먼저 구합니다. (여기서는 2.9)',
+    '참조 범위': '찾을 값(가장 낮은 만족도)이 첫 열로 오도록 만족도부터 선택합니다. 상품명(A열)은 찾을 값 왼쪽이라 VLOOKUP으로 가져올 수 없으므로 범위에서 뺍니다.',
+    '열 번호': '반환할 값이 카테고리이므로, 참조 범위(B~C열)에서 카테고리가 있는 두 번째 열이라 2입니다.',
+    '일치 옵션': '가장 낮은 만족도 2.9가 참조 범위 첫 열에 그대로 있으므로 정확히 일치(FALSE)를 씁니다.',
+  };
+
+  const rangeSides = (ri, ci, boxes) => {
+    const s = {};
+    for (const b of boxes) {
+      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
+      if (ri === b.r1) s.bt = b.color;
+      if (ri === b.r2) s.bb = b.color;
+      if (ci === b.c1) s.bl = b.color;
+      if (ci === b.c2) s.br = b.color;
+    }
+    return s;
+  };
+  // 한 표: 만족도(B3:B6)=찾을 값 재료, 참조 범위=B3:C6(첫 열 연한 채우기), 열 번호=C3:C6(초록), 일치 옵션=B3:B6(흰)
   const st = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ri === 4 && ci === 1) return { bold: true, color: C.amberLight, bg: C.amberBg };   // 찾을 값 MIN=2.9
-    if (ri === 4 && ci === 2) return { bold: true, color: C.greenLight, bg: C.greenBg };   // 결과 디저트
-    return {};
+    let boxes = [];
+    let fillFirstCol = false;
+    if (active === '참조 범위') { boxes = [{ r1: 1, r2: 4, c1: 1, c2: 2, color: C.blueLight }]; fillFirstCol = true; }
+    else if (active === '열 번호') boxes = [{ r1: 1, r2: 4, c1: 1, c2: 2, color: C.blueLight }, { r1: 1, r2: 4, c1: 2, c2: 2, color: C.greenLight }];
+    else if (active === '일치 옵션') boxes = [{ r1: 1, r2: 4, c1: 1, c2: 1, color: WHITE }];
+    const sides = rangeSides(ri, ci, boxes);
+    // 찾을 값·일치 옵션 탭: 만족도 열(B3:B6) 형광펜 / 참조 범위 탭: 첫 열 연한 채우기
+    if ((active === '찾을 값' || active === '일치 옵션') && ci === 1 && ri >= 1) { sides.bg = C.amberLight; sides.color = '#0b1220'; sides.bold = true; }
+    else if (fillFirstCol && ci === 1 && ri >= 1) sides.bg = LIGHT_BLUE;
+    return sides;
   };
+
   return (
     <Wrap>
       <Title>③ 한 표 안에서 VLOOKUP</Title>
+      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
-      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
           [표3]에서 <b style={{ color: C.amberLight }}>만족도[B3:B6]</b>가 가장 낮은 상품의
@@ -458,36 +499,47 @@ export function VlookupOneTableDiagram() {
         </div>
       </div>
 
-      {/* 왼쪽: 표 · 오른쪽: 풀이 박스 */}
+      {/* 왼쪽: 표(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div>
           <TableCaption color={C.blueLight}>[표3] 기준값과 참조 범위가 같은 표</TableCaption>
           <ExcelGrid data={data} startRow={2} cellStyle={st} minColW={92} firstColW={92} />
         </div>
 
-        {/* VLOOKUP 풀이 박스 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
-          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
-          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
-          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-          <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-            <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
-            <div style={{ color: C.greenLight }}>→ 디저트</div>
-          </div>
-          {[
-            { label: '찾을 값', code: 'MIN(B3:B6)', color: C.amberLight,
-              desc: '만족도 중 가장 낮은 값(2.9)을 MIN으로 먼저 구합니다. 이 값을 참조 범위의 첫 열(만족도)에서 세로로 찾습니다.' },
-            { label: '참조 범위', code: 'B3:C6', color: C.blueLight,
-              desc: 'VLOOKUP은 찾을 값이 참조 범위의 첫 열에 있어야 합니다. \n찾을 값이 만족도이므로, 만족도(B열)가 첫 열이 되도록 상품명(A열)은 빼고 B열부터 선택합니다. \n같은 표 안에 있어도 찾을 값 왼쪽 열(상품명)은 VLOOKUP으로 가져올 수 없습니다.' },
-            { label: '열 번호', code: '2', color: C.greenLight,
-              desc: '반환할 값이 카테고리이므로, 선택한 범위(B~C열)에서 카테고리가 있는 열 번호 2를 넣습니다.' },
-          ].map((p) => (
-            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
-              <span style={{ color: C.text }}> — {p.desc}</span>
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* VLOOKUP + MIN 박스 */}
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP + MIN</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값 자리에 MIN을 중첩해 가장 낮은 만족도를 먼저 구한 뒤, 그 값을 참조 범위 첫 열에서 찾아 같은 행의 카테고리를 반환</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+              <div style={{ color: C.greenLight }}>→ 디저트</div>
             </div>
-          ))}
+          </div>
+
+          {/* 인수 버튼 4개 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setActive(t.key)}
+                style={{
+                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                  border: `2px solid ${t.color}`,
+                  background: active === t.key ? t.color : 'transparent',
+                  color: active === t.key ? '#0b1220' : t.color,
+                }}>
+                {t.key}
+              </button>
+            ))}
+          </div>
+
+          {/* 선택한 인수 설명 */}
+          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+            <span style={{ color: C.text }}> — {explain[active]}</span>
+          </div>
         </div>
       </div>
     </Wrap>
