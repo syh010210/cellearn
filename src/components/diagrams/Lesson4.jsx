@@ -44,7 +44,7 @@ export function VlookupDiagram() {
   return (
     <Wrap>
       <Title>① 세로 참조 범위 → VLOOKUP</Title>
-      <Subtitle>참조 범위의 첫 열에서 세로(↓)로 찾아 같은 행의 값을 가져옵니다</Subtitle>
+      <Subtitle>실제 시험에서는 위 문제처럼 MID 등 다양한 함수를 조합해 찾을 값을 만들어 풀어야 합니다</Subtitle>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -77,6 +77,7 @@ export function VlookupDiagram() {
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
           <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
           <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
+          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
             =VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, 0)
             <span style={{ color: C.greenLight }}> → 5.0%</span>
@@ -85,17 +86,17 @@ export function VlookupDiagram() {
             { label: '찾을 값', code: 'MID(A3,5,1)', color: C.amberLight,
               desc: '코드 전체는 등급표에 없으므로, 사원코드에서 다섯 번째 글자(등급) 한 개만 뽑아와야 찾을 수 있습니다.' },
             { label: '참조 범위', code: '$A$12:$C$14', color: C.blueLight,
-              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. 첫 열(A·B·C)에 찾을 값이 있어야 제대로 찾습니다. 만약 찾을 값이 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다. 제목행(등급·직무·성과급률)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다.' },
+              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 열(A·B·C)에 찾을 값이 있어야 제대로 찾습니다. \n만약 찾을 값이 사원코드의 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다. \n제목행(등급·직무·성과급률)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다.' },
             { label: '열 번호', code: '3', color: C.greenLight,
               desc: '반환할 값이 성과급률이므로, 선택한 범위에서 성과급률이 있는 열 번호 3을 넣습니다.' },
           ].map((p) => (
-            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7 }}>
+            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
               <span style={{ color: C.text }}> — {p.desc}</span>
             </div>
           ))}
           <div style={{ background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '9px 12px', color: C.textMuted, fontSize: 13, lineHeight: 1.7, marginTop: 2 }}>
-            <b style={{ color: C.blueLight }}>참조 범위는 왜 $로 고정?</b> D4·D5로 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 자동 채우기 없이 한 칸만 계산하는 문제라면 고정할 필요 없습니다.
+            <b style={{ color: C.blueLight }}>참조 범위는 왜 $로 고정?</b> 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.
           </div>
         </div>
       </div>
