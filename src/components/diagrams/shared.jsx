@@ -176,7 +176,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                     padding: '3px 6px', fontSize: 13.5, fontWeight: 700,
                     textAlign: 'center', whiteSpace: 'nowrap',
                     color: (lab && lab.color) || C.text,
-                  }}>{(lab && lab.text) || ''}</td>
+                  }}>{(lab && lab.text) || ' '}</td>
                 );
               })}
             </tr>

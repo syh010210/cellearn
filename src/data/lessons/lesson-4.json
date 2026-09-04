@@ -54,32 +54,52 @@
           "type": "numbered",
           "items": [
             "찾을 값이 **반드시 참조 범위의 첫 행 또는 첫 열**에 오도록 참조 범위를 잡습니다.",
-            "찾을 값이 참조 범위의 첫 행·열에 **순서와 상관없이 그대로 전부** 들어 있으면 **FALSE(정확히 일치)**를, 값이 아니라 **‘이상·미만’ 같은 구간**으로 잡혀 있으면 **TRUE(유사 일치)**를 씁니다."
+            "**모든 찾을 값**이 참조 범위의 첫 행·열에 순서와 상관없이 그대로 들어 있으면 **FALSE(정확히 일치)**를 씁니다. 반대로 찾을 값이 첫 행·열에 그대로 있지 않고 ‘이상·미만’ 같은 구간으로 잡혀 있으면 **TRUE(유사 일치)**를 씁니다. 유사 일치는 개념학습2로 넘어가서 직접 확인해 봅시다."
           ]
         }
       ],
       "practice": {
-        "instruction": "도서 코드표입니다. [C2] 셀에 VLOOKUP을 사용하여 코드 'B-102'에 해당하는 도서명을 가져오세요.",
+        "instruction": "위 예시처럼 [등급표]가 따로 있습니다. 각 사원의 등급에 해당하는 상여금을 VLOOKUP으로 가져오세요. [C2] 셀에 수식을 입력한 뒤 [C3]까지 자동 채우기 하세요. (참조 범위는 $로 고정)",
         "cols": ["A", "B", "C"],
         "rows": [
           [
-            { "val": "도서코드", "editable": false },
-            { "val": "도서명", "editable": false },
-            { "val": "검색결과(도서명)", "editable": false }
+            { "val": "사원명", "editable": false },
+            { "val": "등급", "editable": false },
+            { "val": "상여금", "editable": false }
           ],
           [
-            { "val": "A-101", "editable": false },
-            { "val": "파이썬 기초", "editable": false },
-            { "val": "", "editable": true, "answer": "=VLOOKUP(\"B-102\",A2:B4,2,0)", "result": "자바스크립트 완전정복" }
+            { "val": "김유신", "editable": false },
+            { "val": "A", "editable": false },
+            { "val": "", "editable": true, "answer": "=VLOOKUP(B2,$A$6:$B$8,2,0)", "result": 500000 }
           ],
           [
-            { "val": "B-102", "editable": false },
-            { "val": "자바스크립트 완전정복", "editable": false },
+            { "val": "이순신", "editable": false },
+            { "val": "C", "editable": false },
+            { "val": "", "editable": true, "answer": "=VLOOKUP(B3,$A$6:$B$8,2,0)", "result": 200000 }
+          ],
+          [
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "C-103", "editable": false },
-            { "val": "리액트 실무", "editable": false },
+            { "val": "등급", "editable": false },
+            { "val": "상여금", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "A", "editable": false },
+            { "val": 500000, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "B", "editable": false },
+            { "val": 350000, "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "C", "editable": false },
+            { "val": 200000, "editable": false },
             { "val": "", "editable": false }
           ]
         ]
