@@ -60,7 +60,7 @@ export function VlookupHlookupIntroDiagram() {
 // ──────────────────────────────────────────────
 // ① 세로 참조 범위 VLOOKUP — 왼쪽 표 2개 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function VlookupDiagram() {
-  const [active, setActive] = useState('찾을 값');
+  const [active, setActive] = useState(null);
 
   const loan = [
     ['사원코드', '사원명', '판매액', '성과급률'],
@@ -82,7 +82,7 @@ export function VlookupDiagram() {
     { key: '열 번호', color: C.greenLight },
     { key: '일치 옵션', color: WHITE },
   ];
-  const activeColor = tabs.find((t) => t.key === active).color;
+  const activeColor = (tabs.find((t) => t.key === active) || {}).color;
 
   const explain = {
     '찾을 값': '사원코드의 다섯 번째 문자입니다.',
@@ -104,7 +104,7 @@ export function VlookupDiagram() {
   // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 형광펜으로 표시 (열 번호 탭에서는 숨김)
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 0 && active !== '열 번호') return { bold: true, content: hi(val) };
+    if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, content: hi(val) };
     return {};
   };
 
@@ -136,7 +136,6 @@ export function VlookupDiagram() {
   return (
     <Wrap>
       <Title>① 세로 참조 범위 → VLOOKUP</Title>
-      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -177,6 +176,9 @@ export function VlookupDiagram() {
             </div>
           </div>
 
+          {/* 안내 문구 — 박스 아래, 버튼 위 */}
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
+
           {/* 인수 버튼 4개 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {tabs.map((t) => (
@@ -193,11 +195,13 @@ export function VlookupDiagram() {
             ))}
           </div>
 
-          {/* 선택한 인수 설명 */}
-          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
-            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
-            <span style={{ color: C.text }}> — {explain[active]}</span>
-          </div>
+          {/* 선택한 인수 설명 (버튼을 눌렀을 때만) */}
+          {active && (
+            <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+              <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+              <span style={{ color: C.text }}> — {explain[active]}</span>
+            </div>
+          )}
         </div>
       </div>
     </Wrap>
@@ -206,7 +210,7 @@ export function VlookupDiagram() {
 
 // ② 가로 참조 범위 HLOOKUP — 왼쪽 표 2개 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function HlookupTwoTableDiagram() {
-  const [active, setActive] = useState('찾을 값');
+  const [active, setActive] = useState(null);
 
   const sales = [
     ['판매일', '판매사원', '상품코드', '판매수량', '판매금액'],
@@ -228,19 +232,19 @@ export function HlookupTwoTableDiagram() {
     { key: '행 번호', color: C.greenLight },
     { key: '일치 옵션', color: WHITE },
   ];
-  const activeColor = tabs.find((t) => t.key === active).color;
+  const activeColor = (tabs.find((t) => t.key === active) || {}).color;
 
   const explain = {
-    '찾을 값': '상품코드입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.',
+    '찾을 값': '상품코드입니다.',
     '참조 범위': '찾을 값이 상품코드이기 때문에 참조 범위의 첫 행으로 오도록 하여, 왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
-    '행 번호': '판매금액은 판매단가와 판매수량을 곱한 값이므로, 반환할 판매단가가 참조 범위의 두 번째 행에 있으니 2입니다.',
+    '행 번호': '각 건의 판매금액을 계산하라고 했기 때문에, 반환할 판매단가가 지정한 참조 범위의 두 번째 행에 있으니 2입니다.',
     '일치 옵션': '찾을 값이 참조 범위의 첫 행에 전부 있습니다. (정확히 일치 · FALSE)',
   };
 
   // 표2: 상품코드 열(C3:C5)을 형광펜으로 표시 (행 번호 탭에서는 숨김)
   const salesSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
-    if (ci === 2 && active !== '행 번호') return { bold: true, bg: C.amberLight, color: '#0b1220' };
+    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
     return {};
   };
 
@@ -271,7 +275,6 @@ export function HlookupTwoTableDiagram() {
   return (
     <Wrap>
       <Title>② 가로 참조 범위 → HLOOKUP</Title>
-      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -312,6 +315,9 @@ export function HlookupTwoTableDiagram() {
             </div>
           </div>
 
+          {/* 안내 문구 — 박스 아래, 버튼 위 */}
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
+
           {/* 인수 버튼 4개 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {tabs.map((t) => (
@@ -328,11 +334,13 @@ export function HlookupTwoTableDiagram() {
             ))}
           </div>
 
-          {/* 선택한 인수 설명 */}
-          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
-            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
-            <span style={{ color: C.text }}> — {explain[active]}</span>
-          </div>
+          {/* 선택한 인수 설명 (버튼을 눌렀을 때만) */}
+          {active && (
+            <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+              <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+              <span style={{ color: C.text }}> — {explain[active]}</span>
+            </div>
+          )}
         </div>
       </div>
     </Wrap>
@@ -430,7 +438,7 @@ export function VlookupApproxDiagram() {
 
 // ③ 한 표 안에서 VLOOKUP + MIN — 왼쪽 표 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function VlookupOneTableDiagram() {
-  const [active, setActive] = useState('찾을 값');
+  const [active, setActive] = useState(null);
 
   const data = [
     ['상품명', '만족도', '카테고리'],
@@ -448,13 +456,13 @@ export function VlookupOneTableDiagram() {
     { key: '열 번호', color: C.greenLight },
     { key: '일치 옵션', color: WHITE },
   ];
-  const activeColor = tabs.find((t) => t.key === active).color;
+  const activeColor = (tabs.find((t) => t.key === active) || {}).color;
 
   const explain = {
-    '찾을 값': '만족도 중 가장 낮은 값을 MIN으로 먼저 구합니다. (여기서는 2.9)',
-    '참조 범위': '찾을 값(가장 낮은 만족도)이 첫 열로 오도록 만족도부터 선택합니다. 상품명(A열)은 찾을 값 왼쪽이라 VLOOKUP으로 가져올 수 없으므로 범위에서 뺍니다.',
-    '열 번호': '반환할 값이 카테고리이므로, 참조 범위(B~C열)에서 카테고리가 있는 두 번째 열이라 2입니다.',
-    '일치 옵션': '가장 낮은 만족도 2.9가 참조 범위 첫 열에 그대로 있으므로 정확히 일치(FALSE)를 씁니다.',
+    '찾을 값': '만족도 중 가장 낮은 값입니다.',
+    '참조 범위': '찾을 값이 만족도이기 때문에 참조 범위의 첫 열로 오도록 하여, 왼쪽 상품명은 찾을 값 왼쪽이라 VLOOKUP으로 가져올 수 없으므로 빼고 만족도부터 선택합니다.',
+    '열 번호': '가장 낮은 만족도의 카테고리를 구하라고 했기 때문에, 반환할 카테고리가 지정한 참조 범위의 두 번째 열에 있으니 2입니다.',
+    '일치 옵션': '찾을 값이 참조 범위의 첫 열에 있습니다. (정확히 일치 · FALSE)',
   };
 
   const rangeSides = (ri, ci, boxes) => {
@@ -486,7 +494,6 @@ export function VlookupOneTableDiagram() {
   return (
     <Wrap>
       <Title>③ 한 표 안에서 VLOOKUP</Title>
-      <Subtitle>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</Subtitle>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -519,6 +526,9 @@ export function VlookupOneTableDiagram() {
             </div>
           </div>
 
+          {/* 안내 문구 — 박스 아래, 버튼 위 */}
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
+
           {/* 인수 버튼 4개 */}
           <div style={{ display: 'flex', gap: 8 }}>
             {tabs.map((t) => (
@@ -535,11 +545,13 @@ export function VlookupOneTableDiagram() {
             ))}
           </div>
 
-          {/* 선택한 인수 설명 */}
-          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
-            <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
-            <span style={{ color: C.text }}> — {explain[active]}</span>
-          </div>
+          {/* 선택한 인수 설명 (버튼을 눌렀을 때만) */}
+          {active && (
+            <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', fontSize: 15, lineHeight: 1.7 }}>
+              <span style={{ color: activeColor === WHITE ? C.text : activeColor, fontWeight: 700 }}>{active}</span>
+              <span style={{ color: C.text }}> — {explain[active]}</span>
+            </div>
+          )}
         </div>
       </div>
     </Wrap>
