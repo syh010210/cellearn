@@ -82,10 +82,6 @@ export function VlookupDiagram() {
               <span style={{ color: C.text }}> — {p.desc}</span>
             </div>
           ))}
-          <div style={{ fontSize: 13.5, lineHeight: 1.7 }}>
-            <span style={{ color: C.blueLight, fontWeight: 700 }}>참조 범위는 왜 $로 고정?</span>
-            <span style={{ color: C.text }}> — 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.</span>
-          </div>
         </div>
       </div>
     </Wrap>
@@ -95,10 +91,10 @@ export function VlookupDiagram() {
 // ② 두 개의 표(따로) — 가로 참조 범위를 HLOOKUP으로 검색 (판매현황 + 상품단가표)
 export function HlookupTwoTableDiagram() {
   const sales = [
-    ['지점명', '담당자', '도서코드', '판매부수', '매출액'],
-    ['강남', '정우성', 22, 8, '144,000'],
-    ['강남', '한소희', 44, 15, '142,500'],
-    ['송파', '남주혁', 11, 6, '72,000'],
+    ['판매일', '판매사원', '상품코드', '판매수량', '판매금액'],
+    ['3월 2일', '한지민', 'B', 12, '54,000'],
+    ['3월 5일', '공유', 'D', 20, '30,000'],
+    ['3월 9일', '수지', 'A', 7, '56,000'],
   ];
   const salesSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
@@ -107,9 +103,9 @@ export function HlookupTwoTableDiagram() {
     return {};
   };
   const price = [
-    ['도서코드', 11, 22, 33, 44],
-    ['정가', '12,000', '18,000', '25,000', '9,500'],
-    ['원가', '9,600', '14,400', '20,000', '7,600'],
+    ['상품코드', 'A', 'B', 'C', 'D'],
+    ['판매단가', '8,000', '4,500', '6,000', '1,500'],
+    ['매입단가', '5,600', '3,000', '4,200', '1,000'],
   ];
   const priceSt = (ri, ci) => {
     if (ri === 0) return (ci === 2) ? { bold: true, color: C.amberLight, bg: C.amberBg } : { bold: true, color: C.orangeLight, bg: '#3a1c08' };
@@ -119,17 +115,16 @@ export function HlookupTwoTableDiagram() {
   return (
     <Wrap>
       <Title>② 가로 참조 범위 → HLOOKUP</Title>
-      <Subtitle>참조 범위의 데이터가 가로로 나열돼 있으면, 첫 행에서 찾아 같은 열의 값을 가져옵니다</Subtitle>
 
       {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표2]에서 <b style={{ color: C.amberLight }}>도서코드[C3:C5]</b>와
-          <b style={{ color: C.orangeLight }}> [B12:E14]</b> 영역의 표를 이용하여 각 지점의
-          <b style={{ color: C.greenLight }}> 매출액[E3:E5]</b>을 계산하시오.
+          [표2]에서 <b style={{ color: C.amberLight }}>상품코드[C3:C5]</b>와
+          <b style={{ color: C.orangeLight }}> [B12:E14]</b> 영역의 표를 이용하여 각 건의
+          <b style={{ color: C.greenLight }}> 판매금액[E3:E5]</b>을 계산하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 매출액은 판매부수와 도서의 정가를 곱한 값임</div>
+          <div>▶ 판매금액은 판매수량과 상품의 판매단가를 곱한 값임</div>
           <div>▶ HLOOKUP 함수 사용</div>
         </div>
       </div>
@@ -138,11 +133,11 @@ export function HlookupTwoTableDiagram() {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.orangeLight}>[표2] 도서 판매현황 — 기준값이 있는 표</TableCaption>
+            <TableCaption color={C.orangeLight}>[표2] 상품 판매현황 — 기준값이 있는 표</TableCaption>
             <ExcelGrid data={sales} startRow={2} cellStyle={salesSt} minColW={72} firstColW={78} />
           </div>
           <div>
-            <TableCaption color={C.orangeLight}>[도서 단가표] 가로 참조 범위</TableCaption>
+            <TableCaption color={C.orangeLight}>[상품 단가표] 가로 참조 범위</TableCaption>
             <ExcelGrid data={price} startRow={12} cellStyle={priceSt} minColW={80} firstColW={74} />
           </div>
         </div>
@@ -155,25 +150,21 @@ export function HlookupTwoTableDiagram() {
           <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
           <div style={{ color: C.text, fontSize: 14.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
             =D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.orangeLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, 0)
-            <span style={{ color: C.greenLight }}> → 8 × 18,000 = 144,000</span>
+            <span style={{ color: C.greenLight }}> → 12 × 4,500 = 54,000</span>
           </div>
           {[
             { label: '찾을 값', code: 'C3', color: C.amberLight,
-              desc: '도서코드(22)입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.' },
+              desc: '상품코드(B)입니다. 단가표의 첫 행에서 이 코드를 가로로 찾습니다.' },
             { label: '참조 범위', code: '$B$12:$E$14', color: C.orangeLight,
-              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 행(도서코드 11·22·33·44)에 찾을 값이 있어야 제대로 찾습니다. \n왼쪽 이름 열(도서코드·정가·원가)은 실제 데이터가 아니라 행 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 B열부터 선택합니다.' },
+              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 행(상품코드 A·B·C·D)에 찾을 값이 있어야 제대로 찾습니다. \n왼쪽 이름 열(상품코드·판매단가·매입단가)은 실제 데이터가 아니라 행 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 B열부터 선택합니다.' },
             { label: '행 번호', code: '2', color: C.greenLight,
-              desc: '반환할 값이 정가이므로, 선택한 범위에서 정가가 있는 행 번호 2를 넣습니다.' },
+              desc: '반환할 값이 판매단가이므로, 선택한 범위에서 판매단가가 있는 행 번호 2를 넣습니다.' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
               <span style={{ color: C.text }}> — {p.desc}</span>
             </div>
           ))}
-          <div style={{ fontSize: 13.5, lineHeight: 1.7 }}>
-            <span style={{ color: C.orangeLight, fontWeight: 700 }}>참조 범위는 왜 $로 고정?</span>
-            <span style={{ color: C.text }}> — 수식을 복사(자동 채우기)할 때 범위가 밀리면 안 되기 때문입니다. 한 칸만 계산하는 문제라면 고정할 필요 없습니다.</span>
-          </div>
         </div>
       </div>
     </Wrap>
@@ -200,24 +191,51 @@ export function VlookupOneTableDiagram() {
   return (
     <Wrap>
       <Title>③ 한 표 안에서 VLOOKUP</Title>
-      <Subtitle>기준값과 참조 범위가 같은 표에 있는 경우 — 참조 범위를 따로 두지 않습니다</Subtitle>
-      <div style={{ display: 'flex', gap: 18, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <ExcelGrid data={data} cellStyle={st} minColW={92} firstColW={104} />
-        <div style={{ flex: '1 1 250px', minWidth: 230, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.75 }}>
-            사원코드 <b style={{ color: C.amberLight }}>ds-053</b>을 이 표의 첫 열에서 찾아 같은 행의
-            <b style={{ color: C.greenLight }}> 성명 “도지영”</b>을 반환합니다. 따로 된 참조 범위 없이 <b>한 표</b> 안에서 끝납니다.
-          </div>
-          <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '10px 12px', fontFamily: 'monospace', fontSize: 13, color: C.text, lineHeight: 1.7 }}>
-            =VLOOKUP(<span style={{ color: C.amberLight }}>&quot;ds-053&quot;</span>, <span style={{ color: C.blueLight }}>$A$3:$C$6</span>, 3, 0)
-          </div>
-          <div style={{ color: C.greenLight, fontSize: 16, fontWeight: 700 }}>→ 도지영</div>
-          <div style={{ color: C.textDim, fontSize: 12.5, lineHeight: 1.6 }}>기준값(찾을 값)이 표의 첫 열에 있어야 VLOOKUP으로 찾을 수 있습니다.</div>
+
+      {/* 실제 시험 형식 문제 — 상단 가로 전체 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표4]에서 <b style={{ color: C.amberLight }}>사원코드[A3:A6]</b>가 “ds-053”인 사원의
+          <b style={{ color: C.greenLight }}> 성명</b>을 구하시오.
+        </div>
+        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
+          <div>▶ 찾을 값과 결과가 모두 [표4] 안에 있으므로, 따로 떨어진 참조 범위 없이 표 전체가 참조 범위임</div>
+          <div>▶ VLOOKUP 함수 사용</div>
         </div>
       </div>
-      <BottomBar>
-        <BLine>기준값과 참조 범위가 <b style={{ color: C.blueLight }}>같은 표</b>에 있으면 따로 참조 범위를 두지 않고 바로 VLOOKUP</BLine>
-      </BottomBar>
+
+      {/* 왼쪽: 표 · 오른쪽: 풀이 박스 */}
+      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div>
+          <TableCaption color={C.blueLight}>[표4] 기준값과 참조 범위가 같은 표</TableCaption>
+          <ExcelGrid data={data} cellStyle={st} minColW={92} firstColW={104} />
+        </div>
+
+        {/* VLOOKUP 풀이 박스 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
+          <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 0)</div>
+          <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
+          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+            =VLOOKUP(<span style={{ color: C.amberLight }}>&quot;ds-053&quot;</span>, <span style={{ color: C.blueLight }}>A3:C6</span>, <span style={{ color: C.greenLight }}>3</span>, 0)
+            <span style={{ color: C.greenLight }}> → 도지영</span>
+          </div>
+          {[
+            { label: '찾을 값', code: '"ds-053"', color: C.amberLight,
+              desc: '사원코드입니다. 이 표의 첫 열에서 세로로 찾습니다.' },
+            { label: '참조 범위', code: 'A3:C6', color: C.blueLight,
+              desc: '기준값(사원코드)과 결과(성명)가 같은 표에 있으므로, 따로 떨어진 참조 범위 없이 이 표 자체가 참조 범위입니다. \n첫 열(사원코드)에 찾을 값이 있어야 제대로 찾습니다. \n제목행(사원코드·성적·성명)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A3부터 선택합니다.' },
+            { label: '열 번호', code: '3', color: C.greenLight,
+              desc: '반환할 값이 성명이므로, 선택한 범위에서 성명이 있는 열 번호 3을 넣습니다.' },
+          ].map((p) => (
+            <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+              <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
+              <span style={{ color: C.text }}> — {p.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </Wrap>
   );
 }
