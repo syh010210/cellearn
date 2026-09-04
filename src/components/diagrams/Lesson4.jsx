@@ -1,59 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, TableCaption, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
 // ──────────────────────────────────────────────
 export function VlookupHlookupIntroDiagram() {
-  const [active, setActive] = useState(null);
-
-  const WHITE = '#ffffff';
-  const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
-  const tabs = [
-    { key: '찾을 값', color: C.amberLight },
-    { key: '참조 범위', color: C.blueLight },
-    { key: '행 · 열 번호', color: C.greenLight },
-    { key: '마지막 인수', color: WHITE },
-  ];
-
-  const explain = {
-    '찾을 값': '참조 범위에서 찾을 기준값입니다.',
-    '참조 범위': '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 범위입니다. \n찾을 값이 참조 범위의 첫 행 또는 첫 열에 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n수식을 자동 채우기로 복사할 때 범위가 밀리지 않도록 $로 고정합니다.',
-    '행 · 열 번호': '반환할 값이 참조 범위에서 몇 번째 행 또는 열에 있는지를 숫자로 넣습니다.',
-    '마지막 인수': '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \nIFERROR와 함께 쓰는 경우에 예외가 발생하는데, 이는 나중에 설명합니다.',
-  };
-
-  // 예시: 코드로 가격을 찾아오는 세로 참조
-  const base = [['코드', '가격'], ['B', ''], ['C', '']];
-  const baseSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '마지막 인수')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
-    return {};
-  };
-  const ref = [['코드', '가격'], ['A', '1,000'], ['B', '2,000'], ['C', '3,000']];
-  const rangeSides = (ri, ci, boxes) => {
-    const s = {};
-    for (const b of boxes) {
-      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
-      if (ri === b.r1) s.bt = b.color;
-      if (ri === b.r2) s.bb = b.color;
-      if (ci === b.c1) s.bl = b.color;
-      if (ci === b.c2) s.br = b.color;
-    }
-    return s;
-  };
-  const refSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    let boxes = [];
-    let fillFirstCol = false;
-    if (active === '참조 범위') { boxes = [{ r1: 1, r2: 3, c1: 0, c2: 1, color: C.blueLight }]; fillFirstCol = true; }
-    else if (active === '행 · 열 번호') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 1, color: C.blueLight }, { r1: 1, r2: 3, c1: 1, c2: 1, color: C.greenLight }];
-    else if (active === '마지막 인수') boxes = [{ r1: 1, r2: 3, c1: 0, c2: 0, color: WHITE }];
-    const sides = rangeSides(ri, ci, boxes);
-    if (fillFirstCol && ci === 0 && ri >= 1) sides.bg = LIGHT_BLUE;
-    return sides;
-  };
-
   return (
     <Wrap>
       <Title>VLOOKUP · HLOOKUP — 공통 원리</Title>
@@ -64,7 +15,7 @@ export function VlookupHlookupIntroDiagram() {
       </div>
 
       {/* 두 함수 설명 카드 */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 300px', minWidth: 280, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
           <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>참조 범위의 데이터가 세로 방향으로 나열된 형태</div>
@@ -78,38 +29,6 @@ export function VlookupHlookupIntroDiagram() {
           <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 행에서 가로 방향으로 찾아 같은 열의 지정한 행에 있는 값을 반환</div>
         </div>
       </div>
-
-      {/* 인수 인터랙티브 — 왼쪽 표 2개, 오른쪽 버튼 + 칠판 */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div>
-            <TableCaption color={C.blueLight}>[표1] 기준값이 있는 표</TableCaption>
-            <ExcelGrid data={base} startRow={2} cellStyle={baseSt} minColW={70} firstColW={70} />
-          </div>
-          <div>
-            <TableCaption color={C.blueLight}>[표2] 참조 범위 (세로)</TableCaption>
-            <ExcelGrid data={ref} startRow={11} cellStyle={refSt} minColW={70} firstColW={70} />
-          </div>
-        </div>
-
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>네 개의 인수를 하나씩 눌러 표에서 위치를 확인하세요</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 4px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 12.5, fontWeight: 700, whiteSpace: 'nowrap',
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
     </Wrap>
   );
 }
@@ -120,6 +39,16 @@ export function VlookupHlookupIntroDiagram() {
 // ① 세로 참조 범위 VLOOKUP — 왼쪽 표 2개 고정, 오른쪽 박스+버튼으로 인수별 강조가 바뀜
 export function VlookupDiagram() {
   const [active, setActive] = useState(null);
+
+  // 일치 옵션을 누르면 성과급률 3개가 2초 간격으로 하나씩 채워짐
+  const [revealed, setRevealed] = useState(0);
+  useEffect(() => {
+    if (active !== '일치 옵션') { setRevealed(0); return; }
+    setRevealed(0);
+    const id = setInterval(() => setRevealed((n) => (n >= 3 ? n : n + 1)), 2000);
+    return () => clearInterval(id);
+  }, [active]);
+  const ANS = ['2.0%', '3.5%', '5.0%']; // 박서준(C)·김민지(B)·이도현(A)
 
   const loan = [
     ['사원코드', '사원명', '판매액', '성과급률'],
@@ -164,6 +93,7 @@ export function VlookupDiagram() {
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, content: hi(val) };
+    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
 
@@ -273,6 +203,16 @@ export function VlookupDiagram() {
 export function HlookupTwoTableDiagram() {
   const [active, setActive] = useState(null);
 
+  // 일치 옵션을 누르면 판매금액 3개가 2초 간격으로 하나씩 채워짐
+  const [revealed, setRevealed] = useState(0);
+  useEffect(() => {
+    if (active !== '일치 옵션') { setRevealed(0); return; }
+    setRevealed(0);
+    const id = setInterval(() => setRevealed((n) => (n >= 3 ? n : n + 1)), 2000);
+    return () => clearInterval(id);
+  }, [active]);
+  const ANS = ['54,000', '30,000', '56,000']; // 한지민(B×12)·공유(D×20)·수지(A×7)
+
   const sales = [
     ['판매일', '판매사원', '상품코드', '판매수량', '판매금액'],
     ['3월 2일', '한지민', 'B', 12, ''],
@@ -306,6 +246,7 @@ export function HlookupTwoTableDiagram() {
   const salesSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
     if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
+    if (ci === 4 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
 
@@ -618,22 +559,6 @@ export function VlookupOneTableDiagram() {
             ))}
           </div>
         </div>
-      </div>
-
-      {/* 네 개의 인수 — 공통 설명 */}
-      <div style={{ marginTop: 18, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>네 개의 인수</div>
-        {[
-          { label: '찾을 값', color: C.amberLight, desc: '참조 범위에서 찾을 기준값입니다.' },
-          { label: '참조 범위', color: C.blueLight, desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 범위입니다. \n찾을 값이 참조 범위의 첫 행 또는 첫 열에 오도록 하여, 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n수식을 자동 채우기로 복사할 때 범위가 밀리지 않도록 $로 고정합니다.' },
-          { label: '행 · 열 번호', color: C.greenLight, desc: '반환할 값이 참조 범위에서 몇 번째 행 또는 열에 있는지를 숫자로 넣습니다.' },
-          { label: '마지막 인수', color: C.text, desc: '찾을 값이 참조 범위의 첫 행·열에 하나하나 그대로 들어 있으면 FALSE(정확히 일치)를 씁니다. \n첫 행·열이 ‘이상·미만’과 같은 구간으로 잡혀 있으면 TRUE(유사 일치)를 쓰고, 이때는 오름차순으로 정렬돼 있어야 합니다. \nIFERROR와 함께 쓰는 경우에 예외가 발생하는데, 이는 나중에 설명합니다.' },
-        ].map((p) => (
-          <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-            <span style={{ color: p.color, fontWeight: 700 }}>{p.label}</span>
-            <span style={{ color: C.text }}> — {p.desc}</span>
-          </div>
-        ))}
       </div>
     </Wrap>
   );
