@@ -138,7 +138,7 @@ export function VlookupDiagram() {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.blueLight}>[표1] 사원 실적표 — 기준값이 있는 표</TableCaption>
+            <TableCaption color={C.blueLight}>[표1] 사원 실적표 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={loan} startRow={2} cellStyle={loanSt} minColW={78} firstColW={104} />
           </div>
           <div>
@@ -295,7 +295,7 @@ export function HlookupTwoTableDiagram() {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.orangeLight}>[표2] 상품 판매현황 — 기준값이 있는 표</TableCaption>
+            <TableCaption color={C.orangeLight}>[표2] 상품 판매현황 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={sales} startRow={2} cellStyle={salesSt} minColW={72} firstColW={78} />
           </div>
           <div>
@@ -400,7 +400,7 @@ export function VlookupApproxDiagram() {
       <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
-            <TableCaption color={C.blueLight}>[표1] 학생 성적표 — 기준값이 있는 표</TableCaption>
+            <TableCaption color={C.blueLight}>[표1] 학생 성적표 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={70} firstColW={70} />
           </div>
           <div>
@@ -513,7 +513,7 @@ export function VlookupOneTableDiagram() {
       {/* 왼쪽: 표(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
         <div>
-          <TableCaption color={C.blueLight}>[표3] 기준값과 참조 범위가 같은 표</TableCaption>
+          <TableCaption color={C.blueLight}>[표3] 찾는 값과 참조 범위가 같은 표</TableCaption>
           <ExcelGrid data={data} startRow={2} cellStyle={st} minColW={92} firstColW={92} />
         </div>
 
