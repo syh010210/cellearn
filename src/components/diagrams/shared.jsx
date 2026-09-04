@@ -118,7 +118,7 @@ export function colLetter(i) {
 //  data      : 2차원 배열(문자/숫자). 빈 칸은 '' 또는 null.
 //  startCol  : 첫 열 인덱스(0=A). startRow: 첫 행 번호(1=1행).
 //  cellStyle : (ri, ci, val) => ({ bg, color, bold, align, dim }) 로 개별 셀 강조.
-export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW }) {
+export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow }) {
   const nCols = Math.max(...data.map((r) => r.length));
   const th = {
     background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 13,
@@ -165,6 +165,22 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               })}
             </tr>
           ))}
+          {labelRow && (
+            <tr>
+              <td style={{ border: 'none', background: 'transparent', padding: '3px 6px' }} />
+              {Array.from({ length: nCols }, (_, ci) => {
+                const lab = labelRow[ci];
+                return (
+                  <td key={ci} style={{
+                    border: 'none', background: 'transparent',
+                    padding: '3px 6px', fontSize: 13.5, fontWeight: 700,
+                    textAlign: 'center', whiteSpace: 'nowrap',
+                    color: (lab && lab.color) || C.text,
+                  }}>{(lab && lab.text) || ''}</td>
+                );
+              })}
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

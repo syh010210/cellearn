@@ -69,7 +69,7 @@ export function VlookupDiagram() {
 
   const explain = {
     '찾을 값': '사원코드의 다섯 번째 문자입니다.',
-    '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자이기 때문에 참조 범위의 첫 열로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '참조 범위': '찾을 값이 사원코드의 다섯 번째 문자(등급)이기 때문에 참조 범위의 첫 열로 오도록 하여, 위의 표의 제목행은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
     '열 번호': '각 사원의 성과급률을 계산하라고 했기 때문에, 반환할 값이 지정한 참조 범위의 세 번째 열에 있으니 3입니다.',
     '일치 옵션': '찾을 값(C,A,B)이 참조 범위의 첫 열에 전부 있습니다. (정확히 일치 · FALSE)',
   };
@@ -143,14 +143,12 @@ export function VlookupDiagram() {
           </div>
           <div>
             <TableCaption color={C.blueLight}>[등급표] 세로 참조 범위</TableCaption>
-            <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64} />
-            {/* 칠판(초록 배경)의 빈 공간에 열 위치 라벨 — A열 아래 '첫 열', C열 아래 '3번째' */}
-            <div style={{ display: 'flex', marginTop: 4, fontSize: 13.5, fontWeight: 700 }}>
-              <div style={{ width: 35 }} />
-              <div style={{ width: 73, textAlign: 'center', color: C.blueLight }}>{active === '참조 범위' ? '첫 열' : ' '}</div>
-              <div style={{ width: 90 }} />
-              <div style={{ width: 90, textAlign: 'center', color: C.greenLight }}>{active === '열 번호' ? '3번째' : ' '}</div>
-            </div>
+            <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64}
+              labelRow={[
+                active === '참조 범위' ? { text: '첫 열', color: C.blueLight } : null,
+                null,
+                active === '열 번호' ? { text: '3번째', color: C.greenLight } : null,
+              ]} />
           </div>
         </div>
 
@@ -162,7 +160,7 @@ export function VlookupDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
+              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MID(A3,5,1)</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$A$12:$C$14</span>, <span style={{ color: C.greenLight }}>3</span>, FALSE)</div>
               <div style={{ color: C.greenLight }}>→ 2.0%</div>
             </div>
           </div>
@@ -278,7 +276,7 @@ export function HlookupTwoTableDiagram() {
 
   return (
     <Wrap>
-      <Title>② 가로 참조 범위 → HLOOKUP</Title>
+      <Title>참조 범위에서 나열된 데이터의 방향이 가로이면 HLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -314,7 +312,7 @@ export function HlookupTwoTableDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+              <div>=D3*HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$12:$E$14</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
               <div style={{ color: C.greenLight }}>→ 12 × 4,500 = 54,000</div>
             </div>
           </div>
@@ -499,7 +497,7 @@ export function VlookupOneTableDiagram() {
 
   return (
     <Wrap>
-      <Title>③ 표 하나에서</Title>
+      <Title>하나의 표에서</Title>
 
       {/* 실제 시험 형식 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -527,7 +525,7 @@ export function VlookupOneTableDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
+              <div>=VLOOKUP(<span style={{ color: C.amberLight }}>MIN(B3:B6)</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>B3:C6</span>, <span style={{ color: C.greenLight }}>2</span>, FALSE)</div>
               <div style={{ color: C.greenLight }}>→ 디저트</div>
             </div>
           </div>
@@ -559,6 +557,11 @@ export function VlookupOneTableDiagram() {
                 <span style={{ color: C.text }}> — {explain[t.key]}</span>
               </div>
             ))}
+          </div>
+
+          {/* 한 셀만 계산 → $ 고정 불필요 안내 */}
+          <div style={{ color: C.textDim, fontSize: 13, lineHeight: 1.6, textAlign: 'center' }}>
+            한 셀에만 수식을 입력하는 경우라 참조 범위를 $로 고정할 필요가 없습니다.
           </div>
         </div>
       </div>
