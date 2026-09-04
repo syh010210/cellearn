@@ -73,11 +73,11 @@ export function VlookupDiagram() {
             { label: '찾을 값', code: 'MID(A3,5,1)', color: C.amberLight,
               desc: '코드 전체는 등급표에 없으므로, 사원코드에서 다섯 번째 글자(등급) 한 개만 뽑아와야 찾을 수 있습니다.' },
             { label: '참조 범위', code: '$A$12:$C$14', color: C.blueLight,
-              desc: '값을 찾아오기 위해 선택하는 참조 범위입니다. \n첫 열(A·B·C)에 찾을 값이 있어야 제대로 찾습니다. \n만약 찾을 값이 사원코드의 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다. \n제목행(등급·직무·성과급률)은 실제 데이터가 아니라 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다.' },
+              desc: '찾을 값으로 반환할 값을 찾아오기 위해 선택하는 참조 범위입니다. \n★ 반드시 앞서 적은 찾을 값이 선택하는 참조 범위의 첫 열에 있어야 합니다. \n표의 제목행은 실제 데이터가 아니고 열 이름일 뿐이라 찾을 값 후보가 아니므로 범위에서 빼고 A12부터 선택합니다. \n만약 찾을 값이 사원코드의 다섯 번째 문자가 아니라 직무였다면, 첫 열에 직무가 오도록 B12:C14를 선택해야 합니다.' },
             { label: '열 번호', code: '3', color: C.greenLight,
               desc: '반환할 값이 성과급률이므로, 선택한 범위에서 성과급률이 있는 열 번호 3을 넣습니다.' },
             { label: '마지막 인수', code: 'FALSE', color: C.text,
-              desc: '정확히 일치하는 값만 찾습니다. 코드·이름처럼 딱 떨어지는 값을 찾을 때 쓰며, 0을 써도 같습니다. (생략하거나 TRUE로 하면 유사 일치가 되어 참조 범위의 첫 열이 정렬돼 있어야 합니다.)' },
+              desc: '찾을 값들이 참조 범위 첫 열에 하나하나 그대로 들어 있으면 정확히 일치, FALSE를 씁니다. 코드·이름처럼 딱 떨어지는 값이 여기에 해당하며 0을 써도 같습니다. \n반대로 첫 열이 점수처럼 구간으로 잡혀 있으면 유사 일치(TRUE·생략)를 쓰고, 이때는 첫 열이 오름차순으로 정렬돼 있어야 합니다.' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
@@ -166,7 +166,7 @@ export function HlookupTwoTableDiagram() {
             { label: '행 번호', code: '2', color: C.greenLight,
               desc: '반환할 값이 판매단가이므로, 선택한 범위에서 판매단가가 있는 행 번호 2를 넣습니다.' },
             { label: '마지막 인수', code: 'FALSE', color: C.text,
-              desc: '정확히 일치하는 값만 찾습니다. 코드처럼 딱 떨어지는 값을 찾을 때 쓰며, 0을 써도 같습니다. (생략하거나 TRUE로 하면 유사 일치가 되어 참조 범위의 첫 행이 정렬돼 있어야 합니다.)' },
+              desc: '찾을 값들이 참조 범위 첫 행에 하나하나 그대로 들어 있으면 정확히 일치, FALSE를 씁니다. 코드처럼 딱 떨어지는 값이 여기에 해당하며 0을 써도 같습니다. \n반대로 첫 행이 구간으로 잡혀 있으면 유사 일치(TRUE·생략)를 쓰고, 이때는 첫 행이 오름차순으로 정렬돼 있어야 합니다.' },
           ].map((p) => (
             <div key={p.label} style={{ fontSize: 13.5, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
               <span style={{ color: p.color, fontWeight: 700 }}>{p.label} {p.code}</span>
