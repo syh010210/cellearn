@@ -660,7 +660,7 @@ export function MatchIndexDiagram() {
   // 버튼: 범위(파랑) → 행번호(주황) → 열번호(초록) → 추출 값(결과)
   const [active, setActive] = useState('범위');
 
-  // 사원 명단 — 선택한 전체 범위 A1:D6. 범위 시작행이 1행이라 범위 안 행·열 번호가 시트 좌표와 그대로 일치.
+  // 사원 명단 — 전체 범위 A1:D6. 범위 시작행이 1행이라 범위 안 행·열 번호가 시트 좌표와 그대로 일치.
   const emp = [
     ['사원명', '부서', '직급', '급여'],
     ['김철수', '영업부', '대리', 3200],
@@ -677,11 +677,12 @@ export function MatchIndexDiagram() {
     { key: '추출 값', color: C.greenLight },
   ];
 
+  // 버튼별 짧은 하이라이트 설명(칠판) — 표를 눈으로 세는 것을 돕는 라벨
   const explain = {
-    '범위': '값을 꺼낼 표 전체를 선택합니다. 제목 행까지 포함해 A1:D6을 잡으면 범위 안의 행·열 번호가 실제 시트의 행·열과 그대로 맞아떨어져 세기 쉽습니다.',
-    '행번호': '범위의 맨 위에서부터 몇 번째 행인지 셉니다. 4를 넣으면 위에서 4번째 행(박민수 행)을 가리킵니다.',
-    '열번호': '범위의 맨 왼쪽에서부터 몇 번째 열인지 셉니다. 3을 넣으면 3번째 열(직급, C열)을 가리킵니다.',
-    '추출 값': '행번호 4와 열번호 3이 만나는 칸(C4)의 값 “사원”이 반환됩니다.',
+    '범위': '표 전체 A1:D6',
+    '행번호': '위에서 4번째 행 → 박민수',
+    '열번호': '왼쪽에서 3번째 열 → 직급',
+    '추출 값': '4번째 행 × 3번째 열 = C4 → 사원',
   };
 
   // A1:D6 전체 범위 = ri 0~5, ci 0~3. 목표 셀 = C4 (ri 3, ci 2)
@@ -716,49 +717,48 @@ export function MatchIndexDiagram() {
     ...(key === '범위' ? { textDecoration: 'underline' } : {}),
   });
 
+  // 공통 스타일
+  const mono = { fontFamily: 'monospace' };
+  const stepHead = { color: C.blue, fontSize: 17, fontWeight: 700, margin: '20px 0 8px' };
+  const para = { color: C.text, fontSize: 15, lineHeight: 1.8, margin: '6px 0' };
+  const codeBox = {
+    ...mono, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8,
+    padding: '10px 14px', fontSize: 15.5, color: C.text, margin: '8px 0', lineHeight: 1.9,
+  };
+
   return (
     <Wrap>
       <Title>위치 · 추출 함수: MATCH · INDEX</Title>
-      <Subtitle>MATCH는 &apos;몇 번째?&apos;를 찾고 — INDEX는 &apos;행·열이 만나는 값&apos;을 꺼냅니다</Subtitle>
+      <Subtitle>MATCH는 &apos;몇 번째인지&apos;를 세고, INDEX는 &apos;그 자리의 값&apos;을 꺼냅니다.</Subtitle>
 
       {/* 문제 박스 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [사원 표]에서 <b style={{ color: C.blueLight }}>전체 범위(A1:D6)</b>의
-          <b style={{ color: C.amberLight }}> 4번째 행</b>,
-          <b style={{ color: C.greenLight }}> 3번째 열(직급)</b>에 있는 값을 INDEX로 추출하시오.
+          [표]에서 <b style={{ color: C.greenLight }}>&apos;박민수&apos;의 직급</b>을 구하시오.
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Left: 사원 표 */}
         <div>
-          <TableCaption color={C.blueLight}>[표] 사원 명단 — 선택한 전체 범위 A1:D6</TableCaption>
+          <TableCaption color={C.blueLight}>[표] 사원 명단 (A1:D6)</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={empSt} minColW={72} firstColW={80}
             labelRow={active === '열번호' ? [null, null, { text: '3번째 열', color: C.greenLight }, null] : null} />
         </div>
 
-        {/* Right: INDEX 카드 + 버튼 + 칠판 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {/* INDEX 박스 (구문 + 수식) */}
-          <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
-            <div style={{ color: C.greenLight, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행번호, 열번호)</div>
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>선택한 범위에서 행번호와 열번호가 교차하는 칸의 값을 반환</div>
-            <div style={{ borderTop: `1px solid ${C.green}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>
-                =INDEX(<span style={argStyle('범위')}>A1:D6</span>, <span style={argStyle('행번호')}>4</span>, <span style={argStyle('열번호')}>3</span>)
-              </div>
-              <div style={{ color: C.greenLight }}>→ 사원</div>
-            </div>
+        {/* Right: 1단계 INDEX 설명 + 버튼 + 칠판 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ ...stepHead, marginTop: 0 }}>1단계. INDEX — 행·열 번호로 값 꺼내기</div>
+          <div style={codeBox}>구문: =INDEX(범위, 행번호, 열번호)</div>
+          <div style={para}>범위 안에서 행번호와 열번호가 만나는 칸의 값을 반환합니다.</div>
+          <div style={para}>박민수는 범위 A1:D6에서 4번째 행, 직급은 3번째 열.</div>
+          <div style={{ ...codeBox, fontSize: 17, fontWeight: 700, textAlign: 'center' }}>
+            =INDEX(<span style={argStyle('범위')}>A1:D6</span>, <span style={argStyle('행번호')}>4</span>, <span style={argStyle('열번호')}>3</span>) <span style={{ color: C.greenLight }}>→ 사원</span>
           </div>
-
-          {/* 안내 문구 */}
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 인수와 추출 값을 하나씩 확인하세요</div>
+          <div style={para}>행번호·열번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
 
           {/* 인수 버튼 */}
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
             {tabs.map((t) => (
               <button key={t.key} onClick={() => setActive(t.key)}
                 style={{
@@ -774,7 +774,7 @@ export function MatchIndexDiagram() {
           </div>
 
           {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
-          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
+          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', marginTop: 10 }}>
             {tabs.map((t) => (
               <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7 }}>
                 <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
@@ -785,22 +785,40 @@ export function MatchIndexDiagram() {
         </div>
       </div>
 
-      {/* MATCH 카드 — INDEX의 행번호·열번호를 자동으로 구하는 함수 */}
-      <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH — 위치 번호 자동 찾기</div>
-        <div style={{ color: C.purpleLight, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, 0)</div>
-        <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값이 범위에서 몇 번째에 있는지 순번을 반환 → 이 값을 INDEX의 행번호·열번호로 넣습니다</div>
-        <div style={{ borderTop: `1px solid ${C.purple}`, margin: '8px 0 6px' }} />
-        <div style={{ color: C.text, fontSize: 16, fontWeight: 700, lineHeight: 2, textAlign: 'center' }}>
-          <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, A1:A6, 0) <span style={{ color: C.amberLight }}>→ 4</span> <span style={{ color: C.textDim, fontWeight: 400, fontSize: 14 }}>(A열에서 박민수가 4번째)</span></div>
-          <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, A1:D1, 0) <span style={{ color: C.greenLight }}>→ 3</span> <span style={{ color: C.textDim, fontWeight: 400, fontSize: 14 }}>(첫 행에서 직급이 3번째)</span></div>
-        </div>
+      {/* 2단계. MATCH */}
+      <div style={stepHead}>2단계. MATCH — 번호를 손으로 세지 않기</div>
+      <div style={para}>1단계에서 4와 3은 표를 눈으로 세서 넣었습니다. 데이터가 바뀌거나 표가 길면 셀 수 없으므로, 세는 일을 MATCH에 맡깁니다.</div>
+      <div style={codeBox}>구문: =MATCH(찾을값, 범위, 0)</div>
+      <div style={para}>찾을값이 범위에서 몇 번째에 있는지 숫자로 반환합니다. 값을 돌려주는 게 아니라 위치 번호를 돌려줍니다.</div>
+      <div style={codeBox}>
+        <div>=MATCH(&quot;박민수&quot;, A1:A6, 0) <span style={{ color: C.amberLight }}>→ 4</span> <span style={{ color: C.textDim }}>(A열에서 4번째)</span></div>
+        <div>=MATCH(&quot;직급&quot;, A1:D1, 0) <span style={{ color: C.greenLight }}>→ 3</span> <span style={{ color: C.textDim }}>(1행에서 3번째)</span></div>
       </div>
 
-      <BottomBar>
-        <BLine>=INDEX(범위, 행번호, 열번호) → 행·열이 만나는 값  ·  =MATCH(찾을 값, 범위, 0) → 위치 번호</BLine>
-        <BLine color={C.blue} bold>=INDEX(A1:D6, MATCH(&quot;박민수&quot;,A1:A6,0), MATCH(&quot;직급&quot;,A1:D1,0)) = 사원</BLine>
-      </BottomBar>
+      {/* 3단계. 합치기 */}
+      <div style={stepHead}>3단계. 합치기</div>
+      <div style={para}>INDEX의 행번호 자리에 첫 번째 MATCH, 열번호 자리에 두 번째 MATCH를 넣습니다.</div>
+      <div style={{ ...codeBox, fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
+        =INDEX(A1:D6, MATCH(&quot;박민수&quot;,A1:A6,0), MATCH(&quot;직급&quot;,A1:D1,0)) <span style={{ color: C.greenLight }}>→ 사원</span>
+      </div>
+      <div style={para}>계산 순서: 안쪽 MATCH 두 개가 먼저 4, 3이 되고 → INDEX(A1:D6, 4, 3) → 사원.</div>
+
+      {/* 틀리기 쉬운 곳 */}
+      <div style={stepHead}>틀리기 쉬운 곳</div>
+      <ul style={{ margin: '6px 0', paddingLeft: 20, color: C.text, fontSize: 15, lineHeight: 1.9 }}>
+        <li><b>범위 시작을 맞춥니다.</b> INDEX 범위가 A1부터면 MATCH 범위도 A1(또는 1행)부터. INDEX는 A2:D6인데 MATCH는 A1:A6이면 번호가 한 칸 어긋나 다른 사람의 값이 나옵니다.</li>
+        <li><b>MATCH 범위는 한 줄만.</b> 열 하나(A1:A6) 또는 행 하나(A1:D1). 두 줄 이상 넣으면 오류.</li>
+        <li><b>마지막 인수 0은 생략하지 않습니다.</b> 0 = 정확히 일치. 생략하면 1로 처리되어 정렬 안 된 표에서 엉뚱한 번호가 나옵니다.</li>
+        <li><b>VLOOKUP과의 차이.</b> VLOOKUP은 찾는 열이 맨 왼쪽에 있어야 하지만, INDEX·MATCH는 어느 열을 기준으로 찾든 상관없습니다. 급여로 사원명을 찾는 문제(<span style={mono}>=INDEX(A1:A6, MATCH(2700,D1:D6,0)) → 박민수</span>)가 VLOOKUP으로는 안 되는 이유입니다.</li>
+      </ul>
+
+      {/* 요약 */}
+      <div style={stepHead}>요약</div>
+      <div style={codeBox}>
+        <div>=MATCH(찾을값, 한 줄 범위, 0) <span style={{ color: C.textDim }}>→ 몇 번째인지</span></div>
+        <div>=INDEX(범위, 행번호, [열번호]) <span style={{ color: C.textDim }}>→ 그 자리의 값 (열번호 생략 시 한 열 범위에서 행번호만)</span></div>
+        <div>=INDEX(표, MATCH(행 기준값, 첫 열, 0), MATCH(열 기준값, 첫 행, 0))</div>
+      </div>
     </Wrap>
   );
 }
