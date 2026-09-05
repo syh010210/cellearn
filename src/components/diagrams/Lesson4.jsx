@@ -754,14 +754,14 @@ export function MatchIndexDiagram() {
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540 }}>
           <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH</div>
-            <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, 0)</div>
-            <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
+            <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 지정한 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px', lineHeight: 2 }}>
               <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, <span style={{ color: C.amberLight, textDecoration: 'underline' }}>A1:A6</span>, 0)</div>
               <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, <span style={{ color: C.greenLight, textDecoration: 'underline' }}>A1:D1</span>, 0)</div>
             </div>
           </div>
-          <div style={{ ...para, marginTop: 12 }}>MATCH는 값이 아니라 위치 번호를 돌려줍니다. 박민수는 첫 열에서 4번째, 직급은 첫 행에서 3번째. 이렇게 찾은 4와 3을 앞의 INDEX에 넣으면 값을 자동으로 찾을 수 있습니다.</div>
+          <div style={{ ...para, marginTop: 12 }}>MATCH는 값이 아니라 위치 번호를 돌려줍니다. 박민수는 첫 열에서 4번째, 직급은 첫 행에서 3번째. 옵션: 0 → 정확히 일치 / 1 → 오름차순 이하 / -1 → 내림차순 이상이라, 정확히 같은 값을 찾는 여기서는 0을 씁니다.</div>
         </div>
       </div>
     </Wrap>
