@@ -726,6 +726,7 @@ export function MatchIndexDiagram() {
             <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
             <div style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>지정한 범위 안에서 행 번호와 열 번호가 만나는 칸의 값을 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px' }}>
               =INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)
             </div>
@@ -734,8 +735,12 @@ export function MatchIndexDiagram() {
         </div>
       </div>
 
-      {/* MATCH — INDEX와 같은 방식으로 위치 번호 찾기 */}
-      <div style={{ ...para, marginTop: 22 }}>앞의 INDEX에 넣은 4와 3은 표를 눈으로 세어 넣은 값입니다. 이 위치 번호를 대신 찾아 주는 함수가 MATCH입니다.</div>
+      {/* MATCH — INDEX와 같은 방식. 위치 번호를 구하는 문제 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', margin: '24px 0 16px' }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표1]에서 <b style={{ color: C.amberLight }}>&apos;박민수&apos;가 몇 번째 행</b>인지, <b style={{ color: C.greenLight }}>&apos;직급&apos;이 몇 번째 열</b>인지 구하시오.
+        </div>
+      </div>
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Left: 사원 표 (첫 열·첫 행 바깥 테두리 + 박민수·직급 채우기) */}
         <div>

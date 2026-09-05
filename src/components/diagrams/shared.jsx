@@ -140,8 +140,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
   };
   return (
     <div style={{ display: 'inline-block', maxWidth: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-      <div style={{ overflowX: 'auto', border: `1px solid ${C.border}`, borderRadius: 6, maxWidth: '100%' }}>
+      <div style={{ overflowX: 'auto', border: rowLabels ? 'none' : `1px solid ${C.border}`, borderRadius: rowLabels ? 0 : 6, maxWidth: '100%' }}>
       <table style={{ borderCollapse: 'collapse', fontFamily: FONT }}>
         <thead>
           <tr>
@@ -149,6 +148,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
             {Array.from({ length: nCols }, (_, ci) => (
               <th key={ci} style={{ ...th, minWidth: ci === 0 ? (firstColW || minColW) : minColW }}>{colLetter(startCol + ci)}</th>
             ))}
+            {rowLabels && <th style={{ border: 'none', background: 'transparent' }} />}
           </tr>
         </thead>
         <tbody>
@@ -180,26 +180,15 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                   }}>{st.content !== undefined ? st.content : (val === null ? '' : val)}</td>
                 );
               })}
+              {rowLabels && (
+                <td style={{ border: 'none', padding: '7px 6px 7px 12px', fontSize: 14.5, fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'left', color: (rowLabels[ri] && rowLabels[ri].color) || C.text }}>
+                  {rowLabels[ri] ? rowLabels[ri].text : ''}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
       </table>
-      </div>
-      {/* 행 우측 라벨 — 표 테두리 바깥의 별도 표. 셀 높이를 맞춰 각 행에 정렬 */}
-      {rowLabels && (
-        <table style={{ borderCollapse: 'collapse', fontFamily: FONT, marginTop: 1 }}>
-          <tbody>
-            <tr><td style={{ ...th, border: '1px solid transparent', background: 'transparent', color: 'transparent' }}>0</td></tr>
-            {data.map((_, ri) => (
-              <tr key={ri}>
-                <td style={{ border: '1px solid transparent', padding: '7px 6px 7px 12px', fontSize: 14.5, fontWeight: 700, whiteSpace: 'nowrap', color: (rowLabels[ri] && rowLabels[ri].color) || C.text }}>
-                  {rowLabels[ri] ? rowLabels[ri].text : ' '}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
       </div>
       {/* 라벨 행: 테두리 없는 별도 표. 같은 min-width라 위 표 컬럼과 정확히 정렬 */}
       {labelRow && (
