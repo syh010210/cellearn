@@ -755,7 +755,6 @@ export function MatchIndexDiagram() {
           <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH</div>
             <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 지정한 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px', lineHeight: 2 }}>
