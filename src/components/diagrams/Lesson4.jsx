@@ -392,10 +392,10 @@ export function VlookupApproxDiagram() {
   ];
 
   const explain = {
-    '찾을 값': '총점입니다. 두 기준표 모두 첫 행에서 이 점수가 속한 구간을 가로로 찾습니다.',
-    '참조 범위': '찾을 값(총점)이 참조 범위의 첫 행에 오도록 하여, 왼쪽 이름 열(기준점수·등급)은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다. \n첫 행은 반드시 오름차순으로 정렬돼 있어야 합니다.',
-    '행 번호': '반환할 등급이 표①에서는 세 번째 행, 표②에서는 두 번째 행에 있습니다. 같은 기준표라도 표의 행 수에 따라 행 번호가 달라집니다.',
-    '일치 옵션': '총점과 똑같은 값이 없어도, 총점보다 크지 않은 값 중 가장 큰 값(구간의 시작값)을 찾아 그 구간의 등급을 가져옵니다.',
+    '찾을 값': '총점입니다.',
+    '참조 범위': '찾을 값이 총점이기 때문에 참조 범위의 첫 행에 오도록 하여, 첫 행은 반드시 오름차순으로 정렬돼 있어야 합니다. \n왼쪽 표의 제목 열은 실제 데이터가 아니므로 빼고 남은 표의 끝까지 선택합니다.',
+    '행 번호': '각 학생의 등급을 계산하라고 했기 때문에, 반환할 값이 표2에서는 지정한 참조 범위의 세 번째 행에 있으니 3이고, 표3에서는 두 번째 행에 있으니 2입니다.',
+    '일치 옵션': '찾을 값과 똑같은 값이 없어도, 찾을 값보다 작은 값 중 가장 큰 값을 찾아 그 구간의 등급을 가져옵니다. \n(유사 일치 · TRUE)',
   };
 
   const scoreSt = (ri, ci) => {
@@ -466,14 +466,11 @@ export function VlookupApproxDiagram() {
             <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={64} firstColW={72} />
           </div>
           <div>
-            <TableCaption color={C.orangeLight}>[표①] 가로 기준표 — 시험지 형태(구간 표시)</TableCaption>
+            <TableCaption color={C.orangeLight}>[표2] 가로 기준표 — 시험지 형태(구간 표시)</TableCaption>
             <ExcelGrid data={base1} startRow={8} cellStyle={base1St} minColW={62} firstColW={70} />
-            <div style={{ maxWidth: 470, marginTop: 6, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 12px', color: C.textMuted, fontSize: 12.5, lineHeight: 1.65 }}>
-              HLOOKUP은 참조 범위의 <b style={{ color: C.text }}>첫 행(8행: 0 이상~90 이상 = 구간의 시작값)</b>만 보고 총점을 찾습니다. 아래 <b style={{ color: C.text }}>‘미만’ 행(9행)</b>은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않고, 대신 <b style={{ color: C.text }}>2번째 행</b>을 차지합니다. 그래서 등급은 <b style={{ color: C.greenLight }}>3번째 행</b>이 됩니다.
-            </div>
           </div>
           <div>
-            <TableCaption color={C.orangeLight}>[표②] 같은 기준표 — 시작값만 (HLOOKUP이 쓰는 형태)</TableCaption>
+            <TableCaption color={C.orangeLight}>[표3] 같은 기준표 — 시작값만 (HLOOKUP이 쓰는 형태)</TableCaption>
             <ExcelGrid data={base2} startRow={12} cellStyle={base2St} minColW={62} firstColW={70} />
           </div>
         </div>
@@ -486,9 +483,9 @@ export function VlookupApproxDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>기준표 첫 행에서 총점이 속한 구간을 찾아 같은 열의 등급을 반환</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 15.5, fontWeight: 700, letterSpacing: '-0.01em', padding: '2px 0' }}>
-              <div style={{ color: C.orangeLight, fontSize: 13, marginBottom: 2 }}>표① (등급이 3번째 행)</div>
+              <div style={{ color: C.orangeLight, fontSize: 13, marginBottom: 2 }}>표2 (등급이 3번째 행)</div>
               <div>=HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$8:$F$10</span>, <span style={{ color: C.greenLight }}>3</span>, TRUE)<span style={{ color: C.greenLight }}> → 수</span></div>
-              <div style={{ color: C.orangeLight, fontSize: 13, margin: '8px 0 2px' }}>표② (등급이 2번째 행)</div>
+              <div style={{ color: C.orangeLight, fontSize: 13, margin: '8px 0 2px' }}>표3 (등급이 2번째 행)</div>
               <div>=HLOOKUP(<span style={{ color: C.amberLight }}>C3</span>, <span style={{ color: C.blueLight, textDecoration: 'underline' }}>$B$12:$F$13</span>, <span style={{ color: C.greenLight }}>2</span>, TRUE)<span style={{ color: C.greenLight }}> → 수</span></div>
             </div>
           </div>
@@ -521,6 +518,13 @@ export function VlookupApproxDiagram() {
               </div>
             ))}
           </div>
+
+          {/* 참조 범위 버튼일 때만 — 두 줄 기준표를 HLOOKUP이 어떻게 읽는지 보충 설명 */}
+          {active === '참조 범위' && (
+            <div style={{ background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 10, padding: '11px 14px', color: C.textMuted, fontSize: 13, lineHeight: 1.65 }}>
+              HLOOKUP은 참조 범위 첫 행(8행)의 <b style={{ color: C.text }}>0 이상~90 이상</b>에서 구간의 시작값 <b style={{ color: C.text }}>0·60·70·80·90</b>만 보고 총점을 찾습니다. 아래 행(9행)은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않습니다.
+            </div>
+          )}
         </div>
       </div>
     </Wrap>
