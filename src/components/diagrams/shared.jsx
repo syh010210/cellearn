@@ -120,6 +120,20 @@ export function colLetter(i) {
 //  cellStyle : (ri, ci, val) => ({ bg, color, bold, align, dim }) 로 개별 셀 강조.
 export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow }) {
   const nCols = Math.max(...data.map((r) => r.length));
+  // 셀 병합(rowSpan) — cellStyle이 { rowSpan: n } 을 반환하면 같은 열 아래 n-1칸을 건너뛴다
+  const skip = new Set();
+  const spanMap = {};
+  if (cellStyle) {
+    data.forEach((row, ri) => {
+      for (let ci = 0; ci < nCols; ci++) {
+        const cs = cellStyle(ri, ci, row[ci] ?? '') || {};
+        if (cs.rowSpan && cs.rowSpan > 1) {
+          spanMap[`${ri},${ci}`] = cs.rowSpan;
+          for (let k = 1; k < cs.rowSpan; k++) skip.add(`${ri + k},${ci}`);
+        }
+      }
+    });
+  }
   const th = {
     background: '#0b1220', color: C.textDim, fontWeight: 700, fontSize: 13,
     border: `1px solid ${C.border}`, padding: '6px 4px', textAlign: 'center', whiteSpace: 'nowrap',
@@ -141,6 +155,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
             <tr key={ri}>
               <td style={{ ...th, minWidth: 26 }}>{startRow + ri}</td>
               {Array.from({ length: nCols }, (_, ci) => {
+                if (skip.has(`${ri},${ci}`)) return null;
                 const val = row[ci] ?? '';
                 const st = cellStyle ? (cellStyle(ri, ci, val) || {}) : {};
                 // 강조 테두리는 box-shadow(inset)로 그려 셀 크기를 바꾸지 않는다 (레이아웃 밀림 방지)
@@ -152,7 +167,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                 if (st.bb || bd) sh.push(`inset 0 -2px 0 0 ${st.bb || bd}`);
                 if (st.bl || bd) sh.push(`inset 2px 0 0 0 ${st.bl || bd}`);
                 return (
-                  <td key={ci} style={{
+                  <td key={ci} rowSpan={spanMap[`${ri},${ci}`]} style={{
                     border: `1px solid ${C.border}`,
                     boxShadow: sh.length ? sh.join(', ') : undefined,
                     padding: '7px 6px', fontSize: 14.5,
