@@ -667,14 +667,22 @@ export function MatchIndexDiagram() {
     ['정수연', '인사부', '대리', 3100],
   ];
 
-  // 4번째 행(박민수)·3번째 열(직급)을 정적으로 강조, 교차 칸 C4를 결과로 강조
+  // 범위 A1:D6=파란 바깥 테두리 / 행 번호 A4:D4=노란 바깥 테두리 / 열 번호 C1:C6=초록 바깥 테두리 / 사원 C4=옅은 빨강 채우기
   const empSt = (ri, ci) => {
     const isHeader = ri === 0;
-    const base = isHeader ? { bold: true, color: C.blueLight, bg: C.blueCard } : {};
-    if (ri === 3 && ci === 2) return { border: C.green, bg: '#0a2e1c', color: C.greenLight, bold: true };
-    if (ri === 3 && !isHeader) return { ...base, bg: C.amberBg, color: C.amberLight, bold: true };
-    if (ci === 2 && !isHeader) return { ...base, bg: C.greenBg, color: C.greenLight };
-    return base;
+    const s = isHeader ? { bold: true, color: C.blueLight, bg: C.blueCard } : {};
+    // 범위(파랑) — A1:D6 바깥 테두리
+    if (ri === 0) s.bt = C.blue;
+    if (ri === 5) s.bb = C.blue;
+    if (ci === 0) s.bl = C.blue;
+    if (ci === 3) s.br = C.blue;
+    // 행 번호(노랑) — A4:D4 바깥 테두리 (행/열 강조가 범위보다 우선)
+    if (ri === 3) { s.bt = C.amber; s.bb = C.amber; if (ci === 0) s.bl = C.amber; if (ci === 3) s.br = C.amber; }
+    // 열 번호(초록) — C1:C6 바깥 테두리
+    if (ci === 2) { s.bl = C.green; s.br = C.green; if (ri === 0) s.bt = C.green; if (ri === 5) s.bb = C.green; }
+    // 사원 셀(C4) — 옅은 빨강 채우기
+    if (ri === 3 && ci === 2) { s.bg = 'rgba(239,68,68,0.30)'; s.bold = true; }
+    return s;
   };
 
   // 공통 스타일
@@ -688,8 +696,8 @@ export function MatchIndexDiagram() {
 
   return (
     <Wrap>
-      <Title>위치 · 추출 함수: MATCH · INDEX</Title>
-      <Subtitle>MATCH는 &apos;몇 번째인지&apos;를 세고, INDEX는 &apos;그 자리의 값&apos;을 꺼냅니다.</Subtitle>
+      <Title>위치 · 추출 함수: INDEX · MATCH</Title>
+      <Subtitle>INDEX는 &apos;그 자리의 값&apos;을 꺼내고, MATCH는 &apos;몇 번째인지&apos;를 셉니다.</Subtitle>
 
       {/* 문제 박스 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
@@ -711,16 +719,15 @@ export function MatchIndexDiagram() {
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540 }}>
           <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
-            <div style={{ ...mono, color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행번호, 열번호)</div>
-            <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>범위 안에서 행번호와 열번호가 만나는 칸의 값을 반환합니다.</div>
-            <div style={{ borderTop: `1px solid ${C.green}`, margin: '8px 0 4px' }} />
-            <div style={{ color: C.textMuted, fontSize: 13.5, textAlign: 'center' }}>박민수 = 4번째 행 · 직급 = 3번째 열</div>
-            <div style={{ ...mono, color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
+            <div style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
+            <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>지정한 범위 안에서 행 번호와 열 번호가 만나는 칸의 값을 반환합니다.</div>
+            <div style={{ color: C.textMuted, fontSize: 13.5, textAlign: 'center', marginTop: 4 }}>박민수 = 4번째 행 · 직급 = 3번째 열</div>
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
               <div>=INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)</div>
               <div style={{ color: C.greenLight }}>→ 사원</div>
             </div>
           </div>
-          <div style={{ ...para, marginTop: 12 }}>행번호·열번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
+          <div style={{ ...para, marginTop: 12 }}>행 번호·열 번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
         </div>
       </div>
 
