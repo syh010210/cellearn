@@ -522,7 +522,7 @@ export function VlookupApproxDiagram() {
           {/* 참조 범위 버튼일 때만 — 두 줄 기준표를 HLOOKUP이 어떻게 읽는지 보충 설명 */}
           {active === '참조 범위' && (
             <div style={{ background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 10, padding: '11px 14px', color: C.textMuted, fontSize: 13, lineHeight: 1.65 }}>
-              HLOOKUP은 참조 범위 첫 행(8행)의 <b style={{ color: C.text }}>0 이상~90 이상</b>에서 구간의 시작값 <b style={{ color: C.text }}>0·60·70·80·90</b>만 보고 총점을 찾습니다. 아래 행(9행)은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않습니다.
+표2에서 HLOOKUP은 참조 범위 첫 행(8행)의 <b style={{ color: C.text }}>0 이상~90 이상</b>에서 구간의 시작값 <b style={{ color: C.text }}>0·60·70·80·90</b>만 보고 총점을 찾습니다. 아래 행(9행)은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않습니다.
             </div>
           )}
         </div>

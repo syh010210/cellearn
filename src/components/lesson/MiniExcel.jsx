@@ -400,6 +400,14 @@ export default function MiniExcel({ practice, autoplay = false }) {
     return -1;
   })();
 
+  // 입력 열이 (헤더 아래에) 참조 데이터를 함께 가진 경우 = 아래에 다른 표가 걸쳐 있는 형태.
+  // 이때는 구분 스페이서를 넣으면 아래 표가 중간에서 끊기므로 넣지 않는다.
+  const editColSharesRefData = firstEditableColIdx >= 0 && cells.some((row, ri) => {
+    if (ri === 0) return false;
+    const c = row[firstEditableColIdx];
+    return c && !c.editable && c.val !== "" && c.val !== null && c.val !== undefined;
+  });
+
   // 함수 인수 힌트
   const activeHint = inputFocused ? getFunctionHint(inputVal, cursorPos) : null;
 
@@ -507,7 +515,8 @@ export default function MiniExcel({ practice, autoplay = false }) {
                 const addVirtualSpacer =
                   ci === firstEditableColIdx &&
                   firstEditableColIdx > 0 &&
-                  !spacerCols.has(firstEditableColIdx - 1);
+                  !spacerCols.has(firstEditableColIdx - 1) &&
+                  !editColSharesRefData;
                 const ths = [];
                 if (addVirtualSpacer) {
                   ths.push(
@@ -594,7 +603,8 @@ export default function MiniExcel({ practice, autoplay = false }) {
                   const addVirtualSpacer =
                     ci === firstEditableColIdx &&
                     firstEditableColIdx > 0 &&
-                    !spacerCols.has(firstEditableColIdx - 1);
+                    !spacerCols.has(firstEditableColIdx - 1) &&
+                    !editColSharesRefData;
 
                   const tds = [];
                   if (addVirtualSpacer) {
