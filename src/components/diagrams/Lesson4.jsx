@@ -657,111 +657,149 @@ export function VlookupOneTableDiagram() {
 // MatchIndexDiagram
 // ──────────────────────────────────────────────
 export function MatchIndexDiagram() {
-  const matchList = [
-    { label: '홍길동 · 1번째', highlight: false },
-    { label: '김철수 · 2번째', highlight: false },
-    { label: '이영희 · 3번째 ★', highlight: true },
-  ];
-  const indexList = [
-    { label: '88 · 1번째', highlight: false },
-    { label: '72 · 2번째', highlight: false },
-    { label: '95 · 3번째 ★', highlight: true },
+  // 버튼: 범위(파랑) → 행번호(주황) → 열번호(초록) → 추출 값(결과)
+  const [active, setActive] = useState('범위');
+
+  // 사원 명단 — 선택한 전체 범위 A1:D6. 범위 시작행이 1행이라 범위 안 행·열 번호가 시트 좌표와 그대로 일치.
+  const emp = [
+    ['사원명', '부서', '직급', '급여'],
+    ['김철수', '영업부', '대리', 3200],
+    ['이영희', '인사부', '과장', 3800],
+    ['박민수', '총무부', '사원', 2700],
+    ['최지훈', '영업부', '부장', 4500],
+    ['정수연', '인사부', '대리', 3100],
   ];
 
-  const listItemStyle = (highlight, activeBg, activeBorder, activeColor) => ({
-    background: highlight ? activeBg : C.bgDark,
-    border: `${highlight ? 2 : 1}px solid ${highlight ? activeBorder : C.border}`,
-    borderRadius: 6, padding: 8, marginBottom: 4,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 16,
-    color: highlight ? activeColor : C.textMuted,
-    fontWeight: highlight ? 700 : 400,
+  const tabs = [
+    { key: '범위', color: C.blueLight },
+    { key: '행번호', color: C.amberLight },
+    { key: '열번호', color: C.greenLight },
+    { key: '추출 값', color: C.greenLight },
+  ];
+
+  const explain = {
+    '범위': '값을 꺼낼 표 전체를 선택합니다. 제목 행까지 포함해 A1:D6을 잡으면 범위 안의 행·열 번호가 실제 시트의 행·열과 그대로 맞아떨어져 세기 쉽습니다.',
+    '행번호': '범위의 맨 위에서부터 몇 번째 행인지 셉니다. 4를 넣으면 위에서 4번째 행(박민수 행)을 가리킵니다.',
+    '열번호': '범위의 맨 왼쪽에서부터 몇 번째 열인지 셉니다. 3을 넣으면 3번째 열(직급, C열)을 가리킵니다.',
+    '추출 값': '행번호 4와 열번호 3이 만나는 칸(C4)의 값 “사원”이 반환됩니다.',
+  };
+
+  // A1:D6 전체 범위 = ri 0~5, ci 0~3. 목표 셀 = C4 (ri 3, ci 2)
+  const empSt = (ri, ci) => {
+    const isHeader = ri === 0;
+    const base = isHeader ? { bold: true, color: C.blueLight, bg: C.blueCard } : {};
+    if (active === '범위') {
+      const s = { ...base };
+      if (ri === 0) s.bt = C.blue;
+      if (ri === 5) s.bb = C.blue;
+      if (ci === 0) s.bl = C.blue;
+      if (ci === 3) s.br = C.blue;
+      return s;
+    }
+    if (active === '행번호') {
+      if (ri === 3) return { ...base, bg: C.amberBg, color: C.amberLight, bold: true };
+      return base;
+    }
+    if (active === '열번호') {
+      if (ci === 2 && !isHeader) return { ...base, bg: C.greenBg, color: C.greenLight, bold: true };
+      return base;
+    }
+    // 추출 값 — C4만 강조, 나머지는 흐리게
+    if (ri === 3 && ci === 2) return { border: C.green, bg: '#0a2e1c', color: C.greenLight, bold: true };
+    return { ...base, dim: !isHeader };
+  };
+
+  // INDEX 수식 인수 색을 버튼 색과 맞춤: 범위=파랑, 행번호=주황, 열번호=초록
+  const argStyle = (key) => ({
+    color: active === key ? tabs.find((t) => t.key === key).color : C.text,
+    fontWeight: 700,
+    ...(key === '범위' ? { textDecoration: 'underline' } : {}),
   });
 
   return (
     <Wrap>
       <Title>위치 · 추출 함수: MATCH · INDEX</Title>
-      <Subtitle>MATCH는 &apos;몇 번째?&apos;를 찾고 — INDEX는 &apos;그 번째 값&apos;을 꺼냅니다</Subtitle>
+      <Subtitle>MATCH는 &apos;몇 번째?&apos;를 찾고 — INDEX는 &apos;행·열이 만나는 값&apos;을 꺼냅니다</Subtitle>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-        {/* Left: MATCH panel */}
-        <div style={{
-          flex: 1, background: C.purpleCard, border: `2px solid ${C.purple}`,
-          borderRadius: 10, padding: 16,
-          display: 'flex', flexDirection: 'column',
-        }}>
-          {/* 표준 순서: 함수명 → 구문 → 설명 → (아래 목록 시각화) → 수식 → 값 */}
-          <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700, marginBottom: 2 }}>① MATCH</div>
-          <div style={{ color: C.purpleLight, fontSize: 12.5, fontWeight: 700, opacity: 0.95, marginBottom: 2 }}>구문: =MATCH(찾을 값, 범위, 0)</div>
-          <div style={{ color: C.purpleLight, fontSize: 13.5, opacity: 0.85, marginBottom: 10 }}>값이 범위에서 몇 번째 위치인지 반환</div>
-          {matchList.map((item, i) => (
-            <div key={i} style={listItemStyle(item.highlight, C.purpleCard, C.purple, C.purpleLight)}>
-              {item.label}
-            </div>
-          ))}
-          <div style={{
-            marginTop: 8, background: C.purpleBg, border: `1px solid ${C.purple}`,
-            borderRadius: 6, padding: 8,
-            color: C.purpleLight, fontSize: 14, fontFamily: 'monospace', textAlign: 'center',
-          }}>
-            =MATCH(&quot;이영희&quot;, B2:B4, 0)
-          </div>
-          <div style={{ color: C.purpleLight, fontSize: 20, fontWeight: 700, textAlign: 'center', marginTop: 4 }}>
-            → 3
-          </div>
+      {/* 문제 박스 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [사원 표]에서 <b style={{ color: C.blueLight }}>전체 범위(A1:D6)</b>의
+          <b style={{ color: C.amberLight }}> 4번째 행</b>,
+          <b style={{ color: C.greenLight }}> 3번째 열(직급)</b>에 있는 값을 INDEX로 추출하시오.
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Left: 사원 표 */}
+        <div>
+          <TableCaption color={C.blueLight}>[표] 사원 명단 — 선택한 전체 범위 A1:D6</TableCaption>
+          <ExcelGrid data={emp} startRow={1} cellStyle={empSt} minColW={72} firstColW={80}
+            labelRow={active === '열번호' ? [null, null, { text: '3번째 열', color: C.greenLight }, null] : null} />
         </div>
 
-        {/* Center: arrow + number */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '0 8px', gap: 8,
-        }}>
-          <div style={{ color: C.amber, fontSize: 14, textAlign: 'center' }}>→ 3 전달</div>
-          <ArrowRight color={C.amber} size={48} />
-          <div style={{
-            background: C.amberBg, border: `1px solid ${C.amber}`,
-            borderRadius: 6, padding: 8,
-            color: C.amber, fontSize: 28, fontWeight: 700, textAlign: 'center',
-            minWidth: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>3</div>
-        </div>
-
-        {/* Right: INDEX panel */}
-        <div style={{
-          flex: 1, background: '#071a0b', border: `2px solid ${C.green}`,
-          borderRadius: 10, padding: 16,
-          display: 'flex', flexDirection: 'column',
-        }}>
-          {/* 표준 순서: 함수명 → 구문 → 설명 → (아래 목록 시각화) → 수식 → 값 */}
-          <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700, marginBottom: 2 }}>② INDEX</div>
-          <div style={{ color: C.greenLight, fontSize: 12.5, fontWeight: 700, opacity: 0.95, marginBottom: 2 }}>구문: =INDEX(범위, 행 번호)</div>
-          <div style={{ color: C.greenLight, fontSize: 13.5, opacity: 0.85, marginBottom: 10 }}>범위에서 지정한 위치(행 번호)의 값을 반환</div>
-          {indexList.map((item, i) => (
-            <div key={i} style={listItemStyle(item.highlight, '#14532d', C.green, C.greenLight)}>
-              {item.label}
+        {/* Right: INDEX 카드 + 버튼 + 칠판 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 520, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          {/* INDEX 박스 (구문 + 수식) */}
+          <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
+            <div style={{ color: C.greenLight, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행번호, 열번호)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>선택한 범위에서 행번호와 열번호가 교차하는 칸의 값을 반환</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>
+                =INDEX(<span style={argStyle('범위')}>A1:D6</span>, <span style={argStyle('행번호')}>4</span>, <span style={argStyle('열번호')}>3</span>)
+              </div>
+              <div style={{ color: C.greenLight }}>→ 사원</div>
             </div>
-          ))}
-          <div style={{
-            marginTop: 8, background: '#14532d', border: `1px solid ${C.green}`,
-            borderRadius: 6, padding: 8,
-            color: C.greenLight, fontSize: 14, fontFamily: 'monospace', textAlign: 'center',
-          }}>
-            =INDEX(C2:C4, 3)
           </div>
-          <div style={{
-            background: '#0a2e1c', border: `2px solid ${C.green}`,
-            borderRadius: 6, padding: 12, marginTop: 4,
-            color: C.greenLight, fontSize: 36, fontWeight: 700, textAlign: 'center',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            = 95
+
+          {/* 안내 문구 */}
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 인수와 추출 값을 하나씩 확인하세요</div>
+
+          {/* 인수 버튼 */}
+          <div style={{ display: 'flex', gap: 8 }}>
+            {tabs.map((t) => (
+              <button key={t.key} onClick={() => setActive(t.key)}
+                style={{
+                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+                  border: `2px solid ${t.color}`,
+                  background: active === t.key ? t.color : 'transparent',
+                  color: active === t.key ? '#0b1220' : t.color,
+                }}>
+                {t.key}
+              </button>
+            ))}
+          </div>
+
+          {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
+          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
+            {tabs.map((t) => (
+              <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7 }}>
+                <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
+                <span style={{ color: C.text }}> — {explain[t.key]}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
 
+      {/* MATCH 카드 — INDEX의 행번호·열번호를 자동으로 구하는 함수 */}
+      <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', marginTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH — 위치 번호 자동 찾기</div>
+        <div style={{ color: C.purpleLight, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, 0)</div>
+        <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>찾을 값이 범위에서 몇 번째에 있는지 순번을 반환 → 이 값을 INDEX의 행번호·열번호로 넣습니다</div>
+        <div style={{ borderTop: `1px solid ${C.purple}`, margin: '8px 0 6px' }} />
+        <div style={{ color: C.text, fontSize: 16, fontWeight: 700, lineHeight: 2, textAlign: 'center' }}>
+          <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, A1:A6, 0) <span style={{ color: C.amberLight }}>→ 4</span> <span style={{ color: C.textDim, fontWeight: 400, fontSize: 14 }}>(A열에서 박민수가 4번째)</span></div>
+          <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, A1:D1, 0) <span style={{ color: C.greenLight }}>→ 3</span> <span style={{ color: C.textDim, fontWeight: 400, fontSize: 14 }}>(첫 행에서 직급이 3번째)</span></div>
+        </div>
+      </div>
+
       <BottomBar>
-        <BLine>=MATCH(찾을 값, 범위, 0) → 위치 번호  ·  =INDEX(범위, 행 번호) → 해당 위치 값</BLine>
-        <BLine color={C.blue} bold>※ MATCH 결과를 INDEX 행 번호로 바로 전달 가능</BLine>
+        <BLine>=INDEX(범위, 행번호, 열번호) → 행·열이 만나는 값  ·  =MATCH(찾을 값, 범위, 0) → 위치 번호</BLine>
+        <BLine color={C.blue} bold>=INDEX(A1:D6, MATCH(&quot;박민수&quot;,A1:A6,0), MATCH(&quot;직급&quot;,A1:D1,0)) = 사원</BLine>
       </BottomBar>
     </Wrap>
   );
