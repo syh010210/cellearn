@@ -702,17 +702,17 @@ export function MatchIndexDiagram() {
       {/* 문제 박스 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표]에서 <b style={{ color: C.greenLight }}>&apos;박민수&apos;의 직급</b>을 구하시오.
+          [표1]에서 <b style={{ color: C.greenLight }}>&apos;박민수&apos;의 직급</b>을 구하시오.
         </div>
       </div>
 
-      <div style={{ ...stepHead, marginTop: 0 }}>1단계. INDEX — 행·열 번호로 값 꺼내기</div>
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        {/* Left: 사원 표 (4번째 행·3번째 열·C4 정적 강조) */}
+        {/* Left: 사원 표 (범위·행·열 바깥 테두리 + C4 채우기 강조) */}
         <div>
-          <TableCaption color={C.blueLight}>[표] 사원 명단 (A1:D6)</TableCaption>
+          <TableCaption color={C.blueLight}>[표1] 사원 명단</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={empSt} minColW={72} firstColW={80}
-            labelRow={[null, null, { text: '3번째 열', color: C.greenLight }, null]} />
+            labelRow={[null, null, { text: '3번째 열', color: C.greenLight }, null]}
+            rowLabels={{ 3: { text: '4번째 행', color: C.amber } }} />
         </div>
 
         {/* Right: INDEX 박스(함수명 → 구문 → 설명 → 수식 → 값) + 박스 아래 보충 설명 */}
@@ -721,10 +721,8 @@ export function MatchIndexDiagram() {
             <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
             <div style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>지정한 범위 안에서 행 번호와 열 번호가 만나는 칸의 값을 반환합니다.</div>
-            <div style={{ color: C.textMuted, fontSize: 13.5, textAlign: 'center', marginTop: 4 }}>박민수 = 4번째 행 · 직급 = 3번째 열</div>
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
-              <div>=INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 사원</div>
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px' }}>
+              =INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)
             </div>
           </div>
           <div style={{ ...para, marginTop: 12 }}>행 번호·열 번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>

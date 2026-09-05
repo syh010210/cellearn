@@ -118,7 +118,7 @@ export function colLetter(i) {
 //  data      : 2차원 배열(문자/숫자). 빈 칸은 '' 또는 null.
 //  startCol  : 첫 열 인덱스(0=A). startRow: 첫 행 번호(1=1행).
 //  cellStyle : (ri, ci, val) => ({ bg, color, bold, align, dim }) 로 개별 셀 강조.
-export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow }) {
+export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow, rowLabels }) {
   const nCols = Math.max(...data.map((r) => r.length));
   // 셀 병합(rowSpan) — cellStyle이 { rowSpan: n } 을 반환하면 같은 열 아래 n-1칸을 건너뛴다
   const skip = new Set();
@@ -148,6 +148,7 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
             {Array.from({ length: nCols }, (_, ci) => (
               <th key={ci} style={{ ...th, minWidth: ci === 0 ? (firstColW || minColW) : minColW }}>{colLetter(startCol + ci)}</th>
             ))}
+            {rowLabels && <th style={{ border: 'none', background: 'transparent', minWidth: 20 }} />}
           </tr>
         </thead>
         <tbody>
@@ -179,6 +180,11 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
                   }}>{st.content !== undefined ? st.content : (val === null ? '' : val)}</td>
                 );
               })}
+              {rowLabels && (
+                <td style={{ border: 'none', padding: '0 10px', fontSize: 13.5, fontWeight: 700, whiteSpace: 'nowrap', textAlign: 'left', color: (rowLabels[ri] && rowLabels[ri].color) || C.text }}>
+                  {rowLabels[ri] ? rowLabels[ri].text : ''}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
