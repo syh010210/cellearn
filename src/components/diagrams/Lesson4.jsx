@@ -657,9 +657,6 @@ export function VlookupOneTableDiagram() {
 // MatchIndexDiagram
 // ──────────────────────────────────────────────
 export function MatchIndexDiagram() {
-  // 버튼: 범위(파랑) → 행번호(주황) → 열번호(초록) → 추출 값(결과)
-  const [active, setActive] = useState('범위');
-
   // 사원 명단 — 전체 범위 A1:D6. 범위 시작행이 1행이라 범위 안 행·열 번호가 시트 좌표와 그대로 일치.
   const emp = [
     ['사원명', '부서', '직급', '급여'],
@@ -670,52 +667,15 @@ export function MatchIndexDiagram() {
     ['정수연', '인사부', '대리', 3100],
   ];
 
-  const tabs = [
-    { key: '범위', color: C.blueLight },
-    { key: '행번호', color: C.amberLight },
-    { key: '열번호', color: C.greenLight },
-    { key: '추출 값', color: C.greenLight },
-  ];
-
-  // 버튼별 짧은 하이라이트 설명(칠판) — 표를 눈으로 세는 것을 돕는 라벨
-  const explain = {
-    '범위': '표 전체 A1:D6',
-    '행번호': '위에서 4번째 행 → 박민수',
-    '열번호': '왼쪽에서 3번째 열 → 직급',
-    '추출 값': '4번째 행 × 3번째 열 = C4 → 사원',
-  };
-
-  // A1:D6 전체 범위 = ri 0~5, ci 0~3. 목표 셀 = C4 (ri 3, ci 2)
+  // 4번째 행(박민수)·3번째 열(직급)을 정적으로 강조, 교차 칸 C4를 결과로 강조
   const empSt = (ri, ci) => {
     const isHeader = ri === 0;
     const base = isHeader ? { bold: true, color: C.blueLight, bg: C.blueCard } : {};
-    if (active === '범위') {
-      const s = { ...base };
-      if (ri === 0) s.bt = C.blue;
-      if (ri === 5) s.bb = C.blue;
-      if (ci === 0) s.bl = C.blue;
-      if (ci === 3) s.br = C.blue;
-      return s;
-    }
-    if (active === '행번호') {
-      if (ri === 3) return { ...base, bg: C.amberBg, color: C.amberLight, bold: true };
-      return base;
-    }
-    if (active === '열번호') {
-      if (ci === 2 && !isHeader) return { ...base, bg: C.greenBg, color: C.greenLight, bold: true };
-      return base;
-    }
-    // 추출 값 — C4만 강조, 나머지는 흐리게
     if (ri === 3 && ci === 2) return { border: C.green, bg: '#0a2e1c', color: C.greenLight, bold: true };
-    return { ...base, dim: !isHeader };
+    if (ri === 3 && !isHeader) return { ...base, bg: C.amberBg, color: C.amberLight, bold: true };
+    if (ci === 2 && !isHeader) return { ...base, bg: C.greenBg, color: C.greenLight };
+    return base;
   };
-
-  // INDEX 수식 인수 색을 버튼 색과 맞춤: 범위=파랑, 행번호=주황, 열번호=초록
-  const argStyle = (key) => ({
-    color: active === key ? tabs.find((t) => t.key === key).color : C.text,
-    fontWeight: 700,
-    ...(key === '범위' ? { textDecoration: 'underline' } : {}),
-  });
 
   // 공통 스타일
   const mono = { fontFamily: 'monospace' };
@@ -738,50 +698,29 @@ export function MatchIndexDiagram() {
         </div>
       </div>
 
+      <div style={{ ...stepHead, marginTop: 0 }}>1단계. INDEX — 행·열 번호로 값 꺼내기</div>
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        {/* Left: 사원 표 */}
+        {/* Left: 사원 표 (4번째 행·3번째 열·C4 정적 강조) */}
         <div>
           <TableCaption color={C.blueLight}>[표] 사원 명단 (A1:D6)</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={empSt} minColW={72} firstColW={80}
-            labelRow={active === '열번호' ? [null, null, { text: '3번째 열', color: C.greenLight }, null] : null} />
+            labelRow={[null, null, { text: '3번째 열', color: C.greenLight }, null]} />
         </div>
 
-        {/* Right: 1단계 INDEX 설명 + 버튼 + 칠판 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ ...stepHead, marginTop: 0 }}>1단계. INDEX — 행·열 번호로 값 꺼내기</div>
-          <div style={codeBox}>구문: =INDEX(범위, 행번호, 열번호)</div>
-          <div style={para}>범위 안에서 행번호와 열번호가 만나는 칸의 값을 반환합니다.</div>
-          <div style={para}>박민수는 범위 A1:D6에서 4번째 행, 직급은 3번째 열.</div>
-          <div style={{ ...codeBox, fontSize: 17, fontWeight: 700, textAlign: 'center' }}>
-            =INDEX(<span style={argStyle('범위')}>A1:D6</span>, <span style={argStyle('행번호')}>4</span>, <span style={argStyle('열번호')}>3</span>) <span style={{ color: C.greenLight }}>→ 사원</span>
+        {/* Right: INDEX 박스(함수명 → 구문 → 설명 → 수식 → 값) + 박스 아래 보충 설명 */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540 }}>
+          <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
+            <div style={{ ...mono, color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행번호, 열번호)</div>
+            <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>범위 안에서 행번호와 열번호가 만나는 칸의 값을 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '8px 0 4px' }} />
+            <div style={{ color: C.textMuted, fontSize: 13.5, textAlign: 'center' }}>박민수 = 4번째 행 · 직급 = 3번째 열</div>
+            <div style={{ ...mono, color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
+              <div>=INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)</div>
+              <div style={{ color: C.greenLight }}>→ 사원</div>
+            </div>
           </div>
-          <div style={para}>행번호·열번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
-
-          {/* 인수 버튼 */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
-
-          {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
-          <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px', marginTop: 10 }}>
-            {tabs.map((t) => (
-              <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7 }}>
-                <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
-                <span style={{ color: C.text }}> — {explain[t.key]}</span>
-              </div>
-            ))}
-          </div>
+          <div style={{ ...para, marginTop: 12 }}>행번호·열번호는 시트의 행·열이 아니라 지정한 범위 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
         </div>
       </div>
 
