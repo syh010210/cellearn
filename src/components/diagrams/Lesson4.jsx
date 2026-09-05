@@ -746,8 +746,8 @@ export function MatchIndexDiagram() {
         <div>
           <TableCaption color={C.blueLight}>[표1] 사원 명단</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={matchSt} minColW={72} firstColW={80}
-            labelRow={[null, null, { text: '3번째', color: C.green }, null]}
-            rowLabels={{ 3: { text: '4번째', color: C.amber } }} />
+            labelRow={[{ text: '4번째', color: C.amber }, null, null, null]}
+            rowLabels={{ 0: { text: '3번째', color: C.green } }} />
         </div>
 
         {/* Right: MATCH 박스(함수명 → 구문 → 설명 → 수식) + 박스 아래 보충 설명 */}
@@ -755,13 +755,17 @@ export function MatchIndexDiagram() {
           <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH</div>
             <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 지정한 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px', lineHeight: 2 }}>
               <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, <span style={{ color: C.amberLight, textDecoration: 'underline' }}>A1:A6</span>, 0)</div>
               <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, <span style={{ color: C.greenLight, textDecoration: 'underline' }}>A1:D1</span>, 0)</div>
             </div>
           </div>
-          <div style={{ ...para, marginTop: 12 }}>MATCH는 값이 아니라 위치 번호를 돌려줍니다. 박민수는 첫 열에서 4번째, 직급은 첫 행에서 3번째. 옵션: 0 → 정확히 일치 / 1 → 오름차순 이하 / -1 → 내림차순 이상이라, 정확히 같은 값을 찾는 여기서는 0을 씁니다.</div>
+          <div style={{ ...para, marginTop: 12 }}>
+            <div>MATCH는 값이 아니라 위치 번호를 돌려줍니다. 박민수는 첫 열에서 4번째, 직급은 첫 행에서 3번째.</div>
+            <div style={{ marginTop: 6 }}>옵션은 0이면 찾을 값과 똑같은 값을 찾고, 1이면 찾을 값보다 작거나 같은 값 중 가장 큰 값(범위가 작은 값→큰 값 순으로 정렬되어 있을 때), -1이면 찾을 값보다 크거나 같은 값 중 가장 작은 값(범위가 큰 값→작은 값 순으로 정렬되어 있을 때)을 찾습니다. 여기서는 똑같은 값을 찾으므로 0을 씁니다.</div>
+          </div>
         </div>
       </div>
     </Wrap>
