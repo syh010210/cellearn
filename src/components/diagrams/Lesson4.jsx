@@ -454,7 +454,6 @@ export function VlookupApproxDiagram() {
           <b style={{ color: C.greenLight }}> 등급[D3:D5]</b>을 구하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 등급은 총점이 속한 구간의 값임 (90 이상 ‘수’, 80~89 ‘우’, 70~79 ‘미’, 60~69 ‘양’, 60 미만 ‘가’)</div>
           <div>▶ HLOOKUP 함수 사용</div>
         </div>
       </div>
@@ -469,6 +468,9 @@ export function VlookupApproxDiagram() {
           <div>
             <TableCaption color={C.orangeLight}>[표①] 가로 기준표 — 시험지 형태(구간 표시)</TableCaption>
             <ExcelGrid data={base1} startRow={8} cellStyle={base1St} minColW={62} firstColW={70} />
+            <div style={{ maxWidth: 470, marginTop: 6, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: '9px 12px', color: C.textMuted, fontSize: 12.5, lineHeight: 1.65 }}>
+              HLOOKUP은 참조 범위의 <b style={{ color: C.text }}>첫 행(8행: 0 이상~90 이상 = 구간의 시작값)</b>만 보고 총점을 찾습니다. 아래 <b style={{ color: C.text }}>‘미만’ 행(9행)</b>은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않고, 대신 <b style={{ color: C.text }}>2번째 행</b>을 차지합니다. 그래서 등급은 <b style={{ color: C.greenLight }}>3번째 행</b>이 됩니다.
+            </div>
           </div>
           <div>
             <TableCaption color={C.orangeLight}>[표②] 같은 기준표 — 시작값만 (HLOOKUP이 쓰는 형태)</TableCaption>
