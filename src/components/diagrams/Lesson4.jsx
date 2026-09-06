@@ -728,7 +728,7 @@ export function MatchIndexDiagram() {
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>지정한 범위 안에서 행 번호와 열 번호가 만나는 칸의 값을 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px' }}>
-              =INDEX(<span style={{ color: C.blueLight, textDecoration: 'underline' }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)
+              =INDEX(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.amberLight }}>4</span>, <span style={{ color: C.greenLight }}>3</span>)
             </div>
           </div>
           <div style={{ ...para, marginTop: 12 }}>행 번호·열 번호는 시트의 행·열이 아니라 <b style={{ color: C.blueLight }}>지정한 범위</b> 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
@@ -758,8 +758,8 @@ export function MatchIndexDiagram() {
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 지정한 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px', lineHeight: 2 }}>
-              <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, <span style={{ color: C.amberLight, textDecoration: 'underline' }}>A1:A6</span>, 0)</div>
-              <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, <span style={{ color: C.greenLight, textDecoration: 'underline' }}>A1:D1</span>, 0)</div>
+              <div>=MATCH(<span style={{ color: C.amberLight }}>&quot;박민수&quot;</span>, <span style={{ color: C.amberLight }}>A1:A6</span>, 0)</div>
+              <div>=MATCH(<span style={{ color: C.greenLight }}>&quot;직급&quot;</span>, <span style={{ color: C.greenLight }}>A1:D1</span>, 0)</div>
             </div>
           </div>
           <div style={{ ...para, marginTop: 12 }}>
