@@ -321,37 +321,27 @@
         }
       ],
       "practice": {
-        "instruction": "학생 성적표입니다. 성적[B2:B6]을 기준으로 순위를 구하여 1위는 \"최우수\", 2위는 \"우수\", 3위는 \"보통\", 나머지는 \"노력\"으로 [C2] 셀의 비고에 표시하세요. (순위는 성적이 가장 높은 학생이 1위 · RANK.EQ, CHOOSE 함수 사용)",
+        "instruction": "회원 관리 표입니다. 회원코드[B2:B4]의 마지막 한 자리를 기준으로 1이면 \"실버\", 2면 \"골드\", 3이면 \"VIP\"로 등급[C2:C4]에 표시하세요. (RIGHT, CHOOSE 함수 사용)",
         "cols": ["A", "B", "C"],
         "rows": [
           [
-            { "val": "이름", "editable": false },
-            { "val": "성적", "editable": false },
-            { "val": "비고", "editable": false }
+            { "val": "회원명", "editable": false },
+            { "val": "회원코드", "editable": false },
+            { "val": "등급", "editable": false }
           ],
           [
-            { "val": "한지민", "editable": false },
-            { "val": 90, "editable": false },
-            { "val": "", "editable": true, "answer": "=CHOOSE(RANK.EQ(B2,$B$2:$B$6),\"최우수\",\"우수\",\"보통\",\"노력\",\"노력\")", "result": "우수" }
+            { "val": "김민준", "editable": false },
+            { "val": "M2", "editable": false },
+            { "val": "", "editable": true, "answer": "=CHOOSE(RIGHT(B2,1),\"실버\",\"골드\",\"VIP\")", "result": "골드" }
           ],
           [
-            { "val": "오세훈", "editable": false },
-            { "val": 76, "editable": false },
+            { "val": "이서연", "editable": false },
+            { "val": "M1", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "유재석", "editable": false },
-            { "val": 84, "editable": false },
-            { "val": "", "editable": false }
-          ],
-          [
-            { "val": "강호동", "editable": false },
-            { "val": 68, "editable": false },
-            { "val": "", "editable": false }
-          ],
-          [
-            { "val": "신동엽", "editable": false },
-            { "val": 95, "editable": false },
+            { "val": "박도윤", "editable": false },
+            { "val": "M3", "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -484,6 +474,6 @@
     { "sheet": "방향검색", "cell": "C2", "formula": "=VLOOKUP(\"B-102\",A2:B4,2,0)" },
     { "sheet": "위치찾기", "cell": "C3", "formula": "=MATCH(\"이영희\",B2:B4,0)" },
     { "sheet": "조합활용", "cell": "B7", "formula": "=INDEX(A2:A5,MATCH(MAX(D2:D5),D2:D5,0))" },
-    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(RANK.EQ(B2,$B$2:$B$6),\"최우수\",\"우수\",\"보통\",\"노력\",\"노력\")" }
+    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(RIGHT(B2,1),\"실버\",\"골드\",\"VIP\")" }
   ]
 }
