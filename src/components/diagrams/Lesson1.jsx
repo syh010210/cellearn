@@ -1,12 +1,12 @@
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, ArrowRight, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, ArrowRight, Row, Fixed, Fill, C } from './shared.jsx';
 
 export function ExcelBasicDiagram() {
   return (
     <Wrap>
       <Title>열(Column) · 행(Row) · 셀(Cell) 기본 구조</Title>
-      <div style={{ display: 'flex', gap: 28, alignItems: 'stretch', marginTop: 16 }}>
+      <Row gap={28} align="stretch" style={{ marginTop: 16 }}>
         {/* Left: spreadsheet grid */}
-        <div>
+        <Fixed>
           <div style={{ display: 'grid', gridTemplateColumns: '50px 100px 100px 100px 100px' }}>
             {/* Corner cell */}
             <Cell style={{ color: C.textSlate, fontSize: 14 }} />
@@ -55,10 +55,10 @@ export function ExcelBasicDiagram() {
               padding: '3px 10px', color: '#93c5fd', fontSize: 13,
             }}>Sheet1</span>
           </div>
-        </div>
+        </Fixed>
 
         {/* Right: info cards */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 14, justifyContent: 'space-between' }}>
+        <Fill gap={14} style={{ justifyContent: 'space-between' }}>
           {/* Card 1: Column */}
           <Card bg="#0c2344" border="#3b82f6">
             <div style={{ fontWeight: 700, fontSize: 17, color: C.blue, marginBottom: 4 }}>
@@ -95,8 +95,8 @@ export function ExcelBasicDiagram() {
               예: C3 = C열 3번째 행의 셀
             </div>
           </Card>
-        </div>
-      </div>
+        </Fill>
+      </Row>
 
       <BottomBar>
         <BLine>셀 주소: 열(Column) 알파벳 + 행(Row) 숫자  →  A1, B3, D2 등으로 표기합니다</BLine>
@@ -119,9 +119,9 @@ export function RelativeDownDiagram() {
       <Title>상대 참조 — 아래로 자동 채우기: 행 번호 자동 증가</Title>
       <Subtitle>D2에 수식 입력 후 핸들을 아래로 드래그하면 행 번호가 1씩 늘어납니다</Subtitle>
 
-      <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
+      <Row gap={24}>
         {/* Left: table */}
-        <div style={{ flex: 1 }}>
+        <Fill gap={0}>
           <div style={{ display: 'grid', gridTemplateColumns: '90px 80px 80px 1fr' }}>
             {/* Header row */}
             {['이름', '영어', '수학', '합계(D)'].map((h, i) => (
@@ -169,10 +169,10 @@ export function RelativeDownDiagram() {
             <div style={{ fontWeight: 700, fontSize: 17, color: C.amber, margin: '4px 0' }}>2 → 3 → 4</div>
             <div style={{ fontSize: 15, color: C.textDim }}>열(B, C)은 고정</div>
           </div>
-        </div>
+        </Fill>
 
         {/* Right: formula cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 160, alignItems: 'center' }}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 8, width: 160, alignItems: 'center' }}>
           <Card bg="#14532d" border="#22c55e" style={{ width: '100%', padding: '10px 12px' }}>
             <div style={{ fontSize: 14, color: C.green, marginBottom: 4 }}>D2 (원본)</div>
             <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight }}>{'=B2+C2'}</div>
@@ -187,8 +187,8 @@ export function RelativeDownDiagram() {
             <div style={{ fontSize: 14, color: C.blue, marginBottom: 4 }}>D4 (자동 채우기)</div>
             <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight }}>{'=B4+C4'}</div>
           </Card>
-        </div>
-      </div>
+        </Fixed>
+      </Row>
 
       <BottomBar>
         <BLine>아래로 채우기: 열(B, C)은 고정, 행 번호만 1씩 증가</BLine>
@@ -327,10 +327,10 @@ export function AbsoluteRefDiagram() {
       <Title>절대 참조: $ 기호로 셀 주소를 고정하는 방법</Title>
       <Subtitle>비율 · 단가처럼 항상 같은 셀을 참조해야 할 때 $ 기호를 붙여 고정합니다</Subtitle>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
+      <Row gap={12} align="stretch">
         {/* Left panel: wrong */}
-        <div style={{
-          flex: 1, background: '#1a0b0b', border: '2px solid #ef4444',
+        <Fill gap={0} style={{
+          background: '#1a0b0b', border: '2px solid #ef4444',
           borderRadius: 10, padding: '14px 16px',
         }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: C.red, textAlign: 'center', marginBottom: 8 }}>
@@ -358,19 +358,19 @@ export function AbsoluteRefDiagram() {
               B9, C9는 비어 있어 오류 발생!
             </div>
           </div>
-        </div>
+        </Fill>
 
         {/* Center F4 badge */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>
+        <Fixed style={{ display: 'flex', alignItems: 'center', padding: '0 6px' }}>
           <div style={{
             background: C.bgDark, border: '2px solid #f59e0b', borderRadius: 6,
             padding: '6px 12px', color: '#fbbf24', fontSize: 16, fontWeight: 700,
           }}>F4</div>
-        </div>
+        </Fixed>
 
         {/* Right panel: correct */}
-        <div style={{
-          flex: 1, background: '#071a0b', border: '2px solid #22c55e',
+        <Fill gap={0} style={{
+          background: '#071a0b', border: '2px solid #22c55e',
           borderRadius: 10, padding: '14px 16px',
         }}>
           <div style={{ fontWeight: 700, fontSize: 17, color: C.green, textAlign: 'center', marginBottom: 8 }}>
@@ -398,8 +398,8 @@ export function AbsoluteRefDiagram() {
               F4 키 → $ 기호 자동 입력!
             </div>
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
 
       <BottomBar>
         <BLine color={C.amber} bold>{'$ 기호 = 셀 고정 (F4 키를 누르면 자동 입력됩니다)'}</BLine>
@@ -428,33 +428,35 @@ export function MixedRefDiagram() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Top formula box */}
-        <div style={{
-          background: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: 10,
-          padding: '14px 20px', maxWidth: 480, margin: '0 auto', textAlign: 'center',
-        }}>
-          <div style={{ color: C.text, fontWeight: 700, fontSize: 20, marginBottom: 6 }}>
-            원본 수식 {'=$A2*B$1'}
-          </div>
-          <div style={{ color: C.blueLight, fontSize: 15 }}>
-            B2 셀에 입력 후 오른쪽 · 아래 방향으로 자동 채우기
-          </div>
-        </div>
+        <Row>
+          <Fill max={480} gap={0} style={{
+            background: '#1e3a8a', border: '2px solid #3b82f6', borderRadius: 10,
+            padding: '14px 20px', textAlign: 'center',
+          }}>
+            <div style={{ color: C.text, fontWeight: 700, fontSize: 20, marginBottom: 6 }}>
+              원본 수식 {'=$A2*B$1'}
+            </div>
+            <div style={{ color: C.blueLight, fontSize: 15 }}>
+              B2 셀에 입력 후 오른쪽 · 아래 방향으로 자동 채우기
+            </div>
+          </Fill>
+        </Row>
 
         {/* Legend */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 32, margin: '4px 0' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Row gap={32} style={{ margin: '4px 0' }}>
+          <Fixed style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 16, height: 16, background: C.amber, borderRadius: 3 }} />
             <span style={{ color: C.amber, fontSize: 15 }}>$ 붙음  →  고정 (이동 안 함)</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          </Fixed>
+          <Fixed style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 16, height: 16, background: C.green, borderRadius: 3 }} />
             <span style={{ color: C.greenLight, fontSize: 15 }}>$ 없음  →  상대 (이동함)</span>
-          </div>
-        </div>
+          </Fixed>
+        </Row>
 
         {/* Multiplication grid */}
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '80px 120px 120px 120px' }}>
+        <Row gap={16}>
+          <Fixed style={{ display: 'grid', gridTemplateColumns: '80px 120px 120px 120px' }}>
             {/* Corner */}
             <Cell style={{ color: C.textSlate, fontSize: 18, fontWeight: 700 }}>×</Cell>
             {/* Col headers */}
@@ -496,10 +498,10 @@ export function MixedRefDiagram() {
                 }),
               ];
             })}
-          </div>
+          </Fixed>
 
           {/* Direction legend */}
-          <div style={{
+          <Fixed style={{
             background: '#1e0f47', border: '1px solid #a855f7',
             borderRadius: 8, padding: '12px 14px', alignSelf: 'center',
           }}>
@@ -507,8 +509,8 @@ export function MixedRefDiagram() {
               → 오른쪽 이동: 열 B→C→D<br />
               ↓ 아래 이동: 행 2→3→4
             </div>
-          </div>
-        </div>
+          </Fixed>
+        </Row>
       </div>
 
       <BottomBar>

@@ -89,6 +89,38 @@ export function Card({ children, bg, border, bw = 2, style = {} }) {
   );
 }
 
+// 가로 배치는 반드시 이 컴포넌트로만 한다.
+// 자식은 Fixed(표처럼 크기가 정해진 것) 또는 Fill(카드·설명처럼 남는 폭을 채우는 것)만 넣는다.
+export function Row({ children, gap = 20, align = 'flex-start', style = {} }) {
+  return (
+    <div style={{
+      display: 'flex', flexWrap: 'wrap',
+      justifyContent: 'center', alignItems: align,
+      gap, width: '100%', ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// 크기가 내용으로 정해지는 블록 (ExcelGrid, 이미지 등)
+export function Fixed({ children, style = {} }) {
+  return <div style={{ flex: '0 0 auto', ...style }}>{children}</div>;
+}
+
+// 남는 폭을 채우는 블록. max는 필요할 때만 쓰고, Row가 가운데 정렬하므로 여백은 좌우 동일하게 남는다.
+export function Fill({ children, min = 320, max, gap = 14, style = {} }) {
+  return (
+    <div style={{
+      flex: `1 1 ${min}px`, minWidth: 0, maxWidth: max,
+      display: 'flex', flexDirection: 'column', gap,
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
 export function ArrowDown({ color = '#3b82f6', size = 36 }) {
   return (
     <svg width="20" height={size} style={{ display: 'block', margin: '2px auto' }}>

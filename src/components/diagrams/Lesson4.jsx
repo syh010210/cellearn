@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, Row, Fixed, Fill, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
@@ -10,20 +10,20 @@ export function VlookupHlookupIntroDiagram() {
       <Title>VLOOKUP · HLOOKUP</Title>
 
       {/* 두 함수 설명 카드 */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 300px', minWidth: 280, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <Row gap={16}>
+        <Fill min={300} gap={6} style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px' }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
           <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>참조 범위의 데이터가 세로 방향으로 나열된 형태</div>
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
           <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 열에서 세로 방향으로 찾아 같은 행의 지정한 열에 있는 값을 반환</div>
-        </div>
-        <div style={{ flex: '1 1 300px', minWidth: 280, background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        </Fill>
+        <Fill min={300} gap={6} style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '14px 16px' }}>
           <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
           <div style={{ color: C.orangeLight, fontSize: 14, fontWeight: 700 }}>참조 범위의 데이터가 가로 방향으로 나열된 형태</div>
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
           <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>첫 행에서 가로 방향으로 찾아 같은 열의 지정한 행에 있는 값을 반환</div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -135,8 +135,8 @@ export function VlookupDiagram() {
       </div>
 
       {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 사원 실적표 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={loan} startRow={2} cellStyle={loanSt} minColW={78} firstColW={104} />
@@ -150,9 +150,9 @@ export function VlookupDiagram() {
                 active === '열 번호' ? { text: '3번째', color: C.greenLight } : null,
               ]} />
           </div>
-        </div>
+        </Fixed>
 
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Fill min={360} max={500}>
           {/* VLOOKUP 박스 (구문 + 수식) */}
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
@@ -193,8 +193,8 @@ export function VlookupDiagram() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -292,8 +292,8 @@ export function HlookupTwoTableDiagram() {
       </div>
 
       {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.orangeLight}>[표2] 상품 판매현황 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={sales} startRow={2} cellStyle={salesSt} minColW={72} firstColW={78} />
@@ -302,9 +302,9 @@ export function HlookupTwoTableDiagram() {
             <TableCaption color={C.orangeLight}>[상품 단가표] 가로 참조 범위</TableCaption>
             <ExcelGrid data={price} startRow={12} cellStyle={priceSt} minColW={80} firstColW={74} />
           </div>
-        </div>
+        </Fixed>
 
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Fill min={360} max={500}>
           {/* HLOOKUP 박스 (구문 + 수식) */}
           <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
@@ -345,8 +345,8 @@ export function HlookupTwoTableDiagram() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -459,8 +459,8 @@ export function VlookupApproxDiagram() {
       </div>
 
       {/* 왼쪽: 성적표 + 두 기준표 · 오른쪽: 박스 + 버튼 + 칠판 */}
-      <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 학생 성적표 — 찾는 값이 있는 표</TableCaption>
             <ExcelGrid data={score} startRow={2} cellStyle={scoreSt} minColW={64} firstColW={72} />
@@ -473,9 +473,9 @@ export function VlookupApproxDiagram() {
             <TableCaption color={C.orangeLight}>[표3] 같은 기준표 — 시작값만 (HLOOKUP이 쓰는 형태)</TableCaption>
             <ExcelGrid data={base2} startRow={12} cellStyle={base2St} minColW={62} firstColW={70} />
           </div>
-        </div>
+        </Fixed>
 
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Fill min={360} max={500}>
           {/* HLOOKUP 박스 — 두 표의 정답 */}
           <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
@@ -523,8 +523,8 @@ export function VlookupApproxDiagram() {
           <div style={{ visibility: active === '참조 범위' ? 'visible' : 'hidden', background: C.bgDark, border: `1px solid ${C.blueDim}`, borderRadius: 10, padding: '11px 14px', color: C.textMuted, fontSize: 13, lineHeight: 1.65 }}>
             표2에서 HLOOKUP은 참조 범위 첫 행(8행)의 <b style={{ color: C.text }}>0 이상~90 이상</b>에서 구간의 시작값 <b style={{ color: C.text }}>0·60·70·80·90</b>만 보고 총점을 찾습니다. 아래 행(9행)은 사람이 구간을 읽기 쉽게 적어둔 것일 뿐 검색에는 쓰이지 않습니다.
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -600,13 +600,13 @@ export function VlookupOneTableDiagram() {
       </div>
 
       {/* 왼쪽: 표(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
-      <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap', justifyContent: 'center' }}>
-        <div>
+      <Row gap={32}>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표3] 찾는 값과 참조 범위가 같은 표</TableCaption>
           <ExcelGrid data={data} startRow={2} cellStyle={st} minColW={92} firstColW={92} />
-        </div>
+        </Fixed>
 
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 500, display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <Fill min={360} max={500}>
           {/* VLOOKUP + MIN 박스 */}
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
@@ -647,8 +647,8 @@ export function VlookupOneTableDiagram() {
               </div>
             ))}
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -711,17 +711,17 @@ export function MatchIndexDiagram() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <Row gap={18}>
         {/* Left: 사원 표 (범위·행·열 바깥 테두리 + C4 채우기 강조) */}
-        <div>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표1] 사원 명단</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={empSt} minColW={72} firstColW={80}
             labelRow={[null, null, { text: '3번째 열', color: C.greenLight }, null]}
             rowLabels={{ 3: { text: '4번째 행', color: C.amber } }} />
-        </div>
+        </Fixed>
 
         {/* Right: INDEX 박스(함수명 → 구문 → 설명 → 수식 → 값) + 박스 아래 보충 설명 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540 }}>
+        <Fill min={360} max={540} gap={0}>
           <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
             <div style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
@@ -732,8 +732,8 @@ export function MatchIndexDiagram() {
             </div>
           </div>
           <div style={{ ...para, marginTop: 12 }}>행 번호·열 번호는 시트의 행·열이 아니라 <b style={{ color: C.blueLight }}>지정한 범위</b> 안에서 몇 번째인지입니다. 지금은 범위가 1행부터 시작해서 시트 번호와 같아 보이지만, 범위가 A2:D6이면 박민수는 3번째 행이 됩니다.</div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
 
       {/* MATCH — INDEX와 같은 방식. 위치 번호를 구하는 문제 */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', margin: '24px 0 16px' }}>
@@ -741,17 +741,17 @@ export function MatchIndexDiagram() {
           [표1]에서 <b style={{ color: C.amberLight }}>&apos;박민수&apos;가 몇 번째 행</b>인지, <b style={{ color: C.greenLight }}>&apos;직급&apos;이 몇 번째 열</b>인지 구하시오.
         </div>
       </div>
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <Row gap={18}>
         {/* Left: 사원 표 (첫 열·첫 행 바깥 테두리 + 박민수·직급 채우기) */}
-        <div>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표1] 사원 명단</TableCaption>
           <ExcelGrid data={emp} startRow={1} cellStyle={matchSt} minColW={72} firstColW={80}
             labelRow={[{ text: '4번째', color: C.amber }, null, null, null]}
             rowLabels={{ 0: { text: '3번째', color: C.green } }} />
-        </div>
+        </Fixed>
 
         {/* Right: MATCH 박스(함수명 → 구문 → 설명 → 수식) + 박스 아래 보충 설명 */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 540 }}>
+        <Fill min={360} max={540} gap={0}>
           <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH</div>
             <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
@@ -766,8 +766,8 @@ export function MatchIndexDiagram() {
             <div>MATCH는 값이 아니라 위치 번호를 돌려줍니다. 박민수는 첫 열에서 4번째, 직급은 첫 행에서 3번째.</div>
             <div style={{ marginTop: 6 }}>옵션은 0이면 찾을 값과 똑같은 값을 찾고, 1이면 찾을 값보다 작거나 같은 값 중 가장 큰 값(범위가 작은 값→큰 값 순으로 정렬되어 있을 때), -1이면 찾을 값보다 크거나 같은 값 중 가장 작은 값(범위가 큰 값→작은 값 순으로 정렬되어 있을 때)을 찾습니다. 여기서는 똑같은 값을 찾으므로 0을 씁니다.</div>
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -788,38 +788,36 @@ export function ChooseDiagram() {
       <Subtitle>번호 인수에 따라 미리 지정된 값 목록에서 하나를 선택하여 반환합니다</Subtitle>
 
       {/* Formula box */}
-      <div style={{
-        background: '#1e3a8a', border: `2px solid ${C.blueDim}`,
-        borderRadius: 10, padding: 16,
-        maxWidth: 480, margin: '0 auto 16px',
-        display: 'flex', flexDirection: 'column', gap: 4,
-      }}>
-        <div style={{
-          color: C.blueLight, fontSize: 16, fontFamily: 'monospace',
-          fontWeight: 700, textAlign: 'center',
+      <Row style={{ marginBottom: 16 }}>
+        <Fill max={480} gap={4} style={{
+          background: '#1e3a8a', border: `2px solid ${C.blueDim}`,
+          borderRadius: 10, padding: 16,
         }}>
-          =CHOOSE( 2 , &quot;최우수&quot; , &quot;우수&quot; , &quot;보통&quot; )
-        </div>
-        <div style={{
-          color: C.textDim, fontSize: 14, fontFamily: 'monospace', textAlign: 'center',
-        }}>
-          &nbsp;&nbsp;&nbsp;&nbsp;① 번호&nbsp;&nbsp;&nbsp;② 값1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;③ 값2&nbsp;&nbsp;&nbsp;&nbsp;④ 값3
-        </div>
-      </div>
+          <div style={{
+            color: C.blueLight, fontSize: 16, fontFamily: 'monospace',
+            fontWeight: 700, textAlign: 'center',
+          }}>
+            =CHOOSE( 2 , &quot;최우수&quot; , &quot;우수&quot; , &quot;보통&quot; )
+          </div>
+          <div style={{
+            color: C.textDim, fontSize: 14, fontFamily: 'monospace', textAlign: 'center',
+          }}>
+            &nbsp;&nbsp;&nbsp;&nbsp;① 번호&nbsp;&nbsp;&nbsp;② 값1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;③ 값2&nbsp;&nbsp;&nbsp;&nbsp;④ 값3
+          </div>
+        </Fill>
+      </Row>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <ArrowDown color={C.blueDim} size={32} />
-      </div>
+      <Row><Fixed><ArrowDown color={C.blueDim} size={32} /></Fixed></Row>
 
       {/* Three option cards */}
-      <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+      <Row gap={16} style={{ marginTop: 16 }}>
         {options.map((opt) => (
-          <div key={opt.num} style={{
-            flex: 1, borderRadius: 10, padding: 16,
+          <Fill key={opt.num} min={0} gap={8} style={{
+            borderRadius: 10, padding: 16,
             background: opt.active ? C.blueCard : C.bgDark,
             border: opt.active ? `3px solid ${C.blueDim}` : `1px solid ${C.border}`,
             opacity: opt.active ? 1 : 0.7,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+            alignItems: 'center',
           }}>
             <div style={{
               color: opt.active ? C.blue : C.textDim,
@@ -840,25 +838,24 @@ export function ChooseDiagram() {
             }}>
               {opt.note}
             </div>
-          </div>
+          </Fill>
         ))}
-      </div>
+      </Row>
 
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: 16 }}>
-        <ArrowDown color={C.green} size={32} />
-      </div>
+      <Row style={{ marginTop: 16 }}><Fixed><ArrowDown color={C.green} size={32} /></Fixed></Row>
 
       {/* Result box */}
-      <div style={{
-        background: '#14532d', border: `2px solid ${C.green}`,
-        borderRadius: 10, padding: 16, marginTop: 4,
-        maxWidth: 300, margin: '4px auto 0',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <div style={{ color: C.greenLight, fontSize: 24, fontWeight: 700 }}>
-          결과: &quot;우수&quot;
-        </div>
-      </div>
+      <Row style={{ marginTop: 4 }}>
+        <Fill max={300} style={{
+          background: '#14532d', border: `2px solid ${C.green}`,
+          borderRadius: 10, padding: 16,
+          alignItems: 'center',
+        }}>
+          <div style={{ color: C.greenLight, fontSize: 24, fontWeight: 700 }}>
+            결과: &quot;우수&quot;
+          </div>
+        </Fill>
+      </Row>
 
       <BottomBar>
         <BLine>=CHOOSE(번호, 값1, 값2, 값3, ...)  ·  번호가 1이면 값1, 2면 값2, 3이면 값3을 반환</BLine>
@@ -918,17 +915,17 @@ export function IndexMatchDiagram() {
         <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH, MAX 함수 사용</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <Row gap={18}>
         {/* Left: 상품 판매 현황 표 */}
-        <div>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표5] 상품 판매 현황 (매출액 단위: 만원)</TableCaption>
           <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={58} firstColW={78}
             rowLabels={{ 3: { text: '← 3번째', color: C.purpleLight } }}
             labelRow={[{ text: '1번째', color: C.greenLight }, null, null, null]} />
-        </div>
+        </Fixed>
 
         {/* Right: 3단계 풀이 박스 (MAX → MATCH → INDEX) */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Fill min={360} max={560} gap={12}>
           {/* STEP 1 — MAX */}
           <div style={{ ...boxBase, background: '#2a1206', border: `2px solid ${C.orange}` }}>
             <div style={nameSt(C.orangeLight)}>1단계 · MAX — 최고값</div>
@@ -961,8 +958,8 @@ export function IndexMatchDiagram() {
               =INDEX(<span style={{ color: C.greenLight }}>F27:I32</span>, <span style={{ color: C.purpleLight }}>MATCH(</span><span style={{ color: C.amberLight }}>MAX(I27:I32)</span><span style={{ color: C.purpleLight }}>, I27:I32, 0)</span>, <span style={{ color: C.greenLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
             </div>
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -1015,15 +1012,15 @@ export function VlookupLimitDiagram() {
         <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
+      <Row gap={18}>
         {/* Left: 사원 정보 표 */}
-        <div>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표6] 사원 정보</TableCaption>
           <ExcelGrid data={emp} startCol={5} startRow={26} cellStyle={empSt} minColW={66} firstColW={72} />
-        </div>
+        </Fixed>
 
         {/* Right: VLOOKUP ❌ vs INDEX+MATCH ✅ */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Fill min={360} max={560} gap={12}>
           {/* VLOOKUP ❌ */}
           <div style={{ ...boxBase, background: C.redDark, border: `2px solid ${C.red}` }}>
             <div style={nameSt(C.redLight)}>❌ VLOOKUP — 못 찾음</div>
@@ -1043,8 +1040,8 @@ export function VlookupLimitDiagram() {
               =INDEX(<span style={{ color: C.greenLight }}>F27:H30</span>, <span style={{ color: C.purpleLight }}>MATCH(</span><span style={{ color: C.amberLight }}>&quot;A103&quot;</span><span style={{ color: C.purpleLight }}>, H27:H30, 0)</span>, <span style={{ color: C.greenLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;총무부&quot;</span>
             </div>
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
@@ -1093,9 +1090,9 @@ export function ChooseRankDiagram() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
+      <Row gap={18}>
         {/* Left: 사원 판매 실적 표 */}
-        <div>
+        <Fixed>
           <TableCaption color={C.blueLight}>[표7] 학생 성적표</TableCaption>
           <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={72} firstColW={78}
             rowLabels={{
@@ -1105,10 +1102,10 @@ export function ChooseRankDiagram() {
               4: { text: '← 3위', color: C.purpleLight },
               5: { text: '← 5위', color: C.purpleLight },
             }} />
-        </div>
+        </Fixed>
 
         {/* Right: 2단계 풀이 박스 (RANK.EQ → CHOOSE) */}
-        <div style={{ flex: '1 1 460px', minWidth: 300, maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Fill min={460} max={720} gap={12}>
           {/* STEP 1 — RANK.EQ */}
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
@@ -1130,8 +1127,8 @@ export function ChooseRankDiagram() {
               =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$31)</span>, &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;, &quot;노력&quot;, &quot;노력&quot;)
             </div>
           </div>
-        </div>
-      </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
