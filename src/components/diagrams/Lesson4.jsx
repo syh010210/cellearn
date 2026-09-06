@@ -872,33 +872,33 @@ export function ChooseDiagram() {
 // IndexMatchDiagram
 // ──────────────────────────────────────────────
 export function IndexMatchDiagram() {
-  // [표5] 자동차 — F26:H36. 데이터 행은 27~36. 모델명(F)·연료(G)·연비(H).
+  // [표5] 자동차 정보 — F26:I36. 데이터 행은 27~36. 모델명(F)·연료(G)·연비(H)·가격(I, 만원).
   const cars = [
-    ['모델명', '연료', '연비'],   // 26행 머리글
-    ['아반떼', '휘발유', 15.2],   // 27
-    ['소나타', '경유', 16.5],     // 28
-    ['K5', '휘발유', 13.8],       // 29
-    ['그랜저', '휘발유', 12.4],   // 30
-    ['스포티지', '경유', 14.0],   // 31
-    ['투싼', '휘발유', 14.6],     // 32
-    ['카니발', '경유', 11.2],     // 33
-    ['모닝', '휘발유', 18.9],     // 34 ← 휘발유 중 최고 연비
-    ['레이', 'LPG', 13.0],        // 35
-    ['티볼리', '휘발유', 14.1],   // 36
+    ['모델명', '연료', '연비', '가격'],       // 26행 머리글
+    ['스타디아', '휘발유', 12.4, '3,650'],    // 27
+    ['카니윤', '경유', 13.8, '4,210'],        // 28
+    ['크나', '전기', 14.2, '5,100'],          // 29
+    ['아이오', '전기', 12.5, '4,980'],        // 30
+    ['다나타', '휘발유', 11.8, '3,250'],      // 31
+    ['타싼', '경유', 12.5, '2,880'],          // 32
+    ['아반스', '휘발유', 14.3, '4,670'],      // 33 ← 찾는 가격
+    ['마티아', '경유', 15.2, '2,260'],        // 34
+    ['투슬라', '전기', 11.4, '4,840'],        // 35
+    ['유리오', '휘발유', 12.7, '4,190'],      // 36
   ];
-  // 모델명(F27:F36)=초록 바깥 테두리(INDEX 반환 범위) / 연비(H27:H36)=노랑 바깥 테두리(MATCH 검색 범위)
-  // 찾을 값(연비 18.9)=옅은 노랑 채우기 / 결과 모델명(모닝, 34행)=옅은 초록 채우기
+  // 모델명(F27:F36)=초록 바깥 테두리(INDEX 반환 범위) / 가격(I27:I36)=노랑 바깥 테두리(MATCH 검색 범위)
+  // 찾을 값(가격 4,670, 33행)=옅은 노랑 채우기 / 결과 모델명(아반스, 33행)=옅은 초록 채우기
   const carSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const s = {};
     // 모델명 열(초록) — F27:F36 바깥 테두리
     if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 10) s.bb = C.green; }
-    // 연비 열(노랑) — H27:H36 바깥 테두리
-    if (ci === 2) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 10) s.bb = C.amber; }
-    // 찾을 값(연비 18.9, 34행) — 옅은 노랑 채우기
-    if (ri === 8 && ci === 2) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
-    // 결과 모델명(모닝, 34행) — 옅은 초록 채우기
-    if (ri === 8 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
+    // 가격 열(노랑) — I27:I36 바깥 테두리
+    if (ci === 3) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 10) s.bb = C.amber; }
+    // 찾을 값(가격 4,670, 33행) — 옅은 노랑 채우기
+    if (ri === 7 && ci === 3) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
+    // 결과 모델명(아반스, 33행) — 옅은 초록 채우기
+    if (ri === 7 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
     return s;
   };
 
@@ -918,7 +918,7 @@ export function IndexMatchDiagram() {
       {/* 문제 박스 (실기 기출 형식: [표5] 자동차) */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표5]에서 <b style={{ color: C.amberLight }}>연비[H27:H36]</b>가 <b style={{ color: C.amberLight }}>18.9</b>인 자동차의 <b style={{ color: C.greenLight }}>모델명[F27:F36]</b>을 찾아 [J36] 셀에 표시하시오. (8점)
+          [표5]에서 <b style={{ color: C.amberLight }}>가격[I27:I36]</b>이 <b style={{ color: C.amberLight }}>4,670</b>(만원)인 자동차의 <b style={{ color: C.greenLight }}>모델명[F27:F36]</b>을 찾아 [J36] 셀에 표시하시오. (8점)
         </div>
         <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
       </div>
@@ -926,8 +926,8 @@ export function IndexMatchDiagram() {
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Left: 자동차 표 */}
         <div>
-          <TableCaption color={C.blueLight}>[표5] 자동차</TableCaption>
-          <ExcelGrid data={cars} startCol={5} startRow={26} cellStyle={carSt} minColW={64} firstColW={78} />
+          <TableCaption color={C.blueLight}>[표5] 자동차 정보 (단위: 만원)</TableCaption>
+          <ExcelGrid data={cars} startCol={5} startRow={26} cellStyle={carSt} minColW={58} firstColW={78} />
         </div>
 
         {/* Right: 3단계 풀이 박스 (DMAX → MATCH → INDEX) */}
@@ -936,10 +936,10 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · MATCH — 위치 번호</div>
             <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={descSt}>찾을 연비(18.9)가 연비 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
+            <div style={descSt}>찾을 가격(4,670)이 가격 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =MATCH(<span style={{ color: C.amberLight }}>18.9</span>, <span style={{ color: C.amberLight }}>H27:H36</span>, 0) = <span style={{ color: C.purpleLight }}>8</span>
+              =MATCH(<span style={{ color: C.amberLight }}>4670</span>, <span style={{ color: C.amberLight }}>I27:I36</span>, 0) = <span style={{ color: C.purpleLight }}>7</span>
             </div>
           </div>
 
@@ -947,20 +947,20 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>2단계 · INDEX — 값 추출</div>
             <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호)</div>
-            <div style={descSt}>모델명 범위에서 그 위치(8번째)에 있는 값을 꺼냅니다.</div>
+            <div style={descSt}>모델명 범위에서 그 위치(7번째)에 있는 값을 꺼냅니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =INDEX(<span style={{ color: C.greenLight }}>F27:F36</span>, <span style={{ color: C.purpleLight }}>8</span>) = <span style={{ color: C.greenLight }}>&quot;모닝&quot;</span>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:F36</span>, <span style={{ color: C.purpleLight }}>7</span>) = <span style={{ color: C.greenLight }}>&quot;아반스&quot;</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ ...para, marginTop: 4 }}>두 함수를 하나로 겹치면 중간 결과(8)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.purpleLight }}>MATCH</b>가 위치를 구하고, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 모델명을 꺼냅니다. 찾을 값(연비)이 <b style={{ color: C.greenLight }}>모델명의 오른쪽</b>에 있어도 왼쪽 값을 가져올 수 있는 것이 VLOOKUP과 다른 점입니다.</div>
+      <div style={{ ...para, marginTop: 4 }}>두 함수를 하나로 겹치면 중간 결과(7)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.purpleLight }}>MATCH</b>가 위치를 구하고, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 모델명을 꺼냅니다. 찾을 값(가격)이 <b style={{ color: C.greenLight }}>모델명의 오른쪽</b>에 있어도 왼쪽 값을 가져올 수 있는 것이 VLOOKUP과 다른 점입니다.</div>
 
       <BottomBar>
-        <BLine color={C.text} bold size={16}>=INDEX(F27:F36, MATCH(18.9, H27:H36, 0))</BLine>
-        <BLine color={C.greenLight} bold>→ [J36] = &quot;모닝&quot;</BLine>
+        <BLine color={C.text} bold size={16}>=INDEX(F27:F36, MATCH(4670, I27:I36, 0))</BLine>
+        <BLine color={C.greenLight} bold>→ [J36] = &quot;아반스&quot;</BLine>
       </BottomBar>
     </Wrap>
   );
