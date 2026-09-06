@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, ArrowDown, ArrowRight, ExcelGrid, TableCaption, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, C } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
@@ -872,136 +872,105 @@ export function ChooseDiagram() {
 // IndexMatchDiagram
 // ──────────────────────────────────────────────
 export function IndexMatchDiagram() {
-  const headerStyle = {
-    background: C.bgDark, border: `1px solid ${C.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '7px 8px', fontSize: 15, color: C.textMuted,
+  // [표5] 자동차 — F26:H36. 데이터 행은 27~36. 모델명(F)·연료(G)·연비(H).
+  const cars = [
+    ['모델명', '연료', '연비'],   // 26행 머리글
+    ['아반떼', '휘발유', 15.2],   // 27
+    ['소나타', '경유', 16.5],     // 28
+    ['K5', '휘발유', 13.8],       // 29
+    ['그랜저', '휘발유', 12.4],   // 30
+    ['스포티지', '경유', 14.0],   // 31
+    ['투싼', '휘발유', 14.6],     // 32
+    ['카니발', '경유', 11.2],     // 33
+    ['모닝', '휘발유', 18.9],     // 34 ← 휘발유 중 최고 연비
+    ['레이', 'LPG', 13.0],        // 35
+    ['티볼리', '휘발유', 14.1],   // 36
+  ];
+  // 모델명(F27:F36)=초록 바깥 테두리(INDEX 반환 범위) / 연비(H27:H36)=노랑 바깥 테두리(MATCH 검색 범위)
+  // 연료가 '휘발유'인 셀=옅은 주황 채우기(DMAX 조건) / 최고 연비 모닝(34행)=옅은 빨강 채우기
+  const carSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    const s = {};
+    // 모델명 열(초록) — F27:F36 바깥 테두리
+    if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 10) s.bb = C.green; }
+    // 연비 열(노랑) — H27:H36 바깥 테두리
+    if (ci === 2) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 10) s.bb = C.amber; }
+    // 연료가 휘발유인 칸 — 옅은 주황 채우기(조건)
+    if (ci === 1 && cars[ri][1] === '휘발유') { s.bg = 'rgba(251,146,60,0.28)'; s.bold = true; s.color = C.orangeLight; }
+    // 최고 연비 자동차(모닝, 34행) — 모델명·연비 옅은 빨강 채우기
+    if (ri === 8 && (ci === 0 || ci === 2)) { s.bg = 'rgba(239,68,68,0.30)'; s.bold = true; }
+    return s;
   };
 
-  const dataCellStyle = {
-    background: C.bgDark, border: `1px solid ${C.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    padding: '7px 8px', fontSize: 15, color: C.textMuted,
-  };
+  const para = { color: C.text, fontSize: 15, lineHeight: 1.8, margin: '6px 0' };
+  // 단계 박스 공통
+  const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
+  const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
+  const synSt = (c) => ({ color: c, fontSize: 14, fontWeight: 700, opacity: 0.95 });
+  const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
+  const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
 
   return (
     <Wrap>
-      <Title>INDEX+MATCH 조합 — VLOOKUP의 한계를 넘는 방법</Title>
+      <Title>조합 함수: INDEX + MATCH + DMAX</Title>
+      <Subtitle>조건을 만족하는 최고값의 위치를 찾아, 그 자리의 다른 값을 꺼냅니다.</Subtitle>
 
-      <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
-        {/* Left: VLOOKUP limitation */}
-        <div style={{
-          flex: 1, background: '#1a0b0b', border: `2px solid ${C.red}`,
-          borderRadius: 10, padding: 16,
-          display: 'flex', flexDirection: 'column',
-        }}>
-          <div style={{ color: C.red, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            ❌ VLOOKUP 한계
-          </div>
+      {/* 문제 박스 (실기 기출: [표5] 자동차) */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표5]에서 <b style={{ color: C.orangeLight }}>연료가 &apos;휘발유&apos;</b>인 자동차 중 <b style={{ color: C.amberLight }}>연비가 가장 높은</b> 자동차의 <b style={{ color: C.greenLight }}>모델명</b>을 찾아 [J36] 셀에 표시하시오.
+        </div>
+      </div>
 
-          {/* Data table */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-            {['A열', 'B열', 'C열'].map(h => (
-              <div key={h} style={headerStyle}>{h}</div>
-            ))}
-            {['도서코드', '출판사', '도서명'].map(h => (
-              <div key={h} style={{ ...dataCellStyle, fontWeight: 700, color: C.textMuted }}>{h}</div>
-            ))}
-            {['A-101', '한빛', '파이썬기초'].map((v, i) => (
-              <div key={i} style={dataCellStyle}>{v}</div>
-            ))}
-            {['B-102', '위키', '자바스크립트'].map((v, i) => (
-              <div key={i} style={dataCellStyle}>{v}</div>
-            ))}
-          </div>
-
-          {/* Problem box */}
-          <div style={{
-            background: C.redBg, border: `1px solid ${C.red}`,
-            borderRadius: 6, padding: 10, marginTop: 8,
-            display: 'flex', flexDirection: 'column', gap: 4,
-          }}>
-            <div style={{ color: C.redLight, fontSize: 15, textAlign: 'center' }}>
-              도서명(C열)으로 도서코드(A열)를 찾고 싶다
-            </div>
-            <div style={{ color: C.red, fontSize: 15, fontWeight: 700, textAlign: 'center' }}>
-              → VLOOKUP은 첫 번째 열만 검색 가능!
-            </div>
-          </div>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Left: 자동차 표 */}
+        <div>
+          <TableCaption color={C.blueLight}>[표5] 자동차</TableCaption>
+          <ExcelGrid data={cars} startCol={5} startRow={26} cellStyle={carSt} minColW={64} firstColW={78} />
         </div>
 
-        {/* Center arrow */}
-        <div style={{
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', padding: '0 4px', gap: 4,
-        }}>
-          <div style={{ color: C.amber, fontSize: 13, textAlign: 'center', whiteSpace: 'nowrap' }}>
-            INDEX+MATCH
-          </div>
-          <ArrowRight color={C.amber} size={36} />
-        </div>
-
-        {/* Right: INDEX+MATCH solution */}
-        <div style={{
-          flex: 1, background: '#071a0b', border: `2px solid ${C.green}`,
-          borderRadius: 10, padding: 16,
-          display: 'flex', flexDirection: 'column',
-        }}>
-          <div style={{ color: C.green, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            ✅ INDEX+MATCH 조합
-          </div>
-
-          {/* Full formula */}
-          <div style={{
-            background: '#0c2440', border: `1px solid ${C.blueDim}`,
-            borderRadius: 6, padding: 10, marginBottom: 12,
-            fontFamily: 'monospace',
-          }}>
-            <div style={{ color: C.blueLight, fontSize: 14, textAlign: 'center' }}>
-              =INDEX(A2:A3,
-            </div>
-            <div style={{ color: C.blueLight, fontSize: 14, textAlign: 'center' }}>
-              MATCH(&quot;파이썬기초&quot;,C2:C3,0))
+        {/* Right: 3단계 풀이 박스 (DMAX → MATCH → INDEX) */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* STEP 1 — DMAX */}
+          <div style={{ ...boxBase, background: '#2a1206', border: `2px solid ${C.orange}` }}>
+            <div style={nameSt(C.orangeLight)}>1단계 · DMAX — 조건부 최고값</div>
+            <div style={synSt(C.orangeLight)}>구문: =DMAX(범위, 필드, 조건)</div>
+            <div style={descSt}>조건(연료=&quot;휘발유&quot;)을 만족하는 행 중에서 지정한 필드(연비)의 가장 큰 값을 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.orange}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =DMAX(<span style={{ color: C.blueLight }}>F26:H36</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.orangeLight }}>조건</span>) = <span style={{ color: C.orangeLight }}>18.9</span>
             </div>
           </div>
 
-          {/* Step 1 */}
-          <div style={{
-            background: C.purpleCard, border: `1px solid ${C.purple}`,
-            borderRadius: 6, padding: 8, marginBottom: 8,
-          }}>
-            <div style={{ color: C.purpleLight, fontSize: 13, fontWeight: 700 }}>STEP 1</div>
-            <div style={{ color: C.purpleLight, fontSize: 14, fontFamily: 'monospace' }}>
-              =MATCH(&quot;파이썬기초&quot;, C2:C3, 0) = 1
+          {/* STEP 2 — MATCH */}
+          <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
+            <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
+            <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <div style={descSt}>DMAX가 구한 최고 연비(18.9)가 연비 범위에서 몇 번째인지 위치 번호를 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =MATCH(<span style={{ color: C.orangeLight }}>18.9</span>, <span style={{ color: C.amberLight }}>H27:H36</span>, 0) = <span style={{ color: C.purpleLight }}>8</span>
             </div>
           </div>
 
-          {/* Step 2 */}
-          <div style={{
-            background: '#0c2440', border: `1px solid ${C.blueDim}`,
-            borderRadius: 6, padding: 8, marginBottom: 8,
-          }}>
-            <div style={{ color: C.blueLight, fontSize: 13, fontWeight: 700 }}>STEP 2</div>
-            <div style={{ color: C.blueLight, fontSize: 14, fontFamily: 'monospace' }}>
-              =INDEX(A2:A3, 1) = &quot;A-101&quot;
+          {/* STEP 3 — INDEX */}
+          <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
+            <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
+            <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호)</div>
+            <div style={descSt}>모델명 범위에서 그 위치(8번째)에 있는 값을 꺼냅니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:F36</span>, <span style={{ color: C.purpleLight }}>8</span>) = <span style={{ color: C.greenLight }}>&quot;모닝&quot;</span>
             </div>
-          </div>
-
-          {/* Result */}
-          <div style={{
-            background: '#14532d', border: `2px solid ${C.green}`,
-            borderRadius: 6, padding: 12,
-            color: C.greenLight, fontSize: 24, fontWeight: 700, textAlign: 'center',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            결과: &quot;A-101&quot;
           </div>
         </div>
       </div>
 
+      <div style={{ ...para, marginTop: 4 }}>세 함수를 하나로 겹치면 중간 결과(18.9, 8)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.orangeLight }}>DMAX</b>가 최고값을, <b style={{ color: C.purpleLight }}>MATCH</b>가 그 위치를, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 모델명을 꺼냅니다.</div>
+
       <BottomBar>
-        <BLine>=INDEX(반환 범위, MATCH(찾을 값, 검색 범위, 0))</BLine>
-        <BLine color={C.blue} bold>※ VLOOKUP: 첫 열만 검색 · INDEX+MATCH: 어느 열이든 자유롭게</BLine>
+        <BLine color={C.text} bold size={16}>=INDEX(F27:F36, MATCH(DMAX(F26:H36, 3, 조건), H27:H36, 0))</BLine>
+        <BLine color={C.greenLight} bold>→ [J36] = &quot;모닝&quot;</BLine>
       </BottomBar>
     </Wrap>
   );
