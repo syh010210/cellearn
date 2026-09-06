@@ -882,19 +882,22 @@ export function IndexMatchDiagram() {
     ['냉장고', '가전', 45, '4,050'],          // 31
     ['키보드', '전자', 300, '900'],           // 32
   ];
-  // 상품명(F27:F32)=초록 바깥 테두리(INDEX 반환 범위) / 매출액(I27:I32)=노랑 바깥 테두리(MAX·MATCH 대상)
-  // 최고 매출액(4,800, 29행)=옅은 노랑 채우기 / 결과 상품명(에어컨, 29행)=옅은 초록 채우기
+  // INDEX 범위=표 전체 F27:I32(제목행 26 제외)=초록 바깥 테두리 / 매출액(I27:I32)=옅은 노랑 채우기(MAX·MATCH 대상)
+  // 최고 매출액(4,800, 29행)=진한 노랑 채우기 / 결과 상품명(에어컨, 29행)=초록 채우기
   const prodSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const s = {};
-    // 상품명 열(초록) — F27:F32 바깥 테두리
-    if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 6) s.bb = C.green; }
-    // 매출액 열(노랑) — I27:I32 바깥 테두리
-    if (ci === 3) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 6) s.bb = C.amber; }
-    // 최고 매출액(4,800, 29행=데이터 3행) — 옅은 노랑 채우기
-    if (ri === 3 && ci === 3) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
-    // 결과 상품명(에어컨, 29행) — 옅은 초록 채우기
-    if (ri === 3 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
+    // INDEX 범위(초록) — 표 전체 F27:I32 바깥 테두리
+    if (ri === 1) s.bt = C.green;
+    if (ri === 6) s.bb = C.green;
+    if (ci === 0) s.bl = C.green;
+    if (ci === 3) s.br = C.green;
+    // 매출액 열(노랑 채우기) — I27:I32 (MAX·MATCH 대상)
+    if (ci === 3) s.bg = 'rgba(251,191,36,0.14)';
+    // 최고 매출액(4,800, 29행=데이터 3행) — 진한 노랑 채우기
+    if (ri === 3 && ci === 3) { s.bg = 'rgba(251,191,36,0.40)'; s.bold = true; }
+    // 결과 상품명(에어컨, 29행) — 초록 채우기
+    if (ri === 3 && ci === 0) { s.bg = 'rgba(34,197,94,0.30)'; s.bold = true; }
     return s;
   };
 
@@ -942,7 +945,7 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
             <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
+            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다. MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목행 I26을 뺀 I27:I32로 지정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
               =MATCH(<span style={{ color: C.orangeLight }}>MAX(I27:I32)</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
@@ -953,10 +956,10 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
             <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
-            <div style={descSt}>상품명 범위에서 그 위치(3번째)에 있는 값을 꺼냅니다.</div>
+            <div style={descSt}>표 전체로 범위를 잡을 때는, 앞 단계 MATCH가 제목행(26행)을 뺀 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목행은 빼고 F27:I32로 지정합니다. 이 범위에서 MATCH가 구한 행(3번째), 1열(상품명)에 반환하려는 값이 있습니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =INDEX(<span style={{ color: C.greenLight }}>F27:F32</span>, <span style={{ color: C.purpleLight }}>MATCH(MAX(I27:I32), I27:I32, 0)</span>, 0) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:I32</span>, <span style={{ color: C.purpleLight }}>MATCH(MAX(I27:I32), I27:I32, 0)</span>, <span style={{ color: C.amberLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
             </div>
           </div>
         </div>
