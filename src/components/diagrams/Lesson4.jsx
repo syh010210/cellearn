@@ -869,6 +869,29 @@ export function ChooseDiagram() {
 }
 
 // ──────────────────────────────────────────────
+// ChooseIntroDiagram — CHOOSE 간단 소개 카드 (개념5, 개념1 인트로 카드 형식)
+// ──────────────────────────────────────────────
+export function ChooseIntroDiagram() {
+  return (
+    <Wrap>
+      <Title>CHOOSE</Title>
+
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flex: '1 1 460px', maxWidth: 600, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>CHOOSE</div>
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
+          <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.6 }}>앞의 숫자(순번)로 뒤에 나열한 값 중 하나를 골라 반환합니다. 순번이 1이면 값1, 2이면 값2, 3이면 값3 … 순번은 1부터 시작합니다.</div>
+          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '6px 0 2px' }} />
+          <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
+            =CHOOSE(<span style={{ color: C.amberLight }}>2</span>, &quot;대상&quot;, <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>, &quot;은상&quot;) = <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>
+          </div>
+        </div>
+      </div>
+    </Wrap>
+  );
+}
+
+// ──────────────────────────────────────────────
 // IndexMatchDiagram
 // ──────────────────────────────────────────────
 export function IndexMatchDiagram() {
