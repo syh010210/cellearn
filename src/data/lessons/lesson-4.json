@@ -321,7 +321,7 @@
         }
       ],
       "practice": {
-        "instruction": "회원 관리 표입니다. 회원코드[B2:B4]의 마지막 한 자리를 기준으로 1이면 \"실버\", 2면 \"골드\", 3이면 \"VIP\"로 등급[C2:C4]에 표시하세요. (RIGHT, CHOOSE 함수 사용)",
+        "instruction": "회원 관리 표입니다. 회원코드[B2:B4]의 마지막 한 자리를 기준으로 1이면 \"실버\", 2면 \"골드\", 3이면 \"VIP\"로 등급[C2:C4]에 표시하세요. (RIGHT, CHOOSE 함수 사용 · C2에 입력한 뒤 C4까지 자동 채우기)",
         "cols": ["A", "B", "C"],
         "rows": [
           [
@@ -337,12 +337,12 @@
           [
             { "val": "이서연", "editable": false },
             { "val": "M1", "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=CHOOSE(RIGHT(B3,1),\"실버\",\"골드\",\"VIP\")", "result": "실버" }
           ],
           [
             { "val": "박도윤", "editable": false },
             { "val": "M3", "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=CHOOSE(RIGHT(B4,1),\"실버\",\"골드\",\"VIP\")", "result": "VIP" }
           ]
         ]
       }
@@ -474,6 +474,8 @@
     { "sheet": "방향검색", "cell": "C2", "formula": "=VLOOKUP(\"B-102\",A2:B4,2,0)" },
     { "sheet": "위치찾기", "cell": "C3", "formula": "=MATCH(\"이영희\",B2:B4,0)" },
     { "sheet": "조합활용", "cell": "B7", "formula": "=INDEX(A2:A5,MATCH(MAX(D2:D5),D2:D5,0))" },
-    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(RIGHT(B2,1),\"실버\",\"골드\",\"VIP\")" }
+    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(RIGHT(B2,1),\"실버\",\"골드\",\"VIP\")" },
+    { "sheet": "값선택", "cell": "C3", "formula": "=CHOOSE(RIGHT(B3,1),\"실버\",\"골드\",\"VIP\")" },
+    { "sheet": "값선택", "cell": "C4", "formula": "=CHOOSE(RIGHT(B4,1),\"실버\",\"골드\",\"VIP\")" }
   ]
 }
