@@ -898,7 +898,6 @@ export function IndexMatchDiagram() {
     return s;
   };
 
-  const para = { color: C.text, fontSize: 15, lineHeight: 1.8, margin: '6px 0' };
   // 단계 박스 공통
   const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
   const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
@@ -946,29 +945,22 @@ export function IndexMatchDiagram() {
             <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =MATCH(<span style={{ color: C.orangeLight }}>4800</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
+              =MATCH(<span style={{ color: C.orangeLight }}>MAX(I27:I32)</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
             </div>
           </div>
 
           {/* STEP 3 — INDEX */}
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
-            <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호)</div>
+            <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
             <div style={descSt}>상품명 범위에서 그 위치(3번째)에 있는 값을 꺼냅니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =INDEX(<span style={{ color: C.greenLight }}>F27:F32</span>, <span style={{ color: C.purpleLight }}>3</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:F32</span>, <span style={{ color: C.purpleLight }}>MATCH(MAX(I27:I32), I27:I32, 0)</span>, 0) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
             </div>
           </div>
         </div>
       </div>
-
-      <div style={{ ...para, marginTop: 4 }}>세 함수를 하나로 겹치면 중간 결과(4,800·3)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.orangeLight }}>MAX</b>가 최고값을, <b style={{ color: C.purpleLight }}>MATCH</b>가 그 위치를, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 상품명을 꺼냅니다.</div>
-
-      <BottomBar>
-        <BLine color={C.text} bold size={16}>=INDEX(F27:F32, MATCH(MAX(I27:I32), I27:I32, 0))</BLine>
-        <BLine color={C.greenLight} bold>→ [J32] = &quot;에어컨&quot;</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
