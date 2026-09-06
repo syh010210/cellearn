@@ -226,16 +226,16 @@
       }
     },
     {
-      "heading": "4. VLOOKUP의 한계를 극복하는 INDEX + MATCH 조합",
+      "heading": "4. 실제 시험에서 INDEX + MATCH 조합은 이렇게 나온다",
       "contentBlocks": [
         {
           "type": "text",
-          "text": "VLOOKUP은 찾을값이 반드시 표의 **첫 번째 열**에 있어야 하고, 왼쪽 데이터는 가져올 수 없다는 한계가 있습니다. **INDEX + MATCH 조합**으로 이 한계를 완벽하게 극복할 수 있습니다."
+          "text": "실기 시험에서는 조건에 맞는 값을 찾아 **다른 열의 값을 꺼내는** 문제가 자주 나옵니다. 아래는 **매출액이 가장 높은 상품의 이름**을 찾는 실제 출제 형식입니다. **INDEX · MATCH · MAX**를 어떻게 겹쳐 쓰는지 살펴봅시다."
         },
         {
           "type": "image",
           "url": "/images/lookup-indexmatch.svg",
-          "alt": "VLOOKUP 한계 vs INDEX+MATCH 조합으로 해결하는 방법 비교"
+          "alt": "매출액이 가장 높은 상품명을 INDEX·MATCH·MAX 조합으로 찾는 실제 출제 형식"
         },
         {
           "type": "heading",
@@ -252,15 +252,19 @@
         },
         {
           "type": "heading",
-          "text": "VLOOKUP vs INDEX+MATCH 비교"
+          "text": "VLOOKUP과 HLOOKUP vs INDEX+MATCH 비교"
         },
         {
           "type": "bullets",
           "items": [
-            "**VLOOKUP**: 첫 번째 열 기준, 오른쪽 방향만 가능, 수식 간결",
-            "**INDEX+MATCH**: 어느 열 기준이든 가능, 양방향 검색, 수식은 다소 복잡하지만 유연성 우수",
-            "컴활 1급 실기에서는 INDEX+MATCH 조합이 자주 출제됩니다."
+            "**VLOOKUP·HLOOKUP**: 찾을 값이 반드시 참조 범위의 **첫 번째 행이나 열**에 있어야 해서 아래 방향이나 오른쪽 방향으로만 찾을 수 있습니다. 찾을 값이 첫 행·열에 있지 않으면, 찾고자 하는 행이나 열이 참조 범위 안에 없어 찾지 못할 수 있습니다.",
+            "**INDEX+MATCH**: 참조 범위를 **표 전체**로 넣고 행이나 열을 **양방향**으로 검색하기 때문에 어느 위치의 값이든 찾을 수 있습니다."
           ]
+        },
+        {
+          "type": "image",
+          "url": "/images/lookup-vlookup-limit.svg",
+          "alt": "사번으로 왼쪽의 부서를 찾을 때 VLOOKUP은 못 찾고 INDEX+MATCH는 찾는 비교 예제"
         }
       ],
       "practice": {

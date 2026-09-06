@@ -945,7 +945,7 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
             <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다. MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목행 I26을 뺀 I27:I32로 지정합니다.</div>
+            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다. MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목 셀인 I26을 뺀 I27:I32로 지정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
               =MATCH(<span style={{ color: C.orangeLight }}>MAX(I27:I32)</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
@@ -956,7 +956,7 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
             <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
-            <div style={descSt}>표 전체로 범위를 잡을 때는, 앞 단계 MATCH가 제목행(26행)을 뺀 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목행은 빼고 F27:I32로 지정합니다. 이 범위에서 MATCH가 구한 행(3번째), 1열(상품명)에 반환하려는 값이 있습니다.</div>
+            <div style={descSt}>표 전체로 범위를 잡을 때는, 앞 단계 MATCH가 제목 셀(I26)을 뺀 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목 행은 빼고 F27:I32로 지정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
               =INDEX(<span style={{ color: C.greenLight }}>F27:I32</span>, <span style={{ color: C.purpleLight }}>MATCH(MAX(I27:I32), I27:I32, 0)</span>, <span style={{ color: C.amberLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
@@ -964,6 +964,85 @@ export function IndexMatchDiagram() {
           </div>
         </div>
       </div>
+    </Wrap>
+  );
+}
+
+// ──────────────────────────────────────────────
+// VlookupLimitDiagram — VLOOKUP은 못 찾고 INDEX+MATCH는 찾는 사례
+// ──────────────────────────────────────────────
+export function VlookupLimitDiagram() {
+  // [표6] 사원 정보 — F26:H30. 데이터 27~30. 부서(F)·이름(G)·사번(H).
+  // 찾을 값(사번)이 첫 열이 아니고, 가져올 값(부서)이 그 왼쪽에 있어 VLOOKUP 불가.
+  const emp = [
+    ['부서', '이름', '사번'],       // 26행 머리글
+    ['영업부', '김영호', 'A101'],   // 27
+    ['인사부', '이수진', 'A102'],   // 28
+    ['총무부', '박민수', 'A103'],   // 29 ← 찾는 사번
+    ['개발부', '최지훈', 'A104'],   // 30
+  ];
+  // 부서(F27:F30)=초록 테두리(INDEX가 가져올 값·VLOOKUP은 왼쪽이라 불가) / 사번(H27:H30)=노랑 테두리(찾을 값 위치)
+  const empSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    const s = {};
+    if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 4) s.bb = C.green; }
+    if (ci === 2) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 4) s.bb = C.amber; }
+    if (ri === 3 && ci === 2) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
+    if (ri === 3 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
+    return s;
+  };
+
+  const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
+  const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
+  const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
+  const formulaSt = { color: C.text, fontSize: 15.5, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
+  const para = { color: C.text, fontSize: 15, lineHeight: 1.8, margin: '6px 0' };
+
+  return (
+    <Wrap>
+      <Title>VLOOKUP은 못 찾고, INDEX+MATCH는 찾는다</Title>
+      <Subtitle>찾을 값(사번)이 표의 첫 열이 아니고, 가져올 값(부서)이 그 왼쪽에 있는 경우</Subtitle>
+
+      {/* 문제 박스 */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표6]에서 <b style={{ color: C.amberLight }}>사번[H27:H30]</b>이 <b style={{ color: C.amberLight }}>&quot;A103&quot;</b>인 사원의 <b style={{ color: C.greenLight }}>부서[F27:F30]</b>를 찾아 [J30] 셀에 표시하시오. (8점)
+        </div>
+        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Left: 사원 정보 표 */}
+        <div>
+          <TableCaption color={C.blueLight}>[표6] 사원 정보</TableCaption>
+          <ExcelGrid data={emp} startCol={5} startRow={26} cellStyle={empSt} minColW={66} firstColW={72} />
+        </div>
+
+        {/* Right: VLOOKUP ❌ vs INDEX+MATCH ✅ */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* VLOOKUP ❌ */}
+          <div style={{ ...boxBase, background: C.redDark, border: `2px solid ${C.red}` }}>
+            <div style={nameSt(C.redLight)}>❌ VLOOKUP — 못 찾음</div>
+            <div style={descSt}>VLOOKUP은 <b style={{ color: C.redLight }}>참조 범위의 첫 열</b>에서만 찾을 값을 찾고, 결과도 <b style={{ color: C.redLight }}>오른쪽 열</b>에서만 가져옵니다. 사번은 첫 열이 아니라 세 번째 열에 있어 첫 열(부서)에서 &quot;A103&quot;을 찾지 못하고, 부서는 사번의 왼쪽이라 애초에 가져올 수 없습니다.</div>
+            <div style={{ borderTop: `1px solid ${C.red}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =VLOOKUP(<span style={{ color: C.amberLight }}>&quot;A103&quot;</span>, F27:H30, 1, 0) = <span style={{ color: C.redLight }}>#N/A</span>
+            </div>
+          </div>
+
+          {/* INDEX+MATCH ✅ */}
+          <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
+            <div style={nameSt(C.greenLight)}>✅ INDEX + MATCH — 찾음</div>
+            <div style={descSt}>참조 범위를 표 전체(F27:H30)로 넣고, MATCH가 사번을 <b style={{ color: C.amberLight }}>세로로</b> 찾아 위치(3)를 구한 뒤, INDEX가 그 위치의 <b style={{ color: C.greenLight }}>부서(1열)</b>를 왼쪽에서도 꺼냅니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:H30</span>, MATCH(<span style={{ color: C.amberLight }}>&quot;A103&quot;</span>, <span style={{ color: C.amberLight }}>H27:H30</span>, 0), <span style={{ color: C.amberLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;총무부&quot;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...para, marginTop: 4 }}>핵심은 <b style={{ color: C.greenLight }}>찾을 값의 왼쪽 데이터</b>도 가져올 수 있다는 점입니다. VLOOKUP·HLOOKUP은 첫 행·열에서 오른쪽·아래로만, INDEX+MATCH는 표 전체를 놓고 양방향으로 찾습니다.</div>
     </Wrap>
   );
 }
