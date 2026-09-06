@@ -872,33 +872,29 @@ export function ChooseDiagram() {
 // IndexMatchDiagram
 // ──────────────────────────────────────────────
 export function IndexMatchDiagram() {
-  // [표5] 자동차 정보 — F26:I36. 데이터 행은 27~36. 모델명(F)·연료(G)·연비(H)·가격(I, 만원).
-  const cars = [
-    ['모델명', '연료', '연비', '가격'],       // 26행 머리글
-    ['스타디아', '휘발유', 12.4, '3,650'],    // 27
-    ['카니윤', '경유', 13.8, '4,210'],        // 28
-    ['크나', '전기', 14.2, '5,100'],          // 29
-    ['아이오', '전기', 12.5, '4,980'],        // 30
-    ['다나타', '휘발유', 11.8, '3,250'],      // 31
-    ['타싼', '경유', 12.5, '2,880'],          // 32
-    ['아반스', '휘발유', 14.3, '4,670'],      // 33 ← 찾는 가격
-    ['마티아', '경유', 15.2, '2,260'],        // 34
-    ['투슬라', '전기', 11.4, '4,840'],        // 35
-    ['유리오', '휘발유', 12.7, '4,190'],      // 36
+  // [표5] 상품 판매 현황 — F26:I32. 데이터 행은 27~32(6행). 상품명(F)·분류(G)·판매량(H)·매출액(I, 만원).
+  const prod = [
+    ['상품명', '분류', '판매량', '매출액'],   // 26행 머리글
+    ['노트북', '전자', 120, '3,600'],         // 27
+    ['청소기', '가전', 85, '1,700'],          // 28
+    ['에어컨', '가전', 60, '4,800'],          // 29 ← 매출액 최고
+    ['모니터', '전자', 140, '2,100'],         // 30
+    ['냉장고', '가전', 45, '4,050'],          // 31
+    ['키보드', '전자', 300, '900'],           // 32
   ];
-  // 모델명(F27:F36)=초록 바깥 테두리(INDEX 반환 범위) / 가격(I27:I36)=노랑 바깥 테두리(MATCH 검색 범위)
-  // 찾을 값(가격 4,670, 33행)=옅은 노랑 채우기 / 결과 모델명(아반스, 33행)=옅은 초록 채우기
-  const carSt = (ri, ci) => {
+  // 상품명(F27:F32)=초록 바깥 테두리(INDEX 반환 범위) / 매출액(I27:I32)=노랑 바깥 테두리(MAX·MATCH 대상)
+  // 최고 매출액(4,800, 29행)=옅은 노랑 채우기 / 결과 상품명(에어컨, 29행)=옅은 초록 채우기
+  const prodSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const s = {};
-    // 모델명 열(초록) — F27:F36 바깥 테두리
-    if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 10) s.bb = C.green; }
-    // 가격 열(노랑) — I27:I36 바깥 테두리
-    if (ci === 3) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 10) s.bb = C.amber; }
-    // 찾을 값(가격 4,670, 33행) — 옅은 노랑 채우기
-    if (ri === 7 && ci === 3) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
-    // 결과 모델명(아반스, 33행) — 옅은 초록 채우기
-    if (ri === 7 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
+    // 상품명 열(초록) — F27:F32 바깥 테두리
+    if (ci === 0) { s.bl = C.green; s.br = C.green; if (ri === 1) s.bt = C.green; if (ri === 6) s.bb = C.green; }
+    // 매출액 열(노랑) — I27:I32 바깥 테두리
+    if (ci === 3) { s.bl = C.amber; s.br = C.amber; if (ri === 1) s.bt = C.amber; if (ri === 6) s.bb = C.amber; }
+    // 최고 매출액(4,800, 29행=데이터 3행) — 옅은 노랑 채우기
+    if (ri === 3 && ci === 3) { s.bg = 'rgba(251,191,36,0.30)'; s.bold = true; }
+    // 결과 상품명(에어컨, 29행) — 옅은 초록 채우기
+    if (ri === 3 && ci === 0) { s.bg = 'rgba(34,197,94,0.28)'; s.bold = true; }
     return s;
   };
 
@@ -912,55 +908,66 @@ export function IndexMatchDiagram() {
 
   return (
     <Wrap>
-      <Title>조합 함수: INDEX + MATCH</Title>
-      <Subtitle>MATCH로 위치를 구하고, 그 자리의 값을 INDEX로 꺼냅니다. VLOOKUP과 달리 찾을 값의 왼쪽 값도 가져옵니다.</Subtitle>
+      <Title>조합 함수: INDEX + MATCH + MAX</Title>
+      <Subtitle>MAX로 최고값을 구하고, MATCH로 그 위치를 찾아, INDEX로 그 자리의 값을 꺼냅니다.</Subtitle>
 
-      {/* 문제 박스 (실기 기출 형식: [표5] 자동차) */}
+      {/* 문제 박스 (실기 기출 형식: [표5] 상품 판매 현황) */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표5]에서 <b style={{ color: C.amberLight }}>가격[I27:I36]</b>이 <b style={{ color: C.amberLight }}>4,670</b>(만원)인 자동차의 <b style={{ color: C.greenLight }}>모델명[F27:F36]</b>을 찾아 [J36] 셀에 표시하시오. (8점)
+          [표5]에서 <b style={{ color: C.amberLight }}>매출액[I27:I32]</b>이 <b style={{ color: C.amberLight }}>가장 높은</b> 상품의 <b style={{ color: C.greenLight }}>상품명[F27:F32]</b>을 찾아 [J32] 셀에 표시하시오. (8점)
         </div>
-        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
+        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH, MAX 함수 사용</div>
       </div>
 
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
-        {/* Left: 자동차 표 */}
+        {/* Left: 상품 판매 현황 표 */}
         <div>
-          <TableCaption color={C.blueLight}>[표5] 자동차 정보 (단위: 만원)</TableCaption>
-          <ExcelGrid data={cars} startCol={5} startRow={26} cellStyle={carSt} minColW={58} firstColW={78} />
+          <TableCaption color={C.blueLight}>[표5] 상품 판매 현황 (매출액 단위: 만원)</TableCaption>
+          <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={58} firstColW={78} />
         </div>
 
-        {/* Right: 3단계 풀이 박스 (DMAX → MATCH → INDEX) */}
+        {/* Right: 3단계 풀이 박스 (MAX → MATCH → INDEX) */}
         <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* STEP 1 — MATCH */}
-          <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
-            <div style={nameSt(C.purpleLight)}>1단계 · MATCH — 위치 번호</div>
-            <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={descSt}>찾을 가격(4,670)이 가격 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
-            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
+          {/* STEP 1 — MAX */}
+          <div style={{ ...boxBase, background: '#2a1206', border: `2px solid ${C.orange}` }}>
+            <div style={nameSt(C.orangeLight)}>1단계 · MAX — 최고값</div>
+            <div style={synSt(C.orangeLight)}>구문: =MAX(범위)</div>
+            <div style={descSt}>매출액 범위에서 가장 큰 값을 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.orange}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =MATCH(<span style={{ color: C.amberLight }}>4670</span>, <span style={{ color: C.amberLight }}>I27:I36</span>, 0) = <span style={{ color: C.purpleLight }}>7</span>
+              =MAX(<span style={{ color: C.amberLight }}>I27:I32</span>) = <span style={{ color: C.orangeLight }}>4,800</span>
             </div>
           </div>
 
-          {/* STEP 2 — INDEX */}
+          {/* STEP 2 — MATCH */}
+          <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
+            <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
+            <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =MATCH(<span style={{ color: C.orangeLight }}>4800</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
+            </div>
+          </div>
+
+          {/* STEP 3 — INDEX */}
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
-            <div style={nameSt(C.greenLight)}>2단계 · INDEX — 값 추출</div>
+            <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
             <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호)</div>
-            <div style={descSt}>모델명 범위에서 그 위치(7번째)에 있는 값을 꺼냅니다.</div>
+            <div style={descSt}>상품명 범위에서 그 위치(3번째)에 있는 값을 꺼냅니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =INDEX(<span style={{ color: C.greenLight }}>F27:F36</span>, <span style={{ color: C.purpleLight }}>7</span>) = <span style={{ color: C.greenLight }}>&quot;아반스&quot;</span>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:F32</span>, <span style={{ color: C.purpleLight }}>3</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div style={{ ...para, marginTop: 4 }}>두 함수를 하나로 겹치면 중간 결과(7)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.purpleLight }}>MATCH</b>가 위치를 구하고, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 모델명을 꺼냅니다. 찾을 값(가격)이 <b style={{ color: C.greenLight }}>모델명의 오른쪽</b>에 있어도 왼쪽 값을 가져올 수 있는 것이 VLOOKUP과 다른 점입니다.</div>
+      <div style={{ ...para, marginTop: 4 }}>세 함수를 하나로 겹치면 중간 결과(4,800·3)를 직접 쓰지 않아도 됩니다. 안쪽 <b style={{ color: C.orangeLight }}>MAX</b>가 최고값을, <b style={{ color: C.purpleLight }}>MATCH</b>가 그 위치를, 바깥 <b style={{ color: C.greenLight }}>INDEX</b>가 그 자리의 상품명을 꺼냅니다.</div>
 
       <BottomBar>
-        <BLine color={C.text} bold size={16}>=INDEX(F27:F36, MATCH(4670, I27:I36, 0))</BLine>
-        <BLine color={C.greenLight} bold>→ [J36] = &quot;아반스&quot;</BLine>
+        <BLine color={C.text} bold size={16}>=INDEX(F27:F32, MATCH(MAX(I27:I32), I27:I32, 0))</BLine>
+        <BLine color={C.greenLight} bold>→ [J32] = &quot;에어컨&quot;</BLine>
       </BottomBar>
     </Wrap>
   );
