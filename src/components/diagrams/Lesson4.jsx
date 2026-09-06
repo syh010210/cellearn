@@ -1108,7 +1108,7 @@ export function ChooseRankDiagram() {
         </div>
 
         {/* Right: 2단계 풀이 박스 (RANK.EQ → CHOOSE) */}
-        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ flex: '1 1 460px', minWidth: 300, maxWidth: 720, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* STEP 1 — RANK.EQ */}
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
@@ -1124,9 +1124,9 @@ export function ChooseRankDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 순위로 값 선택</div>
             <div style={synSt(C.greenLight)}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
-            <div style={descSt}>1단계에서 구한 순위를 숫자 자리에 넣으면, 순위가 1이면 값1, 2면 값2가 반환됩니다. 그래서 값1부터 &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;을 적으면 1~3위에 맞게 나오고, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 &quot;노력&quot;으로 채웁니다.</div>
+            <div style={descSt}>1단계에서 구한 순위를 숫자 자리에 넣으면, 순위가 1이면 값1, 2면 값2가 반환됩니다.<br />그래서 값1부터 &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;을 적으면 1~3위에 맞게 나오고, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 &quot;노력&quot;으로 채웁니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
-            <div style={{ ...formulaSt, fontSize: 14 }}>
+            <div style={{ ...formulaSt, fontSize: 13, whiteSpace: 'nowrap' }}>
               =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$31)</span>, &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;, &quot;노력&quot;, &quot;노력&quot;)
             </div>
           </div>
