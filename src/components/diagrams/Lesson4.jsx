@@ -881,10 +881,6 @@ export function ChooseIntroDiagram() {
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>CHOOSE</div>
           <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
           <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.6 }}>앞의 숫자(순번)로 뒤에 나열한 값 중 하나를 골라 반환합니다. 순번이 1이면 값1, 2이면 값2, 3이면 값3 … 순번은 1부터 시작합니다.</div>
-          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '6px 0 2px' }} />
-          <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>
-            =CHOOSE(<span style={{ color: C.amberLight }}>2</span>, &quot;대상&quot;, <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>, &quot;은상&quot;) = <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>
-          </div>
         </div>
       </div>
     </Wrap>
@@ -1062,7 +1058,7 @@ export function VlookupLimitDiagram() {
             <div style={nameSt(C.greenLight)}>✅ INDEX + MATCH — 찾음</div>
             <div style={descSt}>참조 범위를 표 전체(F27:H30)로 넣고, MATCH가 <b style={{ color: C.amberLight }}>&quot;A103&quot;</b>을 사번 범위에서 <b style={{ color: C.amberLight }}>세로로</b> 찾아 위치(3)를 구한 뒤, INDEX가 그 위치의 <b style={{ color: C.greenLight }}>부서(1열)</b>를 가져옵니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
-            <div style={formulaSt}>
+            <div style={{ ...formulaSt, fontSize: 14 }}>
               =INDEX(<span style={{ color: C.greenLight }}>F27:H30</span>, <span style={{ color: C.purpleLight }}>MATCH(</span><span style={{ color: C.amberLight }}>&quot;A103&quot;</span><span style={{ color: C.purpleLight }}>, H27:H30, 0)</span>, <span style={{ color: C.greenLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;총무부&quot;</span>
             </div>
           </div>
@@ -1077,29 +1073,30 @@ export function VlookupLimitDiagram() {
 // MAX→MATCH→INDEX 단계 박스(개념4)와 같은 형식으로, 순위→값 선택을 두 단계로 보여준다.
 // ──────────────────────────────────────────────
 export function ChooseRankDiagram() {
-  // [표7] 사원 판매 실적 — F26:H30. 데이터 27~30. 사원명(F)·판매액(G, 만원)·포상(H).
+  // [표7] 학생 성적표 — F26:H31. 데이터 27~31. 이름(F)·성적(G)·비고(H).
   const prod = [
-    ['사원명', '판매액', '포상'],   // 26행 머리글
-    ['김하늘', '4,500', '금상'],    // 27 ← 예시(2위)
-    ['이준호', '5,200', ''],        // 28 (1위)
-    ['박서연', '3,100', ''],        // 29 (4위)
-    ['정민수', '3,800', ''],        // 30 (3위)
+    ['이름', '성적', '비고'],   // 26행 머리글
+    ['김하늘', 88, '우수'],     // 27 ← 예시(2위)
+    ['이준호', 95, ''],         // 28 (1위)
+    ['박서연', 72, ''],         // 29 (4위)
+    ['정민수', 80, ''],         // 30 (3위)
+    ['최유진', 65, ''],         // 31 (5위)
   ];
-  // 판매액(G27:G30)=RANK.EQ 참조 범위: 옅은 노랑 채우기 + 주황 바깥 테두리
-  // 예시 행(김하늘, 27행=데이터 1행): 판매액 → 진한 주황 / 포상 → 초록("금상")
+  // 성적(G27:G31)=RANK.EQ 참조 범위: 옅은 노랑 채우기 + 주황 바깥 테두리
+  // 예시 행(김하늘, 27행=데이터 1행): 성적 → 진한 주황 / 비고 → 초록("우수")
   const prodSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const s = {};
-    // 판매액 열(G27:G30) — RANK.EQ 참조 범위
+    // 성적 열(G27:G31) — RANK.EQ 참조 범위
     if (ci === 1) {
       s.bg = 'rgba(251,191,36,0.14)';
       s.bl = C.orange; s.br = C.orange;
       if (ri === 1) s.bt = C.orange;
-      if (ri === 4) s.bb = C.orange;
+      if (ri === 5) s.bb = C.orange;
     }
-    // 예시 판매액(4,500, 27행) — 진한 주황 채우기 (RANK.EQ 대상 값)
+    // 예시 성적(88, 27행) — 진한 주황 채우기 (RANK.EQ 대상 값)
     if (ri === 1 && ci === 1) { s.bg = 'rgba(251,146,60,0.45)'; s.bold = true; }
-    // 예시 포상(금상, 27행) — 초록 채우기 (CHOOSE 결과)
+    // 예시 비고(우수, 27행) — 초록 채우기 (CHOOSE 결과)
     if (ri === 1 && ci === 2) { s.bg = 'rgba(34,197,94,0.30)'; s.bold = true; s.color = C.greenLight; }
     return s;
   };
@@ -1113,24 +1110,23 @@ export function ChooseRankDiagram() {
 
   return (
     <Wrap>
-      <Title>조합 함수: RANK.EQ + CHOOSE</Title>
-      <Subtitle>RANK.EQ로 순위를 구하고, CHOOSE로 그 순위에 놓인 값을 선택합니다.</Subtitle>
+      <Title>RANK.EQ로 순위를 구하고, CHOOSE로 그 순위에 놓인 값을 선택합니다.</Title>
 
-      {/* 문제 박스 (실기 기출 형식: [표7] 사원 판매 실적) */}
+      {/* 문제 박스 (실기 기출 형식: [표7] 학생 성적표) */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표7]에서 <b style={{ color: C.amberLight }}>판매액[G27:G30]</b>이 높은 순으로 순위를 매겨, 각 사원의 <b style={{ color: C.greenLight }}>포상[H27:H30]</b>을 구하시오. (8점)
+          [표7]에서 <b style={{ color: C.amberLight }}>성적[G27:G31]</b>을 기준으로 순위를 구하여 1위는 &quot;최우수&quot;, 2위는 &quot;우수&quot;, 3위는 &quot;보통&quot;, 나머지는 &quot;노력&quot;으로 <b style={{ color: C.greenLight }}>비고[H27:H31]</b>에 표시하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14.5, lineHeight: 1.85, marginTop: 6 }}>
-          <div>▶ 1위는 &quot;대상&quot;, 2위는 &quot;금상&quot;, 3위는 &quot;은상&quot;, 4위는 &quot;장려상&quot;으로 표시함</div>
-          <div>▶ RANK.EQ, CHOOSE 함수 사용</div>
+          <div>▶ 순위는 성적이 가장 높은 학생이 1위</div>
+          <div>▶ CHOOSE, RANK.EQ 함수 사용</div>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
         {/* Left: 사원 판매 실적 표 */}
         <div>
-          <TableCaption color={C.blueLight}>[표7] 사원 판매 실적 (판매액 단위: 만원)</TableCaption>
+          <TableCaption color={C.blueLight}>[표7] 학생 성적표</TableCaption>
           <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={72} firstColW={78}
             rowLabels={{ 1: { text: '← 2위', color: C.purpleLight } }} />
         </div>
@@ -1141,10 +1137,10 @@ export function ChooseRankDiagram() {
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
             <div style={synSt(C.purpleLight)}>구문: =RANK.EQ(수, 참조 범위, [옵션])</div>
-            <div style={descSt}>판매액이 참조 범위에서 몇 위인지 순위를 반환합니다. 옵션을 생략하거나 0이면 큰 값이 1위인 내림차순입니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
+            <div style={descSt}>성적이 참조 범위에서 몇 위인지 순위를 반환합니다. 옵션을 생략하거나 0이면 큰 값이 1위인 내림차순입니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$30</span>) = <span style={{ color: C.purpleLight }}>2</span>
+              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$31</span>) = <span style={{ color: C.purpleLight }}>2</span>
             </div>
           </div>
 
@@ -1152,10 +1148,10 @@ export function ChooseRankDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 순위로 값 선택</div>
             <div style={synSt(C.greenLight)}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
-            <div style={descSt}>1단계에서 구한 순위를 순번으로 넣으면, 그 순서에 놓인 포상을 선택해 반환합니다. 김하늘은 2위이므로 두 번째 값 &quot;금상&quot;이 나옵니다.</div>
+            <div style={descSt}>1단계에서 구한 순위를 순번으로 넣으면, 그 순서에 놓인 비고를 선택해 반환합니다. 1~3위는 최우수·우수·보통, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 반복해서 적습니다. 김하늘은 2위이므로 &quot;우수&quot;가 나옵니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
-            <div style={{ ...formulaSt, fontSize: 15 }}>
-              =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$30)</span>, &quot;대상&quot;, <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>, &quot;은상&quot;, &quot;장려상&quot;) = <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>
+            <div style={{ ...formulaSt, fontSize: 14 }}>
+              =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$31)</span>, &quot;최우수&quot;, <span style={{ color: C.greenLight }}>&quot;우수&quot;</span>, &quot;보통&quot;, &quot;노력&quot;, &quot;노력&quot;) = <span style={{ color: C.greenLight }}>&quot;우수&quot;</span>
             </div>
           </div>
         </div>
