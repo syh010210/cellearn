@@ -1015,7 +1015,7 @@ export function VlookupLimitDiagram() {
         <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
         {/* Left: 사원 정보 표 */}
         <div>
           <TableCaption color={C.blueLight}>[표6] 사원 정보</TableCaption>
@@ -1093,7 +1093,7 @@ export function ChooseRankDiagram() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'center' }}>
         {/* Left: 사원 판매 실적 표 */}
         <div>
           <TableCaption color={C.blueLight}>[표7] 학생 성적표</TableCaption>
