@@ -892,8 +892,6 @@ export function IndexMatchDiagram() {
     if (ri === 6) s.bb = C.green;
     if (ci === 0) s.bl = C.green;
     if (ci === 3) s.br = C.green;
-    // 매출액 열(노랑 채우기) — I27:I32 (MAX·MATCH 대상)
-    if (ci === 3) s.bg = 'rgba(251,191,36,0.14)';
     // 최고 매출액(4,800, 29행=데이터 3행) — 주황 채우기
     if (ri === 3 && ci === 3) { s.bg = 'rgba(251,146,60,0.45)'; s.bold = true; }
     // 결과 상품명(에어컨, 29행) — 초록 채우기
@@ -916,7 +914,7 @@ export function IndexMatchDiagram() {
       {/* 문제 박스 (실기 기출 형식: [표5] 상품 판매 현황) */}
       <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
-          [표5]에서 <b style={{ color: C.amberLight }}>매출액[I27:I32]</b>이 <b style={{ color: C.amberLight }}>가장 높은</b> 상품의 <b style={{ color: C.greenLight }}>상품명[F27:F32]</b>을 찾아 [J32] 셀에 표시하시오. (8점)
+          [표5]에서 <b style={{ color: C.amberLight }}>매출액[I27:I32]</b>이 <b style={{ color: C.amberLight }}>가장 높은</b> 상품의 <b style={{ color: C.greenLight }}>상품명[F27:F32]</b>을 찾아 [J32] 셀에 표시하시오.
         </div>
         <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH, MAX 함수 사용</div>
       </div>
@@ -926,7 +924,8 @@ export function IndexMatchDiagram() {
         <div>
           <TableCaption color={C.blueLight}>[표5] 상품 판매 현황 (매출액 단위: 만원)</TableCaption>
           <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={58} firstColW={78}
-            rowLabels={{ 3: { text: '← 3번째', color: C.purpleLight } }} />
+            rowLabels={{ 3: { text: '← 3번째', color: C.purpleLight } }}
+            labelRow={[{ text: '1번째', color: C.greenLight }, null, null, null]} />
         </div>
 
         {/* Right: 3단계 풀이 박스 (MAX → MATCH → INDEX) */}

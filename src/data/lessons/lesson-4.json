@@ -235,24 +235,12 @@
         },
         {
           "type": "heading",
-          "text": "INDEX + MATCH 조합 구조"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "**기본 구조**: =INDEX(가져올 데이터 범위, MATCH(찾을값, 찾을범위, 0))",
-            "MATCH가 찾을값의 **위치 번호**를 구하고, INDEX가 그 번호로 **실제 값**을 추출합니다.",
-            "찾을값의 **왼쪽** 열 데이터도 자유롭게 가져올 수 있어 실무 필수 수식입니다."
-          ]
-        },
-        {
-          "type": "heading",
           "text": "VLOOKUP과 HLOOKUP vs INDEX+MATCH 비교"
         },
         {
           "type": "bullets",
           "items": [
-            "**VLOOKUP·HLOOKUP**: 찾을 값이 반드시 참조 범위의 **첫 번째 행이나 열**에 있어야 해서 아래 방향이나 오른쪽 방향으로만 찾을 수 있습니다. 찾을 값이 첫 행·열에 있지 않으면, 찾고자 하는 행이나 열이 참조 범위 안에 없어 찾지 못할 수 있습니다.",
+            "**VLOOKUP · HLOOKUP**: 찾을 값이 반드시 참조 범위의 **첫 번째 행이나 열**에 있어야 해서 아래 방향이나 오른쪽 방향으로만 찾을 수 있습니다. 찾을 값이 첫 행 · 열에 있지 않으면, 찾고자 하는 행이나 열이 참조 범위 안에 없어 찾지 못할 수 있습니다.",
             "**INDEX+MATCH**: 참조 범위를 **표 전체**로 넣고 행이나 열을 **양방향**으로 검색하기 때문에 어느 위치의 값이든 찾을 수 있습니다."
           ]
         },
@@ -263,31 +251,49 @@
         }
       ],
       "practice": {
-        "instruction": "도서 재고 표입니다. 도서코드([B]열) 기준으로 왼쪽에 있는 도서ID([A]열)를 추출해야 합니다. [D2] 셀에 INDEX와 MATCH를 조합하여 \"BK-99\" 코드를 가진 도서의 ID를 구하세요.",
+        "instruction": "상품 판매 현황 표입니다. 매출액[D2:D5]이 가장 높은 상품의 상품명[A2:A5]을 찾아 [B7] 셀에 표시하세요. (INDEX, MATCH, MAX 함수 사용)",
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
-            { "val": "도서ID", "editable": false },
-            { "val": "도서코드", "editable": false },
-            { "val": "재고량", "editable": false },
-            { "val": "조회 결과 (ID)", "editable": false }
+            { "val": "상품명", "editable": false },
+            { "val": "분류", "editable": false },
+            { "val": "판매량", "editable": false },
+            { "val": "매출액", "editable": false }
           ],
           [
-            { "val": "1001", "editable": false },
-            { "val": "BK-88", "editable": false },
+            { "val": "노트북", "editable": false },
+            { "val": "전자", "editable": false },
+            { "val": 120, "editable": false },
+            { "val": 3600, "editable": false }
+          ],
+          [
+            { "val": "에어컨", "editable": false },
+            { "val": "가전", "editable": false },
+            { "val": 60, "editable": false },
+            { "val": 4800, "editable": false }
+          ],
+          [
+            { "val": "모니터", "editable": false },
+            { "val": "전자", "editable": false },
+            { "val": 140, "editable": false },
+            { "val": 2100, "editable": false }
+          ],
+          [
+            { "val": "냉장고", "editable": false },
+            { "val": "가전", "editable": false },
             { "val": 45, "editable": false },
-            { "val": "", "editable": true, "answer": "=INDEX(A2:A4,MATCH(\"BK-99\",B2:B4,0))", "result": "1002" }
+            { "val": 4050, "editable": false }
           ],
           [
-            { "val": "1002", "editable": false },
-            { "val": "BK-99", "editable": false },
-            { "val": 12, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "1003", "editable": false },
-            { "val": "BK-77", "editable": false },
-            { "val": 30, "editable": false },
+            { "val": "매출액 최고 상품명", "editable": false },
+            { "val": "", "editable": true, "answer": "=INDEX(A2:A5,MATCH(MAX(D2:D5),D2:D5,0))", "result": "에어컨" },
+            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -340,27 +346,27 @@
         }
       ],
       "practice": {
-        "instruction": "평가 등급 코드표입니다. [B2] 셀의 등급코드(1~3)에 따라 [C2] 셀에 등급(1=최우수, 2=우수, 3=보통)이 표시되도록 CHOOSE 수식을 완성하세요.",
+        "instruction": "회원 관리 표입니다. 회원코드[B2]의 두 번째 문자(1~3)에 따라 [C2] 셀에 등급(1=실버, 2=골드, 3=VIP)이 표시되도록 MID와 CHOOSE를 조합하여 수식을 완성하세요.",
         "cols": ["A", "B", "C"],
         "rows": [
           [
-            { "val": "이름", "editable": false },
-            { "val": "등급코드", "editable": false },
-            { "val": "최종등급", "editable": false }
+            { "val": "회원명", "editable": false },
+            { "val": "회원코드", "editable": false },
+            { "val": "등급", "editable": false }
           ],
           [
-            { "val": "강감찬", "editable": false },
-            { "val": 2, "editable": false },
-            { "val": "", "editable": true, "answer": "=CHOOSE(B2,\"최우수\",\"우수\",\"보통\")", "result": "우수" }
+            { "val": "김민준", "editable": false },
+            { "val": "M2", "editable": false },
+            { "val": "", "editable": true, "answer": "=CHOOSE(MID(B2,2,1),\"실버\",\"골드\",\"VIP\")", "result": "골드" }
           ],
           [
-            { "val": "이순신", "editable": false },
-            { "val": 1, "editable": false },
+            { "val": "이서연", "editable": false },
+            { "val": "M1", "editable": false },
             { "val": "", "editable": false }
           ],
           [
-            { "val": "유관순", "editable": false },
-            { "val": 3, "editable": false },
+            { "val": "박도윤", "editable": false },
+            { "val": "M3", "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -492,7 +498,7 @@
   "practiceAnswers": [
     { "sheet": "방향검색", "cell": "C2", "formula": "=VLOOKUP(\"B-102\",A2:B4,2,0)" },
     { "sheet": "위치찾기", "cell": "C3", "formula": "=MATCH(\"이영희\",B2:B4,0)" },
-    { "sheet": "조합활용", "cell": "D2", "formula": "=INDEX(A2:A4,MATCH(\"BK-99\",B2:B4,0))" },
-    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(B2,\"최우수\",\"우수\",\"보통\")" }
+    { "sheet": "조합활용", "cell": "B7", "formula": "=INDEX(A2:A5,MATCH(MAX(D2:D5),D2:D5,0))" },
+    { "sheet": "값선택", "cell": "C2", "formula": "=CHOOSE(MID(B2,2,1),\"실버\",\"골드\",\"VIP\")" }
   ]
 }
