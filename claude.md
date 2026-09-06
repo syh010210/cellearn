@@ -221,6 +221,8 @@ computil-platform/
 - 슬라이드 안에서 `justifyContent`, `margin: '0 auto'`, `maxWidth`, `width: N`으로 위치를 잡지 않는다.
   폭 제한이 필요하면 `Fill`의 `max` prop만 쓴다.
 - 가로 한 줄에 카드 여러 개를 나열할 때도 `Row` 안에 `Fill`을 여러 개 넣는다.
+- 예외: ref나 position:relative가 필요한 애니메이션 컴포넌트(RelativeFillAnim 등)는 Row로 바꾸지 않는다.
+- 예외: 기존 가로행 중 maxWidth가 없고 justifyContent: 'center' 또는 equal-flex로 이미 중앙 정렬된 것은 유지해도 된다. 새로 만드는 슬라이드는 Row를 쓴다.
 
 ### 확인
 - 브라우저 폭 1400px 이상에서 `Row`의 좌우 여백이 같아야 한다.
