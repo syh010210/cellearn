@@ -1,7 +1,7 @@
 import { ExcelBasicDiagram, RelativeDownDiagram, RelativeRightDiagram, AbsoluteRefDiagram, MixedRefDiagram } from './Lesson1.jsx';
 import { StringExtractDiagram, StringLenCaseDiagram, StringFindTrimDiagram, StringCombineDiagram } from './Lesson2.jsx';
 import { StatBasicDiagram, StatRankDiagram, StatLargeSmallDiagram, StatCountDiagram, StatCondCountDiagram } from './Lesson3.jsx';
-import { VlookupHlookupIntroDiagram, VlookupDiagram, HlookupTwoTableDiagram, VlookupApproxDiagram, VlookupOneTableDiagram, MatchIndexDiagram, ChooseDiagram, IndexMatchDiagram, VlookupLimitDiagram } from './Lesson4.jsx';
+import { VlookupHlookupIntroDiagram, VlookupDiagram, HlookupTwoTableDiagram, VlookupApproxDiagram, VlookupOneTableDiagram, MatchIndexDiagram, ChooseDiagram, ChooseRankDiagram, IndexMatchDiagram, VlookupLimitDiagram } from './Lesson4.jsx';
 import { DbSumDiagram, DbAverageDiagram, DbCountDiagram, DbMaxDiagram } from './Lesson5.jsx';
 import { MathBasicDiagram, MathRoundDiagram, SumifDiagram, SumifsDiagram } from './Lesson6.jsx';
 import { DatetimeBasicDiagram, DatetimeComposeDiagram, WeekdayDiagram, WorkdayDiagram } from './Lesson7.jsx';
@@ -127,6 +127,7 @@ export const DIAGRAM_REGISTRY = {
   '/images/lookup-indexmatch.svg':     IndexMatchDiagram,
   '/images/lookup-vlookup-limit.svg':  VlookupLimitDiagram,
   '/images/lookup-choose.svg':         ChooseDiagram,
+  '/diagram/lookup-choose-rank':       ChooseRankDiagram,
 
   '/images/db-dsum.svg':               DbSumDiagram,
   '/images/db-daverage.svg':           DbAverageDiagram,

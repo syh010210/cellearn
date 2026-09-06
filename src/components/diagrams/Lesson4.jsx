@@ -894,8 +894,8 @@ export function IndexMatchDiagram() {
     if (ci === 3) s.br = C.green;
     // 매출액 열(노랑 채우기) — I27:I32 (MAX·MATCH 대상)
     if (ci === 3) s.bg = 'rgba(251,191,36,0.14)';
-    // 최고 매출액(4,800, 29행=데이터 3행) — 진한 노랑 채우기
-    if (ri === 3 && ci === 3) { s.bg = 'rgba(251,191,36,0.40)'; s.bold = true; }
+    // 최고 매출액(4,800, 29행=데이터 3행) — 주황 채우기
+    if (ri === 3 && ci === 3) { s.bg = 'rgba(251,146,60,0.45)'; s.bold = true; }
     // 결과 상품명(에어컨, 29행) — 초록 채우기
     if (ri === 3 && ci === 0) { s.bg = 'rgba(34,197,94,0.30)'; s.bold = true; }
     return s;
@@ -910,7 +910,7 @@ export function IndexMatchDiagram() {
 
   return (
     <Wrap>
-      <Title>조합 함수: INDEX + MATCH + MAX</Title>
+      <Title>조합 함수: INDEX + MATCH</Title>
       <Subtitle>MAX로 최고값을 구하고, MATCH로 그 위치를 찾아, INDEX로 그 자리의 값을 꺼냅니다.</Subtitle>
 
       {/* 문제 박스 (실기 기출 형식: [표5] 상품 판매 현황) */}
@@ -925,7 +925,8 @@ export function IndexMatchDiagram() {
         {/* Left: 상품 판매 현황 표 */}
         <div>
           <TableCaption color={C.blueLight}>[표5] 상품 판매 현황 (매출액 단위: 만원)</TableCaption>
-          <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={58} firstColW={78} />
+          <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={58} firstColW={78}
+            rowLabels={{ 3: { text: '← 3번째', color: C.purpleLight } }} />
         </div>
 
         {/* Right: 3단계 풀이 박스 (MAX → MATCH → INDEX) */}
@@ -937,7 +938,7 @@ export function IndexMatchDiagram() {
             <div style={descSt}>매출액 범위에서 가장 큰 값을 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =MAX(<span style={{ color: C.amberLight }}>I27:I32</span>) = <span style={{ color: C.orangeLight }}>4,800</span>
+              =MAX(<span style={{ color: C.text }}>I27:I32</span>) = <span style={{ color: C.amberLight }}>4,800</span>
             </div>
           </div>
 
@@ -945,10 +946,10 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
             <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
-            <div style={descSt}>MAX가 구한 최고 매출액(4,800)이 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다. MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목 셀인 I26을 뺀 I27:I32로 지정합니다.</div>
+            <div style={descSt}>MAX로 구한 최고 매출액을 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.<br />MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목 셀인 I26을 뺀 I27:I32로 지정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =MATCH(<span style={{ color: C.orangeLight }}>MAX(I27:I32)</span>, <span style={{ color: C.amberLight }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
+              =MATCH(<span style={{ color: C.amberLight }}>MAX(I27:I32)</span>, <span style={{ color: C.text }}>I27:I32</span>, 0) = <span style={{ color: C.purpleLight }}>3</span>
             </div>
           </div>
 
@@ -956,10 +957,10 @@ export function IndexMatchDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
             <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
-            <div style={descSt}>표 전체로 범위를 잡을 때는, 앞 단계 MATCH가 제목 셀(I26)을 뺀 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목 행은 빼고 F27:I32로 지정합니다.</div>
+            <div style={descSt}>범위를 표 전체로 잡고, 앞 단계 MATCH가 제목 셀(I26)을 뺀 매출액 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목 행은 빼고 F27:I32로 지정합니다.<br />행 번호에는 MAX로 구한 최고 매출액이 MATCH가 찾은 매출액 범위에서 몇 번째인지, 그 위치 번호를 넣습니다.<br />열 번호에는 지정한 범위에서 꺼내려는 값이 있는 열 번호를 넣습니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =INDEX(<span style={{ color: C.greenLight }}>F27:I32</span>, <span style={{ color: C.purpleLight }}>MATCH(MAX(I27:I32), I27:I32, 0)</span>, <span style={{ color: C.amberLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
+              =INDEX(<span style={{ color: C.greenLight }}>F27:I32</span>, <span style={{ color: C.purpleLight }}>MATCH(</span><span style={{ color: C.amberLight }}>MAX(I27:I32)</span><span style={{ color: C.purpleLight }}>, I27:I32, 0)</span>, <span style={{ color: C.greenLight }}>1</span>) = <span style={{ color: C.greenLight }}>&quot;에어컨&quot;</span>
             </div>
           </div>
         </div>
@@ -1043,6 +1044,98 @@ export function VlookupLimitDiagram() {
       </div>
 
       <div style={{ ...para, marginTop: 4 }}>핵심은 <b style={{ color: C.greenLight }}>찾을 값의 왼쪽 데이터</b>도 가져올 수 있다는 점입니다. VLOOKUP·HLOOKUP은 첫 행·열에서 오른쪽·아래로만, INDEX+MATCH는 표 전체를 놓고 양방향으로 찾습니다.</div>
+    </Wrap>
+  );
+}
+
+// ──────────────────────────────────────────────
+// ChooseRankDiagram — RANK.EQ + CHOOSE 조합 (개념학습5, 실제 시험 형식)
+// MAX→MATCH→INDEX 단계 박스(개념4)와 같은 형식으로, 순위→값 선택을 두 단계로 보여준다.
+// ──────────────────────────────────────────────
+export function ChooseRankDiagram() {
+  // [표7] 사원 판매 실적 — F26:H30. 데이터 27~30. 사원명(F)·판매액(G, 만원)·포상(H).
+  const prod = [
+    ['사원명', '판매액', '포상'],   // 26행 머리글
+    ['김하늘', '4,500', '금상'],    // 27 ← 예시(2위)
+    ['이준호', '5,200', ''],        // 28 (1위)
+    ['박서연', '3,100', ''],        // 29 (4위)
+    ['정민수', '3,800', ''],        // 30 (3위)
+  ];
+  // 판매액(G27:G30)=RANK.EQ 참조 범위: 옅은 노랑 채우기 + 주황 바깥 테두리
+  // 예시 행(김하늘, 27행=데이터 1행): 판매액 → 진한 주황 / 포상 → 초록("금상")
+  const prodSt = (ri, ci) => {
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    const s = {};
+    // 판매액 열(G27:G30) — RANK.EQ 참조 범위
+    if (ci === 1) {
+      s.bg = 'rgba(251,191,36,0.14)';
+      s.bl = C.orange; s.br = C.orange;
+      if (ri === 1) s.bt = C.orange;
+      if (ri === 4) s.bb = C.orange;
+    }
+    // 예시 판매액(4,500, 27행) — 진한 주황 채우기 (RANK.EQ 대상 값)
+    if (ri === 1 && ci === 1) { s.bg = 'rgba(251,146,60,0.45)'; s.bold = true; }
+    // 예시 포상(금상, 27행) — 초록 채우기 (CHOOSE 결과)
+    if (ri === 1 && ci === 2) { s.bg = 'rgba(34,197,94,0.30)'; s.bold = true; s.color = C.greenLight; }
+    return s;
+  };
+
+  // 단계 박스 공통 (개념4와 동일)
+  const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
+  const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
+  const synSt = (c) => ({ color: c, fontSize: 14, fontWeight: 700, opacity: 0.95 });
+  const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
+  const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
+
+  return (
+    <Wrap>
+      <Title>조합 함수: RANK.EQ + CHOOSE</Title>
+      <Subtitle>RANK.EQ로 순위를 구하고, CHOOSE로 그 순위에 놓인 값을 선택합니다.</Subtitle>
+
+      {/* 문제 박스 (실기 기출 형식: [표7] 사원 판매 실적) */}
+      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+          [표7]에서 <b style={{ color: C.amberLight }}>판매액[G27:G30]</b>이 높은 순으로 순위를 매겨, 각 사원의 <b style={{ color: C.greenLight }}>포상[H27:H30]</b>을 구하시오. (8점)
+        </div>
+        <div style={{ color: C.textMuted, fontSize: 14.5, lineHeight: 1.85, marginTop: 6 }}>
+          <div>▶ 1위는 &quot;대상&quot;, 2위는 &quot;금상&quot;, 3위는 &quot;은상&quot;, 4위는 &quot;장려상&quot;으로 표시함</div>
+          <div>▶ RANK.EQ, CHOOSE 함수 사용</div>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-start' }}>
+        {/* Left: 사원 판매 실적 표 */}
+        <div>
+          <TableCaption color={C.blueLight}>[표7] 사원 판매 실적 (판매액 단위: 만원)</TableCaption>
+          <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={72} firstColW={78}
+            rowLabels={{ 1: { text: '← 2위', color: C.purpleLight } }} />
+        </div>
+
+        {/* Right: 2단계 풀이 박스 (RANK.EQ → CHOOSE) */}
+        <div style={{ flex: '1 1 360px', minWidth: 300, maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {/* STEP 1 — RANK.EQ */}
+          <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
+            <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
+            <div style={synSt(C.purpleLight)}>구문: =RANK.EQ(수, 참조 범위, [옵션])</div>
+            <div style={descSt}>판매액이 참조 범위에서 몇 위인지 순위를 반환합니다. 옵션을 생략하거나 0이면 큰 값이 1위인 내림차순입니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>
+              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$30</span>) = <span style={{ color: C.purpleLight }}>2</span>
+            </div>
+          </div>
+
+          {/* STEP 2 — CHOOSE */}
+          <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
+            <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 순위로 값 선택</div>
+            <div style={synSt(C.greenLight)}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
+            <div style={descSt}>1단계에서 구한 순위를 순번으로 넣으면, 그 순서에 놓인 포상을 선택해 반환합니다. 김하늘은 2위이므로 두 번째 값 &quot;금상&quot;이 나옵니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
+            <div style={{ ...formulaSt, fontSize: 15 }}>
+              =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$30)</span>, &quot;대상&quot;, <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>, &quot;은상&quot;, &quot;장려상&quot;) = <span style={{ color: C.greenLight }}>&quot;금상&quot;</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </Wrap>
   );
 }
