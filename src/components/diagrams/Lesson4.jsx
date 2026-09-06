@@ -1116,7 +1116,7 @@ export function ChooseRankDiagram() {
             <div style={descSt}>성적이 참조 범위에서 몇 위인지 순위를 반환합니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$31</span>, 0)
+              =RANK.EQ(G27, $G$27:$G$31, 0)
             </div>
           </div>
 
@@ -1124,10 +1124,10 @@ export function ChooseRankDiagram() {
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 순위로 값 선택</div>
             <div style={synSt(C.greenLight)}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
-            <div style={descSt}>1단계에서 구한 순위를 순번으로 넣으면, 그 순서에 놓인 비고를 선택해 반환합니다. 1~3위는 최우수·우수·보통, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 반복해서 적습니다. 김하늘은 2위이므로 &quot;우수&quot;가 나옵니다.</div>
+            <div style={descSt}>1단계에서 구한 순위를 숫자 자리에 넣으면, 순위가 1이면 값1, 2면 값2가 반환됩니다. 그래서 값1부터 &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;을 적으면 1~3위에 맞게 나오고, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 &quot;노력&quot;으로 채웁니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={{ ...formulaSt, fontSize: 14 }}>
-              =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$31)</span>, &quot;최우수&quot;, <span style={{ color: C.greenLight }}>&quot;우수&quot;</span>, &quot;보통&quot;, &quot;노력&quot;, &quot;노력&quot;) = <span style={{ color: C.greenLight }}>&quot;우수&quot;</span>
+              =CHOOSE(<span style={{ color: C.purpleLight }}>RANK.EQ(G27,$G$27:$G$31)</span>, &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;, &quot;노력&quot;, &quot;노력&quot;)
             </div>
           </div>
         </div>
