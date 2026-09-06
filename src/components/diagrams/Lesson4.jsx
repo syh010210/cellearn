@@ -1057,29 +1057,18 @@ export function ChooseRankDiagram() {
   // [표7] 학생 성적표 — F26:H31. 데이터 27~31. 이름(F)·성적(G)·비고(H).
   const prod = [
     ['이름', '성적', '비고'],   // 26행 머리글
-    ['김하늘', 88, '우수'],     // 27 ← 예시(2위)
-    ['이준호', 95, ''],         // 28 (1위)
-    ['박서연', 72, ''],         // 29 (4위)
-    ['정민수', 80, ''],         // 30 (3위)
-    ['최유진', 65, ''],         // 31 (5위)
+    ['김하늘', 88, '우수'],     // 27 (2위)
+    ['이준호', 95, '최우수'],   // 28 (1위)
+    ['박서연', 72, '노력'],     // 29 (4위)
+    ['정민수', 80, '보통'],     // 30 (3위)
+    ['최유진', 65, '노력'],     // 31 (5위)
   ];
-  // 성적(G27:G31)=RANK.EQ 참조 범위: 옅은 노랑 채우기 + 주황 바깥 테두리
-  // 예시 행(김하늘, 27행=데이터 1행): 성적 → 진한 주황 / 비고 → 초록("우수")
+  // 표 안 테두리·채우기 없음. 비고 열(H27:H31) 값만 초록색 글자, 순위는 표 밖 라벨(보라)로 표시.
   const prodSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    const s = {};
-    // 성적 열(G27:G31) — RANK.EQ 참조 범위
-    if (ci === 1) {
-      s.bg = 'rgba(251,191,36,0.14)';
-      s.bl = C.orange; s.br = C.orange;
-      if (ri === 1) s.bt = C.orange;
-      if (ri === 5) s.bb = C.orange;
-    }
-    // 예시 성적(88, 27행) — 진한 주황 채우기 (RANK.EQ 대상 값)
-    if (ri === 1 && ci === 1) { s.bg = 'rgba(251,146,60,0.45)'; s.bold = true; }
-    // 예시 비고(우수, 27행) — 초록 채우기 (CHOOSE 결과)
-    if (ri === 1 && ci === 2) { s.bg = 'rgba(34,197,94,0.30)'; s.bold = true; s.color = C.greenLight; }
-    return s;
+    // 비고 열(H27:H31) 값 — 초록색 글자
+    if (ci === 2) return { color: C.greenLight, bold: true };
+    return {};
   };
 
   // 단계 박스 공통 (개념4와 동일)
@@ -1109,7 +1098,13 @@ export function ChooseRankDiagram() {
         <div>
           <TableCaption color={C.blueLight}>[표7] 학생 성적표</TableCaption>
           <ExcelGrid data={prod} startCol={5} startRow={26} cellStyle={prodSt} minColW={72} firstColW={78}
-            rowLabels={{ 1: { text: '← 2위', color: C.purpleLight } }} />
+            rowLabels={{
+              1: { text: '← 2위', color: C.purpleLight },
+              2: { text: '← 1위', color: C.purpleLight },
+              3: { text: '← 4위', color: C.purpleLight },
+              4: { text: '← 3위', color: C.purpleLight },
+              5: { text: '← 5위', color: C.purpleLight },
+            }} />
         </div>
 
         {/* Right: 2단계 풀이 박스 (RANK.EQ → CHOOSE) */}
@@ -1117,11 +1112,11 @@ export function ChooseRankDiagram() {
           {/* STEP 1 — RANK.EQ */}
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
-            <div style={synSt(C.purpleLight)}>구문: =RANK.EQ(수, 참조 범위, [옵션])</div>
-            <div style={descSt}>성적이 참조 범위에서 몇 위인지 순위를 반환합니다. 옵션을 생략하거나 0이면 큰 값이 1위인 내림차순입니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
+            <div style={synSt(C.purpleLight)}>구문: =RANK.EQ(값, 범위, [정렬])</div>
+            <div style={descSt}>성적이 참조 범위에서 몇 위인지 순위를 반환합니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
-              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$31</span>) = <span style={{ color: C.purpleLight }}>2</span>
+              =RANK.EQ(<span style={{ color: C.amberLight }}>G27</span>, <span style={{ color: C.text }}>$G$27:$G$31</span>, 0)
             </div>
           </div>
 
