@@ -274,9 +274,8 @@ export function DbAverageDiagram() {
     if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
     return { ...s, color: C.amber, bold: true };
   };
-  // 아래 안내: 같은 행 → AND / 다른 행 → OR
+  // 아래 안내: 같은 행 → AND
   const andC = [['제조사', '재고량'], ['A사', '>=20']];
-  const orC = [['매장', '판매'], ['대구', ''], ['', '>=50']];
   const plainHead = (ri) => (ri === 0 ? { bold: true, color: C.blueLight, bg: C.blueCard } : { color: C.amber, bold: true });
 
   return (
@@ -316,15 +315,11 @@ export function DbAverageDiagram() {
           <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
           <ExplainBoard tabs={tabs} active={active} explain={explain} />
 
-          {/* 같은 행 → AND / 다른 행 → OR (OR은 다음 개념 예고라 흐리게) */}
+          {/* 같은 행 → AND (조건을 나란히 적는 예) */}
           <Row gap={16}>
             <Fill min={130} gap={4} style={{ alignItems: 'center' }}>
               <div style={{ color: C.amber, fontSize: 13.5, fontWeight: 700 }}>같은 행 → AND</div>
               <ExcelGrid data={andC} startCol={5} startRow={1} cellStyle={(ri) => plainHead(ri)} minColW={62} />
-            </Fill>
-            <Fill min={130} gap={4} style={{ alignItems: 'center', opacity: 0.6 }}>
-              <div style={{ color: C.textMuted, fontSize: 13.5, fontWeight: 700 }}>다른 행 → OR</div>
-              <ExcelGrid data={orC} startCol={5} startRow={1} cellStyle={(ri) => plainHead(ri)} minColW={62} />
             </Fill>
           </Row>
         </Fill>
