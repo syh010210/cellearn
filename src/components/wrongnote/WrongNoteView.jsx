@@ -15,7 +15,6 @@ export default function WrongNoteView({ lessons, quizWrongMap, practiceWrongMap 
     .filter((x) => x.q);
 
   const cardBase = { background: UI.surface, borderRadius: UI.rMd, padding: 20, marginBottom: 12, border: `1px solid ${UI.redLine}` };
-  const mono = { fontFamily: UI.mono };
   const secHead = { fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 7 };
 
   return (
@@ -35,10 +34,10 @@ export default function WrongNoteView({ lessons, quizWrongMap, practiceWrongMap 
                   {p.source === "mini" ? "미니 엑셀" : "업로드"}
                 </span>
               </div>
-              <div style={{ fontWeight: 700, marginBottom: 8, color: UI.ink }}><span style={mono}>{p.sheet} — {p.cell}</span> 셀</div>
+              <div style={{ fontWeight: 700, marginBottom: 8, color: UI.ink }}>{p.sheet} — {p.cell} 셀</div>
               <div style={{ fontSize: 13, color: UI.mut }}>
-                <div>입력한 수식: <span style={{ color: UI.wrong, ...mono }}>{p.studentFormula || "(없음)"}</span></div>
-                <div>정답 수식: <span style={{ color: UI.correct, ...mono }}>{p.formula}</span></div>
+                <div>입력한 수식: <span style={{ color: UI.wrong }}>{p.studentFormula || "(없음)"}</span></div>
+                <div>정답 수식: <span style={{ color: UI.correct }}>{p.formula}</span></div>
                 {p.reason && <div>사유: {p.reason}</div>}
               </div>
             </div>
