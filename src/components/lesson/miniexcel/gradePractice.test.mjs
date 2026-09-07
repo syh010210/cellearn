@@ -1,4 +1,4 @@
-import { argDiffReason } from "./gradePractice.js";
+import { argDiffReason, astEqualFormula, fillFromReason } from "./gradePractice.js";
 
 let pass = 0;
 let fail = 0;
@@ -49,6 +49,32 @@ check("TRUE↔1 동일 취급 → 차이 없음 null",
 check("파싱 실패 → 폴백 null",
   argDiffReason("=VLOOKUP(", "=VLOOKUP(A1,B1:C9,2,0)"),
   null);
+
+// ── fillFrom AST 검사 ──
+// cells[1][3] = D2 (origin), D3 = ri2,ci3. cell.fillFrom="D2".
+function makeCells(d2) {
+  const cells = Array.from({ length: 3 }, () => Array.from({ length: 4 }, () => ({ input: "" })));
+  cells[1][3] = { input: d2 }; // D2
+  return cells;
+}
+// 1) D2(…,3,0) / D3(…C3…,3,FALSE) → 정답 (AST로 answer와 동일)
+check("fillFrom 정답: FALSE=0",
+  astEqualFormula("=VLOOKUP(C3,$A$6:$C$8,3,FALSE)", "=VLOOKUP(C3,$A$6:$C$8,3,0)"), true);
+// 2) D2(…,3,0) / D3(…C3…,3) → 4번째 인수 생략(=TRUE) vs 0 → 다름
+check("fillFrom 4번째 인수 생략",
+  fillFromReason("=VLOOKUP(C3,$A$6:$C$8,3)",
+    { fillFrom: "D2", answer: "=VLOOKUP(C3,$A$6:$C$8,3,0)" }, 2, 3, makeCells("=VLOOKUP(C2,$A$6:$C$8,3,0)")),
+  "4번째 인수(일치 옵션)가 다릅니다. 유사 일치는 TRUE 또는 생략입니다.");
+// 3) D2(C2,A6:C8,3,0) / D3(C3,A7:C9,3,0) → 범위 밀림($없음)
+check("fillFrom 범위 밀림",
+  fillFromReason("=VLOOKUP(C3,A7:C9,3,0)",
+    { fillFrom: "D2", answer: "=VLOOKUP(C3,$A$6:$C$8,3,0)" }, 2, 3, makeCells("=VLOOKUP(C2,A6:C8,3,0)")),
+  "참조 범위가 밀렸습니다. 원본 수식에서 범위에 $를 붙여 고정한 뒤 다시 채우세요");
+// 4) D2(C2,$A$6:$C$8,3,0) / D3(C2,…) 그대로 → 복사
+check("fillFrom 복사",
+  fillFromReason("=VLOOKUP(C2,$A$6:$C$8,3,0)",
+    { fillFrom: "D2", answer: "=VLOOKUP(C3,$A$6:$C$8,3,0)" }, 2, 3, makeCells("=VLOOKUP(C2,$A$6:$C$8,3,0)")),
+  "자동 채우기가 아니라 복사했습니다. 찾을 값이 바뀌어야 합니다");
 
 console.log(`\n총 ${pass + fail}개 중 ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail > 0 ? 1 : 0);

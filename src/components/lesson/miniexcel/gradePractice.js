@@ -11,7 +11,6 @@ function parseCellA1(str) {
   for (const ch of m[1].toUpperCase()) ci = ci * 26 + (ch.charCodeAt(0) - 64);
   return { ci: ci - 1, ri: parseInt(m[2], 10) - 1 };
 }
-const norm = (s) => String(s || "").replace(/\s/g, "").toUpperCase();
 // 휘발성 함수(매번 값이 달라짐): 결과값 비교를 건너뛴다
 const VOLATILE = /\b(NOW|TODAY|RAND|RANDBETWEEN)\s*\(/i;
 
@@ -57,21 +56,50 @@ const ARG_TAIL = {
   "자릿수": "반올림·버림할 자릿수를 확인하세요.",
 };
 
+// 생략 가능한 인수의 기본값(정규화 문자열). 생략 = 기본값 동일 취급용.
+// 예) VLOOKUP/HLOOKUP 4번째(일치 옵션) 생략 = TRUE = "1"
+const ARG_DEFAULT = { VLOOKUP: { 3: "1" }, HLOOKUP: { 3: "1" }, MATCH: { 2: "1" } };
+
+function astOf(formula) {
+  try { return parseFormula(formula); } catch { return null; }
+}
+// 인수 i의 정규화 문자열. 없으면 (pad일 때) 기본값, 그래도 없으면 null.
+function argSer(ast, i, pad) {
+  if (i < ast.args.length) return serializeArg(ast.args[i]);
+  if (pad) { const d = ARG_DEFAULT[ast.name]?.[i]; if (d !== undefined) return d; }
+  return null;
+}
+// 수식 두 개가 AST(정규화)로 같은지. TRUE↔1·FALSE↔0·$무시·대소문자/공백 무시.
+export function astEqualFormula(a, b) {
+  const x = astOf(a), y = astOf(b);
+  if (!x || !y) return false;
+  return serializeArg(x) === serializeArg(y);
+}
+// $ 없는 콜론 범위(밀릴 수 있는 범위)가 들어있는지
+function hasUnlockedRange(formula) {
+  const re = /\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+/g;
+  let m;
+  while ((m = re.exec(formula)) !== null) if (!m[0].includes("$")) return true;
+  return false;
+}
+
 // 학생 수식 vs 정답을 최상위 함수 인수 단위로 비교. 다른 첫 인수만 알려준다.
+// opts.padDefaults=true 면 생략 인수를 기본값으로 채워 비교(개수 차이 대신 값 차이로).
 // 반환: 구체 사유 문자열 또는 null(폴백: 기존 사유 사용).
-export function argDiffReason(studentInput, answer) {
-  let sAst, aAst;
-  try { sAst = parseFormula(studentInput); aAst = parseFormula(answer); }
-  catch { return null; }
+export function argDiffReason(studentInput, answer, opts = {}) {
+  const pad = !!opts.padDefaults;
+  const sAst = astOf(studentInput), aAst = astOf(answer);
   if (!sAst || !aAst || sAst.type !== "FunctionCall" || aAst.type !== "FunctionCall") return null;
   if (sAst.name !== aAst.name) return null; // 함수명 다름 → 기존(requiredFunctions) 사유로 폴백
-  const sArgs = sAst.args, aArgs = aAst.args;
-  if (sArgs.length !== aArgs.length) return `인수 개수가 다릅니다. 정답은 ${aArgs.length}개입니다.`;
-  for (let i = 0; i < aArgs.length; i++) {
-    if (serializeArg(sArgs[i]) === serializeArg(aArgs[i])) continue;
+  const n = Math.max(sAst.args.length, aAst.args.length);
+  for (let i = 0; i < n; i++) {
+    const ss = argSer(sAst, i, pad), as = argSer(aAst, i, pad);
+    if (ss === null && as === null) continue;
+    if (ss === null || as === null) return `인수 개수가 다릅니다. 정답은 ${aAst.args.length}개입니다.`;
+    if (ss === as) continue;
     // 중첩 함수 인수는 그 안을 확인하라고만
-    if (sArgs[i].type === "FunctionCall" || aArgs[i].type === "FunctionCall") {
-      const inner = aArgs[i].type === "FunctionCall" ? aArgs[i].name : sArgs[i].name;
+    if (sAst.args[i]?.type === "FunctionCall" || aAst.args[i]?.type === "FunctionCall") {
+      const inner = aAst.args[i]?.type === "FunctionCall" ? aAst.args[i].name : sAst.args[i].name;
       return `${i + 1}번째 인수 안의 ${inner} 함수를 확인하세요.`;
     }
     const name = argName(aAst.name, i);
@@ -85,6 +113,24 @@ export function argDiffReason(studentInput, answer) {
     return "참조 고정($)만 다릅니다.";
   }
   return null;
+}
+
+// fillFrom 셀: 원본(D2) 자동 채우기 기준으로 어떻게 다른지 세분화한 사유
+export function fillFromReason(input, cell, ri, ci, cells) {
+  const origin = parseCellA1(cell.fillFrom);
+  const originInput = origin ? (cells[origin.ri]?.[origin.ci]?.input || "").trim() : "";
+  if (!originInput.startsWith("=")) {
+    return argDiffReason(input, cell.answer, { padDefaults: true }) || `${cell.fillFrom}에서 자동 채우기한 결과와 다릅니다`;
+  }
+  const shifted = shiftFormula(originInput, ri - origin.ri, ci - origin.ci);
+  // 1) 찾을 값도 안 바꾸고 원본과 똑같음 → 복사
+  if (astEqualFormula(input, originInput)) return "자동 채우기가 아니라 복사했습니다. 찾을 값이 바뀌어야 합니다";
+  // 2) 원본을 그대로 채웠는데 범위에 $가 없어 밀림
+  if (astEqualFormula(shifted, input) && hasUnlockedRange(input)) {
+    return "참조 범위가 밀렸습니다. 원본 수식에서 범위에 $를 붙여 고정한 뒤 다시 채우세요";
+  }
+  // 3) 그 외 — 원본을 (dRow,dCol) 민 것과 인수 단위로 비교
+  return argDiffReason(input, shifted, { padDefaults: true }) || `${cell.fillFrom}에서 자동 채우기한 결과와 다릅니다`;
 }
 
 // 순수 채점 함수. cells는 {editable, input, answer, result, format, fillFrom, requiredFunctions} 셀의 2차원 배열.
@@ -116,7 +162,17 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
       results.push({ ...base, status: "wrong", reason: argReason || `수식 오류 (${raw.error}) — 참조 범위와 찾을 값을 확인하세요` });
       return;
     }
-    // 5. 결과값 불일치 — NOW/TODAY/RAND/RANDBETWEEN이 들어가면 값이 매번 달라지므로 건너뜀
+    // 5. 자동 채우기 셀: 정답 수식과 AST로 같으면(직접 쳤든 채웠든) 정답, 아니면 세분화 오답.
+    //    fillFrom 검사를 결과값 비교보다 먼저 해서 "밀림/복사/인수 차이"를 정확히 안내한다.
+    if (cell.fillFrom && answer) {
+      if (astEqualFormula(input, answer)) {
+        results.push({ ...base, status: "correct", reason: "정답" });
+      } else {
+        results.push({ ...base, status: "wrong", reason: fillFromReason(input, cell, ri, ci, cells) });
+      }
+      return;
+    }
+    // 6. 결과값 불일치 — NOW/TODAY/RAND/RANDBETWEEN이 들어가면 값이 매번 달라지므로 건너뜀
     //    (필수 함수 검사(3)와 에러 검사(4)는 이미 통과한 상태)
     const isVolatile = VOLATILE.test(input);
     const computed = sheet?.getDisplayValue(base.addr);
@@ -131,22 +187,6 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
         results.push({ ...base, status: "wrong", reason: argReason || "결과값이 다릅니다" });
         return;
       }
-    }
-    // 6. 자동 채우기 검증
-    if (cell.fillFrom && answer && norm(input) !== norm(answer)) {
-      const origin = parseCellA1(cell.fillFrom);
-      let reason = `${cell.fillFrom}에서 자동 채우기한 결과와 다릅니다`;
-      if (origin) {
-        const originInput = (cells[origin.ri]?.[origin.ci]?.input || "").trim();
-        const shifted = originInput.startsWith("=") ? shiftFormula(originInput, ri - origin.ri, ci - origin.ci) : originInput;
-        if (originInput && norm(input) === norm(shifted)) {
-          reason = "참조 범위가 밀렸습니다. 원본 수식에서 범위에 $를 붙여 고정한 뒤 다시 채우세요";
-        } else if (originInput && norm(input) === norm(originInput)) {
-          reason = "자동 채우기가 아니라 복사했습니다. 찾을 값이 바뀌어야 합니다";
-        }
-      }
-      results.push({ ...base, status: "wrong", reason });
-      return;
     }
     // 7. 정답
     results.push({ ...base, status: "correct", reason: "정답" });
