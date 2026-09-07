@@ -1,9 +1,11 @@
-import { useState, useRef, useEffect } from "react";
-import { toAddr, shiftFormula, cycleReference } from "../../utils/formulaUtils";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { toAddr, shiftFormula } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
 import { FUNCTIONS, LAZY_FUNCTIONS } from "../../excel-engine/functions/index.js";
 import { gradePractice } from "./miniexcel/gradePractice.js";
+import { useSelection } from "./miniexcel/useSelection.js";
+import { useKeyboard } from "./miniexcel/useKeyboard.js";
 
 // 자동완성 목록 = 엔진에 등록된 함수(컴활 출제 범위)만
 const FUNC_NAMES = [...new Set([...Object.keys(FUNCTIONS), ...Object.keys(LAZY_FUNCTIONS)])].sort();
@@ -61,8 +63,6 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     practice.rows.map((row) => row.map((cell) => ({ ...cell, input: "", status: null })));
 
   const [cells, setCells] = useState(initCells);
-  // 선택은 anchor/focus 쌍으로 관리. 단일 선택이면 anchor===focus.
-  const [selection, setSelection] = useState(null); // { anchor:{ri,ci}, focus:{ri,ci} } | null
   const [inputVal, setInputVal] = useState("");
   const [dragging, setDragging] = useState(false);       // 채우기 핸들 드래그
   const [dragStart, setDragStart] = useState(null);
@@ -107,7 +107,6 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const isRangeDraggingRef = useRef(false);  // 수식 참조 드래그
   const rangeStartRef = useRef(null);
   const isSelDraggingRef = useRef(false);    // 선택 범위 드래그
-  const selAnchorRef = useRef(null);
   // 되돌리기
   const historyRef = useRef({ past: [], future: [] });
   // 클립보드
@@ -117,8 +116,15 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
 
   const rowCount = cells.length;
   const colCount = cells[0]?.length || 0;
-  // selection.focus 를 기존 'selected' 처럼 사용
-  const selected = selection ? selection.focus : null;
+
+  // 선택/키보드 로직은 훅으로 분리. ctx = 매 렌더 아래 Object.assign으로 갱신하는 안정된 의존성 객체.
+  // (훅 핸들러는 이벤트 시점에 ctx에서 최신 값을 읽으므로 스테일 클로저가 없다.)
+  const ctx = useMemo(() => ({}), []);
+  const {
+    selection, setSelection, selected, selAnchorRef,
+    clamp, selBounds, selectSingle, setFocusCell, moveSelection, commitNameBox,
+  } = useSelection(ctx);
+  const { handleContainerKeyDown, handleInputKeyDown, applyPointRefRange } = useKeyboard(ctx);
 
   // ── 초기화 ──
   useEffect(() => {
@@ -322,41 +328,6 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       document.activeElement === inputRef.current &&
       inputVal.startsWith("=")
     );
-  }
-
-  // ── 선택 조작 ──
-  function selectSingle(ri, ci) {
-    const cell = { ri, ci };
-    selAnchorRef.current = cell;
-    setSelection({ anchor: cell, focus: cell });
-    setInputVal(cells[ri][ci].editable ? (cells[ri][ci].input || "") : (String(cells[ri][ci].val ?? "")));
-    editModeRef.current = "ready";
-    pointRef.current = null;
-  }
-  function setFocusCell(ri, ci) {
-    const anchor = selAnchorRef.current || { ri, ci };
-    setSelection({ anchor, focus: { ri, ci } });
-    setInputVal(cells[ri][ci].editable ? (cells[ri][ci].input || "") : (String(cells[ri][ci].val ?? "")));
-  }
-  function clamp(ri, ci) {
-    return { ri: Math.max(0, Math.min(rowCount - 1, ri)), ci: Math.max(0, Math.min(colCount - 1, ci)) };
-  }
-  function moveSelection(dr, dc, extend) {
-    if (!selection) return;
-    const cur = selection.focus;
-    const { ri, ci } = clamp(cur.ri + dr, cur.ci + dc);
-    if (extend) setFocusCell(ri, ci);
-    else selectSingle(ri, ci);
-    setGraded(false);
-  }
-
-  function selBounds() {
-    if (!selection) return null;
-    const { anchor, focus } = selection;
-    return {
-      r1: Math.min(anchor.ri, focus.ri), c1: Math.min(anchor.ci, focus.ci),
-      r2: Math.max(anchor.ri, focus.ri), c2: Math.max(anchor.ci, focus.ci),
-    };
   }
 
   // ── 마우스 ──
@@ -577,220 +548,6 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     setGraded(false);
   }
 
-  // ── 이름 상자 ──
-  function commitNameBox() {
-    const rng = parseRangeA1(nameBoxVal);
-    setNameBoxEditing(false);
-    if (!rng) return;
-    const a = clamp(rng.r1, rng.c1);
-    const f = clamp(rng.r2, rng.c2);
-    selAnchorRef.current = a;
-    setSelection({ anchor: a, focus: f });
-    setInputVal(cells[f.ri]?.[f.ci]?.editable ? (cells[f.ri][f.ci].input || "") : String(cells[f.ri]?.[f.ci]?.val ?? ""));
-    editModeRef.current = "ready";
-    containerRef.current?.focus({ preventScroll: true });
-  }
-
-  // ── 컨테이너 키보드 (선택 상태) ──
-  function isRefContext(val, pos) {
-    // 커서 바로 앞 글자가 =, (, ,, 연산자면 참조 삽입 가능
-    const before = val.slice(0, pos).replace(/\s+$/, "");
-    const last = before.slice(-1);
-    return before.startsWith("=") && (last === "=" || last === "(" || last === "," || "+-*/^<>=".includes(last));
-  }
-
-  function handleContainerKeyDown(e) {
-    if (!selection) return;
-    // 입력창이 포커스면 컨테이너 핸들러는 무시 (input onKeyDown이 처리)
-    if (document.activeElement === inputRef.current) return;
-    const { ri, ci } = selection.focus;
-    const key = e.key;
-    const cell = cells[ri]?.[ci];
-
-    if ((e.ctrlKey || e.metaKey) && (key === "z" || key === "Z")) { e.preventDefault(); undo(); return; }
-    if ((e.ctrlKey || e.metaKey) && (key === "y" || key === "Y")) { e.preventDefault(); redo(); return; }
-    if ((e.ctrlKey || e.metaKey) && (key === "c" || key === "C")) { e.preventDefault(); copySelection(); return; }
-    if ((e.ctrlKey || e.metaKey) && (key === "v" || key === "V")) { e.preventDefault(); pasteClipboard(); return; }
-    if (e.ctrlKey || e.metaKey) return;
-
-    if (key === "ArrowUp")    { e.preventDefault(); moveSelection(-1, 0, e.shiftKey); return; }
-    if (key === "ArrowDown")  { e.preventDefault(); moveSelection(1, 0, e.shiftKey); return; }
-    if (key === "ArrowLeft")  { e.preventDefault(); moveSelection(0, -1, e.shiftKey); return; }
-    if (key === "ArrowRight") { e.preventDefault(); moveSelection(0, 1, e.shiftKey); return; }
-    if (key === "Enter")      { e.preventDefault(); moveSelection(e.shiftKey ? -1 : 1, 0, false); return; }
-    if (key === "Tab")        { e.preventDefault(); moveSelection(0, e.shiftKey ? -1 : 1, false); return; }
-    if (key === "Escape")     { e.preventDefault(); if (selected) selectSingle(selected.ri, selected.ci); return; }
-    if (key === "Delete" || key === "Backspace") { e.preventDefault(); deleteSelection(); return; }
-    if (key === "F2") {
-      e.preventDefault();
-      if (cell?.editable) enterEditMode(ri, ci);
-      return;
-    }
-    // 출력 가능한 한 글자 (글자/숫자/=,+,- 등) → 입력 모드 진입
-    if (key.length === 1 && !e.altKey) {
-      if (!cell?.editable) { e.preventDefault(); return; }
-      e.preventDefault();
-      editModeRef.current = "enter";
-      lastEditWasTypeRef.current = true;
-      nextCursorPos.current = null;
-      setInputVal(key);
-      // 입력 모드 진입: nextCursorPos에 의존하지 않고 포커스 직후 같은 콜백에서 커서를 끝으로.
-      setTimeout(() => {
-        const el = inputRef.current;
-        if (el) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); }
-      }, 0);
-    }
-  }
-
-  // ── 입력창 키보드 (입력/편집 모드) ──
-  function handleInputKeyDown(e) {
-    if (!selected) return;
-    const { ri, ci } = selected;
-    const key = e.key;
-
-    // 참조 선택 모드는 F4·(Shift+)방향키에서만 유지된다. 그 외 키가 오면 즉시 종료.
-    if (key !== "F4" && !key.startsWith("Arrow")) pointRef.current = null;
-
-    // 자동완성 드롭다운이 열려 있으면 방향키/Tab/Enter/Esc는 드롭다운이 우선
-    if (ac) {
-      if (key === "ArrowDown") { e.preventDefault(); setAcIndex((i) => Math.min(ac.items.length - 1, i + 1)); return; }
-      if (key === "ArrowUp")   { e.preventDefault(); setAcIndex((i) => Math.max(0, i - 1)); return; }
-      if (key === "Tab" || key === "Enter") { e.preventDefault(); insertFunction(ac.items[Math.min(acIndex, ac.items.length - 1)]); return; }
-      if (key === "Escape")    { e.preventDefault(); acClosedRef.current = true; setAcIndex(0); return; }
-    }
-
-    if (key === "F4") {
-      e.preventDefault();
-      if (!inputVal.startsWith("=")) return;
-      const el = inputRef.current;
-      const selS = el?.selectionStart ?? inputVal.length;
-      const selE = el?.selectionEnd ?? selS;
-      lastEditWasTypeRef.current = false;
-      if (selE > selS) {
-        // 3. 텍스트 선택 순환 — 선택 유지 (pointRef와 무관)
-        const r = cycleReference(inputVal, selS, selE);
-        nextSelRef.current = { start: r.selStart, end: r.selEnd };
-        setInputVal(r.formula);
-        return;
-      }
-      // 1. pointRef 살아있으면 전체 범위 모드 (연속 F4 위해 pointRef 유지), 2. 아니면 단일 셀 모드
-      const mode = pointRef.current ? "range" : "cell";
-      const cur = mode === "range" ? pointRef.current.start : selS;
-      const r = cycleReference(inputVal, cur, cur, mode);
-      nextCursorPos.current = r.cursorPos;
-      setInputVal(r.formula);
-      if (mode === "range" && pointRef.current) {
-        const newTok = r.formula.slice(pointRef.current.start, r.cursorPos);
-        const first = newTok.split(":")[0];
-        pointRef.current = { ...pointRef.current, end: r.cursorPos, dollar: { col: /^\$/.test(first), row: /[A-Za-z]\$/.test(first) } };
-      }
-      return;
-    }
-    if (key === "Enter") {
-      e.preventDefault();
-      commitInput(ri, ci, inputVal);
-      const t = clamp(ri + (e.shiftKey ? -1 : 1), ci);
-      selectSingle(t.ri, t.ci);
-      containerRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    if (key === "Tab") {
-      e.preventDefault();
-      commitInput(ri, ci, inputVal);
-      const t = clamp(ri, ci + (e.shiftKey ? -1 : 1));
-      selectSingle(t.ri, t.ci);
-      containerRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    if (key === "Escape") {
-      e.preventDefault();
-      setInputVal(cells[ri][ci].input || "");
-      editModeRef.current = "ready";
-      pointRef.current = null;
-      inputRef.current?.blur();
-      containerRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    // 방향키
-    if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight") {
-      const pos = inputRef.current?.selectionStart ?? inputVal.length;
-      const dr = key === "ArrowUp" ? -1 : key === "ArrowDown" ? 1 : 0;
-      const dc = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : 0;
-      if (inputVal.startsWith("=")) {
-        // 이미 참조 선택 모드 → 계속 이동
-        if (pointRef.current) { e.preventDefault(); pointReferenceMove(dr, dc, e.shiftKey); return; }
-        // 커서 바로 앞 토큰이 셀 참조 → 그 참조로 참조 선택 모드 재개
-        const before = inputVal.slice(0, pos);
-        const refM = /(\$?[A-Za-z]+\$?\d+)$/.exec(before);
-        if (refM) {
-          const token = refM[1];
-          const cell = parseA1(token.replace(/\$/g, ""));
-          if (cell) {
-            e.preventDefault();
-            const tStart = pos - token.length;
-            const dollar = { col: /^\$/.test(token), row: /[A-Za-z]\$/.test(token) };
-            pointRef.current = { start: tStart, end: pos, anchor: cell, focus: cell, dollar };
-            pointReferenceMove(dr, dc, e.shiftKey);
-            return;
-          }
-        }
-        // 커서 앞이 =,(,쉼표,연산자 → 새 참조 삽입
-        if (isRefContext(inputVal, pos)) { e.preventDefault(); pointReferenceMove(dr, dc, e.shiftKey); return; }
-      }
-      // 그 외 — 편집 모드: 텍스트 커서 이동(브라우저 기본)
-      if (editModeRef.current === "edit") return;
-      // 입력 모드: 커밋 후 이동
-      e.preventDefault();
-      commitInput(ri, ci, inputVal);
-      const t = clamp(ri + dr, ci + dc);
-      selectSingle(t.ri, t.ci);
-      containerRef.current?.focus({ preventScroll: true });
-    }
-  }
-
-  // 수식 참조 선택 모드: pointRef = { start, end, anchor, focus, dollar } 하나로 관리.
-  // start·end = inputVal에서 이 참조가 차지하는 문자 범위, anchor·focus = 셀 좌표, dollar = $ 유지 플래그.
-  function refToken(ri, ci, dol) {
-    const a = toAddr(ri, ci);
-    const m = /^([A-Za-z]+)(\d+)$/.exec(a);
-    return `${dol?.col ? "$" : ""}${m[1]}${dol?.row ? "$" : ""}${m[2]}`;
-  }
-  function pointAddr(p) {
-    const single = p.anchor.ri === p.focus.ri && p.anchor.ci === p.focus.ci;
-    return single
-      ? refToken(p.anchor.ri, p.anchor.ci, p.dollar)
-      : `${refToken(p.anchor.ri, p.anchor.ci, p.dollar)}:${refToken(p.focus.ri, p.focus.ci, p.dollar)}`;
-  }
-  // 방향키·클릭·드래그가 공유하는 치환 코어. pointRef.start~end 를 addr 로 항상 치환.
-  // 함수형 setInputVal 로 최신 문자열을 읽어 포인터 핸들러(스테일 클로저)에서도 안전.
-  function applyPointRefRange(anchor, focus) {
-    const p = pointRef.current;
-    if (!p) return;
-    const oldEnd = p.end;
-    const addr = pointAddr({ ...p, anchor, focus });
-    pointRef.current = { ...p, anchor, focus, end: p.start + addr.length };
-    lastEditWasTypeRef.current = false;
-    setInputVal((v) => v.slice(0, p.start) + addr + v.slice(oldEnd));
-    nextCursorPos.current = p.start + addr.length;
-  }
-  function replaceReference(start, end, anchor, focus, dollar) {
-    pointRef.current = { start, end, anchor, focus, dollar: dollar || { col: false, row: false } };
-    applyPointRefRange(anchor, focus);
-  }
-  function pointReferenceMove(dr, dc, shift) {
-    if (!pointRef.current) {
-      // 새 참조: start=end=커서, anchor=focus=현재 선택 셀에서 이동한 셀
-      const base = clamp((selected?.ri ?? 0) + dr, (selected?.ci ?? 0) + dc);
-      const at = inputRef.current?.selectionStart ?? inputVal.length;
-      replaceReference(at, at, base, base);
-      return;
-    }
-    const p = pointRef.current;
-    const focus = clamp(p.focus.ri + dr, p.focus.ci + dc);
-    const anchor = shift ? p.anchor : focus;
-    applyPointRefRange(anchor, focus);
-  }
-
   function grade() {
     // 편집 중이면 현재 값을 sheet+로컬 스냅샷에 동기로 반영(gradePractice가 최신값을 보게)
     let cur = cells;
@@ -938,6 +695,19 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     if (!selBox) return false;
     return ri === selBox.r2 && ci === selBox.c2 && cells[ri]?.[ci]?.editable;
   }
+
+  // 훅(useSelection/useKeyboard)이 이벤트 시점에 읽는 최신 의존성을 매 렌더 갱신.
+  // 안정된 ctx 객체를 제자리 변경하므로, 빈 deps 이펙트에 잡힌 핸들러도 최신 값을 본다.
+  Object.assign(ctx, {
+    cells, rowCount, colCount, inputVal, setInputVal, setGraded,
+    selection, selected,
+    editModeRef, pointRef, lastEditWasTypeRef, nextCursorPos, nextSelRef,
+    inputRef, containerRef, acClosedRef,
+    ac, acIndex, setAcIndex, insertFunction,
+    clamp, selectSingle, setFocusCell, moveSelection, deleteSelection, enterEditMode, commitInput,
+    undo, redo, copySelection, pasteClipboard,
+    nameBoxVal, setNameBoxEditing, parseRangeA1, parseA1,
+  });
 
   return (
     <div style={{ marginTop: 20, userSelect: "none", fontFamily: FONT }}>
