@@ -227,6 +227,11 @@ export function DbSumSeparateDiagram() {
           <ExplainBoard tabs={tabs} active={active} explain={explain} />
         </Fill>
       </Row>
+
+      <div style={{ marginTop: 16, background: C.bgDark, border: `1px solid ${C.amber}`, borderRadius: 8, padding: '12px 16px', color: C.text, fontSize: 14, lineHeight: 1.75 }}>
+        <div><span style={{ color: C.amber, fontWeight: 700 }}>시험 팁 · </span>표 안에 조건 열 제목과 조건값이 위아래로 붙어 있지 않아 조건 범위를 지정할 수 없는 경우, 시험 문제에는 반드시 조건을 입력하는 범위가 나옵니다.</div>
+        <div>조건 열 제목과 조건값이 위아래로 붙어 있는 경우에도 문제에서 조건을 범위에 입력하라고 하면 적어야 합니다.</div>
+      </div>
     </Wrap>
   );
 }
