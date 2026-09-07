@@ -41,6 +41,31 @@ function _tokenDollar(tok) {
   return _cellDollar(tok.split(':')[0]);
 }
 
+// 열 문자(A,B,..,Z,AA,..) → 0-based 인덱스
+export function colToIdx(letters) {
+  let n = 0;
+  for (const ch of letters.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+}
+// "A1"/"$A$1" → { ri, ci } (없으면 null)
+export function parseA1(str) {
+  const m = /^\s*\$?([A-Za-z]+)\$?(\d+)\s*$/.exec(str || '');
+  if (!m) return null;
+  return { ci: colToIdx(m[1]), ri: parseInt(m[2], 10) - 1 };
+}
+// "A1" 또는 "A1:B3" → { r1,c1,r2,c2 } (없으면 null)
+export function parseRangeA1(str) {
+  const parts = String(str || '').split(':');
+  const a = parseA1(parts[0]);
+  if (parts.length === 1) return a ? { r1: a.ri, c1: a.ci, r2: a.ri, c2: a.ci } : null;
+  const b = parseA1(parts[1]);
+  if (!a || !b) return null;
+  return {
+    r1: Math.min(a.ri, b.ri), c1: Math.min(a.ci, b.ci),
+    r2: Math.max(a.ri, b.ri), c2: Math.max(a.ci, b.ci),
+  };
+}
+
 // ri/ci/$플래그 → 참조 문자열 ("$C$3"). (기존 refToken 정규식을 대체)
 export function formatRef(ri, ci, dollar) {
   const a = toAddr(ri, ci);

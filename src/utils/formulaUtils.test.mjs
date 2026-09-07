@@ -24,6 +24,9 @@ function check(label, actual, expected) {
   check('삽입: =A1+ 끝 + B1', replaceRefAtCursor('=A1+', 4, 'B1').text, '=A1+B1');
   check('삽입: =SUM( 끝 + A1:A3', replaceRefAtCursor('=SUM(', 5, 'A1:A3').text, '=SUM(A1:A3');
   check('치환: 중첩 MATCH 안', replaceRefAtCursor('=INDEX(A2:A5,MATCH(B1,B2:B5,0', 27, 'C2:C5').text, '=INDEX(A2:A5,MATCH(B1,C2:C5,0');
+  // 회귀: 커서가 범위 끝(=span.end)일 때 범위 통째 치환 (A8만 바꾸는 버그 방지)
+  check('치환: COUNTA 범위 끝 커서', replaceRefAtCursor('=COUNTA(A2:A8', 13, 'B2:B8').text, '=COUNTA(B2:B8');
+  check('치환: COUNTA 뒤 인수 범위', replaceRefAtCursor('=COUNTA(A2:A8,C1', 16, 'D1:D3').text, '=COUNTA(A2:A8,D1:D3');
   // "=A1" 커서가 =바로뒤(A1 앞): 커서 앞이 참조가 아니므로 삽입 규칙 → "=B1A1" (엑셀은 치환하지만 본 구현은 삽입)
   check('삽입: =A1 앞 커서(= 규칙 고정)', replaceRefAtCursor('=A1', 1, 'B1').text, '=B1A1');
 
@@ -37,6 +40,10 @@ function check(label, actual, expected) {
   check('find range 범위', findRefAtCursor('=SUM(A1:A5', 10, 'range'), { start: 5, end: 10, text: 'A1:A5', dollar: { col: false, row: false } });
   check('find cell 콜론왼쪽', findRefAtCursor('=SUM(A6:C8)', 8, 'cell').text, 'A6');
   check('find 없음(연산자 뒤)', findRefAtCursor('=A1+', 4, 'range'), null);
+  // 회귀: 범위 토큰 끝/중간에서 range 모드가 범위 전체 span을 반환하는지
+  const pick = (s) => (s ? { start: s.start, end: s.end, text: s.text } : null);
+  check('find range 커서=끝', pick(findRefAtCursor('=COUNTA(A2:A8', 13, 'range')), { start: 8, end: 13, text: 'A2:A8' });
+  check('find range 커서=A위', pick(findRefAtCursor('=COUNTA(A2:A8', 11, 'range')), { start: 8, end: 13, text: 'A2:A8' });
 }
 
 // ==== cycleReference ====

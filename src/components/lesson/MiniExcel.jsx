@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { toAddr, shiftFormula, findRefAtCursor, RANGE_TOKEN_RE } from "../../utils/formulaUtils";
+import { toAddr, shiftFormula, findRefAtCursor, RANGE_TOKEN_RE, parseA1, parseRangeA1 } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
 import { EXAM_FUNCTIONS } from "../../excel-engine/functions/index.js";
@@ -31,32 +31,6 @@ function formatValue(v, fmt) {
     case "@":        return String(v);
     default:         return String(v);
   }
-}
-
-// 열 문자(A,B,..) → 인덱스, "A1" → {ri,ci}, "A1:B3" → {r1,c1,r2,c2}
-function colToIdx(letters) {
-  let n = 0;
-  for (const ch of letters.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
-  return n - 1;
-}
-function parseA1(str) {
-  const m = /^\s*([A-Za-z]+)(\d+)\s*$/.exec(str);
-  if (!m) return null;
-  return { ci: colToIdx(m[1]), ri: parseInt(m[2], 10) - 1 };
-}
-function parseRangeA1(str) {
-  const parts = str.split(":");
-  if (parts.length === 1) {
-    const a = parseA1(parts[0]);
-    return a ? { r1: a.ri, c1: a.ci, r2: a.ri, c2: a.ci } : null;
-  }
-  const a = parseA1(parts[0]);
-  const b = parseA1(parts[1]);
-  if (!a || !b) return null;
-  return {
-    r1: Math.min(a.ri, b.ri), c1: Math.min(a.ci, b.ci),
-    r2: Math.max(a.ri, b.ri), c2: Math.max(a.ci, b.ci),
-  };
 }
 
 export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
@@ -339,10 +313,10 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       e.preventDefault();
       try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
       const clickCell = { ri, ci };
-      // 치환 대상 span 결정 (커서 끝에 붙은 셀 참조면 그 span, 아니면 커서에 삽입)
+      // 치환 대상 span 결정 (커서 끝에 붙은 참조면 범위 통째로 그 span, 아니면 커서에 삽입)
       if (!pointRef.current) {
         const pos = inputRef.current?.selectionStart ?? inputVal.length;
-        const span = findRefAtCursor(inputVal, pos, "cell");
+        const span = findRefAtCursor(inputVal, pos, "range");
         if (span && span.end === pos) {
           pointRef.current = { start: span.start, end: span.end, anchor: clickCell, focus: clickCell, dollar: span.dollar };
         } else {
@@ -622,7 +596,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       refSegments.push({ start: m.index, end: m.index + m[0].length, color: colorMap.get(norm) });
     }
     for (const [norm, color] of colorMap) {
-      const rng = parseRangeA1(norm.replace(/\$/g, ""));
+      const rng = parseRangeA1(norm);
       if (rng && rng.r1 >= 0 && rng.c1 >= 0 && rng.r2 < rowCount && rng.c2 < colCount) {
         refRanges.push({ ...rng, color });
       }
