@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { toAddr, shiftFormula } from "../../utils/formulaUtils";
+import { toAddr, shiftFormula, findRefAtCursor, RANGE_TOKEN_RE } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
 import { EXAM_FUNCTIONS } from "../../excel-engine/functions/index.js";
@@ -339,15 +339,12 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       e.preventDefault();
       try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
       const clickCell = { ri, ci };
-      // 치환 대상 span 결정
+      // 치환 대상 span 결정 (커서 끝에 붙은 셀 참조면 그 span, 아니면 커서에 삽입)
       if (!pointRef.current) {
         const pos = inputRef.current?.selectionStart ?? inputVal.length;
-        const before = inputVal.slice(0, pos);
-        const refM = /(\$?[A-Za-z]+\$?\d+)$/.exec(before);
-        if (refM) {
-          const tStart = pos - refM[1].length;
-          const dollar = { col: /^\$/.test(refM[1]), row: /[A-Za-z]\$/.test(refM[1]) };
-          pointRef.current = { start: tStart, end: pos, anchor: clickCell, focus: clickCell, dollar };
+        const span = findRefAtCursor(inputVal, pos, "cell");
+        if (span && span.end === pos) {
+          pointRef.current = { start: span.start, end: span.end, anchor: clickCell, focus: clickCell, dollar: span.dollar };
         } else {
           pointRef.current = { start: pos, end: pos, anchor: clickCell, focus: clickCell, dollar: { col: false, row: false } };
         }
@@ -614,9 +611,9 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const refSegments = []; // { start, end, color } — 입력창 오버레이용
   const refRanges = [];   // { r1, c1, r2, c2, color } — 셀 테두리용
   if (showRefs) {
-    // 엔진 collectReferences는 char offset을 주지 않아, 오버레이/셀에 함께 쓰려고
-    // 스펙이 제시한 정규식으로 추출한다(미완성 입력도 처리).
-    const re = /\$?[A-Za-z]+\$?\d+(?::\$?[A-Za-z]+\$?\d+)?/g;
+    // 엔진 collectReferences는 char offset을 주지 않아, formulaUtils의 공유 참조 토큰 정규식으로
+    // 추출한다(미완성 입력도 처리). 인라인 정규식 리터럴을 두지 않고 공유 상수를 재사용.
+    const re = new RegExp(RANGE_TOKEN_RE.source, "g");
     const colorMap = new Map();
     let m;
     while ((m = re.exec(inputVal)) !== null) {

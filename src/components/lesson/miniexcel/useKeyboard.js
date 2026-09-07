@@ -1,23 +1,19 @@
-import { toAddr, cycleReference } from "../../../utils/formulaUtils";
+import { formatRef, findRefAtCursor, cycleReference } from "../../../utils/formulaUtils";
 
 // 컨테이너 키보드(선택 상태)·입력창 키보드(입력/편집 모드)와
 // 참조 선택 모드(pointRef)·F4 순환·Ctrl+Z/Y/C/V 를 담당하는 훅.
 // ctx = MiniExcel이 매 렌더 Object.assign 으로 갱신하는 "안정된 의존성 객체".
 // 핸들러는 이벤트 시점에 ctx에서 최신 값을 구조분해하므로 동작이 보존된다.
+// 참조 토큰 정규식은 직접 쓰지 않고 formulaUtils의 순수 함수(formatRef/findRefAtCursor/cycleReference)만 호출한다.
 export function useKeyboard(ctx) {
   // ── 참조 선택 모드 코어 ──
   // pointRef = { start, end, anchor, focus, dollar } 하나로 관리.
   // start·end = inputVal에서 이 참조가 차지하는 문자 범위, anchor·focus = 셀 좌표, dollar = $ 유지 플래그.
-  function refToken(ri, ci, dol) {
-    const a = toAddr(ri, ci);
-    const m = /^([A-Za-z]+)(\d+)$/.exec(a);
-    return `${dol?.col ? "$" : ""}${m[1]}${dol?.row ? "$" : ""}${m[2]}`;
-  }
   function pointAddr(p) {
     const single = p.anchor.ri === p.focus.ri && p.anchor.ci === p.focus.ci;
     return single
-      ? refToken(p.anchor.ri, p.anchor.ci, p.dollar)
-      : `${refToken(p.anchor.ri, p.anchor.ci, p.dollar)}:${refToken(p.focus.ri, p.focus.ci, p.dollar)}`;
+      ? formatRef(p.anchor.ri, p.anchor.ci, p.dollar)
+      : `${formatRef(p.anchor.ri, p.anchor.ci, p.dollar)}:${formatRef(p.focus.ri, p.focus.ci, p.dollar)}`;
   }
   // 방향키·클릭·드래그가 공유하는 치환 코어. pointRef.start~end 를 addr 로 항상 치환.
   // 함수형 setInputVal 로 최신 문자열을 읽어 포인터 핸들러(스테일 클로저)에서도 안전.
@@ -53,7 +49,7 @@ export function useKeyboard(ctx) {
   }
   function isRefContext(val, pos) {
     // 커서 바로 앞 글자가 =, (, ,, 연산자면 참조 삽입 가능
-    const before = val.slice(0, pos).replace(/\s+$/, "");
+    const before = val.slice(0, pos).trimEnd();
     const last = before.slice(-1);
     return before.startsWith("=") && (last === "=" || last === "(" || last === "," || "+-*/^<>=".includes(last));
   }
@@ -136,23 +132,17 @@ export function useKeyboard(ctx) {
       const selS = el?.selectionStart ?? inputVal.length;
       const selE = el?.selectionEnd ?? selS;
       lastEditWasTypeRef.current = false;
-      if (selE > selS) {
-        // 3. 텍스트 선택 순환 — 선택 유지 (pointRef와 무관)
-        const r = cycleReference(inputVal, selS, selE);
-        nextSelRef.current = { start: r.selStart, end: r.selEnd };
-        setInputVal(r.formula);
-        return;
-      }
-      // 1. pointRef 살아있으면 전체 범위 모드 (연속 F4 위해 pointRef 유지), 2. 아니면 단일 셀 모드
-      const mode = pointRef.current ? "range" : "cell";
-      const cur = mode === "range" ? pointRef.current.start : selS;
-      const r = cycleReference(inputVal, cur, cur, mode);
-      nextCursorPos.current = r.cursorPos;
-      setInputVal(r.formula);
-      if (mode === "range" && pointRef.current) {
-        const newTok = r.formula.slice(pointRef.current.start, r.cursorPos);
-        const first = newTok.split(":")[0];
-        pointRef.current = { ...pointRef.current, end: r.cursorPos, dollar: { col: /^\$/.test(first), row: /[A-Za-z]\$/.test(first) } };
+      // 규칙1: pointSpan(참조 선택 모드) → 범위 통째 순환 / 규칙3: 텍스트 선택 / 규칙2: 커서 단일 셀
+      const p = pointRef.current;
+      const pointSpan = p ? { start: p.start, end: p.end } : null;
+      const selection = selE > selS ? { start: selS, end: selE } : null;
+      const r = cycleReference(inputVal, selS, selection, pointSpan);
+      setInputVal(r.text);
+      if (r.selection) nextSelRef.current = { start: r.selection.start, end: r.selection.end };
+      else nextCursorPos.current = r.cursor;
+      // 규칙1이면 연속 F4를 위해 pointRef의 끝/$플래그 갱신 (정규식 없이 span.dollar 사용)
+      if (r.span && pointRef.current) {
+        pointRef.current = { ...pointRef.current, end: r.span.end, dollar: r.span.dollar };
       }
       return;
     }
@@ -189,17 +179,13 @@ export function useKeyboard(ctx) {
       if (inputVal.startsWith("=")) {
         // 이미 참조 선택 모드 → 계속 이동
         if (pointRef.current) { e.preventDefault(); pointReferenceMove(dr, dc, e.shiftKey); return; }
-        // 커서 바로 앞 토큰이 셀 참조 → 그 참조로 참조 선택 모드 재개
-        const before = inputVal.slice(0, pos);
-        const refM = /(\$?[A-Za-z]+\$?\d+)$/.exec(before);
-        if (refM) {
-          const token = refM[1];
-          const cell = parseA1(token.replace(/\$/g, ""));
+        // 커서 바로 앞 토큰이 셀 참조 → 그 참조로 참조 선택 모드 재개 (커서가 토큰 끝일 때만)
+        const span = findRefAtCursor(inputVal, pos, "cell");
+        if (span && span.end === pos) {
+          const cell = parseA1(span.text.split("$").join(""));
           if (cell) {
             e.preventDefault();
-            const tStart = pos - token.length;
-            const dollar = { col: /^\$/.test(token), row: /[A-Za-z]\$/.test(token) };
-            pointRef.current = { start: tStart, end: pos, anchor: cell, focus: cell, dollar };
+            pointRef.current = { start: span.start, end: span.end, anchor: cell, focus: cell, dollar: span.dollar };
             pointReferenceMove(dr, dc, e.shiftKey);
             return;
           }
