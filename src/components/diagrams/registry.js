@@ -131,7 +131,7 @@ export const DIAGRAM_REGISTRY = {
 
   '/diagram/db-common':                DbCommonIntroDiagram,
   '/images/db-dsum.svg':               DbSumDiagram,
-  '/diagram/db-sum-separate':          DbSumSeparateDiagram,
+  '/diagram/db-dsum-separate':         DbSumSeparateDiagram,
   '/images/db-daverage.svg':           DbAverageDiagram,
   '/images/db-dcount.svg':             DbCountDiagram,
   '/images/db-dmax.svg':               DbMaxDiagram,
