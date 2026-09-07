@@ -38,13 +38,13 @@ export function DbCommonIntroDiagram() {
 
       <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
         <div style={{ color: C.text, fontSize: 19, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em' }}>
-          =D함수(<span style={{ color: C.blueLight }}>전체 표 범위</span>, <span style={{ color: C.greenLight }}>계산할 열</span>, <span style={{ color: C.amberLight }}>조건 범위</span>)
+          =DFUNCTION(<span style={{ color: C.blueLight }}>① 전체 표 범위</span>, <span style={{ color: C.greenLight }}>② 계산할 열 제목</span>, <span style={{ color: C.amberLight }}>③ 조건 범위</span>)
         </div>
         <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '10px 0' }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.5 }}>
-          <div><b style={{ color: C.blueLight }}>전체 표 범위</b><span style={{ color: C.text }}> — 열 제목(1행)을 포함해 표 전체</span></div>
-          <div><b style={{ color: C.greenLight }}>계산할 열</b><span style={{ color: C.text }}> — 열 제목 셀을 클릭하거나 왼쪽부터 센 번호</span></div>
-          <div><b style={{ color: C.amberLight }}>조건 범위</b><span style={{ color: C.text }}> — 제목 + 값이 한 세트. 셀 하나만 지정할 수 없음</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.7 }}>
+          <div><b style={{ color: C.blueLight }}>① 전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 표의 전체를 드래그해야 합니다. 예) A1:D4</span></div>
+          <div><b style={{ color: C.greenLight }}>② 계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 셀 번호(혹은 셀 주소)를 넣거나, 첫 열부터 셀 때의 열 번호(숫자)를 입력합니다. 예) D1 또는 4</span></div>
+          <div><b style={{ color: C.amberLight }}>③ 조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;조건 열 제목&apos;과 &apos;해당 조건값&apos;이 한 세트. 예) E1:E2</span></div>
         </div>
       </div>
 
