@@ -162,11 +162,11 @@ export function DbSumSeparateDiagram() {
     ['W-01', '세탁기', '1,200,000', 5],
     ['R-02', '냉장고', '2,500,000', 3],
     ['W-03', '세탁기', '1,500,000', 8],
-    ['A-04', '에어컨', '1,800,000', 6],
-    ['D-05', '건조기', '950,000', 4],
+    ['R-04', '냉장고', '2,100,000', 7],
+    ['A-05', '에어컨', '1,800,000', 6],
   ];
   const LAST = data.length - 1;
-  const cond = [['제품군'], ['세탁기']];
+  const cond = [['제품군'], ['냉장고']];
 
   const tabs = [
     { key: '전체 표 범위', color: C.blueLight },
@@ -176,16 +176,19 @@ export function DbSumSeparateDiagram() {
   const explain = {
     '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
     '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다.',
-    '조건 범위': '제품군 제목과 조건값 "세탁기"가 표 안에서 위아래로 붙어 있지 않아 그대로 드래그할 수 없습니다. 문제가 지정한 [F1:F2]에 조건 열 제목 "제품군"과 조건값 "세탁기"를 직접 입력해 조건 범위로 씁니다.',
+    '조건 범위': '조건값 "냉장고"는 제품군 제목 바로 아래 칸(B2)이 아니라 표 중간에 흩어져 있어 제목과 함께 드래그할 수 없습니다. 문제가 지정한 [F1:F2]에 조건 열 제목 "제품군"과 조건값 "냉장고"를 직접 입력해 조건 범위로 씁니다.',
   };
 
-  // 세탁기 행 = ri1, ri3
+  // 냉장고 행 = ri2, ri4
   const dataSt = (ri, ci) => {
     const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: LAST, c1: 0, c2: 3, color: C.blueLight }]
       : active === '계산할 열' ? [{ r1: 0, r2: LAST, c1: 3, c2: 3, color: C.greenLight }] : [];
     const s = rangeSides(ri, ci, boxes);
     if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
-    if (active === '조건 범위' && ci === 3 && (ri === 1 || ri === 3)) { s.color = C.greenLight; s.bold = true; } // 합쳐질 판매량
+    if (active === '조건 범위') {
+      if (ci === 1 && (ri === 2 || ri === 4)) { s.bg = LIGHT_AMBER; }                       // 조건에 맞는 제품군(냉장고)
+      if (ci === 3 && (ri === 2 || ri === 4)) { s.color = C.greenLight; s.bold = true; }     // 합쳐질 판매량
+    }
     return s;
   };
   const condSt = (ri, ci) => {
@@ -199,7 +202,7 @@ export function DbSumSeparateDiagram() {
       <Title>조건이 표에 붙어 있지 않은 경우 — 지정 위치에 조건 범위를 만든다</Title>
 
       <ExamProblem notes={['조건은 [F1:F2] 영역에 입력하시오', 'DSUM 함수 사용']}>
-        [표1]에서 <b style={{ color: C.amberLight }}>제품군[B2:B6]</b>이 &quot;세탁기&quot;인 제품의
+        [표1]에서 <b style={{ color: C.amberLight }}>제품군[B2:B6]</b>이 &quot;냉장고&quot;인 제품의
         <b style={{ color: C.greenLight }}> 판매량[D2:D6]</b> 합계를 [G2] 셀에 계산하시오.
       </ExamProblem>
 
@@ -224,7 +227,7 @@ export function DbSumSeparateDiagram() {
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
               <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>F1:F2</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 13</div>
+              <div style={{ color: C.greenLight }}>→ 10</div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
