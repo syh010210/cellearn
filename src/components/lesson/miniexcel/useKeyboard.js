@@ -148,7 +148,7 @@ export function useKeyboard(ctx) {
     }
     if (key === "Enter") {
       e.preventDefault();
-      commitInput(ri, ci, inputVal);
+      if (commitInput(ri, ci, inputVal) === false) return; // 잘못된 수식이면 편집 유지
       const t = clamp(ri + (e.shiftKey ? -1 : 1), ci);
       selectSingle(t.ri, t.ci);
       containerRef.current?.focus({ preventScroll: true });
@@ -156,7 +156,7 @@ export function useKeyboard(ctx) {
     }
     if (key === "Tab") {
       e.preventDefault();
-      commitInput(ri, ci, inputVal);
+      if (commitInput(ri, ci, inputVal) === false) return;
       const t = clamp(ri, ci + (e.shiftKey ? -1 : 1));
       selectSingle(t.ri, t.ci);
       containerRef.current?.focus({ preventScroll: true });
@@ -195,9 +195,9 @@ export function useKeyboard(ctx) {
       }
       // 그 외 — 편집 모드: 텍스트 커서 이동(브라우저 기본)
       if (editModeRef.current === "edit") return;
-      // 입력 모드: 커밋 후 이동
+      // 입력 모드: 커밋 후 이동 (잘못된 수식이면 편집 유지)
       e.preventDefault();
-      commitInput(ri, ci, inputVal);
+      if (commitInput(ri, ci, inputVal) === false) return;
       const t = clamp(ri + dr, ci + dc);
       selectSingle(t.ri, t.ci);
       containerRef.current?.focus({ preventScroll: true });

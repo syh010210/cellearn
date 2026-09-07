@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { toAddr, shiftFormula, findRefAtCursor, RANGE_TOKEN_RE, parseA1, parseRangeA1 } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
+import { parseFormula } from "../../excel-engine/parser.js";
 import { EXAM_FUNCTIONS } from "../../excel-engine/functions/index.js";
 import { gradePractice } from "./miniexcel/gradePractice.js";
 import { useSelection } from "./miniexcel/useSelection.js";
@@ -33,9 +34,25 @@ function formatValue(v, fmt) {
   }
 }
 
+// 엑셀형 치수
+const COL_W = 88, ROW_H = 24, ROWNUM_W = 40, COLHDR_H = 22, CELL_FONT = 13, FILLER_ROWS = 4, GRID_TARGET_W = 900;
+
 export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
-  const initCells = () =>
-    practice.rows.map((row) => row.map((cell) => ({ ...cell, input: "", status: null })));
+  // 실제 편집 셀(practice) 뒤로 빈 열/행을 붙여 엑셀처럼 그리드를 채운다.
+  // 빈 셀은 editable:false(선택·이동은 되지만 편집 불가, Sheet에 등록하지 않음).
+  const totalColCount = Math.max(practice.cols.length, Math.ceil((GRID_TARGET_W - ROWNUM_W) / COL_W));
+  const initCells = () => {
+    const filler = () => ({ editable: false, val: "", input: "", status: null, filler: true });
+    const grid = practice.rows.map((row) => {
+      const r = row.map((cell) => ({ ...cell, input: "", status: null }));
+      while (r.length < totalColCount) r.push(filler());
+      return r;
+    });
+    for (let i = 0; i < FILLER_ROWS; i++) grid.push(Array.from({ length: totalColCount }, filler));
+    return grid;
+  };
+  // 열 문자: practice.cols에 있으면 그것, 아니면 toAddr 방식(Z 다음 AA)
+  const colName = (ci) => practice.cols[ci] ?? toAddr(0, ci).slice(0, -1);
 
   const [cells, setCells] = useState(initCells);
   const [inputVal, setInputVal] = useState("");
@@ -48,6 +65,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const [revealed, setRevealed] = useState({}); // { addr: true } 정답 수식 보기
   const [cursorPos, setCursorPos] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
+  const [formulaError, setFormulaError] = useState(null); // 잘못된 수식 커밋 시도 시 안내문
   // 범위 선택 드래그 (수식 모드에서 참조 삽입)
   const [rangeSelecting, setRangeSelecting] = useState(false);
   const [rangeStart, setRangeStart] = useState(null);
@@ -357,10 +375,17 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     }, 0);
   }
 
+  // 반환: 커밋되면 true, 잘못된 수식이라 커밋 거부하면 false(편집 상태 유지)
   function commitInput(ri, ci, val) {
     const cell = cells[ri][ci];
-    if (!cell.editable) return;
+    if (!cell.editable) return false;
     const trimmed = val.trim();
+    // 잘못된 수식이면 커밋하지 않고 안내문을 띄운 채 편집 유지
+    if (trimmed.startsWith("=")) {
+      try { parseFormula(trimmed); }
+      catch { setFormulaError("이 수식에 문제가 있습니다. 괄호와 쉼표를 확인하세요."); return false; }
+    }
+    setFormulaError(null);
     if ((cell.input || "") !== trimmed) pushHistory();
     editModeRef.current = "ready";
     pointRef.current = null;
@@ -373,6 +398,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       )
     );
     setGraded(false);
+    return true;
   }
 
   // 범위 전체를 특정 input으로 커밋 (Delete용)
@@ -659,8 +685,26 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const fieldStyle = { fontFamily: FONT, fontSize: 14, fontWeight: 400, lineHeight: "normal", letterSpacing: "normal", wordSpacing: "normal", textIndent: 0, textRendering: "auto", fontKerning: "none", padding: "6px 8px", border: 0, boxSizing: "border-box" };
   const XL = "#217346";
   const XL_SOFT = "#e6f2ea";
-  const XL_EDIT = "#eef6f1";
+  const XL_EDIT = "#f3f9f5";    // editable 빈 셀 틴트 (더 연하게)
+  const RANGE_FILL = "#e8e8e8"; // 범위 선택 채움색
   const XL_HDR_SEL = "#cfe6da";
+
+  // ✕ = Esc(취소), ✓ = Enter와 같은 커밋(단 이동은 안 함). 편집 중일 때만 동작.
+  const editing = inputFocused && !!selCell?.editable;
+  function cancelEdit() {
+    if (!selected) return;
+    setInputVal(cells[selected.ri]?.[selected.ci]?.input || "");
+    editModeRef.current = "ready";
+    pointRef.current = null;
+    setFormulaError(null);
+    inputRef.current?.blur();
+    containerRef.current?.focus({ preventScroll: true });
+  }
+  function commitNoMove() {
+    if (!selected) return;
+    commitInput(selected.ri, selected.ci, inputVal);
+    containerRef.current?.focus({ preventScroll: true });
+  }
 
   // 선택 범위의 오른쪽 아래 모서리(채우기 핸들 위치) 셀 여부
   function isFillHandleCell(ri, ci) {
@@ -690,7 +734,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       </div>
 
       {/* 엑셀 카드 */}
-      <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
+      <div style={{ background: "#fff", border: "1px solid #c6c6c6", borderRadius: 0, padding: "20px 24px" }}>
         {/* 수식 입력창 */}
         <div style={{ display: "flex", alignItems: "stretch", background: "#f5f5f5", border: "1px solid #d0d0d0", borderBottom: "none", borderRadius: "4px 4px 0 0" }}>
           {/* 이름 상자 (클릭 시 편집) */}
@@ -701,17 +745,31 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
               onChange={(e) => setNameBoxVal(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") commitNameBox(); else if (e.key === "Escape") setNameBoxEditing(false); }}
               onBlur={commitNameBox}
-              style={{ minWidth: 64, width: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", border: "none", outline: "none", padding: "6px 8px", fontFamily: FONT }}
+              style={{ minWidth: 78, width: 78, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", border: "none", outline: "none", padding: "6px 8px", fontFamily: FONT }}
             />
           ) : (
             <div
               onClick={() => { setNameBoxVal(addrStr); setNameBoxEditing(true); }}
               title="이름 상자 — 셀 주소 입력 후 Enter"
-              style={{ minWidth: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", padding: "6px 8px", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", cursor: "text" }}
+              style={{ minWidth: 78, fontWeight: 700, color: "#333", fontSize: 13, borderRight: "1px solid #d0d0d0", padding: "6px 8px", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 4, cursor: "text" }}
             >
-              {addrStr || "—"}
+              <span style={{ flex: 1, textAlign: "center" }}>{addrStr || "—"}</span>
+              <span style={{ color: "#888", fontSize: 10 }}>▾</span>
             </div>
           )}
+          {/* ✕ = 취소(Esc), ✓ = 커밋(Enter, 이동 없음). 편집 중이 아니면 연한 회색·클릭 무시 */}
+          <div
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => { if (editing) cancelEdit(); }}
+            title="취소 (Esc)"
+            style={{ padding: "0 10px", borderRight: "1px solid #d0d0d0", display: "flex", alignItems: "center", fontSize: 14, fontWeight: 700, color: editing ? "#c0392b" : "#c9c9c9", cursor: editing ? "pointer" : "default" }}
+          >✕</div>
+          <div
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => { if (editing) commitNoMove(); }}
+            title="입력 (Enter)"
+            style={{ padding: "0 10px", borderRight: "1px solid #d0d0d0", display: "flex", alignItems: "center", fontSize: 14, fontWeight: 700, color: editing ? XL : "#c9c9c9", cursor: editing ? "pointer" : "default" }}
+          >✓</div>
           <div style={{ padding: "6px 10px", color: "#888", fontSize: 13, borderRight: "1px solid #d0d0d0", display: "flex", alignItems: "center", fontStyle: "italic", fontWeight: 700 }}>fx</div>
           <div style={{ position: "relative", flex: 1, display: "flex" }}>
             {/* 참조 색상 오버레이 — 입력창이 포커스된 수식 모드에서만 렌더 */}
@@ -729,6 +787,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                 pointRef.current = null;
                 lastEditWasTypeRef.current = true;
                 acClosedRef.current = false;
+                if (formulaError) setFormulaError(null); // 글자 고치면 안내문 사라짐
                 setAcIndex(0);
                 setInputVal(e.target.value);
                 setCursorPos(e.target.selectionStart ?? e.target.value.length);
@@ -767,16 +826,14 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
               </div>
             )}
           </div>
-          {selected && selCell?.editable && (
-            <button
-              onPointerDown={(e) => e.preventDefault()}
-              onClick={() => { commitInput(selected.ri, selected.ci, inputVal); containerRef.current?.focus({ preventScroll: true }); }}
-              style={{ background: XL, border: "none", color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: 13, fontWeight: 700, borderRadius: "0 4px 0 0" }}
-            >
-              ✓
-            </button>
-          )}
         </div>
+
+        {/* 잘못된 수식 안내 */}
+        {formulaError && (
+          <div style={{ background: "#fff", border: "1px solid #d0d0d0", borderTop: "none", padding: "4px 12px", fontSize: 12.5, color: "#c0392b", fontFamily: FONT }}>
+            {formulaError}
+          </div>
+        )}
 
         {/* 함수 인수 힌트 바 */}
         {activeHint && (
@@ -798,27 +855,27 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
           ref={containerRef}
           tabIndex={0}
           onKeyDown={handleContainerKeyDown}
-          style={{ overflowX: "auto", border: "1px solid #d0d0d0", borderRadius: "0 0 4px 4px", marginBottom: 16, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
+          style={{ overflowX: "auto", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderTop: "1px solid #d0d0d0", borderRadius: 0, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
         >
-          <table style={{ borderCollapse: "collapse", fontSize: 14, fontFamily: FONT }}>
+          <table style={{ borderCollapse: "collapse", fontSize: CELL_FONT, fontFamily: FONT, tableLayout: "fixed" }}>
             <thead>
-              <tr>
-                <th style={{ width: 36, background: "#f3f3f3", border: "1px solid #d0d0d0", padding: "5px 6px", color: "#888" }} />
-                {practice.cols.map((c, ci) => {
+              <tr style={{ height: COLHDR_H }}>
+                <th style={{ width: ROWNUM_W, background: "#f3f3f3", border: "1px solid #d0d0d0", padding: 0, color: "#888" }} />
+                {Array.from({ length: colCount }).map((_, ci) => {
                   const colSel = selBox && ci >= selBox.c1 && ci <= selBox.c2;
                   return (
-                    <th key={c} style={{
-                      minWidth: 120,
+                    <th key={ci} style={{
+                      minWidth: COL_W, width: COL_W, height: COLHDR_H,
                       background: colSel ? XL_HDR_SEL : "#f3f3f3",
                       borderTop: "1px solid #d0d0d0",
                       borderRight: "1px solid #d0d0d0",
                       borderBottom: colSel ? `2px solid ${XL}` : "1px solid #d0d0d0",
                       borderLeft: "1px solid #d0d0d0",
-                      padding: "5px 10px",
+                      padding: "0 6px",
                       color: colSel ? XL : "#333",
                       fontWeight: colSel ? 800 : 600,
-                      fontSize: 13, textAlign: "center",
-                    }}>{c}</th>
+                      fontSize: CELL_FONT, textAlign: "center",
+                    }}>{colName(ci)}</th>
                   );
                 })}
               </tr>
@@ -827,8 +884,8 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
               {cells.map((row, ri) => {
                 const rowSel = selBox && ri >= selBox.r1 && ri <= selBox.r2;
                 return (
-                  <tr key={ri}>
-                    <td style={{ background: rowSel ? XL_HDR_SEL : "#f3f3f3", borderTop: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", borderLeft: "1px solid #d0d0d0", borderRight: rowSel ? `2px solid ${XL}` : "1px solid #d0d0d0", padding: "5px 6px", color: rowSel ? XL : "#888", textAlign: "center", fontSize: 13, fontWeight: rowSel ? 800 : 600 }}>
+                  <tr key={ri} style={{ height: ROW_H }}>
+                    <td style={{ width: ROWNUM_W, background: rowSel ? XL_HDR_SEL : "#f3f3f3", borderTop: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", borderLeft: "1px solid #d0d0d0", borderRight: rowSel ? `2px solid ${XL}` : "1px solid #d0d0d0", padding: 0, color: rowSel ? XL : "#888", textAlign: "center", fontSize: CELL_FONT, fontWeight: rowSel ? 800 : 600 }}>
                       {ri + 1}
                     </td>
                     {row.map((cell, ci) => {
@@ -844,8 +901,9 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                       const bg =
                         cell.status === "correct" ? "#e6f4ea"
                         : cell.status === "wrong" ? "#fce8e6"
-                        : inRangeSelect || inFill || (inSelRange && !isSel) ? XL_SOFT
-                        : isSel ? "#fff"
+                        : inRangeSelect || inFill ? XL_SOFT            // 수식 참조 드래그/채우기 = 초록 틴트
+                        : (inSelRange && !isSel) ? RANGE_FILL          // 범위 선택 채움 = 회색
+                        : isSel ? "#fff"                               // 단일/활성 셀 = 배경 없음(초록 테두리만)
                         : cell.editable && !cell.input ? XL_EDIT : "#fff";
                       const borderStyle = inRangeSelect || inFill ? "dashed" : "solid";
                       const borderWidth = isSpecial ? "2px" : "1px";
@@ -888,10 +946,10 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                           onDoubleClick={() => enterEditMode(ri, ci)}
                           style={{
                             borderTop: bTop, borderRight: bRight, borderBottom: bBottom, borderLeft: bLeft,
-                            background: finalBg, padding: 0, position: "relative", cursor: "cell", minWidth: 120,
+                            background: finalBg, padding: 0, position: "relative", cursor: "cell", minWidth: COL_W, width: COL_W,
                           }}
                         >
-                          <div style={{ padding: "7px 12px", color: "#1f2937", minHeight: 30, fontFamily: FONT, fontSize: 14, textAlign: cellAlign }}>
+                          <div style={{ padding: "2px 6px", color: "#1f2937", height: ROW_H, boxSizing: "border-box", lineHeight: `${ROW_H - 4}px`, fontFamily: FONT, fontSize: CELL_FONT, textAlign: cellAlign, overflow: "hidden", whiteSpace: "nowrap" }}>
                             {displayVal}
                           </div>
                           {isFillHandleCell(ri, ci) && (
@@ -910,6 +968,13 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* 시트 탭 */}
+        <div style={{ height: 26, background: "#f3f3f3", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", display: "flex", alignItems: "stretch", marginBottom: 16 }}>
+          <div style={{ background: "#fff", borderRight: "1px solid #d0d0d0", borderBottom: `2px solid ${XL}`, padding: "0 16px", display: "flex", alignItems: "center", fontSize: 12, fontWeight: 700, color: "#217346" }}>
+            {practice.sheetName || "Sheet1"}
+          </div>
         </div>
 
         {/* 채점하기 버튼 */}
