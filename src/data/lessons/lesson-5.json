@@ -14,7 +14,12 @@
         {
           "type": "image",
           "url": "/images/db-dsum.svg",
-          "alt": "DSUM 단일 조건 — 조건 범위는 제목과 값 두 칸, 인수별 강조"
+          "alt": "DSUM 단일 조건 — 조건 열 제목과 조건값이 표에 붙어 있는 경우(드래그)"
+        },
+        {
+          "type": "image",
+          "url": "/diagram/db-sum-separate",
+          "alt": "DSUM 단일 조건 — 조건이 표에 붙어 있지 않아 지정 위치에 조건 범위를 직접 만드는 경우"
         },
         {
           "type": "heading",

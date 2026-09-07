@@ -2,7 +2,7 @@ import { ExcelBasicDiagram, RelativeDownDiagram, RelativeRightDiagram, AbsoluteR
 import { StringExtractDiagram, StringLenCaseDiagram, StringFindTrimDiagram, StringCombineDiagram } from './Lesson2.jsx';
 import { StatBasicDiagram, StatRankDiagram, StatLargeSmallDiagram, StatCountDiagram, StatCondCountDiagram } from './Lesson3.jsx';
 import { VlookupHlookupIntroDiagram, VlookupDiagram, HlookupTwoTableDiagram, VlookupApproxDiagram, VlookupOneTableDiagram, MatchIndexDiagram, ChooseDiagram, ChooseRankDiagram, IndexMatchDiagram, VlookupLimitDiagram } from './Lesson4.jsx';
-import { DbCommonIntroDiagram, DbSumDiagram, DbAverageDiagram, DbCountDiagram, DbMaxDiagram } from './Lesson5.jsx';
+import { DbCommonIntroDiagram, DbSumDiagram, DbSumSeparateDiagram, DbAverageDiagram, DbCountDiagram, DbMaxDiagram } from './Lesson5.jsx';
 import { MathBasicDiagram, MathRoundDiagram, SumifDiagram, SumifsDiagram } from './Lesson6.jsx';
 import { DatetimeBasicDiagram, DatetimeComposeDiagram, WeekdayDiagram, WorkdayDiagram } from './Lesson7.jsx';
 import { IfDiagram, IfAndDiagram, IfOrDiagram, NestedIfDiagram, IfErrorDiagram } from './Lesson8.jsx';
@@ -131,6 +131,7 @@ export const DIAGRAM_REGISTRY = {
 
   '/diagram/db-common':                DbCommonIntroDiagram,
   '/images/db-dsum.svg':               DbSumDiagram,
+  '/diagram/db-sum-separate':          DbSumSeparateDiagram,
   '/images/db-daverage.svg':           DbAverageDiagram,
   '/images/db-dcount.svg':             DbCountDiagram,
   '/images/db-dmax.svg':               DbMaxDiagram,
