@@ -1,409 +1,480 @@
-// Lesson5.jsx — DB 함수 (DSUM, DAVERAGE, DCOUNT, DMAX) 다이어그램
-import { C, Wrap, Title, BottomBar, BLine, Cell, Card } from './shared.jsx';
+// Lesson5.jsx — 데이터베이스 함수 (DSUM, DAVERAGE, DCOUNT, DMAX) 다이어그램
+// 4차시 VlookupDiagram 패턴(ExamProblem · Row/Fixed/Fill · ExcelGrid · ArgButtons · rangeSides · explain 칠판)을 공유 컴포넌트로 따른다.
+import { useState } from 'react';
+import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, C } from './shared.jsx';
+
+const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
+const LIGHT_AMBER = 'rgba(251,191,36,0.18)';
+
+// 오른쪽 칠판: 모든 설명을 한 칸에 겹쳐 두어 버튼을 눌러도 크기가 변하지 않는다.
+function ExplainBoard({ tabs, active, explain }) {
+  return (
+    <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
+      {tabs.map((t) => (
+        <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+          <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
+          <span style={{ color: C.text }}> — {explain[t.key]}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────
-// DbSumDiagram
+// DbCommonIntroDiagram — 데이터베이스 함수 공통 형식 (개념1 맨 앞)
+// ─────────────────────────────────────────────
+export function DbCommonIntroDiagram() {
+  const fns = [
+    { name: 'DSUM', desc: '합계' },
+    { name: 'DAVERAGE', desc: '평균' },
+    { name: 'DCOUNT', desc: '숫자 셀 개수' },
+    { name: 'DCOUNTA', desc: '비어 있지 않은 셀 개수' },
+    { name: 'DMAX', desc: '최댓값' },
+    { name: 'DMIN', desc: '최솟값' },
+  ];
+  return (
+    <Wrap>
+      <Title>데이터베이스 함수 — D로 시작하는 함수는 인수가 전부 같다</Title>
+
+      <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
+        <div style={{ color: C.text, fontSize: 19, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em' }}>
+          =D함수(<span style={{ color: C.blueLight }}>전체 표 범위</span>, <span style={{ color: C.greenLight }}>계산할 열</span>, <span style={{ color: C.amberLight }}>조건 범위</span>)
+        </div>
+        <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '10px 0' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.5 }}>
+          <div><b style={{ color: C.blueLight }}>전체 표 범위</b><span style={{ color: C.text }}> — 열 제목(1행)을 포함해 표 전체</span></div>
+          <div><b style={{ color: C.greenLight }}>계산할 열</b><span style={{ color: C.text }}> — 열 제목 셀을 클릭하거나 왼쪽부터 센 번호</span></div>
+          <div><b style={{ color: C.amberLight }}>조건 범위</b><span style={{ color: C.text }}> — 제목 + 값이 한 세트. 셀 하나만 지정할 수 없음</span></div>
+        </div>
+      </div>
+
+      <Row gap={12}>
+        {fns.map((f) => (
+          <Fill key={f.name} min={140} gap={4} style={{ background: C.blueCard, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: '12px 10px', alignItems: 'center' }}>
+            <div style={{ color: C.blue, fontSize: 16, fontWeight: 700 }}>{f.name}</div>
+            <div style={{ color: C.blueLight, fontSize: 13, textAlign: 'center' }}>{f.desc}</div>
+          </Fill>
+        ))}
+      </Row>
+    </Wrap>
+  );
+}
+
+// 공통: 데이터 표 헤더 스타일
+const headSt = { bold: true, color: C.blueLight, bg: C.blueCard };
+
+// ─────────────────────────────────────────────
+// DbSumDiagram — 단일 조건 (DSUM)
 // ─────────────────────────────────────────────
 export function DbSumDiagram() {
-  const gridBase = {
-    display: 'grid',
-    gap: 0,
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['제품ID', '제품군', '단가', '판매량'],
+    ['W-01', '세탁기', '1,200,000', 5],
+    ['R-02', '냉장고', '2,500,000', 3],
+    ['W-03', '세탁기', '1,500,000', 8],
+  ];
+  const cond = [['제품군'], ['세탁기']];
+
+  const tabs = [
+    { key: '전체 표 범위', color: C.blueLight },
+    { key: '계산할 열', color: C.greenLight },
+    { key: '조건 범위', color: C.amberLight },
+  ];
+  const explain = {
+    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다. VLOOKUP과 달리 제목 행을 빼지 않습니다.',
+    '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1을 클릭해도 됩니다.',
+    '조건 범위': '조건 열 제목 "제품군"과 조건값 "세탁기"를 위아래 두 칸으로 지정합니다. "세탁기" 한 칸만 지정하면 어느 열의 조건인지 알 수 없습니다.',
+  };
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: 3, c1: 0, c2: 3, color: C.blueLight }]
+      : active === '계산할 열' ? [{ r1: 0, r2: 3, c1: 3, c2: 3, color: C.greenLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
+    if (active === '조건 범위') {
+      if (ci === 1 && (ri === 1 || ri === 3)) return { bg: C.amberLight, color: '#0b1220', bold: true };
+      if (ci === 3 && (ri === 1 || ri === 3)) return { color: C.greenLight, bold: true };
+    }
+    return s;
+  };
+  const condSt = (ri, ci) => {
+    const s = active === '조건 범위' ? rangeSides(ri, ci, [{ r1: 0, r2: 1, c1: 0, c2: 0, color: C.amberLight }]) : {};
+    if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
+    return { ...s, color: C.amber, bold: true };
   };
 
   return (
     <Wrap>
-      <Title>DB 함수 공통 형식 &amp; DSUM — 단일 조건 합계</Title>
+      <Title>단일 조건 — 조건 범위는 제목과 값 두 칸</Title>
 
-      {/* Three arg cards */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        {/* Card 1 */}
-        <div style={{
-          flex: 1, background: C.amberBg, border: `1px solid ${C.amber}`,
-          borderRadius: 8, padding: 12,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ color: C.amber, fontWeight: 700, fontSize: 16, textAlign: 'center' }}>① 전체 표 범위</div>
-          <div style={{ color: C.amber, fontSize: 15, textAlign: 'center' }}>A1:D4  (헤더 포함)</div>
-        </div>
-        {/* Card 2 */}
-        <div style={{
-          flex: 1, background: C.blueCard, border: `1px solid ${C.blueDim}`,
-          borderRadius: 8, padding: 12,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ color: C.blue, fontWeight: 700, fontSize: 16, textAlign: 'center' }}>② 계산할 열 제목</div>
-          <div style={{ color: C.blueLight, fontSize: 15, textAlign: 'center' }}>열 번호 또는 제목 셀</div>
-        </div>
-        {/* Card 3 */}
-        <div style={{
-          flex: 1, background: C.greenDark, border: `1px solid ${C.green}`,
-          borderRadius: 8, padding: 12,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <div style={{ color: C.green, fontWeight: 700, fontSize: 16, textAlign: 'center' }}>③ 조건 범위</div>
-          <div style={{ color: C.greenLight, fontSize: 15, textAlign: 'center' }}>2행 이상 (헤더+조건)</div>
-        </div>
-      </div>
+      <ExamProblem notes={['조건은 [F1:F2] 영역에 입력하시오', 'DSUM 함수 사용']}>
+        [표1]에서 <b style={{ color: C.amberLight }}>제품군[B2:B4]</b>이 &quot;세탁기&quot;인 제품의
+        <b style={{ color: C.greenLight }}> 판매량[D2:D4]</b> 합계를 [G2] 셀에 계산하시오.
+      </ExamProblem>
 
-      {/* Data table + condition table */}
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Data table */}
-        <div style={{ flex: 1.5, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 12 }}>
-          <div style={{ color: C.textMuted, fontSize: 15, marginBottom: 8 }}>데이터 표 (A1:D4)</div>
-          <div style={{ ...gridBase, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            {/* Header */}
-            {['제품ID', '제품군', '단가', '판매량'].map(h => (
-              <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>
-                {h}
-              </Cell>
-            ))}
-            {/* Row 1 — highlighted */}
-            {['W-01', '세탁기✓', '350,000', '5'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>
-                {v}
-              </Cell>
-            ))}
-            {/* Row 2 — not matched */}
-            {['R-02', '냉장고', '500,000', '3'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textMuted, fontSize: 15 }}>
-                {v}
-              </Cell>
-            ))}
-            {/* Row 3 — highlighted */}
-            {['W-03', '세탁기✓', '420,000', '8'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>
-                {v}
-              </Cell>
-            ))}
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 판매 현황</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
+              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : null} />
           </div>
-        </div>
-
-        {/* Condition table */}
-        <div style={{ width: 180, marginLeft: 12, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 12 }}>
-          <div style={{ color: C.textMuted, fontSize: 15, marginBottom: 8 }}>조건 범위 (E1:E2)</div>
-          <div style={{ ...gridBase, gridTemplateColumns: '1fr' }}>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>
-              제품군
-            </Cell>
-            <Cell bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>
-              세탁기
-            </Cell>
+          <div>
+            <TableCaption color={C.amberLight}>[조건 범위]</TableCaption>
+            <ExcelGrid data={cond} startCol={5} startRow={1} cellStyle={condSt} minColW={90} />
           </div>
-        </div>
-      </div>
+        </Fixed>
 
-      {/* Formula and result */}
-      <div style={{ display: 'flex', gap: 12, marginTop: 12, alignItems: 'center' }}>
-        <div style={{
-          flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ color: C.text, fontSize: 15, fontFamily: 'monospace' }}>=DSUM(A1:D4, 4, E1:E2)</span>
-        </div>
-        <div style={{
-          flex: 1, background: C.greenBg, border: `2px solid ${C.green}`, borderRadius: 8, padding: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ color: C.greenLight, fontSize: 20, fontWeight: 700 }}>결과: 5 + 8 = 13</span>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine color={C.textMuted}>
-          =DSUM(범위, 필드, 조건 범위)  ·  필드는 열 번호(4) 또는 헤더 텍스트(&quot;판매량&quot;)
-        </BLine>
-        <BLine color={C.blue} bold>
-          조건 범위 맨 위 행에 헤더, 아래 행에 조건값을 입력합니다
-        </BLine>
-      </BottomBar>
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DSUM</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DSUM(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 합계를 구합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>F1:F2</span>)</div>
+              <div style={{ color: C.greenLight }}>→ 13</div>
+            </div>
+          </div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// DbAverageDiagram
+// DbAverageDiagram — AND 조건 (DAVERAGE)
 // ─────────────────────────────────────────────
 export function DbAverageDiagram() {
-  const gridBase = { display: 'grid', gap: 0 };
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['가전명', '제조사', '단가', '재고량'],
+    ['에어컨', 'A사', '1,800,000', 25],
+    ['청소기', 'B사', '600,000', 40],
+    ['스타일러', 'A사', '2,000,000', 30],
+  ];
+  const cond = [['제조사', '재고량'], ['A사', '>=20']];
+
+  const tabs = [
+    { key: '전체 표 범위', color: C.blueLight },
+    { key: '계산할 열', color: C.greenLight },
+    { key: '조건 범위', color: C.amberLight },
+  ];
+  const explain = {
+    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
+    '계산할 열': '평균을 구할 단가는 표의 왼쪽부터 3번째 열입니다.',
+    '조건 범위': '두 조건이 같은 행에 나란히 있으면 "둘 다 만족"(AND)입니다. 제목 2칸 + 값 2칸, 모두 4칸을 지정합니다.',
+  };
+  // 두 조건 모두 만족: 에어컨(ri1), 스타일러(ri3) / 청소기(ri2)는 B사라 제외
+  const match = (ri) => ri === 1 || ri === 3;
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: 3, c1: 0, c2: 3, color: C.blueLight }]
+      : active === '계산할 열' ? [{ r1: 0, r2: 3, c1: 2, c2: 2, color: C.greenLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
+    if (active === '조건 범위') {
+      if (ri === 2) return { color: C.textSlate };                       // 하나만 만족 → 회색
+      if (match(ri)) { const b = { bg: LIGHT_AMBER }; if (ci === 2) { b.color = C.greenLight; b.bold = true; } return b; }
+    }
+    return s;
+  };
+  const condSt = (ri, ci) => {
+    const s = active === '조건 범위' ? rangeSides(ri, ci, [{ r1: 0, r2: 1, c1: 0, c2: 1, color: C.amberLight }]) : {};
+    if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
+    return { ...s, color: C.amber, bold: true };
+  };
+  // 아래 안내: 같은 행 → AND / 다른 행 → OR
+  const andC = [['제조사', '재고량'], ['A사', '>=20']];
+  const orC = [['매장', '판매'], ['대구', ''], ['', '>=50']];
+  const plainHead = (ri) => (ri === 0 ? { bold: true, color: C.blueLight, bg: C.blueCard } : { color: C.amber, bold: true });
 
   return (
     <Wrap>
-      <Title>DAVERAGE — AND 조건 (나란히 같은 행에 입력)</Title>
+      <Title>AND 조건 — 같은 행에 나란히</Title>
 
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Left: condition */}
-        <div style={{ width: 240, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ color: C.amber, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            AND 조건 입력
+      <ExamProblem notes={['조건은 [F1:G2] 영역에 입력하시오', 'DAVERAGE 함수 사용']}>
+        [표1]에서 <b style={{ color: C.amberLight }}>제조사</b>가 &quot;A사&quot;이면서 <b style={{ color: C.amberLight }}>재고량</b>이 20 이상인 가전의
+        <b style={{ color: C.greenLight }}> 단가</b> 평균을 [H2] 셀에 계산하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 가전 재고</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={72}
+              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : null} />
           </div>
-
-          {/* Condition grid 2 cols */}
-          <div style={{ ...gridBase, gridTemplateColumns: '1fr 1fr' }}>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>제조사</Cell>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>재고량</Cell>
-            <Cell bg={C.amberBg} border={C.amber} style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>A사</Cell>
-            <Cell bg={C.amberBg} border={C.amber} style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>{'>=20'}</Cell>
+          <div>
+            <TableCaption color={C.amberLight}>[조건 범위] 같은 행 = AND</TableCaption>
+            <ExcelGrid data={cond} startCol={5} startRow={1} cellStyle={condSt} minColW={72} />
           </div>
+        </Fixed>
 
-          {/* AND explanation card */}
-          <div style={{
-            background: C.amberBg, border: `1px solid ${C.amber}`,
-            borderRadius: 8, padding: 10, marginTop: 8,
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-          }}>
-            <div style={{ color: C.amber, fontSize: 15, fontWeight: 700, textAlign: 'center' }}>AND = 조건값들을</div>
-            <div style={{ color: C.amber, fontSize: 15, textAlign: 'center' }}>같은 행에 나란히 입력</div>
-          </div>
-
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center', marginTop: 4 }}>
-            → A사이면서 재고량 20 이상인 행만
-          </div>
-        </div>
-
-        {/* Right: data */}
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div style={{ ...gridBase, gridTemplateColumns: 'repeat(4, 1fr)' }}>
-            {['가전명', '제조사', '단가', '재고량'].map(h => (
-              <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-            ))}
-            {/* included */}
-            {['에어컨', 'A사✓', '1,800,000', '25✓'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* excluded */}
-            {['청소기', 'B사✗', '1,200,000', '15'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textSlate, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* included */}
-            {['스타일러', 'A사✓', '2,000,000', '30✓'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-          </div>
-
-          {/* Formula + result */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <div style={{
-              flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: C.text, fontSize: 14, fontFamily: 'monospace' }}>=DAVERAGE(A1:D4, 3, E1:F2)</span>
-            </div>
-            <div style={{
-              flex: 1, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 8, padding: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, textAlign: 'center' }}>
-                결과: (1,800,000 + 2,000,000) ÷ 2 = 1,900,000
-              </span>
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DAVERAGE</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DAVERAGE(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 평균을 구합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=DAVERAGE(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G2</span>)</div>
+              <div style={{ color: C.greenLight }}>→ 1,900,000</div>
             </div>
           </div>
-        </div>
-      </div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
 
-      <BottomBar>
-        <BLine color={C.textMuted}>AND 조건 = 같은 행에 나란히 · OR 조건 = 서로 다른 행에 엇갈려 입력</BLine>
-        <BLine color={C.blue} bold>DAVERAGE(범위, 필드, 조건범위) — 조건에 맞는 행의 지정 열 평균</BLine>
-      </BottomBar>
+          {/* 같은 행 → AND / 다른 행 → OR (OR은 다음 개념 예고라 흐리게) */}
+          <Row gap={16}>
+            <Fill min={130} gap={4} style={{ alignItems: 'center' }}>
+              <div style={{ color: C.amber, fontSize: 13.5, fontWeight: 700 }}>같은 행 → AND</div>
+              <ExcelGrid data={andC} startCol={5} startRow={1} cellStyle={(ri) => plainHead(ri)} minColW={62} />
+            </Fill>
+            <Fill min={130} gap={4} style={{ alignItems: 'center', opacity: 0.6 }}>
+              <div style={{ color: C.textMuted, fontSize: 13.5, fontWeight: 700 }}>다른 행 → OR</div>
+              <ExcelGrid data={orC} startCol={5} startRow={1} cellStyle={(ri) => plainHead(ri)} minColW={62} />
+            </Fill>
+          </Row>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// DbCountDiagram
+// DbCountDiagram — OR 조건 + DCOUNT/DCOUNTA
 // ─────────────────────────────────────────────
 export function DbCountDiagram() {
-  const gridBase = { display: 'grid', gap: 0 };
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['지점코드', '매장위치', '판매량', '담당자'],
+    ['S01', '서울점', 65, '최팀장'],
+    ['D02', '대구점', 30, '이과장'],
+    ['B03', '부산점', 20, '박대리'],
+  ];
+  const cond = [['매장위치', '판매량'], ['대구점', ''], ['', '>=50']];
+
+  const tabs = [
+    { key: '전체 표 범위', color: C.blueLight },
+    { key: '계산할 열', color: C.greenLight },
+    { key: '조건 범위', color: C.amberLight },
+    { key: 'DCOUNTA와 비교', color: C.purpleLight },
+  ];
+  const explain = {
+    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
+    '계산할 열': '개수를 셀 판매량은 표의 왼쪽부터 3번째 열입니다.',
+    '조건 범위': '조건값이 서로 다른 행에 있으면 "하나라도 만족"(OR)입니다. 빈칸까지 포함해 F1:G3 여섯 칸을 지정합니다.',
+    'DCOUNTA와 비교': 'DCOUNT는 숫자·날짜·시간 셀만 셉니다. 담당자처럼 문자 열을 세려면 DCOUNTA를 씁니다.',
+  };
+  // 조건 중 하나라도 만족: 서울점(65>=50, ri1), 대구점(ri2) / 부산점(ri3) 제외
+  const match = (ri) => ri === 1 || ri === 2;
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: 3, c1: 0, c2: 3, color: C.blueLight }]
+      : (active === '계산할 열' ? [{ r1: 0, r2: 3, c1: 2, c2: 2, color: C.greenLight }]
+      : active === 'DCOUNTA와 비교' ? [{ r1: 0, r2: 3, c1: 3, c2: 3, color: C.greenLight }] : []);
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
+    if (active === '조건 범위') {
+      if (ri === 3) return { color: C.textSlate };
+      if (match(ri)) { const b = { bg: LIGHT_AMBER }; if (ci === 2) { b.color = C.greenLight; b.bold = true; } return b; }
+    }
+    return s;
+  };
+  const condSt = (ri, ci) => {
+    const s = active === '조건 범위' ? rangeSides(ri, ci, [{ r1: 0, r2: 2, c1: 0, c2: 1, color: C.amberLight }]) : {};
+    if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
+    const v = cond[ri][ci];
+    return { ...s, color: v ? C.amber : C.textDim, bold: !!v };
+  };
+
+  const compare = active === 'DCOUNTA와 비교';
 
   return (
     <Wrap>
-      <Title>DCOUNT — OR 조건 (서로 다른 행에 계단식 입력)</Title>
+      <Title>OR 조건 — 행을 바꿔 엇갈리게</Title>
 
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Left: condition */}
-        <div style={{ width: 240, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ color: C.amber, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            OR 조건 입력
+      <ExamProblem notes={['조건은 [F1:G3] 영역에 입력하시오', 'DCOUNT 함수 사용']}>
+        [표1]에서 <b style={{ color: C.amberLight }}>매장위치</b>가 &quot;대구점&quot;이거나 <b style={{ color: C.amberLight }}>판매량</b>이 50 이상인 지점 수를 [H2] 셀에 계산하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 지점 판매</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={74}
+              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null]
+                : compare ? [null, null, null, { text: '4번째(문자)', color: C.greenLight }] : null} />
           </div>
-
-          {/* Condition grid 2 cols E1:F3 */}
-          <div style={{ ...gridBase, gridTemplateColumns: '1fr 1fr' }}>
-            {/* Headers */}
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>매장위치</Cell>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>판매량</Cell>
-            {/* Row 1: 대구점 | empty */}
-            <Cell bg={C.amberBg} border={C.amber} style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>대구점</Cell>
-            <Cell bg={C.bgDark} border={C.border} style={{ color: C.textDim, fontSize: 15 }}>&nbsp;</Cell>
-            {/* Row 2: empty | >=50 */}
-            <Cell bg={C.bgDark} border={C.border} style={{ color: C.textDim, fontSize: 15 }}>&nbsp;</Cell>
-            <Cell bg={C.amberBg} border={C.amber} style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>{'>=50'}</Cell>
+          <div>
+            <TableCaption color={C.amberLight}>[조건 범위] 다른 행 = OR</TableCaption>
+            <ExcelGrid data={cond} startCol={5} startRow={1} cellStyle={condSt} minColW={72} />
           </div>
+        </Fixed>
 
-          {/* Stagger labels */}
-          <div style={{ display: 'flex', gap: 4, marginTop: 4 }}>
-            <div style={{ flex: 1, color: C.textDim, fontSize: 13, textAlign: 'center' }}>← &quot;대구점&quot; 행</div>
-            <div style={{ flex: 1, color: C.textDim, fontSize: 13, textAlign: 'center' }}>&quot;&gt;=50&quot; 다른 행</div>
-          </div>
-
-          {/* OR card */}
-          <div style={{
-            background: C.amberBg, border: `1px solid ${C.amber}`,
-            borderRadius: 8, padding: 10, marginTop: 8,
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-          }}>
-            <div style={{ color: C.amber, fontSize: 15, fontWeight: 700, textAlign: 'center' }}>OR = 조건을 서로 다른</div>
-            <div style={{ color: C.amber, fontSize: 15, textAlign: 'center' }}>행에 계단식으로 입력</div>
-          </div>
-
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center', marginTop: 4 }}>
-            → 대구점이거나 판매량 50 이상인 행
-          </div>
-
-          {/* DCOUNT warning */}
-          <div style={{
-            background: C.purpleCard, border: `1px solid ${C.purple}`,
-            borderRadius: 8, padding: 8, marginTop: 8,
-          }}>
-            <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, textAlign: 'center' }}>DCOUNT 주의</div>
-            <div style={{ color: C.purpleLight, fontSize: 13, textAlign: 'center' }}>두 번째 인수 열에 숫자 필요</div>
-            <div style={{ color: C.purple, fontSize: 13, textAlign: 'center' }}>텍스트 열이면 DCOUNTA 사용</div>
-          </div>
-        </div>
-
-        {/* Right: data */}
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div style={{ ...gridBase, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            {['지점코드', '매장위치', '판매량'].map(h => (
-              <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-            ))}
-            {/* S01 65>=50 — included */}
-            {['S01', '서울점', '65'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* D02 대구점 — included */}
-            {['D02', '대구점✓', '30'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* B03 excluded */}
-            {['B03', '부산점', '20'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textSlate, fontSize: 15 }}>{v}</Cell>
-            ))}
-          </div>
-
-          {/* Formula + result */}
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-            <div style={{
-              flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: C.text, fontSize: 14, fontFamily: 'monospace' }}>=DCOUNT(A1:D4, 3, E1:F3)</span>
-            </div>
-            <div style={{
-              flex: 1, background: C.greenBg, border: `1px solid ${C.green}`, borderRadius: 8, padding: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <span style={{ color: C.greenLight, fontSize: 20, fontWeight: 700 }}>결과 = 2</span>
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DCOUNT</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DCOUNT(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 숫자 셀 개수를 셉니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: compare ? 16 : 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0' }}>
+              {compare ? (
+                <>
+                  <div>=DCOUNT(A1:D4, <span style={{ color: C.greenLight }}>4</span>, F1:G3) <span style={{ color: C.redLight }}>→ 0</span></div>
+                  <div style={{ marginTop: 4 }}>=DCOUNTA(A1:D4, <span style={{ color: C.greenLight }}>4</span>, F1:G3) <span style={{ color: C.greenLight }}>→ 2</span></div>
+                </>
+              ) : (
+                <>
+                  <div>=DCOUNT(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G3</span>)</div>
+                  <div style={{ color: C.greenLight }}>→ 2</div>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine color={C.textMuted}>OR 조건 = 엇갈린 다른 행 · 같은 행 = AND 조건 · 숫자 열 지정 필수(DCOUNT)</BLine>
-        <BLine color={C.blue} bold>텍스트 개수 세기: DCOUNT → DCOUNTA로 변경</BLine>
-      </BottomBar>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 인수와 DCOUNTA 차이를 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// DbMaxDiagram
+// DbMaxDiagram — 와일드카드 (DMAX)
 // ─────────────────────────────────────────────
 export function DbMaxDiagram() {
-  const gridBase = { display: 'grid', gap: 0 };
+  const [active, setActive] = useState(null);   // 인수 버튼
+  const [pat, setPat] = useState(null);         // 와일드카드 패턴
 
-  const patternCards = [
-    { pattern: '고*', label: '시작 패턴', bg: C.blueCard, border: C.blueDim, color: C.blue },
-    { pattern: '*고', label: '끝 패턴', bg: C.greenDark, border: C.green, color: C.green },
-    { pattern: '*고*', label: '포함 패턴', bg: C.purpleCard, border: C.purple, color: C.purple },
-    { pattern: '고??', label: '3글자 패턴', bg: C.amberBg, border: C.amber, color: C.amber },
+  const data = [
+    ['식별번호', '모델명', '출시연도', '입고수량'],
+    [101, 'OLED-TV', 2024, 15],
+    [102, 'UHD-TV', 2023, 40],
+    [103, 'OLED-Monitor', 2026, 8],
   ];
+  const cond = [['모델명'], ['OLED*']];
+
+  const tabs = [
+    { key: '전체 표 범위', color: C.blueLight },
+    { key: '계산할 열', color: C.greenLight },
+    { key: '조건 범위', color: C.amberLight },
+  ];
+  const explain = {
+    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
+    '계산할 열': '최댓값을 구할 출시연도는 표의 왼쪽부터 3번째 열입니다.',
+    '조건 범위': '"OLED*"는 OLED로 시작하고 뒤에 몇 글자가 오든 상관없다는 뜻입니다. OLED-TV, OLED-Monitor 두 행이 걸립니다.',
+  };
+  // OLED로 시작하는 행: OLED-TV(ri1), OLED-Monitor(ri3). 최댓값 2026(ri3)
+  const match = (ri) => ri === 1 || ri === 3;
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: 3, c1: 0, c2: 3, color: C.blueLight }]
+      : active === '계산할 열' ? [{ r1: 0, r2: 3, c1: 2, c2: 2, color: C.greenLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
+    if (active === '조건 범위') {
+      if (match(ri)) {
+        if (ci === 1) return { bg: C.amberLight, color: '#0b1220', bold: true };
+        if (ci === 2) return { color: C.greenLight, bold: true, content: ri === 3 ? '2026 ★' : data[ri][2] };
+      }
+    }
+    return s;
+  };
+  const condSt = (ri, ci) => {
+    const s = active === '조건 범위' ? rangeSides(ri, ci, [{ r1: 0, r2: 1, c1: 0, c2: 0, color: C.amberLight }]) : {};
+    if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
+    return { ...s, color: C.amber, bold: true };
+  };
+
+  // 와일드카드 패턴 표 — 클릭하면 예시 목록에서 매칭 단어만 형광
+  const words = ['고구마', '고등어', '고', '망고', '참고서', '고기'];
+  const patterns = [
+    { key: '고*', mean: '고로 시작', test: (w) => w.startsWith('고') },
+    { key: '*고', mean: '고로 끝남', test: (w) => w.endsWith('고') },
+    { key: '*고*', mean: '고 포함', test: (w) => w.includes('고') },
+    { key: '고??', mean: '고 + 정확히 2글자', test: (w) => w.startsWith('고') && w.length === 3 },
+  ];
+  const activeTest = (patterns.find((p) => p.key === pat) || {}).test;
 
   return (
     <Wrap>
-      <Title>DMAX &amp; 와일드카드 — 만능문자로 텍스트 조건 설정</Title>
-      <div style={{ textAlign: 'center', color: C.textDim, fontSize: 16, marginBottom: 16 }}>
-        * (별표) = 글자수 무제한  |  ? (물음표) = 정확히 한 글자
-      </div>
+      <Title>와일드카드 — * 는 여러 글자, ? 는 한 글자</Title>
 
-      {/* Wildcard pattern cards */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        {patternCards.map(({ pattern, label, bg, border, color }) => (
-          <div key={pattern} style={{
-            flex: 1, background: bg, border: `1px solid ${border}`, borderRadius: 8, padding: 12,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <div style={{ color, fontWeight: 700, fontSize: 18, textAlign: 'center' }}>{pattern}</div>
-            <div style={{ color, fontSize: 13, textAlign: 'center', marginTop: 4 }}>{label}</div>
+      <ExamProblem notes={['조건은 [F1:F2] 영역에 입력하시오', 'DMAX 함수 사용']}>
+        [표1]에서 <b style={{ color: C.amberLight }}>모델명</b>이 &quot;OLED&quot;로 시작하는 제품의
+        <b style={{ color: C.greenLight }}> 출시연도</b> 중 가장 큰 값을 [G2] 셀에 계산하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 물류창고</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={72}
+              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : null} />
           </div>
-        ))}
-      </div>
-
-      {/* Condition + Data */}
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Condition */}
-        <div style={{ width: 180, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ color: C.textMuted, fontSize: 14, marginBottom: 4 }}>조건 범위 (E1:E2)</div>
-          <div style={{ ...gridBase, gridTemplateColumns: '1fr' }}>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>모델명</Cell>
-            <Cell bg={C.amberBg} border={C.amber} style={{ color: C.amber, fontWeight: 700, fontSize: 16 }}>OLED*</Cell>
+          <div>
+            <TableCaption color={C.amberLight}>[조건 범위]</TableCaption>
+            <ExcelGrid data={cond} startCol={5} startRow={1} cellStyle={condSt} minColW={100} />
           </div>
-          <div style={{ color: C.textDim, fontSize: 13, textAlign: 'center', marginTop: 4 }}>
-            OLED로 시작하는 모든 모델
+        </Fixed>
+
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DMAX</div>
+            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DMAX(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 최댓값을 구합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
+              <div>=DMAX(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:F2</span>)</div>
+              <div style={{ color: C.greenLight }}>→ 2026</div>
+            </div>
           </div>
-        </div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+        </Fill>
+      </Row>
 
-        {/* Data table */}
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div style={{ ...gridBase, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            {['제품번호', '모델명', '연도'].map(h => (
-              <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-            ))}
-            {/* OLED-TV 2024 — matched */}
-            {['101', 'OLED-TV 2024✓', '2024'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* UHD-TV 2023 — not matched */}
-            {['102', 'UHD-TV 2023✗', '2023'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textSlate, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* OLED-Monitor 2026 — matched, max */}
-            {['103', 'OLED-Monitor 2026★', '2026'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} bw={i === 2 ? 2.5 : 1} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-          </div>
-        </div>
+      {/* 와일드카드 패턴 4개 — 클릭하면 예시에서 매칭 단어만 형광 */}
+      <div style={{ marginTop: 16 }}>
+        <div style={{ color: C.textMuted, fontSize: 13.5, fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>패턴을 눌러 매칭되는 예시를 확인하세요</div>
+        <Row gap={12}>
+          {patterns.map((p) => (
+            <Fill key={p.key} min={130}>
+              <div onClick={() => setPat(p.key)}
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: pat === p.key ? C.amberBg : C.bgDark, border: `1px solid ${pat === p.key ? C.amber : C.border}`, borderRadius: 8, padding: '10px 8px' }}>
+                <div style={{ color: pat === p.key ? C.amber : C.text, fontSize: 18, fontWeight: 700 }}>{p.key}</div>
+                <div style={{ color: C.textMuted, fontSize: 13 }}>{p.mean}</div>
+              </div>
+            </Fill>
+          ))}
+        </Row>
+        <Row gap={8} style={{ marginTop: 10 }}>
+          {words.map((w) => {
+            const on = activeTest ? activeTest(w) : false;
+            return (
+              <Fixed key={w}>
+                <span style={{
+                  display: 'inline-block', fontSize: 15, fontWeight: 700, padding: '4px 10px', borderRadius: 6,
+                  background: on ? C.amberLight : C.bgDark, color: on ? '#0b1220' : C.textMuted,
+                  border: `1px solid ${on ? C.amber : C.border}`,
+                }}>{w}</span>
+              </Fixed>
+            );
+          })}
+        </Row>
       </div>
-
-      {/* Formula + result */}
-      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-        <div style={{
-          flex: 1, background: C.bgDark, borderRadius: 8, padding: 10,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ color: C.text, fontSize: 15, fontFamily: 'monospace' }}>=DMAX(A1:D4, 3, E1:E2)</span>
-        </div>
-        <div style={{
-          flex: 1, background: C.greenBg, border: `2px solid ${C.green}`, borderRadius: 8, padding: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <span style={{ color: C.greenLight, fontSize: 22, fontWeight: 700 }}>결과 = 2026</span>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine color={C.textMuted}>*=글자수 무제한  ·  ?=정확히 한 글자 · 조합: OLED*  /  *TV  /  *OLED*  /  OL??</BLine>
-        <BLine color={C.blue} bold>DMAX(범위, 필드, 조건범위) — 조건에 맞는 행의 최댓값</BLine>
-      </BottomBar>
     </Wrap>
   );
 }

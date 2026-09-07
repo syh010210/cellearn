@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, Row, Fixed, Fill, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, Row, Fixed, Fill, C, ExamProblem, ArgButtons, rangeSides } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
@@ -93,18 +93,7 @@ export function VlookupDiagram() {
   };
 
   // 범위 바깥쪽 변에만 테두리를 그려 '범위를 감싼 것'처럼 보이게 (ri·ci는 data 인덱스)
-  const rangeSides = (ri, ci, boxes) => {
-    const s = {};
-    for (const b of boxes) {
-      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
-      if (ri === b.r1) s.bt = b.color;
-      if (ri === b.r2) s.bb = b.color;
-      if (ci === b.c1) s.bl = b.color;
-      if (ci === b.c2) s.br = b.color;
-    }
-    return s;
-  };
-  // 등급표: 참조 범위=A12:C14(첫 열 연한 채우기), 열 번호=C12:C14(초록), 일치 옵션=A12:A14(흰) — 모두 바깥쪽 테두리만
+  //등급표: 참조 범위=A12:C14(첫 열 연한 채우기), 열 번호=C12:C14(초록), 일치 옵션=A12:A14(흰) — 모두 바깥쪽 테두리만
   const codeSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     let boxes = [];
@@ -122,17 +111,11 @@ export function VlookupDiagram() {
       <Title>참조 범위에서 나열된 데이터의 방향이 세로이면 VLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem notes={['사원코드의 앞에서 다섯 번째 문자가 “A”이면 성과급률은 5.0%, “B”이면 3.5%, “C”이면 2.0%임', 'VLOOKUP, MID 함수 사용']}>
           [표1]에서 <b style={{ color: C.amberLight }}>사원코드[A3:A5]</b>의 다섯 번째 문자와
           <b style={{ color: C.blueLight }}> [A11:C14]</b> 영역의 표를 이용하여 각 사원의
           <b style={{ color: C.greenLight }}> 성과급률[D3:D5]</b>을 계산하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 사원코드의 앞에서 다섯 번째 문자가 “A”이면 성과급률은 5.0%, “B”이면 3.5%, “C”이면 2.0%임</div>
-          <div>▶ VLOOKUP, MID 함수 사용</div>
-        </div>
-      </div>
+      </ExamProblem>
 
       {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <Row gap={20}>
@@ -169,20 +152,7 @@ export function VlookupDiagram() {
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
 
           {/* 인수 버튼 4개 */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
 
           {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
           <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
@@ -250,18 +220,7 @@ export function HlookupTwoTableDiagram() {
     return {};
   };
 
-  const rangeSides = (ri, ci, boxes) => {
-    const s = {};
-    for (const b of boxes) {
-      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
-      if (ri === b.r1) s.bt = b.color;
-      if (ri === b.r2) s.bb = b.color;
-      if (ci === b.c1) s.bl = b.color;
-      if (ci === b.c2) s.br = b.color;
-    }
-    return s;
-  };
-  // 단가표: 이름 열(A)은 항상 라벨색. 참조 범위=B12:E14(첫 행 연한 채우기), 행 번호=B13:E13(초록), 일치 옵션=B12:E12(흰)
+  //단가표: 이름 열(A)은 항상 라벨색. 참조 범위=B12:E14(첫 행 연한 채우기), 행 번호=B13:E13(초록), 일치 옵션=B12:E12(흰)
   const priceSt = (ri, ci) => {
     if (ci === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
     let boxes = [];
@@ -279,17 +238,11 @@ export function HlookupTwoTableDiagram() {
       <Title>참조 범위에서 나열된 데이터의 방향이 가로이면 HLOOKUP</Title>
 
       {/* 실제 시험 형식 문제 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem notes={['판매금액은 판매수량과 상품의 판매단가를 곱한 값임', 'HLOOKUP 함수 사용']}>
           [표2]에서 <b style={{ color: C.amberLight }}>상품코드[C3:C5]</b>와
           <b style={{ color: C.blueLight }}> [A12:E14]</b> 영역의 표를 이용하여 각 건의
           <b style={{ color: C.greenLight }}> 판매금액[E3:E5]</b>을 계산하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ 판매금액은 판매수량과 상품의 판매단가를 곱한 값임</div>
-          <div>▶ HLOOKUP 함수 사용</div>
-        </div>
-      </div>
+      </ExamProblem>
 
       {/* 왼쪽: 표 2개(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <Row gap={20}>
@@ -321,20 +274,7 @@ export function HlookupTwoTableDiagram() {
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
 
           {/* 인수 버튼 4개 */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
 
           {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
           <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
@@ -448,15 +388,10 @@ export function VlookupApproxDiagram() {
       <Title>유사 일치 이해하기</Title>
 
       {/* 실제 시험 형식 문제 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem notes={['HLOOKUP 함수 사용']}>
           [표1]에서 <b style={{ color: C.amberLight }}>총점[C3:C5]</b>과 아래 기준표를 이용하여 각 학생의
           <b style={{ color: C.greenLight }}> 등급[D3:D5]</b>을 구하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ HLOOKUP 함수 사용</div>
-        </div>
-      </div>
+      </ExamProblem>
 
       {/* 왼쪽: 성적표 + 두 기준표 · 오른쪽: 박스 + 버튼 + 칠판 */}
       <Row gap={20}>
@@ -494,20 +429,7 @@ export function VlookupApproxDiagram() {
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요 (두 표에 동시 표시)</div>
 
           {/* 인수 버튼 4개 */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
 
           {/* 칠판 — 가장 긴 설명 크기로 고정 */}
           <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
@@ -558,18 +480,7 @@ export function VlookupOneTableDiagram() {
     '일치 옵션': '찾을 값이 참조 범위의 첫 열에 있습니다. \n(정확히 일치 · FALSE)',
   };
 
-  const rangeSides = (ri, ci, boxes) => {
-    const s = {};
-    for (const b of boxes) {
-      if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
-      if (ri === b.r1) s.bt = b.color;
-      if (ri === b.r2) s.bb = b.color;
-      if (ci === b.c1) s.bl = b.color;
-      if (ci === b.c2) s.br = b.color;
-    }
-    return s;
-  };
-  // 한 표: 만족도(B3:B6)=찾을 값 재료, 참조 범위=B3:C6(첫 열 연한 채우기), 열 번호=C3:C6(초록), 일치 옵션=B3:B6(흰)
+  //한 표: 만족도(B3:B6)=찾을 값 재료, 참조 범위=B3:C6(첫 열 연한 채우기), 열 번호=C3:C6(초록), 일치 옵션=B3:B6(흰)
   const st = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     let boxes = [];
@@ -589,15 +500,10 @@ export function VlookupOneTableDiagram() {
       <Title>하나의 표에서</Title>
 
       {/* 실제 시험 형식 문제 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem notes={['VLOOKUP, MIN 함수 사용']}>
           [표3]에서 <b style={{ color: C.amberLight }}>만족도[B3:B6]</b>가 가장 낮은 상품의
           <b style={{ color: C.greenLight }}> 카테고리[C9]</b>를 구하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8 }}>
-          <div>▶ VLOOKUP, MIN 함수 사용</div>
-        </div>
-      </div>
+      </ExamProblem>
 
       {/* 왼쪽: 표(항상 표시) · 오른쪽: 박스 + 버튼 + 설명 */}
       <Row gap={32}>
@@ -623,20 +529,7 @@ export function VlookupOneTableDiagram() {
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 네 개의 인수를 하나씩 확인하세요</div>
 
           {/* 인수 버튼 4개 */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {tabs.map((t) => (
-              <button key={t.key} onClick={() => setActive(t.key)}
-                style={{
-                  flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
-                  fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-                  border: `2px solid ${t.color}`,
-                  background: active === t.key ? t.color : 'transparent',
-                  color: active === t.key ? '#0b1220' : t.color,
-                }}>
-                {t.key}
-              </button>
-            ))}
-          </div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
 
           {/* 칠판 — 가장 긴 설명 크기로 고정, 버튼을 눌러도 크기 불변 */}
           <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
@@ -705,11 +598,9 @@ export function MatchIndexDiagram() {
       <Subtitle>INDEX는 &apos;그 자리의 값&apos;을 꺼내고, MATCH는 &apos;몇 번째인지&apos;를 셉니다.</Subtitle>
 
       {/* 문제 박스 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem>
           [표1]에서 <b style={{ color: C.greenLight }}>&apos;박민수&apos;의 직급</b>을 구하시오.
-        </div>
-      </div>
+      </ExamProblem>
 
       <Row gap={18}>
         {/* Left: 사원 표 (범위·행·열 바깥 테두리 + C4 채우기 강조) */}
@@ -736,11 +627,9 @@ export function MatchIndexDiagram() {
       </Row>
 
       {/* MATCH — INDEX와 같은 방식. 위치 번호를 구하는 문제 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', margin: '24px 0 16px' }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem margin={{ margin: '24px 0 16px' }}>
           [표1]에서 <b style={{ color: C.amberLight }}>&apos;박민수&apos;가 몇 번째 행</b>인지, <b style={{ color: C.greenLight }}>&apos;직급&apos;이 몇 번째 열</b>인지 구하시오.
-        </div>
-      </div>
+      </ExamProblem>
       <Row gap={18}>
         {/* Left: 사원 표 (첫 열·첫 행 바깥 테두리 + 박민수·직급 채우기) */}
         <Fixed>
@@ -908,12 +797,9 @@ export function IndexMatchDiagram() {
       <Title>MAX로 최고값을 구하고, MATCH로 그 위치를 찾아, INDEX로 그 자리의 값을 꺼냅니다.</Title>
 
       {/* 문제 박스 (실기 기출 형식: [표5] 상품 판매 현황) */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem note="INDEX, MATCH, MAX 함수 사용">
           [표5]에서 <b style={{ color: C.amberLight }}>매출액[I27:I32]</b>이 <b style={{ color: C.amberLight }}>가장 높은</b> 상품의 <b style={{ color: C.greenLight }}>상품명[F27:F32]</b>을 찾아 [J32] 셀에 표시하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH, MAX 함수 사용</div>
-      </div>
+      </ExamProblem>
 
       <Row gap={18}>
         {/* Left: 상품 판매 현황 표 */}
@@ -1005,12 +891,9 @@ export function VlookupLimitDiagram() {
       <Subtitle>찾을 값(사번)이 표의 첫 열이 아니고, 가져올 값(부서)이 그 왼쪽에 있는 경우</Subtitle>
 
       {/* 문제 박스 */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem note="INDEX, MATCH 함수 사용">
           [표6]에서 <b style={{ color: C.amberLight }}>사번[H27:H30]</b>이 <b style={{ color: C.amberLight }}>&quot;A103&quot;</b>인 사원의 <b style={{ color: C.greenLight }}>부서[F27:F30]</b>를 찾아 [J30] 셀에 표시하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ INDEX, MATCH 함수 사용</div>
-      </div>
+      </ExamProblem>
 
       <Row gap={18}>
         {/* Left: 사원 정보 표 */}
@@ -1080,15 +963,9 @@ export function ChooseRankDiagram() {
       <Title>RANK.EQ로 순위를 구하고, CHOOSE로 그 순위에 놓인 값을 선택합니다.</Title>
 
       {/* 문제 박스 (실기 기출 형식: [표7] 학생 성적표) */}
-      <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>
+      <ExamProblem notes={['순위는 성적이 가장 높은 학생이 1위', 'CHOOSE, RANK.EQ 함수 사용']} noteStyle={{ fontSize: 14.5, lineHeight: 1.85, marginTop: 6 }}>
           [표7]에서 <b style={{ color: C.amberLight }}>성적[G27:G31]</b>을 기준으로 순위를 구하여 1위는 &quot;최우수&quot;, 2위는 &quot;우수&quot;, 3위는 &quot;보통&quot;, 나머지는 &quot;노력&quot;으로 <b style={{ color: C.greenLight }}>비고[H27:H31]</b>에 표시하시오.
-        </div>
-        <div style={{ color: C.textMuted, fontSize: 14.5, lineHeight: 1.85, marginTop: 6 }}>
-          <div>▶ 순위는 성적이 가장 높은 학생이 1위</div>
-          <div>▶ CHOOSE, RANK.EQ 함수 사용</div>
-        </div>
-      </div>
+      </ExamProblem>
 
       <Row gap={18}>
         {/* Left: 사원 판매 실적 표 */}

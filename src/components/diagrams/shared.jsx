@@ -266,3 +266,58 @@ export function TableCaption({ children, color }) {
     <div style={{ fontSize: 12.5, fontWeight: 700, color: color || C.textMuted, margin: '4px 0 6px' }}>{children}</div>
   );
 }
+
+// 시험 형식 문제 박스 (색 강조 지시문 + ▶ 조건 줄). 4·5차시 인터랙티브 다이어그램 공용.
+//  children  : 지시문(색 <b> 포함)
+//  note      : 한 줄 조건(문자열) → fontSize 14.5·marginTop 6 단일 div
+//  notes     : 여러 줄 조건(배열) → 컨테이너 안 ▶ 줄들. noteStyle로 컨테이너 스타일 override
+//  margin    : 바깥 여백 override (기본 marginBottom 16)
+export function ExamProblem({ children, notes, note, noteStyle, margin = { marginBottom: 16 } }) {
+  return (
+    <div style={{ background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '14px 18px', ...margin }}>
+      <div style={{ color: C.text, fontSize: 15.5, lineHeight: 1.8 }}>{children}</div>
+      {note !== undefined && (
+        <div style={{ color: C.textMuted, fontSize: 14.5, marginTop: 6 }}>▶ {note}</div>
+      )}
+      {notes && notes.length > 0 && (
+        <div style={{ color: C.textMuted, fontSize: 14, lineHeight: 1.85, marginTop: 8, ...noteStyle }}>
+          {notes.map((n, i) => <div key={i}>▶ {n}</div>)}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 인수 버튼 묶음 (누르면 active 인수가 바뀜). tabs=[{key,color}], onSelect(key).
+export function ArgButtons({ tabs, active, onSelect }) {
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      {tabs.map((t) => (
+        <button key={t.key} onClick={() => onSelect(t.key)}
+          style={{
+            flex: 1, padding: '9px 6px', borderRadius: 8, cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
+            border: `2px solid ${t.color}`,
+            background: active === t.key ? t.color : 'transparent',
+            color: active === t.key ? '#0b1220' : t.color,
+          }}>
+          {t.key}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// 범위 바깥쪽 변에만 테두리를 그려 '범위를 감싼 것'처럼 보이게 한다 (ExcelGrid cellStyle 안에서 사용).
+//  boxes = [{ r1, r2, c1, c2, color }] (data 인덱스 기준)
+export function rangeSides(ri, ci, boxes) {
+  const s = {};
+  for (const b of boxes) {
+    if (ri < b.r1 || ri > b.r2 || ci < b.c1 || ci > b.c2) continue;
+    if (ri === b.r1) s.bt = b.color;
+    if (ri === b.r2) s.bb = b.color;
+    if (ci === b.c1) s.bl = b.color;
+    if (ci === b.c2) s.br = b.color;
+  }
+  return s;
+}

@@ -1,6 +1,6 @@
 {
   "id": 5,
-  "title": "데이터베이스 함수의 공통 공식과 조건 설정 마스터",
+  "title": "데이터베이스 함수 (DSUM, DAVERAGE, DCOUNT, DMAX)",
   "shortTitle": "데이터베이스 함수",
   "concepts": [
     {
@@ -12,8 +12,13 @@
         },
         {
           "type": "image",
+          "url": "/diagram/db-common",
+          "alt": "데이터베이스 함수 공통 구문과 6개 함수"
+        },
+        {
+          "type": "image",
           "url": "/images/db-dsum.svg",
-          "alt": "데이터베이스 함수 공통 3인수 형식과 DSUM 단일 조건 합계 예시"
+          "alt": "DSUM 단일 조건 — 조건 범위는 제목과 값 두 칸, 인수별 강조"
         },
         {
           "type": "heading",
@@ -106,7 +111,7 @@
         {
           "type": "image",
           "url": "/images/db-daverage.svg",
-          "alt": "DAVERAGE AND 조건 — 조건을 같은 행에 나란히 입력하는 방법"
+          "alt": "DAVERAGE AND 조건 — 조건을 같은 행에 나란히 입력"
         },
         {
           "type": "heading",
@@ -189,7 +194,7 @@
         {
           "type": "image",
           "url": "/images/db-dcount.svg",
-          "alt": "DCOUNT OR 조건 — 조건을 서로 다른 행에 계단식으로 입력하는 방법"
+          "alt": "DCOUNT OR 조건 — 조건을 다른 행에 엇갈려 입력, DCOUNTA 비교"
         },
         {
           "type": "heading",
@@ -273,7 +278,7 @@
         {
           "type": "image",
           "url": "/images/db-dmax.svg",
-          "alt": "DMAX 와일드카드 — *, ? 만능문자 4가지 패턴과 최댓값 추출 예시"
+          "alt": "DMAX 와일드카드 — OLED* 패턴과 *, ? 매칭 예시"
         },
         {
           "type": "heading",
