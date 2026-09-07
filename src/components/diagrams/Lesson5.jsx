@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, C } from './shared.jsx';
 
 const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
-const LIGHT_AMBER = 'rgba(251,191,36,0.18)';
 
 // 오른쪽 칠판: 모든 설명을 한 칸에 겹쳐 두어 버튼을 눌러도 크기가 변하지 않는다.
 function ExplainBoard({ tabs, active, explain }) {
@@ -119,7 +118,7 @@ export function DbSumDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 판매 현황</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : null} />
+              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
           </div>
         </Fixed>
 
@@ -178,7 +177,6 @@ export function DbSumSeparateDiagram() {
     const s = rangeSides(ri, ci, boxes);
     if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
     if (active === '조건 범위') {
-      if (ci === 1 && (ri === 2 || ri === 4)) { s.bg = LIGHT_AMBER; }                       // 조건에 맞는 제품군(냉장고)
       if (ci === 3 && (ri === 2 || ri === 4)) { s.color = C.greenLight; s.bold = true; }     // 합쳐질 판매량
     }
     return s;
@@ -203,7 +201,7 @@ export function DbSumSeparateDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 판매 현황</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : null} />
+              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
           </div>
           <div>
             <TableCaption color={C.amberLight}>[조건 범위] F1:F2에 직접 입력</TableCaption>
@@ -265,7 +263,7 @@ export function DbAverageDiagram() {
     if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
     if (active === '조건 범위') {
       if (ri === 2) return { color: C.textSlate };                       // 하나만 만족 → 회색
-      if (match(ri)) { const b = { bg: LIGHT_AMBER }; if (ci === 2) { b.color = C.greenLight; b.bold = true; } return b; }
+      if (match(ri) && ci === 2) return { color: C.greenLight, bold: true };
     }
     return s;
   };
@@ -292,7 +290,7 @@ export function DbAverageDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 가전 재고</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : null} />
+              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : [null, null, null, null]} />
           </div>
           <div>
             <TableCaption color={C.amberLight}>[조건 범위] 같은 행 = AND</TableCaption>
@@ -365,7 +363,7 @@ export function DbCountDiagram() {
     if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
     if (active === '조건 범위') {
       if (ri === 3) return { color: C.textSlate };
-      if (match(ri)) { const b = { bg: LIGHT_AMBER }; if (ci === 2) { b.color = C.greenLight; b.bold = true; } return b; }
+      if (match(ri) && ci === 2) return { color: C.greenLight, bold: true };
     }
     return s;
   };
@@ -392,7 +390,7 @@ export function DbCountDiagram() {
             <TableCaption color={C.blueLight}>[표1] 지점 판매</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={74}
               labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null]
-                : compare ? [null, null, null, { text: '4번째(문자)', color: C.greenLight }] : null} />
+                : compare ? [null, null, null, { text: '4번째(문자)', color: C.greenLight }] : [null, null, null, null]} />
           </div>
           <div>
             <TableCaption color={C.amberLight}>[조건 범위] 다른 행 = OR</TableCaption>
@@ -406,7 +404,7 @@ export function DbCountDiagram() {
             <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DCOUNT(전체 표 범위, 계산할 열, 조건 범위)</div>
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 숫자 셀 개수를 셉니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: compare ? 16 : 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0' }}>
+            <div style={{ color: C.text, fontSize: compare ? 16 : 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0', minHeight: 58, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
               {compare ? (
                 <>
                   <div>=DCOUNT(A1:D4, <span style={{ color: C.greenLight }}>4</span>, F1:G3) <span style={{ color: C.redLight }}>→ 0</span></div>
