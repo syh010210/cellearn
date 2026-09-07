@@ -78,8 +78,10 @@ export function DbSumDiagram() {
     ['W-01', '세탁기', '1,200,000', 5],
     ['R-02', '냉장고', '2,500,000', 3],
     ['W-03', '세탁기', '1,500,000', 8],
+    ['A-04', '에어컨', '1,800,000', 6],
+    ['D-05', '건조기', '950,000', 4],
   ];
-  const cond = [['제품군'], ['세탁기']];
+  const LAST = data.length - 1; // 5
 
   const tabs = [
     { key: '전체 표 범위', color: C.blueLight },
@@ -89,31 +91,33 @@ export function DbSumDiagram() {
   const explain = {
     '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다. VLOOKUP과 달리 제목 행을 빼지 않습니다.',
     '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1을 클릭해도 됩니다.',
-    '조건 범위': '조건 열 제목 "제품군"과 조건값 "세탁기"를 위아래 두 칸으로 지정합니다. "세탁기" 한 칸만 지정하면 어느 열의 조건인지 알 수 없습니다.',
+    '조건 범위': '조건 열 제목 "제품군"과 바로 아래 조건값 "세탁기"가 위아래로 붙어 있어 [B1:B2]를 그대로 드래그하면 됩니다. 따로 조건 범위를 만들 필요가 없습니다.',
   };
 
+  // 세탁기 행 = ri1, ri3
   const dataSt = (ri, ci) => {
-    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: 3, c1: 0, c2: 3, color: C.blueLight }]
-      : active === '계산할 열' ? [{ r1: 0, r2: 3, c1: 3, c2: 3, color: C.greenLight }] : [];
+    const boxes = active === '전체 표 범위' ? [{ r1: 0, r2: LAST, c1: 0, c2: 3, color: C.blueLight }]
+      : active === '계산할 열' ? [{ r1: 0, r2: LAST, c1: 3, c2: 3, color: C.greenLight }]
+      : active === '조건 범위' ? [{ r1: 0, r2: 1, c1: 1, c2: 1, color: C.amberLight }] : [];
     const s = rangeSides(ri, ci, boxes);
-    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
+    if (ri === 0) {
+      s.bold = true;
+      if (active === '조건 범위' && ci === 1) { s.color = '#0b1220'; s.bg = C.amberLight; }
+      else { s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; }
+      return s;
+    }
     if (active === '조건 범위') {
-      if (ci === 1 && (ri === 1 || ri === 3)) return { bg: C.amberLight, color: '#0b1220', bold: true };
-      if (ci === 3 && (ri === 1 || ri === 3)) return { color: C.greenLight, bold: true };
+      if (ci === 1 && ri === 1) { s.bg = C.amberLight; s.color = '#0b1220'; s.bold = true; }   // 조건값 세탁기(B2)
+      if (ci === 3 && (ri === 1 || ri === 3)) { s.color = C.greenLight; s.bold = true; }         // 합쳐질 판매량
     }
     return s;
-  };
-  const condSt = (ri, ci) => {
-    const s = active === '조건 범위' ? rangeSides(ri, ci, [{ r1: 0, r2: 1, c1: 0, c2: 0, color: C.amberLight }]) : {};
-    if (ri === 0) return { ...s, bold: true, color: C.blueLight, bg: C.blueCard };
-    return { ...s, color: C.amber, bold: true };
   };
 
   return (
     <Wrap>
-      <Title>단일 조건 — 조건 범위는 제목과 값 두 칸</Title>
+      <Title>표 안에서 조건 열 제목과 조건값이 위아래로 붙어 있는 경우</Title>
 
-      <ExamProblem notes={['조건은 [F1:F2] 영역에 입력하시오', 'DSUM 함수 사용']}>
+      <ExamProblem notes={['DSUM 함수 사용']}>
         [표1]에서 <b style={{ color: C.amberLight }}>제품군[B2:B4]</b>이 &quot;세탁기&quot;인 제품의
         <b style={{ color: C.greenLight }}> 판매량[D2:D4]</b> 합계를 [G2] 셀에 계산하시오.
       </ExamProblem>
@@ -125,10 +129,6 @@ export function DbSumDiagram() {
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
               labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : null} />
           </div>
-          <div>
-            <TableCaption color={C.amberLight}>[조건 범위]</TableCaption>
-            <ExcelGrid data={cond} startCol={5} startRow={1} cellStyle={condSt} minColW={90} />
-          </div>
         </Fixed>
 
         <Fill min={360} max={500}>
@@ -138,7 +138,7 @@ export function DbSumDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 합계를 구합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>F1:F2</span>)</div>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>B1:B2</span>)</div>
               <div style={{ color: C.greenLight }}>→ 13</div>
             </div>
           </div>
