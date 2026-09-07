@@ -36,17 +36,21 @@ export function DbCommonIntroDiagram() {
     <Wrap>
       <Title>데이터베이스 함수 — D로 시작하는 함수는 인수가 전부 같다</Title>
 
-      <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', marginBottom: 16 }}>
-        <div style={{ color: C.text, fontSize: 19, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em' }}>
-          =DFUNCTION(<span style={{ color: C.blueLight }}>① 전체 표 범위</span>, <span style={{ color: C.greenLight }}>② 계산할 열 제목</span>, <span style={{ color: C.amberLight }}>③ 조건 범위</span>)
-        </div>
-        <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '10px 0' }} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.7 }}>
-          <div><b style={{ color: C.blueLight }}>① 전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 표의 전체를 드래그해야 합니다. 예) A1:D4</span></div>
-          <div><b style={{ color: C.greenLight }}>② 계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 셀 번호(혹은 셀 주소)를 넣거나, 첫 열부터 셀 때의 열 번호(숫자)를 입력합니다. 예) D1 또는 4</span></div>
-          <div><b style={{ color: C.amberLight }}>③ 조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;조건 열 제목&apos;과 &apos;해당 조건값&apos;이 한 세트. 예) E1:E2</span></div>
-        </div>
-      </div>
+      {/* 4차시 VlookupHlookupIntro의 VLOOKUP 카드와 같은 구조 (Fill 하나, 폭은 Wrap 전체) */}
+      <Row gap={16} style={{ marginBottom: 16 }}>
+        <Fill min={300} gap={6} style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px' }}>
+          <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>데이터베이스 함수</div>
+          <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>조건에 맞는 행만 골라 계산하는 형태</div>
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=DFUNCTION(<span style={{ color: C.blueLight }}>① 전체 표 범위</span>, <span style={{ color: C.greenLight }}>② 계산할 열 제목</span>, <span style={{ color: C.amberLight }}>③ 조건 범위</span>)</div>
+          <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>조건 범위에 맞는 행을 전체 표에서 찾아, 그 행들의 지정한 열 값을 계산해 반환</div>
+          <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '2px 0' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.7 }}>
+            <div><b style={{ color: C.blueLight }}>① 전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 표의 전체를 드래그해야 합니다. 예) A1:D4</span></div>
+            <div><b style={{ color: C.greenLight }}>② 계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 셀 번호(혹은 셀 주소)를 넣거나, 첫 열부터 셀 때의 열 번호(숫자)를 입력합니다. 예) D1 또는 4</span></div>
+            <div><b style={{ color: C.amberLight }}>③ 조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;조건 열 제목&apos;과 &apos;해당 조건값&apos;이 한 세트. 예) E1:E2</span></div>
+          </div>
+        </Fill>
+      </Row>
 
       <Row gap={12}>
         {fns.map((f) => (
