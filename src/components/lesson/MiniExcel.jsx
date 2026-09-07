@@ -35,12 +35,24 @@ function formatValue(v, fmt) {
 }
 
 // 엑셀형 치수
-const COL_W = 88, ROW_H = 24, ROWNUM_W = 40, COLHDR_H = 22, CELL_FONT = 13, FILLER_ROWS = 4, GRID_TARGET_W = 900;
+const COL_W = 88, ROW_H = 24, ROWNUM_W = 40, COLHDR_H = 22, CELL_FONT = 13;
+const FILLER_COLS = 2, FILLER_ROWS = 2;   // 데이터 범위 밖으로 열 2·행 2만 추가
+const CELL_FONT_CSS = `${CELL_FONT}px 'Malgun Gothic'`;
+const CELL_PAD_X = 12;                     // 셀 좌우 padding 합 (2px 6px → 6+6)
+
+// 셀 표시값 실제 픽셀 폭 측정 (##### 판정·문자 넘침·자동 맞춤 공용)
+let _measureCtx = null;
+function measureText(str) {
+  if (typeof document === "undefined") return String(str).length * 7;
+  if (!_measureCtx) _measureCtx = document.createElement("canvas").getContext("2d");
+  _measureCtx.font = CELL_FONT_CSS;
+  return _measureCtx.measureText(String(str)).width;
+}
 
 export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
-  // 실제 편집 셀(practice) 뒤로 빈 열/행을 붙여 엑셀처럼 그리드를 채운다.
+  // 데이터 범위 뒤로 빈 열/행을 2개씩만 붙인다(엑셀 시트 여백처럼).
   // 빈 셀은 editable:false(선택·이동은 되지만 편집 불가, Sheet에 등록하지 않음).
-  const totalColCount = Math.max(practice.cols.length, Math.ceil((GRID_TARGET_W - ROWNUM_W) / COL_W));
+  const totalColCount = practice.cols.length + FILLER_COLS;
   const initCells = () => {
     const filler = () => ({ editable: false, val: "", input: "", status: null, filler: true });
     const grid = practice.rows.map((row) => {
@@ -66,6 +78,9 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const [cursorPos, setCursorPos] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
   const [formulaError, setFormulaError] = useState(null); // 잘못된 수식 커밋 시도 시 안내문
+  const [colWidths, setColWidths] = useState(() => Array(practice.cols.length + FILLER_COLS).fill(COL_W));
+  const [guideX, setGuideX] = useState(null); // 열 너비 드래그 중 세로 안내선 x (컨테이너 기준)
+  const resizeRef = useRef(null); // { ci, startX, startW }
   // 범위 선택 드래그 (수식 모드에서 참조 삽입)
   const [rangeSelecting, setRangeSelecting] = useState(false);
   const [rangeStart, setRangeStart] = useState(null);
@@ -133,6 +148,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     sheetRef.current = sheet;
 
     setCells(initCells());
+    setColWidths(Array(practice.cols.length + FILLER_COLS).fill(COL_W)); // 실습마다 열 너비 초기화(저장 안 함)
     setSelection(null);
     setInputVal("");
     setGraded(false);
@@ -706,6 +722,53 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     containerRef.current?.focus({ preventScroll: true });
   }
 
+  // 셀의 저장값 기준 표시 텍스트/정렬/숫자여부 (편집 중 미러링은 호출부에서 처리)
+  function getCellDisplay(cell, ri, ci) {
+    if (cell.editable) {
+      const addr = getAddr(ri, ci);
+      const raw = sheetRef.current?.getCellValue(addr);
+      if (raw === undefined || raw === "") return { text: cell.input || "", align: "left", isNumber: false };
+      if (isErrorValue(raw)) return { text: raw.error, align: "center", isNumber: false };
+      if (typeof raw === "number" && sheetRef.current?.isDateCell(addr)) return { text: formatValue(raw, "yyyy-mm-dd"), align: "right", isNumber: true };
+      if (typeof raw === "number") return { text: cell.format ? formatValue(raw, cell.format) : String(raw), align: "right", isNumber: true };
+      if (typeof raw === "boolean") return { text: raw ? "TRUE" : "FALSE", align: "center", isNumber: false };
+      return { text: cell.format ? formatValue(raw, cell.format) : String(raw), align: "left", isNumber: false };
+    }
+    const v = cell.val;
+    if (typeof v === "number") return { text: cell.format ? formatValue(v, cell.format) : String(v), align: "right", isNumber: true };
+    return { text: (v === undefined || v === null) ? "" : (cell.format ? formatValue(v, cell.format) : String(v)), align: "left", isNumber: false };
+  }
+
+  // ── 열 너비 조절 (드래그/더블클릭 자동 맞춤). 행 높이는 24px 고정 ──
+  function startColResize(e, ci) {
+    e.preventDefault();
+    e.stopPropagation();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 무시 */ }
+    resizeRef.current = { ci, startX: e.clientX, startW: colWidths[ci] };
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) setGuideX(e.clientX - rect.left + (containerRef.current.scrollLeft || 0));
+  }
+  function moveColResize(e) {
+    if (!resizeRef.current) return;
+    const { ci, startX, startW } = resizeRef.current;
+    const w = Math.max(20, Math.round(startW + (e.clientX - startX)));
+    setColWidths((prev) => prev.map((x, i) => (i === ci ? w : x)));
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) setGuideX(e.clientX - rect.left + (containerRef.current.scrollLeft || 0));
+  }
+  function endColResize() {
+    resizeRef.current = null;
+    setGuideX(null);
+  }
+  function autoFitCol(ci) {
+    let maxW = 0;
+    for (let ri = 0; ri < rowCount; ri++) {
+      const t = getCellDisplay(cells[ri][ci], ri, ci).text;
+      if (t) maxW = Math.max(maxW, measureText(t));
+    }
+    setColWidths((prev) => prev.map((x, i) => (i === ci ? Math.max(20, Math.ceil(maxW) + 12) : x)));
+  }
+
   // 선택 범위의 오른쪽 아래 모서리(채우기 핸들 위치) 셀 여부
   function isFillHandleCell(ri, ci) {
     if (!selBox) return false;
@@ -855,9 +918,13 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
           ref={containerRef}
           tabIndex={0}
           onKeyDown={handleContainerKeyDown}
-          style={{ overflowX: "auto", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderTop: "1px solid #d0d0d0", borderRadius: 0, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
+          style={{ position: "relative", overflow: "hidden", width: "fit-content", maxWidth: "100%", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderTop: "1px solid #d0d0d0", borderRadius: 0, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
         >
-          <table style={{ borderCollapse: "collapse", fontSize: CELL_FONT, fontFamily: FONT, tableLayout: "fixed" }}>
+          <table style={{ borderCollapse: "collapse", fontSize: CELL_FONT, fontFamily: FONT, tableLayout: "fixed", width: ROWNUM_W + colWidths.reduce((a, b) => a + b, 0) }}>
+            <colgroup>
+              <col style={{ width: ROWNUM_W }} />
+              {colWidths.map((w, ci) => <col key={ci} style={{ width: w }} />)}
+            </colgroup>
             <thead>
               <tr style={{ height: COLHDR_H }}>
                 <th style={{ width: ROWNUM_W, background: "#f3f3f3", border: "1px solid #d0d0d0", padding: 0, color: "#888" }} />
@@ -865,7 +932,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                   const colSel = selBox && ci >= selBox.c1 && ci <= selBox.c2;
                   return (
                     <th key={ci} style={{
-                      minWidth: COL_W, width: COL_W, height: COLHDR_H,
+                      height: COLHDR_H, position: "relative",
                       background: colSel ? XL_HDR_SEL : "#f3f3f3",
                       borderTop: "1px solid #d0d0d0",
                       borderRight: "1px solid #d0d0d0",
@@ -874,8 +941,18 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                       padding: "0 6px",
                       color: colSel ? XL : "#333",
                       fontWeight: colSel ? 800 : 600,
-                      fontSize: CELL_FONT, textAlign: "center",
-                    }}>{colName(ci)}</th>
+                      fontSize: CELL_FONT, textAlign: "center", whiteSpace: "nowrap",
+                    }}>
+                      {colName(ci)}
+                      <div
+                        onPointerDown={(e) => startColResize(e, ci)}
+                        onPointerMove={moveColResize}
+                        onPointerUp={endColResize}
+                        onDoubleClick={(e) => { e.stopPropagation(); autoFitCol(ci); }}
+                        title="드래그: 너비 조절 · 더블클릭: 자동 맞춤"
+                        style={{ position: "absolute", top: 0, right: -3, width: 6, height: "100%", cursor: "col-resize", zIndex: 5 }}
+                      />
+                    </th>
                   );
                 })}
               </tr>
@@ -917,25 +994,30 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                       const bLeft = refSide ? (refSide.bl ? `2px solid ${refSide.color}` : def1) : cellBorder;
                       const finalBg = refSide ? refSide.bg : bg;
 
-                      // Phase 3: 표시 텍스트 + 정렬(number 오른쪽 / string 왼쪽 / boolean·에러 가운데)
-                      let displayVal, cellAlign;
-                      if (cell.editable) {
-                        if (isSel && inputFocused) { displayVal = inputVal; cellAlign = "left"; }
-                        else {
-                          const addr = getAddr(ri, ci);
-                          const raw = sheetRef.current?.getCellValue(addr);
-                          if (raw === undefined || raw === "") { displayVal = cell.input || ""; cellAlign = "left"; }
-                          else if (isErrorValue(raw)) { displayVal = raw.error; cellAlign = "center"; }
-                          else if (typeof raw === "number" && sheetRef.current?.isDateCell(addr)) { displayVal = formatValue(raw, "yyyy-mm-dd"); cellAlign = "right"; }
-                          else if (typeof raw === "number") { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "right"; }
-                          else if (typeof raw === "boolean") { displayVal = raw ? "TRUE" : "FALSE"; cellAlign = "center"; }
-                          else { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "left"; }
+                      // 표시값 + 엑셀식 넘침 처리 (숫자 → #####, 문자 → 오른쪽 빈 셀로 흘러넘침)
+                      const editingThis = isSel && inputFocused;
+                      const disp = editingThis
+                        ? { text: inputVal, align: "left", isNumber: false }
+                        : getCellDisplay(cell, ri, ci);
+                      let shownText = disp.text;
+                      let spillW = 0;
+                      if (!editingThis && disp.text !== "") {
+                        const availW = colWidths[ci] - CELL_PAD_X;
+                        if (measureText(disp.text) > availW) {
+                          if (disp.isNumber) {
+                            shownText = "#".repeat(Math.max(1, Math.floor(availW / measureText("#"))));
+                          } else {
+                            let extra = 0, k = ci + 1;
+                            while (k < colCount && getCellDisplay(row[k], ri, k).text === "") { extra += colWidths[k]; k++; }
+                            if (extra > 0) spillW = colWidths[ci] + extra;
+                          }
                         }
-                      } else {
-                        const v = cell.val;
-                        if (typeof v === "number") { displayVal = cell.format ? formatValue(v, cell.format) : String(v); cellAlign = "right"; }
-                        else { displayVal = (v === undefined || v === null) ? "" : (cell.format ? formatValue(v, cell.format) : String(v)); cellAlign = "left"; }
                       }
+                      const contentStyle = {
+                        padding: "2px 6px", color: "#1f2937", height: ROW_H, boxSizing: "border-box",
+                        lineHeight: `${ROW_H - 4}px`, fontFamily: FONT, fontSize: CELL_FONT,
+                        overflow: "hidden", whiteSpace: "nowrap",
+                      };
 
                       return (
                         <td
@@ -946,12 +1028,19 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                           onDoubleClick={() => enterEditMode(ri, ci)}
                           style={{
                             borderTop: bTop, borderRight: bRight, borderBottom: bBottom, borderLeft: bLeft,
-                            background: finalBg, padding: 0, position: "relative", cursor: "cell", minWidth: COL_W, width: COL_W,
+                            background: finalBg, padding: 0, position: "relative", cursor: "cell",
+                            overflow: spillW ? "visible" : "hidden",
                           }}
                         >
-                          <div style={{ padding: "2px 6px", color: "#1f2937", height: ROW_H, boxSizing: "border-box", lineHeight: `${ROW_H - 4}px`, fontFamily: FONT, fontSize: CELL_FONT, textAlign: cellAlign, overflow: "hidden", whiteSpace: "nowrap" }}>
-                            {displayVal}
-                          </div>
+                          {spillW ? (
+                            <div style={{ ...contentStyle, position: "absolute", left: 0, top: 0, width: spillW, textAlign: "left", background: finalBg, zIndex: 1 }}>
+                              {shownText}
+                            </div>
+                          ) : (
+                            <div style={{ ...contentStyle, textAlign: disp.align }}>
+                              {shownText}
+                            </div>
+                          )}
                           {isFillHandleCell(ri, ci) && (
                             <div
                               onPointerDown={(e) => handleFillDragStart(e)}
@@ -968,10 +1057,14 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
               })}
             </tbody>
           </table>
+          {/* 열 너비 드래그 안내선 */}
+          {guideX !== null && (
+            <div style={{ position: "absolute", top: 0, bottom: 0, left: guideX, width: 2, background: XL, zIndex: 20, pointerEvents: "none" }} />
+          )}
         </div>
 
         {/* 시트 탭 */}
-        <div style={{ height: 26, background: "#f3f3f3", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", display: "flex", alignItems: "stretch", marginBottom: 16 }}>
+        <div style={{ height: 26, width: "fit-content", background: "#f3f3f3", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", display: "flex", alignItems: "stretch", marginBottom: 16 }}>
           <div style={{ background: "#fff", borderRight: "1px solid #d0d0d0", borderBottom: `2px solid ${XL}`, padding: "0 16px", display: "flex", alignItems: "center", fontSize: 12, fontWeight: 700, color: "#217346" }}>
             {practice.sheetName || "Sheet1"}
           </div>
