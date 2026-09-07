@@ -59,9 +59,41 @@ export function useLearningData() {
     upsertWrong(lid, "quiz", ids);
   }, [upsertWrong]);
 
+  // 오답 항목 고유 키 (업로드 채점 vs 미니 엑셀 채점 구분)
+  const wrongKey = (it) => `${it.source || "upload"}:${it.conceptIdx ?? ""}:${it.practiceIdx ?? ""}:${it.cell}:${it.sheet || ""}`;
+
+  // 업로드 채점: source 'mini' 항목은 보존하고 나머지(업로드)만 교체
   const savePracticeWrong = useCallback((lid, items) => {
-    setPracticeWrongMap((m) => ({ ...m, [lid]: items }));
-    upsertWrong(lid, "practice", items);
+    setPracticeWrongMap((m) => {
+      const mine = (m[lid] || []).filter((x) => x.source === "mini");
+      const tagged = items.map((it) => ({ ...it, source: it.source || "upload" }));
+      const next = [...mine, ...tagged];
+      upsertWrong(lid, "practice", next);
+      return { ...m, [lid]: next };
+    });
+  }, [upsertWrong]);
+
+  // 미니 엑셀 오답 추가(같은 셀은 갱신)
+  const addPracticeWrong = useCallback((lid, item) => {
+    setPracticeWrongMap((m) => {
+      const arr = m[lid] || [];
+      const k = wrongKey(item);
+      const next = [...arr.filter((x) => wrongKey(x) !== k), item];
+      upsertWrong(lid, "practice", next);
+      return { ...m, [lid]: next };
+    });
+  }, [upsertWrong]);
+
+  // 미니 엑셀 오답 해결(정답이 되면 제거)
+  const resolvePracticeWrong = useCallback((lid, item) => {
+    setPracticeWrongMap((m) => {
+      const arr = m[lid] || [];
+      const k = wrongKey(item);
+      const next = arr.filter((x) => wrongKey(x) !== k);
+      if (next.length === arr.length) return m;
+      upsertWrong(lid, "practice", next);
+      return { ...m, [lid]: next };
+    });
   }, [upsertWrong]);
 
   const completeLesson = useCallback((lid, score) => {
@@ -91,5 +123,5 @@ export function useLearningData() {
     }
   }, [userId]);
 
-  return { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, completeLesson, clearDay };
+  return { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson, clearDay };
 }

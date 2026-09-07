@@ -64,6 +64,7 @@
       ],
       "practice": {
         "instruction": "[표1]에서 각 사원의 등급[C2:C3]과 [A6:C8] 영역의 [등급표]를 이용하여 상여금[D2:D3]을 구하시오. (VLOOKUP 함수 사용 · D2에 입력한 뒤 D3로 자동 채우기)",
+        "requiredFunctions": ["VLOOKUP"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
@@ -82,7 +83,7 @@
             { "val": "이순신", "editable": false },
             { "val": "관리팀", "editable": false },
             { "val": "C", "editable": false },
-            { "val": "", "editable": true, "answer": "=VLOOKUP(C3,$A$6:$C$8,3,0)", "result": 200000 }
+            { "val": "", "editable": true, "answer": "=VLOOKUP(C3,$A$6:$C$8,3,0)", "result": 200000, "fillFrom": "D2" }
           ],
           [
             { "val": "", "editable": false },

@@ -29,11 +29,17 @@ export default function WrongNoteView({ lessons, quizWrongMap, practiceWrongMap 
           <div style={{ ...secHead, color: UI.warn }}><FolderOpen size={17} strokeWidth={2} /> 엑셀 실습 오답</div>
           {allPractice.map(({ lesson: l, p }, i) => (
             <div key={i} style={cardBase}>
-              <div style={{ color: UI.wrong, fontSize: 12, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}><BookOpen size={13} strokeWidth={2} /> {l.id}차시 · {l.title}</div>
+              <div style={{ color: UI.wrong, fontSize: 12, marginBottom: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                <BookOpen size={13} strokeWidth={2} /> {l.id}차시 · {l.title}
+                <span style={{ marginLeft: 4, fontSize: 11, fontWeight: 700, color: "#fff", background: p.source === "mini" ? "#217346" : "#6b7280", borderRadius: 999, padding: "1px 8px" }}>
+                  {p.source === "mini" ? "미니 엑셀" : "업로드"}
+                </span>
+              </div>
               <div style={{ fontWeight: 700, marginBottom: 8, color: UI.ink }}><span style={mono}>{p.sheet} — {p.cell}</span> 셀</div>
               <div style={{ fontSize: 13, color: UI.mut }}>
                 <div>입력한 수식: <span style={{ color: UI.wrong, ...mono }}>{p.studentFormula || "(없음)"}</span></div>
                 <div>정답 수식: <span style={{ color: UI.correct, ...mono }}>{p.formula}</span></div>
+                {p.reason && <div>사유: {p.reason}</div>}
               </div>
             </div>
           ))}

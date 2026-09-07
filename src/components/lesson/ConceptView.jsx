@@ -85,7 +85,7 @@ function renderBlock(block, i, lesson) {
   return null;
 }
 
-export default function ConceptView({ lesson, onNext }) {
+export default function ConceptView({ lesson, onNext, addPracticeWrong, resolvePracticeWrong }) {
   const [idx, setIdx] = useState(0);
   const c = lesson.concepts[idx];
 
@@ -105,9 +105,14 @@ export default function ConceptView({ lesson, onNext }) {
           ? c.contentBlocks.map((b, i) => renderBlock(b, i, lesson))
           : <p style={{ color: UI.ink, lineHeight: 1.8, whiteSpace: "pre-line", margin: 0 }}>{c.content}</p>
         }
-        {c.practices
-          ? c.practices.map((p, pi) => <MiniExcel key={`${idx}-p${pi}`} practice={p} />)
-          : c.practice && <MiniExcel key={idx} practice={c.practice} />}
+        {(() => {
+          const sheetLabel = `${lesson.id}차시 개념${idx + 1} 실습`;
+          const wrongCb = (pi) => (w) => addPracticeWrong?.(lesson.id, { source: "mini", conceptIdx: idx, practiceIdx: pi, cell: w.cell, sheet: sheetLabel, studentFormula: w.studentInput, formula: w.answer, reason: w.reason });
+          const resolveCb = (pi) => (w) => resolvePracticeWrong?.(lesson.id, { source: "mini", conceptIdx: idx, practiceIdx: pi, cell: w.cell, sheet: sheetLabel });
+          return c.practices
+            ? c.practices.map((p, pi) => <MiniExcel key={`${idx}-p${pi}`} practice={p} onPracticeWrong={wrongCb(pi)} onPracticeResolve={resolveCb(pi)} />)
+            : c.practice && <MiniExcel key={idx} practice={c.practice} onPracticeWrong={wrongCb(0)} onPracticeResolve={resolveCb(0)} />;
+        })()}
       </div>
 
       {/* 진행 점 */}

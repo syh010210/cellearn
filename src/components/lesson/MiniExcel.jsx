@@ -1,24 +1,88 @@
 import { useState, useRef, useEffect } from "react";
 import { toAddr, shiftFormula, cycleReference } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
-import { Sheet } from "../../excel-engine/index.js";
+import { Sheet, isErrorValue } from "../../excel-engine/index.js";
+import { FUNCTIONS, LAZY_FUNCTIONS } from "../../excel-engine/functions/index.js";
+import { gradePractice } from "./miniexcel/gradePractice.js";
 
-export default function MiniExcel({ practice, autoplay = false }) {
+// 자동완성 목록 = 엔진에 등록된 함수(컴활 출제 범위)만
+const FUNC_NAMES = [...new Set([...Object.keys(FUNCTIONS), ...Object.keys(LAZY_FUNCTIONS)])].sort();
+
+// Phase 3: 셀 표시 형식 (지원: #,##0 / #,##0.00 / 0% / 0.0% / yyyy-mm-dd / @)
+function excelSerialToDate(n) {
+  if (isNaN(n)) return null;
+  const d = new Date(Math.round((n - 25569) * 86400 * 1000));
+  if (isNaN(d.getTime())) return null;
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+}
+function formatValue(v, fmt) {
+  if (!fmt) return String(v);
+  const n = typeof v === "number" ? v : parseFloat(v);
+  switch (fmt) {
+    case "#,##0":    return isNaN(n) ? String(v) : Math.round(n).toLocaleString("en-US");
+    case "#,##0.00": return isNaN(n) ? String(v) : n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    case "0%":       return isNaN(n) ? String(v) : `${Math.round(n * 100)}%`;
+    case "0.0%":     return isNaN(n) ? String(v) : `${(n * 100).toFixed(1)}%`;
+    case "yyyy-mm-dd": return excelSerialToDate(n) ?? String(v);
+    case "@":        return String(v);
+    default:         return String(v);
+  }
+}
+
+// 열 문자(A,B,..) → 인덱스, "A1" → {ri,ci}, "A1:B3" → {r1,c1,r2,c2}
+function colToIdx(letters) {
+  let n = 0;
+  for (const ch of letters.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64);
+  return n - 1;
+}
+function parseA1(str) {
+  const m = /^\s*([A-Za-z]+)(\d+)\s*$/.exec(str);
+  if (!m) return null;
+  return { ci: colToIdx(m[1]), ri: parseInt(m[2], 10) - 1 };
+}
+function parseRangeA1(str) {
+  const parts = str.split(":");
+  if (parts.length === 1) {
+    const a = parseA1(parts[0]);
+    return a ? { r1: a.ri, c1: a.ci, r2: a.ri, c2: a.ci } : null;
+  }
+  const a = parseA1(parts[0]);
+  const b = parseA1(parts[1]);
+  if (!a || !b) return null;
+  return {
+    r1: Math.min(a.ri, b.ri), c1: Math.min(a.ci, b.ci),
+    r2: Math.max(a.ri, b.ri), c2: Math.max(a.ci, b.ci),
+  };
+}
+
+export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
   const initCells = () =>
     practice.rows.map((row) => row.map((cell) => ({ ...cell, input: "", status: null })));
 
   const [cells, setCells] = useState(initCells);
-  const [selected, setSelected] = useState(null);
+  // 선택은 anchor/focus 쌍으로 관리. 단일 선택이면 anchor===focus.
+  const [selection, setSelection] = useState(null); // { anchor:{ri,ci}, focus:{ri,ci} } | null
   const [inputVal, setInputVal] = useState("");
-  const [dragging, setDragging] = useState(false);
+  const [dragging, setDragging] = useState(false);       // 채우기 핸들 드래그
   const [dragStart, setDragStart] = useState(null);
   const [hoverCell, setHoverCell] = useState(null);
   const [graded, setGraded] = useState(false);
+  const [gradeResults, setGradeResults] = useState([]);
+  const [attempts, setAttempts] = useState(0);
+  const [revealed, setRevealed] = useState({}); // { addr: true } 정답 수식 보기
   const [cursorPos, setCursorPos] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
-  // 범위 선택 드래그 (수식 모드)
+  // 범위 선택 드래그 (수식 모드에서 참조 삽입)
   const [rangeSelecting, setRangeSelecting] = useState(false);
   const [rangeStart, setRangeStart] = useState(null);
+  // 선택 상태 마우스 드래그(비수식) 범위 선택
+  const [selDragging, setSelDragging] = useState(false);
+  // 이름 상자
+  const [nameBoxEditing, setNameBoxEditing] = useState(false);
+  const [nameBoxVal, setNameBoxVal] = useState("");
+  // 함수 자동완성
+  const [acIndex, setAcIndex] = useState(0);
 
   const sheetRef = useRef(null);
   const autoCancelRef = useRef(false); // 오토플레이(히어로 데모) 취소 플래그
@@ -29,17 +93,35 @@ export default function MiniExcel({ practice, autoplay = false }) {
   }
 
   const inputRef = useRef();
-  const isDraggingRef = useRef(false);
+  const containerRef = useRef(null);
+  const overlayRef = useRef(null); // 수식 참조 색상 오버레이 (입력창 위)
+  const acClosedRef = useRef(false); // Esc로 자동완성을 닫았는지
+  const isDraggingRef = useRef(false);       // 채우기 핸들
   const dragStartRef = useRef(null);
   const hoverCellRef = useRef(null);
   const nextCursorPos = useRef(null);
-  const isEditingRef = useRef(false);
-  const isRangeDraggingRef = useRef(false);
+  const nextSelRef = useRef(null); // 렌더 후 복원할 텍스트 선택 {start,end} (F4 선택 순환용)
+  const lastEditWasTypeRef = useRef(false); // 마지막 inputVal 변경이 사용자 타이핑(onChange)인지
+  // 편집 모델: 'ready'(선택) | 'enter'(입력) | 'edit'(편집)
+  const editModeRef = useRef("ready");
+  const isRangeDraggingRef = useRef(false);  // 수식 참조 드래그
   const rangeStartRef = useRef(null);
-  const rangeDragCursorRef = useRef(0);
+  const isSelDraggingRef = useRef(false);    // 선택 범위 드래그
+  const selAnchorRef = useRef(null);
+  // 되돌리기
+  const historyRef = useRef({ past: [], future: [] });
+  // 클립보드
+  const clipRef = useRef(null); // { grid: string[][], r0, c0 }
+  // 수식 참조 선택 모드(방향키로 참조 삽입/갱신)
+  const pointRef = useRef(null); // { insertAt, start, end } | null
 
+  const rowCount = cells.length;
+  const colCount = cells[0]?.length || 0;
+  // selection.focus 를 기존 'selected' 처럼 사용
+  const selected = selection ? selection.focus : null;
+
+  // ── 초기화 ──
   useEffect(() => {
-    // Sheet 초기화: non-editable 셀 값을 미리 로드
     const sheet = new Sheet();
     practice.rows.forEach((row, ri) => {
       row.forEach((cell, ci) => {
@@ -52,25 +134,43 @@ export default function MiniExcel({ practice, autoplay = false }) {
     sheetRef.current = sheet;
 
     setCells(initCells());
-    setSelected(null);
+    setSelection(null);
     setInputVal("");
     setGraded(false);
+    setGradeResults([]);
+    setAttempts(0);
+    setRevealed({});
     setRangeSelecting(false);
     setRangeStart(null);
     setHoverCell(null);
+    editModeRef.current = "ready";
     isRangeDraggingRef.current = false;
     rangeStartRef.current = null;
+    historyRef.current = { past: [], future: [] };
+    clipRef.current = null;
+    pointRef.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practice]);
 
   useEffect(() => {
+    if (nextSelRef.current !== null && document.activeElement === inputRef.current) {
+      inputRef.current.setSelectionRange(nextSelRef.current.start, nextSelRef.current.end);
+      nextSelRef.current = null;
+      return;
+    }
     if (nextCursorPos.current !== null && document.activeElement === inputRef.current) {
+      // 입력 모드에서 타이핑 중이면 과거의 nextCursorPos가 캐럿을 되돌리지 않게 버린다.
+      // (F4·드래그·참조 선택은 lastEditWasTypeRef=false 라 그대로 적용됨)
+      if (pointRef.current === null && editModeRef.current === "enter" && lastEditWasTypeRef.current && nextCursorPos.current < inputVal.length) {
+        nextCursorPos.current = null;
+        return;
+      }
       inputRef.current.setSelectionRange(nextCursorPos.current, nextCursorPos.current);
       nextCursorPos.current = null;
     }
   }, [inputVal]);
 
-  // 오토플레이(랜딩 히어로 데모): 마운트 시 1회, 첫 정답 셀에 수식을 타이핑→계산.
-  // reduced-motion 존중, 사용자가 표를 건드리면 즉시 취소.
+  // ── 오토플레이(랜딩 히어로 데모) — 기존 동작 유지 ──
   useEffect(() => {
     if (!autoplay) return;
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
@@ -87,7 +187,7 @@ export default function MiniExcel({ practice, autoplay = false }) {
     const full = target.answer;
     timers.push(setTimeout(() => {
       if (autoCancelRef.current) return;
-      setSelected({ ri: target.ri, ci: target.ci });
+      selectSingle(target.ri, target.ci);
       for (let i = 1; i <= full.length; i++) {
         timers.push(setTimeout(() => { if (!autoCancelRef.current) setInputVal(full.slice(0, i)); }, i * 60));
       }
@@ -95,16 +195,17 @@ export default function MiniExcel({ practice, autoplay = false }) {
         if (autoCancelRef.current) return;
         commitInput(target.ri, target.ci, full);
         setInputVal("");
-        setSelected(null);
+        setSelection(null);
       }, full.length * 60 + 350));
     }, 700));
     return () => timers.forEach(clearTimeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoplay]);
 
+  // ── 전역 포인터 이벤트: 채우기 핸들 / 수식 참조 드래그 / 선택 드래그 ──
   useEffect(() => {
     function onPointerMove(e) {
-      if (!isDraggingRef.current && !isRangeDraggingRef.current) return;
+      if (!isDraggingRef.current && !isRangeDraggingRef.current && !isSelDraggingRef.current) return;
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const td = el?.closest?.("td[data-ri]");
       if (!td) return;
@@ -114,26 +215,26 @@ export default function MiniExcel({ practice, autoplay = false }) {
       if (hoverCellRef.current?.ri === ri && hoverCellRef.current?.ci === ci) return;
       hoverCellRef.current = { ri, ci };
       setHoverCell({ ri, ci });
+      // 선택 범위 드래그: focus 갱신
+      if (isSelDraggingRef.current && selAnchorRef.current) {
+        setSelection({ anchor: selAnchorRef.current, focus: { ri, ci } });
+      }
+      // 수식 참조 드래그: 같은 span을 매 hover마다 치환 (pointerup에서만 넣지 않음)
+      if (isRangeDraggingRef.current && rangeStartRef.current) {
+        applyPointRefRange(rangeStartRef.current, { ri, ci });
+      }
     }
 
     function onPointerUp() {
-      // 수식 범위 선택 드래그 완료
+      // 선택 범위 드래그 완료
+      if (isSelDraggingRef.current) {
+        isSelDraggingRef.current = false;
+        setSelDragging(false);
+        hoverCellRef.current = null;
+        return;
+      }
+      // 수식 참조 드래그 완료 — 치환은 pointerdown·hover에서 applyPointRefRange로 이미 반영됨
       if (isRangeDraggingRef.current) {
-        const src = rangeStartRef.current;
-        const tgt = hoverCellRef.current;
-        if (src && tgt) {
-          const r1 = Math.min(src.ri, tgt.ri);
-          const c1 = Math.min(src.ci, tgt.ci);
-          const r2 = Math.max(src.ri, tgt.ri);
-          const c2 = Math.max(src.ci, tgt.ci);
-          const addrToInsert =
-            r1 === r2 && c1 === c2
-              ? toAddr(r1, c1)
-              : `${toAddr(r1, c1)}:${toAddr(r2, c2)}`;
-          const insertAt = rangeDragCursorRef.current;
-          setInputVal((v) => v.slice(0, insertAt) + addrToInsert + v.slice(insertAt));
-          nextCursorPos.current = insertAt + addrToInsert.length;
-        }
         isRangeDraggingRef.current = false;
         rangeStartRef.current = null;
         hoverCellRef.current = null;
@@ -143,37 +244,11 @@ export default function MiniExcel({ practice, autoplay = false }) {
         setTimeout(() => inputRef.current?.focus(), 0);
         return;
       }
-
       // 자동 채우기 드래그 완료
       if (!isDraggingRef.current) return;
       const src = dragStartRef.current;
       const tgt = hoverCellRef.current;
-
-      if (src && tgt) {
-        const sheet = sheetRef.current;
-        setCells((prev) => {
-          const srcCell = prev[src.ri]?.[src.ci];
-          if (!srcCell?.editable || !srcCell.input) return prev;
-          const next = prev.map((r) => r.map((c) => ({ ...c })));
-          const minR = Math.min(src.ri, tgt.ri), maxR = Math.max(src.ri, tgt.ri);
-          const minC = Math.min(src.ci, tgt.ci), maxC = Math.max(src.ci, tgt.ci);
-          for (let r = minR; r <= maxR; r++) {
-            for (let c = minC; c <= maxC; c++) {
-              if (r === src.ri && c === src.ci) continue;
-              if (!next[r]?.[c]?.editable) continue;
-              const shifted = srcCell.input.startsWith("=")
-                ? shiftFormula(srcCell.input, r - src.ri, c - src.ci)
-                : srcCell.input;
-              next[r][c].input = shifted;
-              next[r][c].status = null;
-              sheet?.setCellInput(`${practice.cols[c]}${r + 1}`, shifted);
-            }
-          }
-          return next;
-        });
-        setGraded(false);
-      }
-
+      if (src && tgt) fillFromTo(src, tgt);
       isDraggingRef.current = false;
       dragStartRef.current = null;
       hoverCellRef.current = null;
@@ -182,7 +257,6 @@ export default function MiniExcel({ practice, autoplay = false }) {
       setHoverCell(null);
     }
 
-    // Pointer Events로 마우스·터치·펜을 모두 처리 (태블릿 지원)
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerup", onPointerUp);
     window.addEventListener("pointercancel", onPointerUp);
@@ -191,10 +265,56 @@ export default function MiniExcel({ practice, autoplay = false }) {
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("pointercancel", onPointerUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const rowCount = cells.length;
-  const colCount = cells[0]?.length || 0;
+  function rangeAddr(a, b) {
+    const r1 = Math.min(a.ri, b.ri), c1 = Math.min(a.ci, b.ci);
+    const r2 = Math.max(a.ri, b.ri), c2 = Math.max(a.ci, b.ci);
+    return r1 === r2 && c1 === c2 ? toAddr(r1, c1) : `${toAddr(r1, c1)}:${toAddr(r2, c2)}`;
+  }
+
+  // ── 되돌리기 스냅샷 ──
+  function snapshotInputs(source = cells) {
+    const snap = {};
+    source.forEach((row, ri) => row.forEach((c, ci) => {
+      if (c.editable) snap[getAddr(ri, ci)] = c.input || "";
+    }));
+    return snap;
+  }
+  function pushHistory() {
+    const h = historyRef.current;
+    h.past.push(snapshotInputs());
+    if (h.past.length > 50) h.past.shift();
+    h.future = [];
+  }
+  function applySnapshot(snap) {
+    const sheet = sheetRef.current;
+    setCells((prev) =>
+      prev.map((row, ri) => row.map((c, ci) => {
+        if (!c.editable) return c;
+        const addr = getAddr(ri, ci);
+        const input = snap[addr] ?? "";
+        sheet?.setCellInput(addr, input.trim());
+        return { ...c, input, status: null };
+      }))
+    );
+    setGraded(false);
+  }
+  function undo() {
+    const h = historyRef.current;
+    if (!h.past.length) return;
+    h.future.push(snapshotInputs());
+    const snap = h.past.pop();
+    applySnapshot(snap);
+  }
+  function redo() {
+    const h = historyRef.current;
+    if (!h.future.length) return;
+    h.past.push(snapshotInputs());
+    const snap = h.future.pop();
+    applySnapshot(snap);
+  }
 
   function isFormulaMode() {
     return (
@@ -204,48 +324,103 @@ export default function MiniExcel({ practice, autoplay = false }) {
     );
   }
 
-  // 수식 모드 중 셀 pointerdown: 범위 선택 드래그 시작 (즉시 삽입하지 않고 pointerup 시 삽입)
+  // ── 선택 조작 ──
+  function selectSingle(ri, ci) {
+    const cell = { ri, ci };
+    selAnchorRef.current = cell;
+    setSelection({ anchor: cell, focus: cell });
+    setInputVal(cells[ri][ci].editable ? (cells[ri][ci].input || "") : (String(cells[ri][ci].val ?? "")));
+    editModeRef.current = "ready";
+    pointRef.current = null;
+  }
+  function setFocusCell(ri, ci) {
+    const anchor = selAnchorRef.current || { ri, ci };
+    setSelection({ anchor, focus: { ri, ci } });
+    setInputVal(cells[ri][ci].editable ? (cells[ri][ci].input || "") : (String(cells[ri][ci].val ?? "")));
+  }
+  function clamp(ri, ci) {
+    return { ri: Math.max(0, Math.min(rowCount - 1, ri)), ci: Math.max(0, Math.min(colCount - 1, ci)) };
+  }
+  function moveSelection(dr, dc, extend) {
+    if (!selection) return;
+    const cur = selection.focus;
+    const { ri, ci } = clamp(cur.ri + dr, cur.ci + dc);
+    if (extend) setFocusCell(ri, ci);
+    else selectSingle(ri, ci);
+    setGraded(false);
+  }
+
+  function selBounds() {
+    if (!selection) return null;
+    const { anchor, focus } = selection;
+    return {
+      r1: Math.min(anchor.ri, focus.ri), c1: Math.min(anchor.ci, focus.ci),
+      r2: Math.max(anchor.ri, focus.ri), c2: Math.max(anchor.ci, focus.ci),
+    };
+  }
+
+  // ── 마우스 ──
   function handleCellPointerDown(e, ri, ci) {
     cancelAuto();
     if (isFormulaMode()) {
+      // 수식 편집 중: 참조를 클릭/드래그로 넣거나 치환 (방향키와 동일한 pointRef 치환 경로)
       e.preventDefault();
-      // 터치 드래그가 스크롤로 가로채이지 않도록 포인터 캡처
       try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
-      // 드래그 시작 시점의 커서 위치 저장 — pointerup 시 이 위치에 범위 주소 삽입
-      rangeDragCursorRef.current = inputRef.current?.selectionStart ?? inputVal.length;
+      const clickCell = { ri, ci };
+      // 치환 대상 span 결정
+      if (!pointRef.current) {
+        const pos = inputRef.current?.selectionStart ?? inputVal.length;
+        const before = inputVal.slice(0, pos);
+        const refM = /(\$?[A-Za-z]+\$?\d+)$/.exec(before);
+        if (refM) {
+          const tStart = pos - refM[1].length;
+          const dollar = { col: /^\$/.test(refM[1]), row: /[A-Za-z]\$/.test(refM[1]) };
+          pointRef.current = { start: tStart, end: pos, anchor: clickCell, focus: clickCell, dollar };
+        } else {
+          pointRef.current = { start: pos, end: pos, anchor: clickCell, focus: clickCell, dollar: { col: false, row: false } };
+        }
+      }
       isRangeDraggingRef.current = true;
-      rangeStartRef.current = { ri, ci };
-      hoverCellRef.current = { ri, ci };
+      rangeStartRef.current = clickCell; // 드래그 앵커
+      hoverCellRef.current = clickCell;
       setRangeSelecting(true);
-      setRangeStart({ ri, ci });
-      setHoverCell({ ri, ci });
+      setRangeStart(clickCell);
+      setHoverCell(clickCell);
+      applyPointRefRange(clickCell, clickCell); // 단일 셀로 즉시 치환
       inputRef.current?.focus();
+      return;
     }
+    // 선택 상태: 클릭/드래그 범위 선택
+    if (e.shiftKey && selection) {
+      setFocusCell(ri, ci);
+    } else {
+      selectSingle(ri, ci);
+      isSelDraggingRef.current = true;
+      setSelDragging(true);
+      hoverCellRef.current = { ri, ci };
+    }
+    containerRef.current?.focus({ preventScroll: true });
   }
 
-  // 단일 클릭: 선택만 (편집 진입 X). 실제 엑셀처럼 채우기 핸들을 잡기 위한 선택 상태.
-  function selectCell(ri, ci) {
-    if (isFormulaMode()) return;
-    isEditingRef.current = false;
-    setSelected({ ri, ci });
-    setInputVal(cells[ri][ci].editable ? (cells[ri][ci].input || "") : (cells[ri][ci].val || ""));
-    // 포커스하지 않는다 — 편집은 더블클릭(enterEditMode)에서만 시작.
-  }
-
-  // 더블 클릭: 편집 모드 진입 (입력창 포커스). 이때만 셀 안에서 수정이 가능하다.
   function enterEditMode(ri, ci) {
     if (!cells[ri][ci].editable) return;
     if (isFormulaMode()) return;
-    setSelected({ ri, ci });
+    selectSingle(ri, ci);
+    editModeRef.current = "edit";
     setInputVal(cells[ri][ci].input || "");
-    setTimeout(() => inputRef.current?.focus(), 0);
+    setTimeout(() => {
+      const el = inputRef.current;
+      if (el) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); }
+    }, 0);
   }
 
   function commitInput(ri, ci, val) {
     const cell = cells[ri][ci];
     if (!cell.editable) return;
-    isEditingRef.current = false;
     const trimmed = val.trim();
+    if ((cell.input || "") !== trimmed) pushHistory();
+    editModeRef.current = "ready";
+    pointRef.current = null;
     sheetRef.current?.setCellInput(getAddr(ri, ci), trimmed);
     setCells((prev) =>
       prev.map((row, r) =>
@@ -257,451 +432,778 @@ export default function MiniExcel({ practice, autoplay = false }) {
     setGraded(false);
   }
 
+  // 범위 전체를 특정 input으로 커밋 (Delete용)
+  function commitRange(b, valueFor) {
+    const sheet = sheetRef.current;
+    let changed = false;
+    setCells((prev) => {
+      const next = prev.map((r) => r.map((c) => ({ ...c })));
+      for (let r = b.r1; r <= b.r2; r++) {
+        for (let c = b.c1; c <= b.c2; c++) {
+          if (!next[r]?.[c]?.editable) continue;
+          const v = valueFor(r, c);
+          if ((next[r][c].input || "") !== v) changed = true;
+          next[r][c].input = v;
+          next[r][c].status = null;
+          sheet?.setCellInput(getAddr(r, c), v.trim());
+        }
+      }
+      return next;
+    });
+    return changed;
+  }
+
+  function deleteSelection() {
+    const b = selBounds();
+    if (!b) return;
+    pushHistory();
+    commitRange(b, () => "");
+    setInputVal("");
+    setGraded(false);
+  }
+
+  // ── 자동 채우기 ──
+  function fillFromTo(src, tgt) {
+    const sheet = sheetRef.current;
+    const b = selBounds() || { r1: src.ri, c1: src.ci, r2: src.ri, c2: src.ci };
+    // 원본 = 현재 선택 범위, 목표 방향으로 확장
+    const minR = Math.min(b.r1, tgt.ri), maxR = Math.max(b.r2, tgt.ri);
+    const minC = Math.min(b.c1, tgt.ci), maxC = Math.max(b.c2, tgt.ci);
+    const srcH = b.r2 - b.r1 + 1;
+    const srcW = b.c2 - b.c1 + 1;
+    pushHistory();
+    setCells((prev) => {
+      const next = prev.map((r) => r.map((c) => ({ ...c })));
+      for (let r = minR; r <= maxR; r++) {
+        for (let c = minC; c <= maxC; c++) {
+          if (r >= b.r1 && r <= b.r2 && c >= b.c1 && c <= b.c2) continue; // 원본 유지
+          if (!next[r]?.[c]?.editable) continue;
+          // 원본 셀: 같은 열은 열 기준, 같은 행은 행 기준으로 매핑
+          const sr = b.r1 + ((r - b.r1) % srcH + srcH) % srcH;
+          const sc = b.c1 + ((c - b.c1) % srcW + srcW) % srcW;
+          const srcInput = next[sr]?.[sc]?.input || "";
+          if (!srcInput) continue;
+          const shifted = srcInput.startsWith("=")
+            ? shiftFormula(srcInput, r - sr, c - sc)
+            : srcInput;
+          next[r][c].input = shifted;
+          next[r][c].status = null;
+          sheet?.setCellInput(getAddr(r, c), shifted);
+        }
+      }
+      return next;
+    });
+    setGraded(false);
+  }
+
+  // 핸들 더블클릭: 왼쪽(없으면 오른쪽) 인접 열 데이터 마지막 행까지 아래로 채움
+  function fillHandleDoubleClick() {
+    const b = selBounds();
+    if (!b) return;
+    const probeCol = b.c1 - 1 >= 0 ? b.c1 - 1 : b.c2 + 1;
+    if (probeCol < 0 || probeCol >= colCount) return;
+    let lastRow = b.r2;
+    for (let r = b.r2 + 1; r < rowCount; r++) {
+      const c = cells[r]?.[probeCol];
+      const has = c && (c.editable ? (c.input || "") !== "" : (c.val !== "" && c.val !== null && c.val !== undefined));
+      if (has) lastRow = r; else break;
+    }
+    if (lastRow <= b.r2) return;
+    fillFromTo({ ri: b.r1, ci: b.c1 }, { ri: lastRow, ci: b.c2 });
+  }
+
+  function handleFillDragStart(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isFormulaMode()) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
+    // 편집 중이던 값 커밋
+    if (selected && inputFocused) commitInput(selected.ri, selected.ci, inputVal);
+    const b = selBounds();
+    isDraggingRef.current = true;
+    dragStartRef.current = b ? { ri: b.r1, ci: b.c1 } : selected;
+    hoverCellRef.current = selected;
+    setDragging(true);
+    setDragStart(b ? { ri: b.r2, ci: b.c2 } : selected);
+    setHoverCell(selected);
+  }
+
+  // ── 클립보드 ──
+  function copySelection() {
+    const b = selBounds();
+    if (!b) return;
+    const grid = [];
+    const textRows = [];
+    for (let r = b.r1; r <= b.r2; r++) {
+      const gr = [];
+      const tr = [];
+      for (let c = b.c1; c <= b.c2; c++) {
+        const cell = cells[r][c];
+        gr.push(cell.editable ? (cell.input || "") : String(cell.val ?? ""));
+        const disp = cell.editable
+          ? (sheetRef.current?.getDisplayValue(getAddr(r, c)) ?? cell.input ?? "")
+          : (cell.val ?? "");
+        tr.push(String(disp));
+      }
+      grid.push(gr);
+      textRows.push(tr.join("\t"));
+    }
+    clipRef.current = { grid, r0: b.r1, c0: b.c1 };
+    try { navigator.clipboard?.writeText(textRows.join("\n")); } catch { /* 무시 */ }
+  }
+
+  function pasteClipboard() {
+    const clip = clipRef.current;
+    if (!clip || !selection) return;
+    const b = selBounds();
+    const r0 = b.r1, c0 = b.c1;
+    const sheet = sheetRef.current;
+    pushHistory();
+    setCells((prev) => {
+      const next = prev.map((r) => r.map((c) => ({ ...c })));
+      clip.grid.forEach((gr, dr) => gr.forEach((srcInput, dc) => {
+        const r = r0 + dr, c = c0 + dc;
+        if (!next[r]?.[c]?.editable) return;
+        // shiftFormula: 원본 위치(clip.r0+dr, clip.c0+dc) → 붙일 위치(r,c) 만큼 이동
+        const finalInput = srcInput.startsWith("=")
+          ? shiftFormula(srcInput, r - (clip.r0 + dr), c - (clip.c0 + dc))
+          : srcInput;
+        next[r][c].input = finalInput;
+        next[r][c].status = null;
+        sheet?.setCellInput(getAddr(r, c), finalInput.trim());
+      }));
+      return next;
+    });
+    setGraded(false);
+  }
+
+  // ── 이름 상자 ──
+  function commitNameBox() {
+    const rng = parseRangeA1(nameBoxVal);
+    setNameBoxEditing(false);
+    if (!rng) return;
+    const a = clamp(rng.r1, rng.c1);
+    const f = clamp(rng.r2, rng.c2);
+    selAnchorRef.current = a;
+    setSelection({ anchor: a, focus: f });
+    setInputVal(cells[f.ri]?.[f.ci]?.editable ? (cells[f.ri][f.ci].input || "") : String(cells[f.ri]?.[f.ci]?.val ?? ""));
+    editModeRef.current = "ready";
+    containerRef.current?.focus({ preventScroll: true });
+  }
+
+  // ── 컨테이너 키보드 (선택 상태) ──
+  function isRefContext(val, pos) {
+    // 커서 바로 앞 글자가 =, (, ,, 연산자면 참조 삽입 가능
+    const before = val.slice(0, pos).replace(/\s+$/, "");
+    const last = before.slice(-1);
+    return before.startsWith("=") && (last === "=" || last === "(" || last === "," || "+-*/^<>=".includes(last));
+  }
+
+  function handleContainerKeyDown(e) {
+    if (!selection) return;
+    // 입력창이 포커스면 컨테이너 핸들러는 무시 (input onKeyDown이 처리)
+    if (document.activeElement === inputRef.current) return;
+    const { ri, ci } = selection.focus;
+    const key = e.key;
+    const cell = cells[ri]?.[ci];
+
+    if ((e.ctrlKey || e.metaKey) && (key === "z" || key === "Z")) { e.preventDefault(); undo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (key === "y" || key === "Y")) { e.preventDefault(); redo(); return; }
+    if ((e.ctrlKey || e.metaKey) && (key === "c" || key === "C")) { e.preventDefault(); copySelection(); return; }
+    if ((e.ctrlKey || e.metaKey) && (key === "v" || key === "V")) { e.preventDefault(); pasteClipboard(); return; }
+    if (e.ctrlKey || e.metaKey) return;
+
+    if (key === "ArrowUp")    { e.preventDefault(); moveSelection(-1, 0, e.shiftKey); return; }
+    if (key === "ArrowDown")  { e.preventDefault(); moveSelection(1, 0, e.shiftKey); return; }
+    if (key === "ArrowLeft")  { e.preventDefault(); moveSelection(0, -1, e.shiftKey); return; }
+    if (key === "ArrowRight") { e.preventDefault(); moveSelection(0, 1, e.shiftKey); return; }
+    if (key === "Enter")      { e.preventDefault(); moveSelection(e.shiftKey ? -1 : 1, 0, false); return; }
+    if (key === "Tab")        { e.preventDefault(); moveSelection(0, e.shiftKey ? -1 : 1, false); return; }
+    if (key === "Escape")     { e.preventDefault(); if (selected) selectSingle(selected.ri, selected.ci); return; }
+    if (key === "Delete" || key === "Backspace") { e.preventDefault(); deleteSelection(); return; }
+    if (key === "F2") {
+      e.preventDefault();
+      if (cell?.editable) enterEditMode(ri, ci);
+      return;
+    }
+    // 출력 가능한 한 글자 (글자/숫자/=,+,- 등) → 입력 모드 진입
+    if (key.length === 1 && !e.altKey) {
+      if (!cell?.editable) { e.preventDefault(); return; }
+      e.preventDefault();
+      editModeRef.current = "enter";
+      lastEditWasTypeRef.current = true;
+      nextCursorPos.current = null;
+      setInputVal(key);
+      // 입력 모드 진입: nextCursorPos에 의존하지 않고 포커스 직후 같은 콜백에서 커서를 끝으로.
+      setTimeout(() => {
+        const el = inputRef.current;
+        if (el) { el.focus(); const n = el.value.length; el.setSelectionRange(n, n); }
+      }, 0);
+    }
+  }
+
+  // ── 입력창 키보드 (입력/편집 모드) ──
+  function handleInputKeyDown(e) {
+    if (!selected) return;
+    const { ri, ci } = selected;
+    const key = e.key;
+
+    // 참조 선택 모드는 F4·(Shift+)방향키에서만 유지된다. 그 외 키가 오면 즉시 종료.
+    if (key !== "F4" && !key.startsWith("Arrow")) pointRef.current = null;
+
+    // 자동완성 드롭다운이 열려 있으면 방향키/Tab/Enter/Esc는 드롭다운이 우선
+    if (ac) {
+      if (key === "ArrowDown") { e.preventDefault(); setAcIndex((i) => Math.min(ac.items.length - 1, i + 1)); return; }
+      if (key === "ArrowUp")   { e.preventDefault(); setAcIndex((i) => Math.max(0, i - 1)); return; }
+      if (key === "Tab" || key === "Enter") { e.preventDefault(); insertFunction(ac.items[Math.min(acIndex, ac.items.length - 1)]); return; }
+      if (key === "Escape")    { e.preventDefault(); acClosedRef.current = true; setAcIndex(0); return; }
+    }
+
+    if (key === "F4") {
+      e.preventDefault();
+      if (!inputVal.startsWith("=")) return;
+      const el = inputRef.current;
+      const selS = el?.selectionStart ?? inputVal.length;
+      const selE = el?.selectionEnd ?? selS;
+      lastEditWasTypeRef.current = false;
+      if (selE > selS) {
+        // 3. 텍스트 선택 순환 — 선택 유지 (pointRef와 무관)
+        const r = cycleReference(inputVal, selS, selE);
+        nextSelRef.current = { start: r.selStart, end: r.selEnd };
+        setInputVal(r.formula);
+        return;
+      }
+      // 1. pointRef 살아있으면 전체 범위 모드 (연속 F4 위해 pointRef 유지), 2. 아니면 단일 셀 모드
+      const mode = pointRef.current ? "range" : "cell";
+      const cur = mode === "range" ? pointRef.current.start : selS;
+      const r = cycleReference(inputVal, cur, cur, mode);
+      nextCursorPos.current = r.cursorPos;
+      setInputVal(r.formula);
+      if (mode === "range" && pointRef.current) {
+        const newTok = r.formula.slice(pointRef.current.start, r.cursorPos);
+        const first = newTok.split(":")[0];
+        pointRef.current = { ...pointRef.current, end: r.cursorPos, dollar: { col: /^\$/.test(first), row: /[A-Za-z]\$/.test(first) } };
+      }
+      return;
+    }
+    if (key === "Enter") {
+      e.preventDefault();
+      commitInput(ri, ci, inputVal);
+      const t = clamp(ri + (e.shiftKey ? -1 : 1), ci);
+      selectSingle(t.ri, t.ci);
+      containerRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (key === "Tab") {
+      e.preventDefault();
+      commitInput(ri, ci, inputVal);
+      const t = clamp(ri, ci + (e.shiftKey ? -1 : 1));
+      selectSingle(t.ri, t.ci);
+      containerRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    if (key === "Escape") {
+      e.preventDefault();
+      setInputVal(cells[ri][ci].input || "");
+      editModeRef.current = "ready";
+      pointRef.current = null;
+      inputRef.current?.blur();
+      containerRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    // 방향키
+    if (key === "ArrowUp" || key === "ArrowDown" || key === "ArrowLeft" || key === "ArrowRight") {
+      const pos = inputRef.current?.selectionStart ?? inputVal.length;
+      const dr = key === "ArrowUp" ? -1 : key === "ArrowDown" ? 1 : 0;
+      const dc = key === "ArrowLeft" ? -1 : key === "ArrowRight" ? 1 : 0;
+      if (inputVal.startsWith("=")) {
+        // 이미 참조 선택 모드 → 계속 이동
+        if (pointRef.current) { e.preventDefault(); pointReferenceMove(dr, dc, e.shiftKey); return; }
+        // 커서 바로 앞 토큰이 셀 참조 → 그 참조로 참조 선택 모드 재개
+        const before = inputVal.slice(0, pos);
+        const refM = /(\$?[A-Za-z]+\$?\d+)$/.exec(before);
+        if (refM) {
+          const token = refM[1];
+          const cell = parseA1(token.replace(/\$/g, ""));
+          if (cell) {
+            e.preventDefault();
+            const tStart = pos - token.length;
+            const dollar = { col: /^\$/.test(token), row: /[A-Za-z]\$/.test(token) };
+            pointRef.current = { start: tStart, end: pos, anchor: cell, focus: cell, dollar };
+            pointReferenceMove(dr, dc, e.shiftKey);
+            return;
+          }
+        }
+        // 커서 앞이 =,(,쉼표,연산자 → 새 참조 삽입
+        if (isRefContext(inputVal, pos)) { e.preventDefault(); pointReferenceMove(dr, dc, e.shiftKey); return; }
+      }
+      // 그 외 — 편집 모드: 텍스트 커서 이동(브라우저 기본)
+      if (editModeRef.current === "edit") return;
+      // 입력 모드: 커밋 후 이동
+      e.preventDefault();
+      commitInput(ri, ci, inputVal);
+      const t = clamp(ri + dr, ci + dc);
+      selectSingle(t.ri, t.ci);
+      containerRef.current?.focus({ preventScroll: true });
+    }
+  }
+
+  // 수식 참조 선택 모드: pointRef = { start, end, anchor, focus, dollar } 하나로 관리.
+  // start·end = inputVal에서 이 참조가 차지하는 문자 범위, anchor·focus = 셀 좌표, dollar = $ 유지 플래그.
+  function refToken(ri, ci, dol) {
+    const a = toAddr(ri, ci);
+    const m = /^([A-Za-z]+)(\d+)$/.exec(a);
+    return `${dol?.col ? "$" : ""}${m[1]}${dol?.row ? "$" : ""}${m[2]}`;
+  }
+  function pointAddr(p) {
+    const single = p.anchor.ri === p.focus.ri && p.anchor.ci === p.focus.ci;
+    return single
+      ? refToken(p.anchor.ri, p.anchor.ci, p.dollar)
+      : `${refToken(p.anchor.ri, p.anchor.ci, p.dollar)}:${refToken(p.focus.ri, p.focus.ci, p.dollar)}`;
+  }
+  // 방향키·클릭·드래그가 공유하는 치환 코어. pointRef.start~end 를 addr 로 항상 치환.
+  // 함수형 setInputVal 로 최신 문자열을 읽어 포인터 핸들러(스테일 클로저)에서도 안전.
+  function applyPointRefRange(anchor, focus) {
+    const p = pointRef.current;
+    if (!p) return;
+    const oldEnd = p.end;
+    const addr = pointAddr({ ...p, anchor, focus });
+    pointRef.current = { ...p, anchor, focus, end: p.start + addr.length };
+    lastEditWasTypeRef.current = false;
+    setInputVal((v) => v.slice(0, p.start) + addr + v.slice(oldEnd));
+    nextCursorPos.current = p.start + addr.length;
+  }
+  function replaceReference(start, end, anchor, focus, dollar) {
+    pointRef.current = { start, end, anchor, focus, dollar: dollar || { col: false, row: false } };
+    applyPointRefRange(anchor, focus);
+  }
+  function pointReferenceMove(dr, dc, shift) {
+    if (!pointRef.current) {
+      // 새 참조: start=end=커서, anchor=focus=현재 선택 셀에서 이동한 셀
+      const base = clamp((selected?.ri ?? 0) + dr, (selected?.ci ?? 0) + dc);
+      const at = inputRef.current?.selectionStart ?? inputVal.length;
+      replaceReference(at, at, base, base);
+      return;
+    }
+    const p = pointRef.current;
+    const focus = clamp(p.focus.ri + dr, p.focus.ci + dc);
+    const anchor = shift ? p.anchor : focus;
+    applyPointRefRange(anchor, focus);
+  }
+
   function grade() {
-    if (selected && cells[selected.ri]?.[selected.ci]?.editable) {
+    // 편집 중이면 현재 값을 sheet+로컬 스냅샷에 동기로 반영(gradePractice가 최신값을 보게)
+    let cur = cells;
+    if (selected && cells[selected.ri]?.[selected.ci]?.editable && inputFocused) {
+      const trimmed = inputVal.trim();
+      sheetRef.current?.setCellInput(getAddr(selected.ri, selected.ci), trimmed);
+      cur = cells.map((row, r) => row.map((c, cc) => (r === selected.ri && cc === selected.ci ? { ...c, input: trimmed } : c)));
       commitInput(selected.ri, selected.ci, inputVal);
     }
-    const sheet = sheetRef.current;
+    const results = gradePractice({
+      cells: cur, cols: practice.cols, sheet: sheetRef.current, requiredFunctions: practice.requiredFunctions,
+    });
     setCells((prev) =>
       prev.map((row, ri) =>
         row.map((cell, ci) => {
           if (!cell.editable) return cell;
-          const val = cell.input.trim();
-          if (val === "") return { ...cell, status: null };
-          const addr = `${practice.cols[ci]}${ri + 1}`;
-          const computed = sheet?.getDisplayValue(addr) ?? val;
-          const expected = cell.result;
-          const ok =
-            expected !== undefined
-              ? String(computed) === String(expected) ||
-                (!isNaN(parseFloat(String(computed))) &&
-                  !isNaN(parseFloat(String(expected))) &&
-                  parseFloat(String(computed)) === parseFloat(String(expected)))
-              : val.toUpperCase() === (cell.answer || "").toUpperCase();
-          return { ...cell, status: ok ? "correct" : "wrong" };
+          const res = results.find((x) => x.ri === ri && x.ci === ci);
+          if (!res) return cell;
+          return { ...cell, status: res.status === "correct" ? "correct" : res.status === "wrong" ? "wrong" : null };
         })
       )
     );
+    setGradeResults(results);
+    setAttempts((a) => a + 1);
     setGraded(true);
-  }
-
-  function handleKeyDown(e) {
-    if (!selected) return;
-    const { ri, ci } = selected;
-
-    if (e.key === "F4") {
-      e.preventDefault();
-      if (!inputVal.startsWith("=")) return;
-      const pos = inputRef.current?.selectionStart ?? inputVal.length;
-      const { formula: newFormula, cursorPos: newPos } = cycleReference(inputVal, pos);
-      nextCursorPos.current = newPos;
-      setInputVal(newFormula);
-      return;
-    }
-
-    if (e.key === "Enter") {
-      commitInput(ri, ci, inputVal);
-      if (ri + 1 < rowCount && cells[ri + 1]?.[ci]?.editable) {
-        setSelected({ ri: ri + 1, ci });
-        setInputVal(cells[ri + 1][ci].input || "");
-        setTimeout(() => inputRef.current?.focus(), 0);
-      } else {
-        inputRef.current?.blur();
+    // 오답노트 연동 (부모가 콜백을 넘겼을 때만)
+    results.forEach((res) => {
+      if (res.status === "wrong" || res.status === "empty") {
+        onPracticeWrong?.({ cell: res.addr, studentInput: res.studentInput, answer: res.answer, reason: res.reason });
+      } else if (res.status === "correct") {
+        onPracticeResolve?.({ cell: res.addr });
       }
-    } else if (e.key === "Tab") {
-      e.preventDefault();
-      commitInput(ri, ci, inputVal);
-      if (ci + 1 < colCount) {
-        setSelected({ ri, ci: ci + 1 });
-        setInputVal(cells[ri][ci + 1]?.input || "");
-        setTimeout(() => inputRef.current?.focus(), 0);
-      }
-    } else if (e.key === "Escape") {
-      setInputVal(cells[ri][ci].input || "");
-      inputRef.current?.blur();
-    }
+    });
   }
 
-  function handleFillDragStart(e, ri, ci) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isFormulaMode()) return;
-    // 터치로 핸들을 끌 때 스크롤 대신 드래그가 유지되도록 포인터 캡처
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* 미지원 무시 */ }
-    if (selected) {
-      const selRi = selected.ri, selCi = selected.ci;
-      const trimmed = inputVal.trim();
-      setCells((prev) =>
-        prev.map((row, r) =>
-          row.map((c, cc) =>
-            r === selRi && cc === selCi && c.editable ? { ...c, input: trimmed, status: null } : c
-          )
-        )
-      );
-    }
-    isDraggingRef.current = true;
-    dragStartRef.current = { ri, ci };
-    hoverCellRef.current = { ri, ci };
-    setDragging(true);
-    setDragStart({ ri, ci });
-    setHoverCell({ ri, ci });
-  }
-
-  // 주소창에 표시할 주소 (범위 선택 중이면 A3:A5 형식)
+  // ── 파생 값 ──
   const addrStr = (() => {
-    if (rangeSelecting && rangeStart && hoverCell) {
-      const r1 = Math.min(rangeStart.ri, hoverCell.ri);
-      const c1 = Math.min(rangeStart.ci, hoverCell.ci);
-      const r2 = Math.max(rangeStart.ri, hoverCell.ri);
-      const c2 = Math.max(rangeStart.ci, hoverCell.ci);
-      return r1 === r2 && c1 === c2
-        ? toAddr(r1, c1)
-        : `${toAddr(r1, c1)}:${toAddr(r2, c2)}`;
-    }
-    return selected ? toAddr(selected.ri, selected.ci) : "";
+    if (rangeSelecting && rangeStart && hoverCell) return rangeAddr(rangeStart, hoverCell);
+    const b = selBounds();
+    if (!b) return "";
+    return b.r1 === b.r2 && b.c1 === b.c2 ? toAddr(b.r1, b.c1) : `${toAddr(b.r1, b.c1)}:${toAddr(b.r2, b.c2)}`;
   })();
 
   const fillRange =
     dragging && dragStart && hoverCell
-      ? {
-          minR: Math.min(dragStart.ri, hoverCell.ri),
-          maxR: Math.max(dragStart.ri, hoverCell.ri),
-          minC: Math.min(dragStart.ci, hoverCell.ci),
-          maxC: Math.max(dragStart.ci, hoverCell.ci),
-        }
+      ? { minR: Math.min(dragStart.ri, hoverCell.ri), maxR: Math.max(dragStart.ri, hoverCell.ri),
+          minC: Math.min(dragStart.ci, hoverCell.ci), maxC: Math.max(dragStart.ci, hoverCell.ci) }
       : null;
 
   const rangeSelectBox =
     rangeSelecting && rangeStart && hoverCell
-      ? {
-          minR: Math.min(rangeStart.ri, hoverCell.ri),
-          maxR: Math.max(rangeStart.ri, hoverCell.ri),
-          minC: Math.min(rangeStart.ci, hoverCell.ci),
-          maxC: Math.max(rangeStart.ci, hoverCell.ci),
-        }
+      ? { minR: Math.min(rangeStart.ri, hoverCell.ri), maxR: Math.max(rangeStart.ri, hoverCell.ri),
+          minC: Math.min(rangeStart.ci, hoverCell.ci), maxC: Math.max(rangeStart.ci, hoverCell.ci) }
       : null;
 
+  const selBox = selBounds();
   const selCell = selected ? cells[selected.ri]?.[selected.ci] : null;
-
-  // 모든 셀이 비어있고 non-editable인 열 = 스페이서 열 (좁게 렌더)
-  const spacerCols = new Set();
-  for (let ci = 0; ci < colCount; ci++) {
-    if (cells.every(row => {
-      const c = row[ci];
-      return !c?.editable && (c?.val === "" || c?.val === null || c?.val === undefined);
-    })) spacerCols.add(ci);
-  }
-
-  // 처음으로 editable 셀이 등장하는 열 인덱스 (참조 영역 / 입력 영역 구분선)
-  const firstEditableColIdx = (() => {
-    for (let ci = 0; ci < colCount; ci++) {
-      if (cells.some(row => row[ci]?.editable)) return ci;
-    }
-    return -1;
-  })();
-
-  // 입력 열이 (헤더 아래에) 참조 데이터를 함께 가진 경우 = 아래에 다른 표가 걸쳐 있는 형태.
-  // 이때는 구분 스페이서를 넣으면 아래 표가 중간에서 끊기므로 넣지 않는다.
-  const editColSharesRefData = firstEditableColIdx >= 0 && cells.some((row, ri) => {
-    if (ri === 0) return false;
-    const c = row[firstEditableColIdx];
-    return c && !c.editable && c.val !== "" && c.val !== null && c.val !== undefined;
-  });
-
-  // 함수 인수 힌트
   const activeHint = inputFocused ? getFunctionHint(inputVal, cursorPos) : null;
 
+  // ── Phase 2: 수식 편집 중 참조 색상 ──
+  const REF_COLORS = ["#0000FF", "#FF0000", "#9C27B0", "#008000", "#FF6D00", "#00838F"];
+  const showRefs = inputFocused && inputVal.startsWith("=");
+  const refSegments = []; // { start, end, color } — 입력창 오버레이용
+  const refRanges = [];   // { r1, c1, r2, c2, color } — 셀 테두리용
+  if (showRefs) {
+    // 엔진 collectReferences는 char offset을 주지 않아, 오버레이/셀에 함께 쓰려고
+    // 스펙이 제시한 정규식으로 추출한다(미완성 입력도 처리).
+    const re = /\$?[A-Za-z]+\$?\d+(?::\$?[A-Za-z]+\$?\d+)?/g;
+    const colorMap = new Map();
+    let m;
+    while ((m = re.exec(inputVal)) !== null) {
+      const norm = m[0].toUpperCase();
+      if (!colorMap.has(norm)) colorMap.set(norm, REF_COLORS[colorMap.size % REF_COLORS.length]);
+      refSegments.push({ start: m.index, end: m.index + m[0].length, color: colorMap.get(norm) });
+    }
+    for (const [norm, color] of colorMap) {
+      const rng = parseRangeA1(norm.replace(/\$/g, ""));
+      if (rng && rng.r1 >= 0 && rng.c1 >= 0 && rng.r2 < rowCount && rng.c2 < colCount) {
+        refRanges.push({ ...rng, color });
+      }
+    }
+  }
+  function refBg(hex) {
+    const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},0.08)`;
+  }
+  function refSideFor(ri, ci) {
+    for (const rr of refRanges) {
+      if (ri < rr.r1 || ri > rr.r2 || ci < rr.c1 || ci > rr.c2) continue;
+      return { color: rr.color, bg: refBg(rr.color), bt: ri === rr.r1, bb: ri === rr.r2, bl: ci === rr.c1, br: ci === rr.c2 };
+    }
+    return null;
+  }
+  function renderOverlaySegments() {
+    const parts = [];
+    let idx = 0;
+    const segs = [...refSegments].sort((a, b) => a.start - b.start);
+    for (const s of segs) {
+      if (s.start > idx) parts.push(<span key={idx}>{inputVal.slice(idx, s.start)}</span>);
+      parts.push(<span key={`${s.start}r`} style={{ color: s.color }}>{inputVal.slice(s.start, s.end)}</span>);
+      idx = s.end;
+    }
+    if (idx < inputVal.length) parts.push(<span key="tail">{inputVal.slice(idx)}</span>);
+    return parts;
+  }
+
+  // ── Phase 3: 함수 자동완성 ──
+  const ac = (() => {
+    if (!inputFocused || !inputVal.startsWith("=") || acClosedRef.current) return null;
+    const pos = Math.min(cursorPos, inputVal.length);
+    const before = inputVal.slice(0, pos);
+    const m = /([A-Za-z]{2,})$/.exec(before);
+    if (!m) return null;
+    const partial = m[1];
+    const tokenStart = pos - partial.length;
+    const prev = before.slice(0, tokenStart).replace(/\s+$/, "").slice(-1);
+    const okPrev = prev === "=" || prev === "(" || prev === "," || "+-*/^<>=".includes(prev);
+    if (!okPrev) return null;
+    const up = partial.toUpperCase();
+    const items = FUNC_NAMES.filter((n) => n.startsWith(up)).slice(0, 8);
+    if (!items.length) return null;
+    return { items, tokenStart, tokenEnd: pos };
+  })();
+
+  function insertFunction(name) {
+    if (!ac) return;
+    const ins = name + "(";
+    const newVal = inputVal.slice(0, ac.tokenStart) + ins + inputVal.slice(ac.tokenEnd);
+    lastEditWasTypeRef.current = false;
+    nextCursorPos.current = ac.tokenStart + ins.length;
+    setAcIndex(0);
+    setInputVal(newVal);
+  }
+
   const FONT = "'Malgun Gothic','Apple SD Gothic Neo',Arial,sans-serif";
-  // 실제 MS 엑셀 룩 — 엑셀 그린 계열로 통일
-  const XL = "#217346";        // 엑셀 브랜드 그린 (선택 테두리·핸들·버튼)
-  const XL_SOFT = "#e6f2ea";   // 선택/범위 채움 연녹
-  const XL_EDIT = "#eef6f1";   // 입력 대상 빈 셀 옅은 녹색 틴트
-  const XL_HDR_SEL = "#cfe6da"; // 선택된 셀의 행/열 머리 강조
+  // 입력창과 참조 색상 오버레이가 글자 단위로 정확히 겹치도록 공유하는 스타일
+  const fieldStyle = { fontFamily: FONT, fontSize: 14, fontWeight: 400, lineHeight: "normal", letterSpacing: "normal", wordSpacing: "normal", textIndent: 0, textRendering: "auto", fontKerning: "none", padding: "6px 8px", border: 0, boxSizing: "border-box" };
+  const XL = "#217346";
+  const XL_SOFT = "#e6f2ea";
+  const XL_EDIT = "#eef6f1";
+  const XL_HDR_SEL = "#cfe6da";
+
+  // 선택 범위의 오른쪽 아래 모서리(채우기 핸들 위치) 셀 여부
+  function isFillHandleCell(ri, ci) {
+    if (!selBox) return false;
+    return ri === selBox.r2 && ci === selBox.c2 && cells[ri]?.[ci]?.editable;
+  }
 
   return (
     <div style={{ marginTop: 20, userSelect: "none", fontFamily: FONT }}>
-      {/* ── 문제 카드 (상단, 엑셀과 분리) — 가독성 우선, 엑셀 색 미사용 ── */}
+      {/* 문제 카드 */}
       <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 20px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
         <span style={{ display: "inline-block", background: "#1f2937", color: "#fff", fontSize: 11.5, fontWeight: 800, letterSpacing: 1, padding: "3px 11px", borderRadius: 999, marginBottom: 10 }}>문제</span>
         <p style={{ color: "#1f2937", fontSize: 18.5, fontWeight: 600, margin: 0, lineHeight: 1.6 }}>{practice.instruction}</p>
       </div>
 
-      {/* ── 엑셀 카드 (하단) ── */}
+      {/* 엑셀 카드 */}
       <div style={{ background: "#fff", border: "1px solid #e0e0e0", borderRadius: 8, padding: "20px 24px", boxShadow: "0 2px 8px rgba(0,0,0,0.07)" }}>
-      {/* 수식 입력창 (Excel 스타일) */}
-      <div style={{ display: "flex", alignItems: "stretch", background: "#f5f5f5", border: "1px solid #d0d0d0", borderBottom: "none", borderRadius: "4px 4px 0 0" }}>
-        <div style={{ minWidth: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", padding: "6px 8px", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {addrStr || "—"}
-        </div>
-        <div style={{ padding: "6px 10px", color: "#888", fontSize: 13, borderRight: "1px solid #d0d0d0", display: "flex", alignItems: "center", fontStyle: "italic", fontWeight: 700 }}>fx</div>
-        <input
-          ref={inputRef}
-          value={inputVal}
-          onChange={(e) => {
-            isEditingRef.current = true;
-            setInputVal(e.target.value);
-            setCursorPos(e.target.selectionStart ?? e.target.value.length);
-          }}
-          onKeyDown={handleKeyDown}
-          onSelect={(e) => setCursorPos(e.target.selectionStart ?? inputVal.length)}
-          onFocus={() => {
-            cancelAuto();
-            setInputFocused(true);
-            if (inputVal.startsWith("=")) isEditingRef.current = true;
-          }}
-          onBlur={() => {
-            setInputFocused(false);
-            if (selected && selCell?.editable) commitInput(selected.ri, selected.ci, inputVal);
-          }}
-          placeholder={selCell?.editable ? "수식 입력... (셀 드래그로 범위 삽입, F4로 참조 고정)" : ""}
-          readOnly={!selCell?.editable}
-          style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#1f2937", fontSize: 14, fontFamily: FONT, padding: "6px 8px" }}
-        />
-        {selected && selCell?.editable && (
-          <button
-            onPointerDown={(e) => e.preventDefault()}
-            onClick={() => {
-              commitInput(selected.ri, selected.ci, inputVal);
-              setSelected(null);
-              setInputVal("");
-              inputRef.current?.blur();
-            }}
-            style={{ background: XL, border: "none", color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: 13, fontWeight: 700, borderRadius: "0 4px 0 0" }}
-          >
-            ✓
-          </button>
-        )}
-      </div>
-
-      {/* 함수 인수 힌트 바 */}
-      {activeHint && (
-        <div style={{
-          background: "#fff9c4",
-          border: "1px solid #d0d0d0",
-          borderTop: "none",
-          borderBottom: "none",
-          padding: "4px 14px",
-          fontSize: 12,
-          fontFamily: FONT,
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: 0,
-        }}>
-          <span style={{ fontWeight: 700, color: XL }}>{activeHint.name}</span>
-          <span style={{ color: "#555" }}>(</span>
-          {activeHint.args.map((arg, i) => (
-            <span key={i}>
-              {i > 0 && <span style={{ color: "#999" }}>,&nbsp;</span>}
-              <span style={{
-                color: i === activeHint.argIdx ? XL : "#555",
-                fontWeight: i === activeHint.argIdx ? 700 : 400,
-                textDecoration: i === activeHint.argIdx ? "underline" : "none",
-              }}>{arg}</span>
-            </span>
-          ))}
-          <span style={{ color: "#555" }}>)</span>
-        </div>
-      )}
-
-      {/* 테이블 */}
-      <div style={{ overflowX: "auto", border: "1px solid #d0d0d0", borderRadius: "0 0 4px 4px", marginBottom: 16, touchAction: (dragging || rangeSelecting) ? "none" : "auto" }}>
-        <table style={{ borderCollapse: "collapse", fontSize: 14, fontFamily: FONT }}>
-          <thead>
-            <tr>
-              <th style={{ width: 36, background: "#f3f3f3", border: "1px solid #d0d0d0", padding: "5px 6px", color: "#888" }} />
-              {practice.cols.flatMap((c, ci) => {
-                const isSpacer = spacerCols.has(ci);
-                const addVirtualSpacer =
-                  ci === firstEditableColIdx &&
-                  firstEditableColIdx > 0 &&
-                  !spacerCols.has(firstEditableColIdx - 1) &&
-                  !editColSharesRefData;
-                const ths = [];
-                if (addVirtualSpacer) {
-                  ths.push(
-                    <th key={`vs-${ci}`} style={{
-                      minWidth: 32, width: 32,
-                      background: "#f3f3f3",
-                      borderTop: "1px solid #d0d0d0",
-                      borderRight: "1px solid #d0d0d0",
-                      borderBottom: "1px solid #d0d0d0",
-                      borderLeft: "1px solid #d0d0d0",
-                    }} />
-                  );
-                }
-                const colSel = selected?.ci === ci && !isSpacer;
-                ths.push(
-                  <th key={c} style={{
-                    minWidth: isSpacer ? 32 : 120,
-                    width: isSpacer ? 32 : undefined,
-                    background: colSel ? XL_HDR_SEL : "#f3f3f3",
-                    borderTop: "1px solid #d0d0d0",
-                    borderRight: "1px solid #d0d0d0",
-                    borderBottom: colSel ? `2px solid ${XL}` : "1px solid #d0d0d0",
-                    borderLeft: "1px solid #d0d0d0",
-                    padding: isSpacer ? "5px 0" : "5px 10px",
-                    color: isSpacer ? "#ccc" : colSel ? XL : "#333",
-                    fontWeight: colSel ? 800 : 600,
-                    fontSize: 13,
-                    textAlign: "center",
-                  }}>
-                    {isSpacer ? "" : c}
-                  </th>
-                );
-                return ths;
-              })}
-            </tr>
-          </thead>
-          <tbody>
-            {cells.map((row, ri) => (
-              <tr key={ri}>
-                <td style={{ background: selected?.ri === ri ? XL_HDR_SEL : "#f3f3f3", borderTop: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", borderLeft: "1px solid #d0d0d0", borderRight: selected?.ri === ri ? `2px solid ${XL}` : "1px solid #d0d0d0", padding: "5px 6px", color: selected?.ri === ri ? XL : "#888", textAlign: "center", fontSize: 13, fontWeight: selected?.ri === ri ? 800 : 600 }}>
-                  {ri + 1}
-                </td>
-                {row.flatMap((cell, ci) => {
-                  const isSel = selected?.ri === ri && selected?.ci === ci;
-                  const inFill =
-                    fillRange &&
-                    ri >= fillRange.minR && ri <= fillRange.maxR &&
-                    ci >= fillRange.minC && ci <= fillRange.maxC &&
-                    !(ri === dragStart?.ri && ci === dragStart?.ci) &&
-                    cell.editable;
-                  const inRangeSelect =
-                    rangeSelectBox &&
-                    ri >= rangeSelectBox.minR && ri <= rangeSelectBox.maxR &&
-                    ci >= rangeSelectBox.minC && ci <= rangeSelectBox.maxC;
-
-                  const isSpecial = isSel || inFill || inRangeSelect;
-                  const borderColor = inRangeSelect
-                    ? XL
-                    : inFill
-                    ? XL
-                    : isSel
-                    ? XL
-                    : cell.status === "correct"
-                    ? "#34A853"
-                    : cell.status === "wrong"
-                    ? "#EA4335"
-                    : "#d0d0d0";
-                  const bg =
-                    cell.status === "correct"
-                    ? "#e6f4ea"
-                    : cell.status === "wrong"
-                    ? "#fce8e6"
-                    : inRangeSelect || inFill || isSel
-                    ? XL_SOFT
-                    : cell.editable && !cell.input
-                    ? XL_EDIT
-                    : "#fff";
-                  const borderStyle = inRangeSelect || inFill ? "dashed" : "solid";
-                  const borderWidth = isSpecial ? "2px" : "1px";
-
-                  const isSpacer = spacerCols.has(ci);
-                  const cellBorder = isSpacer ? "1px solid #e8e8e8" : `${borderWidth} ${borderStyle} ${borderColor}`;
-
-                  const addVirtualSpacer =
-                    ci === firstEditableColIdx &&
-                    firstEditableColIdx > 0 &&
-                    !spacerCols.has(firstEditableColIdx - 1) &&
-                    !editColSharesRefData;
-
-                  const tds = [];
-                  if (addVirtualSpacer) {
-                    tds.push(
-                      <td key={`vs-${ri}-${ci}`} style={{
-                        minWidth: 32, width: 32,
-                        borderTop: "1px solid #e8e8e8",
-                        borderRight: "1px solid #e8e8e8",
-                        borderBottom: "1px solid #e8e8e8",
-                        borderLeft: "1px solid #e8e8e8",
-                        background: "#f9f9f9",
-                        padding: 0,
-                        cursor: "default",
-                      }} />
-                    );
-                  }
-                  tds.push(
-                    <td
-                      key={ci}
-                      data-ri={ri}
-                      data-ci={ci}
-                      onPointerDown={(e) => handleCellPointerDown(e, ri, ci)}
-                      onClick={() => selectCell(ri, ci)}
-                      onDoubleClick={() => enterEditMode(ri, ci)}
-                      style={{
-                        borderTop: cellBorder,
-                        borderRight: cellBorder,
-                        borderBottom: cellBorder,
-                        borderLeft: isSpacer ? "1px solid #e8e8e8" : `${borderWidth} ${borderStyle} ${borderColor}`,
-                        background: isSpacer ? "#f9f9f9" : bg,
-                        padding: 0,
-                        position: "relative",
-                        cursor: isSpacer ? "default" : "cell",
-                        minWidth: isSpacer ? 32 : 120,
-                        width: isSpacer ? 32 : undefined,
-                      }}
-                    >
-                      <div style={{ padding: "7px 12px", color: "#1f2937", minHeight: 30, fontFamily: FONT, fontSize: 14 }}>
-                        {cell.editable
-                          ? isSel && inputFocused
-                            ? inputVal
-                            : (() => {
-                                const v = sheetRef.current?.getDisplayValue(getAddr(ri, ci));
-                                return v !== undefined && v !== '' ? String(v) : (cell.input || '');
-                              })()
-                          : cell.val}
-                      </div>
-                      {isSel && cell.editable && (
-                        <div
-                          onPointerDown={(e) => handleFillDragStart(e, ri, ci)}
-                          title="드래그하여 자동 채우기"
-                          style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: XL, border: "1px solid #fff", cursor: "crosshair", zIndex: 10, touchAction: "none" }}
-                        />
-                      )}
-                    </td>
-                  );
-                  return tds;
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* 채점하기 버튼 */}
-      <button
-        onClick={grade}
-        style={{ width: "100%", padding: "10px 0", borderRadius: 6, border: "none", background: XL, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
-      >
-        채점하기
-      </button>
-
-      {/* 채점 결과 */}
-      {graded && (
-        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
-          {cells.flatMap((row, ri) =>
-            row.map((cell, ci) => {
-              if (!cell.editable || !cell.status) return null;
-              return (
-                <div
-                  key={`${ri}-${ci}`}
-                  style={{
-                    padding: "8px 14px",
-                    borderRadius: 6,
-                    background: cell.status === "correct" ? "#e6f4ea" : "#fce8e6",
-                    color: cell.status === "correct" ? "#1e6b3d" : "#b92b27",
-                    fontSize: 13,
-                    border: `1px solid ${cell.status === "correct" ? "#a8d5b5" : "#f5b8b5"}`,
-                  }}
-                >
-                  {toAddr(ri, ci)}: {cell.status === "correct" ? "✅ 정답입니다!" : `❌ 오답 — 힌트: ${cell.answer}`}
-                </div>
-              );
-            })
+        {/* 수식 입력창 */}
+        <div style={{ display: "flex", alignItems: "stretch", background: "#f5f5f5", border: "1px solid #d0d0d0", borderBottom: "none", borderRadius: "4px 4px 0 0" }}>
+          {/* 이름 상자 (클릭 시 편집) */}
+          {nameBoxEditing ? (
+            <input
+              autoFocus
+              value={nameBoxVal}
+              onChange={(e) => setNameBoxVal(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") commitNameBox(); else if (e.key === "Escape") setNameBoxEditing(false); }}
+              onBlur={commitNameBox}
+              style={{ minWidth: 64, width: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", border: "none", outline: "none", padding: "6px 8px", fontFamily: FONT }}
+            />
+          ) : (
+            <div
+              onClick={() => { setNameBoxVal(addrStr); setNameBoxEditing(true); }}
+              title="이름 상자 — 셀 주소 입력 후 Enter"
+              style={{ minWidth: 64, fontWeight: 700, color: "#333", fontSize: 13, textAlign: "center", borderRight: "1px solid #d0d0d0", padding: "6px 8px", fontFamily: FONT, display: "flex", alignItems: "center", justifyContent: "center", cursor: "text" }}
+            >
+              {addrStr || "—"}
+            </div>
+          )}
+          <div style={{ padding: "6px 10px", color: "#888", fontSize: 13, borderRight: "1px solid #d0d0d0", display: "flex", alignItems: "center", fontStyle: "italic", fontWeight: 700 }}>fx</div>
+          <div style={{ position: "relative", flex: 1, display: "flex" }}>
+            {/* 참조 색상 오버레이 — 입력창이 포커스된 수식 모드에서만 렌더 */}
+            {showRefs && (
+              <div ref={overlayRef} aria-hidden="true" style={{ ...fieldStyle, position: "absolute", inset: 0, whiteSpace: "pre", overflow: "hidden", pointerEvents: "none", color: "#1f2937", display: "flex", alignItems: "center" }}>
+                <span>{renderOverlaySegments()}</span>
+              </div>
+            )}
+            <input
+              ref={inputRef}
+              value={inputVal}
+              onChange={(e) => {
+                // 편집/입력 중 글자 입력 → 참조 선택 모드 종료
+                if (editModeRef.current === "ready") editModeRef.current = "enter";
+                pointRef.current = null;
+                lastEditWasTypeRef.current = true;
+                acClosedRef.current = false;
+                setAcIndex(0);
+                setInputVal(e.target.value);
+                setCursorPos(e.target.selectionStart ?? e.target.value.length);
+                if (overlayRef.current) overlayRef.current.scrollLeft = e.target.scrollLeft;
+              }}
+              onKeyDown={handleInputKeyDown}
+              onPointerDown={() => { pointRef.current = null; }}
+              onScroll={(e) => { if (overlayRef.current) overlayRef.current.scrollLeft = e.target.scrollLeft; }}
+              onSelect={(e) => setCursorPos(e.target.selectionStart ?? inputVal.length)}
+              onFocus={() => {
+                cancelAuto();
+                setInputFocused(true);
+                if (editModeRef.current === "ready") editModeRef.current = "edit";
+              }}
+              onBlur={() => {
+                setInputFocused(false);
+                pointRef.current = null;
+                if (selected && selCell?.editable && editModeRef.current !== "ready") commitInput(selected.ri, selected.ci, inputVal);
+              }}
+              placeholder={selCell?.editable ? "수식 입력... (셀 드래그로 범위 삽입, F4로 참조 고정)" : ""}
+              readOnly={!selCell?.editable}
+              style={{ ...fieldStyle, flex: 1, width: "100%", background: "transparent", outline: "none", color: showRefs ? "transparent" : "#1f2937", caretColor: "#1f2937" }}
+            />
+            {ac && (
+              <div style={{ position: "absolute", top: "100%", left: 0, zIndex: 30, minWidth: 180, background: "#fff", border: "1px solid #d0d0d0", borderTop: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.12)", fontFamily: FONT }}>
+                {ac.items.map((name, i) => (
+                  <div key={name}
+                    onMouseDown={(e) => { e.preventDefault(); insertFunction(name); }}
+                    onMouseEnter={() => setAcIndex(i)}
+                    style={{ padding: "5px 12px", fontSize: 13, cursor: "pointer", color: "#1f2937",
+                      background: i === Math.min(acIndex, ac.items.length - 1) ? "#e6f2ea" : "#fff",
+                      fontWeight: i === Math.min(acIndex, ac.items.length - 1) ? 700 : 400 }}>
+                    {name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          {selected && selCell?.editable && (
+            <button
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => { commitInput(selected.ri, selected.ci, inputVal); containerRef.current?.focus({ preventScroll: true }); }}
+              style={{ background: XL, border: "none", color: "#fff", padding: "0 14px", cursor: "pointer", fontSize: 13, fontWeight: 700, borderRadius: "0 4px 0 0" }}
+            >
+              ✓
+            </button>
           )}
         </div>
-      )}
+
+        {/* 함수 인수 힌트 바 */}
+        {activeHint && (
+          <div style={{ background: "#fff9c4", border: "1px solid #d0d0d0", borderTop: "none", borderBottom: "none", padding: "4px 14px", fontSize: 12, fontFamily: FONT, display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
+            <span style={{ fontWeight: 700, color: XL }}>{activeHint.name}</span>
+            <span style={{ color: "#555" }}>(</span>
+            {activeHint.args.map((arg, i) => (
+              <span key={i}>
+                {i > 0 && <span style={{ color: "#999" }}>,&nbsp;</span>}
+                <span style={{ color: i === activeHint.argIdx ? XL : "#555", fontWeight: i === activeHint.argIdx ? 700 : 400, textDecoration: i === activeHint.argIdx ? "underline" : "none" }}>{arg}</span>
+              </span>
+            ))}
+            <span style={{ color: "#555" }}>)</span>
+          </div>
+        )}
+
+        {/* 테이블 */}
+        <div
+          ref={containerRef}
+          tabIndex={0}
+          onKeyDown={handleContainerKeyDown}
+          style={{ overflowX: "auto", border: "1px solid #d0d0d0", borderRadius: "0 0 4px 4px", marginBottom: 16, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
+        >
+          <table style={{ borderCollapse: "collapse", fontSize: 14, fontFamily: FONT }}>
+            <thead>
+              <tr>
+                <th style={{ width: 36, background: "#f3f3f3", border: "1px solid #d0d0d0", padding: "5px 6px", color: "#888" }} />
+                {practice.cols.map((c, ci) => {
+                  const colSel = selBox && ci >= selBox.c1 && ci <= selBox.c2;
+                  return (
+                    <th key={c} style={{
+                      minWidth: 120,
+                      background: colSel ? XL_HDR_SEL : "#f3f3f3",
+                      borderTop: "1px solid #d0d0d0",
+                      borderRight: "1px solid #d0d0d0",
+                      borderBottom: colSel ? `2px solid ${XL}` : "1px solid #d0d0d0",
+                      borderLeft: "1px solid #d0d0d0",
+                      padding: "5px 10px",
+                      color: colSel ? XL : "#333",
+                      fontWeight: colSel ? 800 : 600,
+                      fontSize: 13, textAlign: "center",
+                    }}>{c}</th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {cells.map((row, ri) => {
+                const rowSel = selBox && ri >= selBox.r1 && ri <= selBox.r2;
+                return (
+                  <tr key={ri}>
+                    <td style={{ background: rowSel ? XL_HDR_SEL : "#f3f3f3", borderTop: "1px solid #d0d0d0", borderBottom: "1px solid #d0d0d0", borderLeft: "1px solid #d0d0d0", borderRight: rowSel ? `2px solid ${XL}` : "1px solid #d0d0d0", padding: "5px 6px", color: rowSel ? XL : "#888", textAlign: "center", fontSize: 13, fontWeight: rowSel ? 800 : 600 }}>
+                      {ri + 1}
+                    </td>
+                    {row.map((cell, ci) => {
+                      const isSel = selected?.ri === ri && selected?.ci === ci;
+                      const inSelRange = selBox && ri >= selBox.r1 && ri <= selBox.r2 && ci >= selBox.c1 && ci <= selBox.c2;
+                      const inFill = fillRange && ri >= fillRange.minR && ri <= fillRange.maxR && ci >= fillRange.minC && ci <= fillRange.maxC && cell.editable;
+                      const inRangeSelect = rangeSelectBox && ri >= rangeSelectBox.minR && ri <= rangeSelectBox.maxR && ci >= rangeSelectBox.minC && ci <= rangeSelectBox.maxC;
+                      const isSpecial = isSel || inFill || inRangeSelect || inSelRange;
+                      const borderColor =
+                        inRangeSelect ? XL : inFill ? XL : isSel ? XL : inSelRange ? XL
+                        : cell.status === "correct" ? "#34A853"
+                        : cell.status === "wrong" ? "#EA4335" : "#d0d0d0";
+                      const bg =
+                        cell.status === "correct" ? "#e6f4ea"
+                        : cell.status === "wrong" ? "#fce8e6"
+                        : inRangeSelect || inFill || (inSelRange && !isSel) ? XL_SOFT
+                        : isSel ? "#fff"
+                        : cell.editable && !cell.input ? XL_EDIT : "#fff";
+                      const borderStyle = inRangeSelect || inFill ? "dashed" : "solid";
+                      const borderWidth = isSpecial ? "2px" : "1px";
+                      const cellBorder = `${borderWidth} ${borderStyle} ${borderColor}`;
+                      // Phase 2: 수식 편집 중 참조 범위 → 바깥 변만 색 테두리 + 옅은 배경
+                      const refSide = showRefs && !isSel ? refSideFor(ri, ci) : null;
+                      const def1 = "1px solid #d0d0d0";
+                      const bTop = refSide ? (refSide.bt ? `2px solid ${refSide.color}` : def1) : cellBorder;
+                      const bRight = refSide ? (refSide.br ? `2px solid ${refSide.color}` : def1) : cellBorder;
+                      const bBottom = refSide ? (refSide.bb ? `2px solid ${refSide.color}` : def1) : cellBorder;
+                      const bLeft = refSide ? (refSide.bl ? `2px solid ${refSide.color}` : def1) : cellBorder;
+                      const finalBg = refSide ? refSide.bg : bg;
+
+                      // Phase 3: 표시 텍스트 + 정렬(number 오른쪽 / string 왼쪽 / boolean·에러 가운데)
+                      let displayVal, cellAlign;
+                      if (cell.editable) {
+                        if (isSel && inputFocused) { displayVal = inputVal; cellAlign = "left"; }
+                        else {
+                          const raw = sheetRef.current?.getCellValue(getAddr(ri, ci));
+                          if (raw === undefined || raw === "") { displayVal = cell.input || ""; cellAlign = "left"; }
+                          else if (isErrorValue(raw)) { displayVal = raw.error; cellAlign = "center"; }
+                          else if (typeof raw === "number") { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "right"; }
+                          else if (typeof raw === "boolean") { displayVal = raw ? "TRUE" : "FALSE"; cellAlign = "center"; }
+                          else { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "left"; }
+                        }
+                      } else {
+                        const v = cell.val;
+                        if (typeof v === "number") { displayVal = cell.format ? formatValue(v, cell.format) : String(v); cellAlign = "right"; }
+                        else { displayVal = (v === undefined || v === null) ? "" : (cell.format ? formatValue(v, cell.format) : String(v)); cellAlign = "left"; }
+                      }
+
+                      return (
+                        <td
+                          key={ci}
+                          data-ri={ri}
+                          data-ci={ci}
+                          onPointerDown={(e) => handleCellPointerDown(e, ri, ci)}
+                          onDoubleClick={() => enterEditMode(ri, ci)}
+                          style={{
+                            borderTop: bTop, borderRight: bRight, borderBottom: bBottom, borderLeft: bLeft,
+                            background: finalBg, padding: 0, position: "relative", cursor: "cell", minWidth: 120,
+                          }}
+                        >
+                          <div style={{ padding: "7px 12px", color: "#1f2937", minHeight: 30, fontFamily: FONT, fontSize: 14, textAlign: cellAlign }}>
+                            {displayVal}
+                          </div>
+                          {isFillHandleCell(ri, ci) && (
+                            <div
+                              onPointerDown={(e) => handleFillDragStart(e)}
+                              onDoubleClick={(e) => { e.stopPropagation(); fillHandleDoubleClick(); }}
+                              title="드래그하여 자동 채우기 (더블클릭: 아래로 채우기)"
+                              style={{ position: "absolute", bottom: -1, right: -1, width: 10, height: 10, background: XL, border: "1px solid #fff", cursor: "crosshair", zIndex: 10, touchAction: "none" }}
+                            />
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 채점하기 버튼 */}
+        <button
+          onClick={grade}
+          style={{ width: "100%", padding: "10px 0", borderRadius: 6, border: "none", background: XL, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+        >
+          채점하기
+        </button>
+
+        {/* 채점 결과 (이모지 없음, empty 포함) */}
+        {graded && (
+          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+            {gradeResults.map((res) => {
+              const isCorrect = res.status === "correct";
+              const label = isCorrect ? "정답" : res.status === "empty" ? "미입력" : "오답";
+              return (
+                <div key={res.addr} style={{
+                  padding: "8px 14px", borderRadius: 6,
+                  background: isCorrect ? "#e6f4ea" : "#fce8e6",
+                  color: isCorrect ? "#1e6b3d" : "#b92b27",
+                  fontSize: 13, border: `1px solid ${isCorrect ? "#a8d5b5" : "#f5b8b5"}`,
+                  display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap",
+                }}>
+                  <span>{res.addr} · {label}{isCorrect ? "" : ` — ${res.reason}`}</span>
+                  {!isCorrect && attempts >= 2 && res.answer && (
+                    revealed[res.addr]
+                      ? <span style={{ fontFamily: "'Malgun Gothic',monospace", color: "#1e6b3d", fontWeight: 700 }}>정답: {res.answer}</span>
+                      : <button
+                          onClick={() => setRevealed((m) => ({ ...m, [res.addr]: true }))}
+                          style={{ background: "#fff", border: "1px solid #b92b27", color: "#b92b27", borderRadius: 5, padding: "3px 10px", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                        >정답 수식 보기</button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -42,7 +42,7 @@ export default function App() {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
-  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
+  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
@@ -232,7 +232,7 @@ export default function App() {
             />
           )}
           {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} />}
-          {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} />}
+          {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} addPracticeWrong={addPracticeWrong} resolvePracticeWrong={resolvePracticeWrong} />}
           {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
           {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
         </div>
