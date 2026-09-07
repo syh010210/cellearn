@@ -83,6 +83,37 @@ export const FUNCTION_HINTS = {
   WEEKDAY: { args: ["날짜", "[반환 유형]"] },
   DATE:    { args: ["연도", "월", "일"] },
   DATEDIF: { args: ["시작 날짜", "끝 날짜", "단위"] },
+  DAYS:    { args: ["끝 날짜", "시작 날짜"] },
+  EDATE:   { args: ["시작 날짜", "개월 수"] },
+  EOMONTH: { args: ["시작 날짜", "개월 수"] },
+  WORKDAY: { args: ["시작 날짜", "일수", "[휴일 범위]"] },
+  HOUR:    { args: ["시간"] },
+  MINUTE:  { args: ["시간"] },
+  SECOND:  { args: ["시간"] },
+  TIME:    { args: ["시", "분", "초"] },
+
+  // ── 논리 상수/분기 ──
+  TRUE:   { args: [] },
+  FALSE:  { args: [] },
+  SWITCH: { args: ["식", "값1", "결과1", "[값2, 결과2, ...]", "[기본값]"] },
+
+  // ── 참조 위치/크기 ──
+  COLUMN:  { args: ["[참조]"] },
+  COLUMNS: { args: ["범위"] },
+  ROW:     { args: ["[참조]"] },
+  ROWS:    { args: ["범위"] },
+
+  // ── 난수 ──
+  RAND:        { args: [] },
+  RANDBETWEEN: { args: ["최솟값", "최댓값"] },
+
+  // ── 통계(추가) ──
+  AVERAGEA:    { args: ["값1", "[값2, ...]"] },
+  MAXA:        { args: ["값1", "[값2, ...]"] },
+  MINA:        { args: ["값1", "[값2, ...]"] },
+  "MODE.SNGL": { args: ["숫자1", "[숫자2, ...]"] },
+  "STDEV.S":   { args: ["숫자1", "[숫자2, ...]"] },
+  "VAR.S":     { args: ["숫자1", "[숫자2, ...]"] },
 };
 
 /**

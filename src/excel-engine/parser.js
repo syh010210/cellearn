@@ -163,6 +163,10 @@ export function parseFormula(formula) {
   return ast;
 }
 
+// COLUMN/ROW/COLUMNS/ROWS는 참조의 "위치/크기"만 쓰고 값은 읽지 않으므로
+// 데이터 의존성을 만들지 않는다. (=COLUMN(C1)을 C1에 넣어도 순환이 아님 — 엑셀과 동일)
+const REF_ONLY_FUNCS = new Set(['COLUMN', 'ROW', 'COLUMNS', 'ROWS']);
+
 // AST를 순회하며 참조하는 셀/범위를 수집 (의존성 그래프 구성용)
 export function collectReferences(ast) {
   const refs = [];
@@ -183,7 +187,7 @@ export function collectReferences(ast) {
         walk(node.operand);
         break;
       case 'FunctionCall':
-        node.args.forEach(walk);
+        if (!REF_ONLY_FUNCS.has(node.name)) node.args.forEach(walk);
         break;
       default:
         break;

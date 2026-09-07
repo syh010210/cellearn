@@ -10,6 +10,8 @@ function parseCellA1(str) {
   return { ci: ci - 1, ri: parseInt(m[2], 10) - 1 };
 }
 const norm = (s) => String(s || "").replace(/\s/g, "").toUpperCase();
+// 휘발성 함수(매번 값이 달라짐): 결과값 비교를 건너뛴다
+const VOLATILE = /\b(NOW|TODAY|RAND|RANDBETWEEN)\s*\(/i;
 
 // 순수 채점 함수. cells는 {editable, input, answer, result, format, fillFrom, requiredFunctions} 셀의 2차원 배열.
 // sheet는 excel-engine Sheet 인스턴스(getCellValue/getDisplayValue 제공).
@@ -36,9 +38,11 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
     // 4. 계산 결과 에러
     const raw = sheet?.getCellValue(base.addr);
     if (isErrorValue(raw)) { results.push({ ...base, status: "wrong", reason: `수식 오류 (${raw.error}) — 참조 범위와 찾을 값을 확인하세요` }); return; }
-    // 5. 결과값 불일치
+    // 5. 결과값 불일치 — NOW/TODAY/RAND/RANDBETWEEN이 들어가면 값이 매번 달라지므로 건너뜀
+    //    (필수 함수 검사(3)와 에러 검사(4)는 이미 통과한 상태)
+    const isVolatile = VOLATILE.test(input);
     const computed = sheet?.getDisplayValue(base.addr);
-    if (cell.result !== undefined) {
+    if (!isVolatile && cell.result !== undefined) {
       const expected = cell.result;
       const eq =
         String(computed) === String(expected) ||

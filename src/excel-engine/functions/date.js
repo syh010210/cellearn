@@ -128,4 +128,109 @@ export const DATEDIF = ([startSerial, endSerial, unit]) => {
   }
 };
 
+// DAYS(끝날짜, 시작날짜) = 두 날짜 사이 일수
+export const DAYS = ([endSerial, startSerial]) => {
+  const e = toNumber(endSerial);
+  const s = toNumber(startSerial);
+  if (isErrorValue(e)) return e;
+  if (isErrorValue(s)) return s;
+  return Math.floor(e) - Math.floor(s);
+};
+
+// EDATE(날짜, 개월수) = 지정 개월 후/전의 같은 날 (말일 초과 시 말일로 보정)
+export const EDATE = ([serial, months]) => {
+  const s = toNumber(serial);
+  const m = toNumber(months);
+  if (isErrorValue(s)) return s;
+  if (isErrorValue(m)) return m;
+  const d = serialToDate(Math.floor(s));
+  const y = d.getUTCFullYear();
+  const mo = d.getUTCMonth();
+  const day = d.getUTCDate();
+  const target = new Date(Date.UTC(y, mo + Math.trunc(m), 1));
+  const ty = target.getUTCFullYear();
+  const tm = target.getUTCMonth();
+  const lastDay = new Date(Date.UTC(ty, tm + 1, 0)).getUTCDate();
+  return dateToSerial(ty, tm + 1, Math.min(day, lastDay));
+};
+
+// EOMONTH(날짜, 개월수) = 지정 개월 후/전 달의 말일
+export const EOMONTH = ([serial, months]) => {
+  const s = toNumber(serial);
+  const m = toNumber(months);
+  if (isErrorValue(s)) return s;
+  if (isErrorValue(m)) return m;
+  const d = serialToDate(Math.floor(s));
+  const last = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + Math.trunc(m) + 1, 0));
+  return dateToSerial(last.getUTCFullYear(), last.getUTCMonth() + 1, last.getUTCDate());
+};
+
+// 시간 함수: 일련번호의 소수부(하루=1)로 시/분/초 계산
+function timeSeconds(serial) {
+  const s = toNumber(serial);
+  if (isErrorValue(s)) return s;
+  const frac = s - Math.floor(s);
+  let secs = Math.round(frac * 86400);
+  secs = ((secs % 86400) + 86400) % 86400;
+  return secs;
+}
+export const HOUR = ([serial]) => {
+  const secs = timeSeconds(serial);
+  return isErrorValue(secs) ? secs : Math.floor(secs / 3600);
+};
+export const MINUTE = ([serial]) => {
+  const secs = timeSeconds(serial);
+  return isErrorValue(secs) ? secs : Math.floor(secs / 60) % 60;
+};
+export const SECOND = ([serial]) => {
+  const secs = timeSeconds(serial);
+  return isErrorValue(secs) ? secs : secs % 60;
+};
+
+// TIME(시, 분, 초) = 하루 대비 소수(하루를 넘으면 24시간으로 나눈 나머지)
+export const TIME = ([h, m, sec]) => {
+  const hh = toNumber(h);
+  const mm = toNumber(m);
+  const ss = toNumber(sec);
+  if (isErrorValue(hh)) return hh;
+  if (isErrorValue(mm)) return mm;
+  if (isErrorValue(ss)) return ss;
+  const total = hh * 3600 + mm * 60 + ss;
+  const frac = total / 86400;
+  return frac - Math.floor(frac);
+};
+
+// WORKDAY(시작날짜, 일수, [휴일범위]) = 주말/휴일을 제외하고 일수만큼 이동한 날
+export const WORKDAY = ([startSerial, days, holidays]) => {
+  const s = toNumber(startSerial);
+  const d = toNumber(days);
+  if (isErrorValue(s)) return s;
+  if (isErrorValue(d)) return d;
+  const holSet = new Set();
+  if (holidays !== undefined) {
+    const list = holidays && holidays.__isRange ? holidays.values.flat() : [holidays];
+    for (const v of list) {
+      if (typeof v === 'number') holSet.add(Math.floor(v));
+    }
+  }
+  const step = d >= 0 ? 1 : -1;
+  let remaining = Math.abs(Math.trunc(d));
+  let cur = Math.floor(s);
+  while (remaining > 0) {
+    cur += step;
+    const dow = serialToDate(cur).getUTCDay(); // 0=일, 6=토
+    if (dow === 0 || dow === 6) continue;
+    if (holSet.has(cur)) continue;
+    remaining--;
+  }
+  return cur;
+};
+
+// 일련번호를 yyyy-mm-dd 문자열로 (표시용)
+export function formatSerialAsDate(serial) {
+  const d = serialToDate(Math.floor(serial));
+  const p = (x) => String(x).padStart(2, '0');
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
+}
+
 export { dateToSerial, serialToDate };

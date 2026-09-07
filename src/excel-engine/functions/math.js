@@ -261,6 +261,100 @@ export const RANK_AVG = ([num, range, order]) => {
   return ((first + 1) + (last + 1)) / 2;
 };
 
+export const INT = ([num]) => {
+  const n = toNumber(num);
+  return isErrorValue(n) ? n : Math.floor(n);
+};
+
+export const POWER = ([num, power]) => {
+  const n = toNumber(num);
+  const p = toNumber(power);
+  if (isErrorValue(n)) return n;
+  if (isErrorValue(p)) return p;
+  const r = Math.pow(n, p);
+  if (!isFinite(r) || isNaN(r)) return makeError(ERRORS.NUM);
+  return r;
+};
+
+export const RAND = () => Math.random();
+
+export const RANDBETWEEN = ([bottom, top]) => {
+  const b = toNumber(bottom);
+  const t = toNumber(top);
+  if (isErrorValue(b)) return b;
+  if (isErrorValue(t)) return t;
+  const lo = Math.ceil(b);
+  const hi = Math.floor(t);
+  if (lo > hi) return makeError(ERRORS.NUM);
+  return lo + Math.floor(Math.random() * (hi - lo + 1));
+};
+
+// AVERAGEA/MAXA/MINA용: 텍스트=0, TRUE=1, FALSE=0, 숫자=그대로, 빈 셀=무시. 에러는 전파.
+function numbersWithText(args) {
+  const nums = [];
+  for (const a of args) {
+    for (const v of flatten(a)) {
+      if (isErrorValue(v)) return v;
+      if (typeof v === 'number') nums.push(v);
+      else if (typeof v === 'boolean') nums.push(v ? 1 : 0);
+      else if (typeof v === 'string' && v !== '') nums.push(0);
+    }
+  }
+  return nums;
+}
+
+export const AVERAGEA = (args) => {
+  const nums = numbersWithText(args);
+  if (isErrorValue(nums)) return nums;
+  if (nums.length === 0) return makeError(ERRORS.DIV0);
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
+};
+
+export const MAXA = (args) => {
+  const nums = numbersWithText(args);
+  if (isErrorValue(nums)) return nums;
+  return nums.length ? Math.max(...nums) : 0;
+};
+
+export const MINA = (args) => {
+  const nums = numbersWithText(args);
+  if (isErrorValue(nums)) return nums;
+  return nums.length ? Math.min(...nums) : 0;
+};
+
+// MODE.SNGL: 가장 자주 나오는 숫자. 모두 한 번씩이면 #N/A.
+export const MODE_SNGL = (args) => {
+  const nums = numbersOnly(args);
+  if (isErrorValue(nums)) return nums;
+  const counts = new Map();
+  let bestVal = null;
+  let bestCount = 1;
+  for (const n of nums) {
+    const c = (counts.get(n) || 0) + 1;
+    counts.set(n, c);
+    if (c > bestCount) { bestCount = c; bestVal = n; }
+  }
+  if (bestVal === null) return makeError(ERRORS.NA);
+  return bestVal;
+};
+
+// STDEV.S / VAR.S: 표본 기준(n-1). 데이터 2개 미만이면 #DIV/0!.
+function sampleVariance(args) {
+  const nums = numbersOnly(args);
+  if (isErrorValue(nums)) return nums;
+  if (nums.length < 2) return makeError(ERRORS.DIV0);
+  const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+  const ss = nums.reduce((a, b) => a + (b - mean) ** 2, 0);
+  return ss / (nums.length - 1);
+}
+
+export const VAR_S = (args) => sampleVariance(args);
+
+export const STDEV_S = (args) => {
+  const v = sampleVariance(args);
+  return isErrorValue(v) ? v : Math.sqrt(v);
+};
+
 export const SUMPRODUCT = (args) => {
   const arrays = args.map((a) => flatten(a));
   const len = arrays[0]?.length || 0;

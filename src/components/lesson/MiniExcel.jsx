@@ -2,13 +2,14 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { toAddr, shiftFormula } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
-import { FUNCTIONS, LAZY_FUNCTIONS } from "../../excel-engine/functions/index.js";
+import { EXAM_FUNCTIONS } from "../../excel-engine/functions/index.js";
 import { gradePractice } from "./miniexcel/gradePractice.js";
 import { useSelection } from "./miniexcel/useSelection.js";
 import { useKeyboard } from "./miniexcel/useKeyboard.js";
 
 // 자동완성 목록 = 엔진에 등록된 함수(컴활 출제 범위)만
-const FUNC_NAMES = [...new Set([...Object.keys(FUNCTIONS), ...Object.keys(LAZY_FUNCTIONS)])].sort();
+// 자동완성 목록 = 컴활 2급 실기 출제 함수만 (엔진에 등록된 그 외 함수는 노출하지 않음)
+const FUNC_NAMES = [...EXAM_FUNCTIONS].sort();
 
 // Phase 3: 셀 표시 형식 (지원: #,##0 / #,##0.00 / 0% / 0.0% / yyyy-mm-dd / @)
 function excelSerialToDate(n) {
@@ -892,9 +893,11 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                       if (cell.editable) {
                         if (isSel && inputFocused) { displayVal = inputVal; cellAlign = "left"; }
                         else {
-                          const raw = sheetRef.current?.getCellValue(getAddr(ri, ci));
+                          const addr = getAddr(ri, ci);
+                          const raw = sheetRef.current?.getCellValue(addr);
                           if (raw === undefined || raw === "") { displayVal = cell.input || ""; cellAlign = "left"; }
                           else if (isErrorValue(raw)) { displayVal = raw.error; cellAlign = "center"; }
+                          else if (typeof raw === "number" && sheetRef.current?.isDateCell(addr)) { displayVal = formatValue(raw, "yyyy-mm-dd"); cellAlign = "right"; }
                           else if (typeof raw === "number") { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "right"; }
                           else if (typeof raw === "boolean") { displayVal = raw ? "TRUE" : "FALSE"; cellAlign = "center"; }
                           else { displayVal = cell.format ? formatValue(raw, cell.format) : String(raw); cellAlign = "left"; }

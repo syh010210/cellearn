@@ -2,6 +2,7 @@
 import { ERRORS, isErrorValue, makeError } from '../errors.js';
 import { toNumber } from '../utils.js';
 import { isRangeValue } from '../rangeValue.js';
+import { parseCellRef, parseRangeRef } from '../cellAddress.js';
 
 function toTable(range) {
   if (isRangeValue(range)) return range.values;
@@ -102,6 +103,46 @@ export const INDEX = ([array, rowNum, colNum]) => {
   const cc = (c ?? 1) - 1;
   if (rr < 0 || rr >= numRows || cc < 0 || cc >= numCols) return makeError(ERRORS.REF);
   return table[rr][cc];
+};
+
+// COLUMN/ROW/COLUMNS/ROWS: 값이 아니라 참조(AST 노드)가 필요해 LAZY_FUNCTIONS로 등록한다.
+// (argNodes, context, evaluate) 시그니처.
+export const COLUMN = (argNodes, context) => {
+  if (!argNodes || argNodes.length === 0) {
+    const p = parseCellRef(context.currentCell || '');
+    return p ? p.col + 1 : makeError(ERRORS.REF);
+  }
+  const node = argNodes[0];
+  if (node.type === 'CellRef') return parseCellRef(node.ref).col + 1;
+  if (node.type === 'RangeRef') { const r = parseRangeRef(node.ref); return r ? r.startCol + 1 : makeError(ERRORS.REF); }
+  return makeError(ERRORS.VALUE);
+};
+
+export const ROW = (argNodes, context) => {
+  if (!argNodes || argNodes.length === 0) {
+    const p = parseCellRef(context.currentCell || '');
+    return p ? p.row + 1 : makeError(ERRORS.REF);
+  }
+  const node = argNodes[0];
+  if (node.type === 'CellRef') return parseCellRef(node.ref).row + 1;
+  if (node.type === 'RangeRef') { const r = parseRangeRef(node.ref); return r ? r.startRow + 1 : makeError(ERRORS.REF); }
+  return makeError(ERRORS.VALUE);
+};
+
+export const COLUMNS = (argNodes) => {
+  const node = argNodes && argNodes[0];
+  if (!node) return makeError(ERRORS.VALUE);
+  if (node.type === 'CellRef') return 1;
+  if (node.type === 'RangeRef') { const r = parseRangeRef(node.ref); return r ? r.endCol - r.startCol + 1 : makeError(ERRORS.REF); }
+  return makeError(ERRORS.VALUE);
+};
+
+export const ROWS = (argNodes) => {
+  const node = argNodes && argNodes[0];
+  if (!node) return makeError(ERRORS.VALUE);
+  if (node.type === 'CellRef') return 1;
+  if (node.type === 'RangeRef') { const r = parseRangeRef(node.ref); return r ? r.endRow - r.startRow + 1 : makeError(ERRORS.REF); }
+  return makeError(ERRORS.VALUE);
 };
 
 export const MATCH = ([lookupValue, lookupArray, matchType]) => {

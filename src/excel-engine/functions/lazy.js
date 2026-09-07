@@ -52,6 +52,22 @@ export const CHOOSE = (args, context, evaluate) => {
   return evaluate(args[rounded], context);
 };
 
+// SWITCH(식, 값1, 결과1, 값2, 결과2, ..., [기본값])
+// 일치하는 결과만 평가해 다른 분기의 에러가 전파되지 않게 한다.
+export const SWITCH = (args, context, evaluate) => {
+  const exprVal = evaluate(args[0], context);
+  if (isErrorValue(exprVal)) return exprVal;
+  let i = 1;
+  for (; i + 1 < args.length; i += 2) {
+    const caseVal = evaluate(args[i], context);
+    if (isErrorValue(caseVal)) return caseVal;
+    if (exprVal === caseVal) return evaluate(args[i + 1], context);
+  }
+  // 남은 인자가 하나면 기본값
+  if (i < args.length) return evaluate(args[i], context);
+  return makeError(ERRORS.NA);
+};
+
 export const AND = (args, context, evaluate) => {
   let result = true;
   for (const a of args) {

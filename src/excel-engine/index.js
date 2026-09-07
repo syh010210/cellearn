@@ -14,12 +14,26 @@ import { evaluate } from './evaluator.js';
 import { DependencyGraph } from './dependencyGraph.js';
 import { parseRangeRef, expandRange } from './cellAddress.js';
 import { ERRORS, isErrorValue, makeError } from './errors.js';
+import { dateToSerial, serialToDate, formatSerialAsDate } from './functions/date.js';
+
+// "2026-09-07" 또는 "2026/9/7" 형태면 엑셀 일련번호로, 아니면 null
+function parseDateInput(str) {
+  const m = /^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/.exec(str);
+  if (!m) return null;
+  const y = +m[1], mo = +m[2], d = +m[3];
+  if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const serial = dateToSerial(y, mo, d);
+  const back = serialToDate(serial); // 2월 30일 같은 무효 날짜 거르기
+  if (back.getUTCFullYear() !== y || back.getUTCMonth() + 1 !== mo || back.getUTCDate() !== d) return null;
+  return serial;
+}
 
 export class Sheet {
   constructor() {
     this.rawInput = new Map(); // address -> 사용자가 입력한 원본 문자열/숫자
     this.formulas = new Map(); // address -> 파싱된 AST (수식 셀만 존재)
     this.computedValues = new Map(); // address -> 계산된 값 또는 에러 객체
+    this.dateCells = new Set(); // 날짜로 입력된 셀 (표시를 yyyy-mm-dd로)
     this.graph = new DependencyGraph();
     this.listeners = new Set(); // 셀 변경 구독자 (React re-render 트리거용)
   }
@@ -56,6 +70,7 @@ export class Sheet {
     this.rawInput.set(address, input);
 
     if (typeof input === 'string' && input.startsWith('=')) {
+      this.dateCells.delete(address);
       try {
         const ast = parseFormula(input);
         this.formulas.set(address, ast);
@@ -84,6 +99,7 @@ export class Sheet {
     } else {
       this.formulas.delete(address);
       this.graph.clearCell(address);
+      this.dateCells.delete(address);
 
       let value;
       if (typeof input === 'number') {
@@ -92,8 +108,14 @@ export class Sheet {
         value = undefined;
       } else {
         const trimmed = String(input).trim();
-        const num = Number(trimmed);
-        value = trimmed !== '' && !isNaN(num) ? num : input;
+        const dateSerial = parseDateInput(trimmed);
+        if (dateSerial !== null) {
+          value = dateSerial;
+          this.dateCells.add(address);
+        } else {
+          const num = Number(trimmed);
+          value = trimmed !== '' && !isNaN(num) ? num : input;
+        }
       }
       this.computedValues.set(address, value);
     }
@@ -120,6 +142,7 @@ export class Sheet {
       const ast = this.formulas.get(addr);
       if (!ast) continue;
       try {
+        context.currentCell = addr; // COLUMN()/ROW() 인자 없는 호출용
         const result = evaluate(ast, context);
         const finalValue =
           result && result.__isRange ? result.values[0]?.[0] ?? makeError(ERRORS.VALUE) : result;
@@ -140,10 +163,17 @@ export class Sheet {
 
   // 화면에 표시할 값 (에러는 에러 코드 문자열로 변환)
   getDisplayValue(address) {
+    address = address.toUpperCase();
     const v = this.getCellValue(address);
     if (v === undefined) return '';
     if (isErrorValue(v)) return v.error;
+    if (this.dateCells.has(address) && typeof v === 'number') return formatSerialAsDate(v);
     return v;
+  }
+
+  // 날짜로 입력된 셀인지 (MiniExcel 표시용)
+  isDateCell(address) {
+    return this.dateCells.has(address.toUpperCase());
   }
 
   isFormulaCell(address) {
@@ -167,6 +197,7 @@ export class Sheet {
     this.rawInput.clear();
     this.formulas.clear();
     this.computedValues.clear();
+    this.dateCells.clear();
     this.graph = new DependencyGraph();
     this.notify([]);
   }

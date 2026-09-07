@@ -51,6 +51,20 @@ export const DAVERAGE = ([database, field, criteria]) => {
 
 export const DCOUNT = ([database, field, criteria]) => getMatchingValues(database, field, criteria).length;
 
+// DCOUNTA: 조건을 만족하는 레코드 중 필드가 비어있지 않은 개수(숫자·문자 모두)
+export const DCOUNTA = ([database, field, criteria]) => {
+  const dbTable = toTable(database);
+  const headers = dbTable[0];
+  const rows = dbTable.slice(1);
+  const fieldIdx = getFieldIndex(headers, field);
+  const criteriaTable = toTable(criteria);
+  const matched = rows.filter((row) => matchesCriteria(row, headers, criteriaTable));
+  return matched.filter((row) => {
+    const v = row[fieldIdx];
+    return v !== undefined && v !== null && v !== '';
+  }).length;
+};
+
 export const DMAX = ([database, field, criteria]) => {
   const vals = getMatchingValues(database, field, criteria);
   return vals.length ? Math.max(...vals) : 0;
