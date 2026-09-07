@@ -100,16 +100,8 @@ export function DbSumDiagram() {
       : active === '계산할 열' ? [{ r1: 0, r2: LAST, c1: 3, c2: 3, color: C.greenLight }]
       : active === '조건 범위' ? [{ r1: 0, r2: 1, c1: 1, c2: 1, color: C.amberLight }] : [];
     const s = rangeSides(ri, ci, boxes);
-    if (ri === 0) {
-      s.bold = true;
-      if (active === '조건 범위' && ci === 1) { s.color = '#0b1220'; s.bg = C.amberLight; }
-      else { s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; }
-      return s;
-    }
-    if (active === '조건 범위') {
-      if (ci === 1 && ri === 1) { s.bg = C.amberLight; s.color = '#0b1220'; s.bold = true; }   // 조건값 세탁기(B2)
-      if (ci === 3 && (ri === 1 || ri === 3)) { s.color = C.greenLight; s.bold = true; }         // 합쳐질 판매량
-    }
+    // 조건 범위(B1:B2)는 노란색 테두리로만 표시 (채움·다른 강조 없음)
+    if (ri === 0) { s.bold = true; s.color = C.blueLight; s.bg = active === '전체 표 범위' ? LIGHT_BLUE : C.blueCard; return s; }
     return s;
   };
 
