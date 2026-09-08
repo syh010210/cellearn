@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { LESSONS } from "./data/lessons";
+import { trackVisit } from "./lib/trackVisit";
 import { useAuth } from "./context/AuthContext";
 import { useLearningData } from "./hooks/useLearningData";
 import Sidebar from "./components/layout/Sidebar";
@@ -54,6 +55,14 @@ export default function App() {
     const q = new URLSearchParams(window.location.search);
     if (q.get("portone") === "return" || q.get("paymentId")) setPage("checkout");
   }, []);
+
+  // 접속 현황 기록 — 인증 상태가 정해진 뒤 하루 한 번(관리자 제외). 실패해도 앱 영향 없음.
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (loading || trackedRef.current) return;
+    trackedRef.current = true;
+    trackVisit({ userId: user?.id ?? null, isAdmin });
+  }, [loading, user, isAdmin]);
 
   // 로그인/결제 상태가 바뀌면 자동 이동. 결제 필요 여부는 learn 렌더 게이트(canLearn)가 판단 →
   // 수강권 로딩 중 결제화면이 깜빡이는 레이스를 막는다.

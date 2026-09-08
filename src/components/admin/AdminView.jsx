@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { LESSONS } from "../../data/lessons";
+import { kstDateStr } from "../../lib/trackVisit";
 import { UI } from "../../theme";
 
 // 관리자 대시보드 — 회원/결제/진도 데이터 조회. role='admin' 계정만 접근.
@@ -15,6 +16,10 @@ export default function AdminView({ onBack }) {
   const [progress, setProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // 접속 현황(방문자) — 날짜별로 따로 조회
+  const [visits, setVisits] = useState([]);
+  const [visitDate, setVisitDate] = useState(() => kstDateStr());
+  const [visitsLoading, setVisitsLoading] = useState(false);
 
   const totalLessons = LESSONS.length;
 
@@ -38,6 +43,16 @@ export default function AdminView({ onBack }) {
   }
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, [isAdmin]);
+
+  // 접속 현황: 탭 진입 또는 날짜 변경 시 해당 날짜(KST) 방문 기록 조회
+  async function loadVisits(date) {
+    if (!supabase || !isAdmin) return;
+    setVisitsLoading(true);
+    const { data, error: err } = await supabase.from("visits").select("*").eq("visit_date", date);
+    if (!err) setVisits(data ?? []);
+    setVisitsLoading(false);
+  }
+  useEffect(() => { if (tab === "visits") loadVisits(visitDate); /* eslint-disable-next-line */ }, [tab, visitDate, isAdmin]);
 
   // ── 파생 데이터 ─────────────────────────────────────────────
   const profById = useMemo(() => {
@@ -107,6 +122,28 @@ export default function AdminView({ onBack }) {
       .sort((a, b) => b.done - a.done || String(b.last || "").localeCompare(String(a.last || "")));
   }, [profiles, progress, totalLessons]);
 
+  // 접속 현황 집계(선택 날짜)
+  const visitStats = useMemo(() => {
+    const total = visits.length;
+    const members = visits.filter((v) => v.user_id).length;
+    const paid = visits.filter((v) => v.medium === "paid").length;
+    const byDevice = { mobile: 0, tablet: 0, desktop: 0 };
+    visits.forEach((v) => { if (byDevice[v.device] != null) byDevice[v.device] += 1; });
+    const bySource = {};
+    visits.forEach((v) => { const s = v.source || "기타"; bySource[s] = (bySource[s] || 0) + 1; });
+    const byCampaign = {};
+    visits.forEach((v) => {
+      if (!v.campaign && !v.content) return;
+      const k = `${v.campaign || "—"} / ${v.content || "—"}`;
+      byCampaign[k] = (byCampaign[k] || 0) + 1;
+    });
+    return {
+      total, members, paid, byDevice,
+      sources: Object.entries(bySource).sort((a, b) => b[1] - a[1]),
+      campaigns: Object.entries(byCampaign).sort((a, b) => b[1] - a[1]),
+    };
+  }, [visits]);
+
   if (!isAdmin) return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.red, padding: 40, fontFamily: UI.font }}>관리자만 접근할 수 있습니다.</div>
   );
@@ -159,6 +196,9 @@ export default function AdminView({ onBack }) {
 
   const tableWrap = { overflowX: "auto", background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: 14 };
 
+  const vpct = (n) => visitStats.total ? Math.round((n / visitStats.total) * 100) : 0;
+  const DEVICE_LABEL = { mobile: "모바일", tablet: "태블릿", desktop: "데스크톱" };
+
   return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.ink, padding: 32, fontFamily: UI.font }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
@@ -171,6 +211,7 @@ export default function AdminView({ onBack }) {
         {tabBtn("members", "회원")}
         {tabBtn("payments", "결제")}
         {tabBtn("progress", "진도")}
+        {tabBtn("visits", "접속 현황")}
       </div>
 
       {error && <div style={{ color: UI.red, background: UI.redSoft, border: `1px solid ${UI.redLine}`, borderRadius: UI.rMd, padding: "12px 14px", marginBottom: 16, fontSize: 13 }}>데이터 조회 오류: {error}</div>}
@@ -308,6 +349,84 @@ export default function AdminView({ onBack }) {
                   {progressRows.length === 0 && <tr><td style={td} colSpan={7}>데이터가 없습니다.</td></tr>}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* ── 접속 현황 ─────────────────────────── */}
+          {tab === "visits" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <label style={{ fontSize: 13, color: UI.mut, fontWeight: 700 }}>날짜</label>
+                <input type="date" value={visitDate} max={kstDateStr()} onChange={(e) => setVisitDate(e.target.value)}
+                  style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "7px 10px", fontSize: 13, fontFamily: UI.font, color: UI.ink, background: UI.panel }} />
+                <button onClick={() => setVisitDate(kstDateStr())} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>오늘</button>
+                <button onClick={() => loadVisits(visitDate)} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>↻ 새로고침</button>
+                <span style={{ fontSize: 12, color: UI.faint }}>KST 기준 · 관리자 접속 제외</span>
+              </div>
+
+              {visitsLoading ? <div style={{ color: UI.mut }}>불러오는 중…</div> : (
+                <>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
+                    <Kpi label="방문자" value={visitStats.total} unit="명" accent={UI.teal} />
+                    <Kpi label="회원 방문" value={visitStats.members} unit="명" sub={`전체의 ${vpct(visitStats.members)}%`} accent={UI.green} />
+                    <Kpi label="광고 유입" value={visitStats.paid} unit="명" sub={`medium=paid · ${vpct(visitStats.paid)}%`} accent={visitStats.paid ? UI.teal : UI.ink} />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}>
+                    {/* 기기별 */}
+                    <div>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, margin: "6px 0 10px" }}>기기별</h2>
+                      <div style={tableWrap}>
+                        <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                          <thead><tr><th style={th}>기기</th><th style={th}>방문자</th><th style={th}>비율</th></tr></thead>
+                          <tbody>
+                            {["mobile", "tablet", "desktop"].map((d) => (
+                              <tr key={d}>
+                                <td style={td}>{DEVICE_LABEL[d]}</td>
+                                <td style={tdNum}>{visitStats.byDevice[d]}</td>
+                                <td style={tdNum}>{vpct(visitStats.byDevice[d])}%</td>
+                              </tr>
+                            ))}
+                            {visitStats.total === 0 && <tr><td style={td} colSpan={3}>방문 기록이 없습니다.</td></tr>}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* 유입 경로별 */}
+                    <div>
+                      <h2 style={{ fontSize: 15, fontWeight: 700, margin: "6px 0 10px" }}>유입 경로별 (source)</h2>
+                      <div style={tableWrap}>
+                        <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                          <thead><tr><th style={th}>출처</th><th style={th}>방문자</th><th style={th}>비율</th></tr></thead>
+                          <tbody>
+                            {visitStats.sources.map(([s, n]) => (
+                              <tr key={s}><td style={td}>{s}</td><td style={tdNum}>{n}</td><td style={tdNum}>{vpct(n)}%</td></tr>
+                            ))}
+                            {visitStats.sources.length === 0 && <tr><td style={td} colSpan={3}>방문 기록이 없습니다.</td></tr>}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 광고별 */}
+                  <div>
+                    <h2 style={{ fontSize: 15, fontWeight: 700, margin: "6px 0 10px" }}>광고별 (campaign · content)</h2>
+                    <div style={tableWrap}>
+                      <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                        <thead><tr><th style={th}>캠페인 / 콘텐츠</th><th style={th}>방문자</th><th style={th}>비율</th></tr></thead>
+                        <tbody>
+                          {visitStats.campaigns.map(([k, n]) => (
+                            <tr key={k}><td style={td}>{k}</td><td style={tdNum}>{n}</td><td style={tdNum}>{vpct(n)}%</td></tr>
+                          ))}
+                          {visitStats.campaigns.length === 0 && <tr><td style={td} colSpan={3}>광고(캠페인) 유입이 없습니다.</td></tr>}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </>

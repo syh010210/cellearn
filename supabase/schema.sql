@@ -99,6 +99,25 @@ create table if not exists public.wrong_notes (
 );
 create index if not exists wrong_notes_user_idx on public.wrong_notes(user_id);
 
+-- ── 6) visits : 접속 현황(로그인 여부와 무관한 방문자 집계) ─────
+create table if not exists public.visits (
+  visitor_id    text not null,                                  -- 익명 방문자 식별자(localStorage)
+  user_id       uuid references auth.users(id) on delete set null, -- 로그인 시 함께 기록(선택)
+  visit_date    date not null,                                  -- KST 기준 방문일(yyyy-mm-dd)
+  device        text,                                           -- 'mobile' | 'tablet' | 'desktop'
+  os            text,                                           -- iOS | Android | Windows | Mac | 기타
+  browser       text,                                           -- Chrome | Safari | Samsung | 기타
+  source        text,
+  medium        text,
+  campaign      text,
+  content       text,
+  referrer      text,
+  landing_path  text,
+  created_at    timestamptz not null default now(),
+  primary key (visitor_id, visit_date)
+);
+create index if not exists visits_date_idx on public.visits(visit_date);
+
 -- =============================================================
 --  가입 시 profiles 자동 생성 트리거
 --  회원가입할 때 프론트가 넘긴 user_metadata 를 profiles 로 복사
@@ -134,6 +153,9 @@ alter table public.enrollments enable row level security;
 alter table public.progress    enable row level security;
 alter table public.wrong_notes enable row level security;
 alter table public.day_clears  enable row level security;
+alter table public.visits      enable row level security;
+-- 비로그인(anon) 방문자도 접속 기록을 남길 수 있게 INSERT 권한 부여
+grant insert on public.visits to anon, authenticated;
 
 -- 관리자 판별 헬퍼
 create or replace function public.is_admin()
@@ -179,6 +201,15 @@ create policy day_clears_self on public.day_clears
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists day_clears_admin_read on public.day_clears;
 create policy day_clears_admin_read on public.day_clears
+  for select using (public.is_admin());
+
+-- visits: 방문 기록 insert 는 누구나(비로그인 포함, user_id 는 본인이거나 null), 조회는 관리자만
+drop policy if exists visits_insert on public.visits;
+create policy visits_insert on public.visits
+  for insert to anon, authenticated
+  with check (user_id is null or user_id = auth.uid());
+drop policy if exists visits_admin_read on public.visits;
+create policy visits_admin_read on public.visits
   for select using (public.is_admin());
 
 -- 관리자 지정(가입 후 1회 실행): 아래 이메일을 본인 관리자 계정으로 바꾼다.
