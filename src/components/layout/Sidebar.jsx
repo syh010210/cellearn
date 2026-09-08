@@ -85,11 +85,13 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
                 const active = current === id;
                 const done = progress[id]?.done;
                 return (
-                  <button key={id} onClick={() => onSelect(id)} style={{ ...navBtn(active), fontSize: 13, opacity: unlocked ? 1 : 0.55 }}>
-                    {!unlocked
-                      ? <Lock size={15} strokeWidth={1.5} color={active ? "#fff" : UI.faint} style={{ flexShrink: 0 }} />
-                      : done
+                  <button key={id} onClick={() => onSelect(id)} style={{ ...navBtn(active), fontSize: 13, opacity: (done || unlocked) ? 1 : 0.55 }}>
+                    {/* 완료(done)면 체크가 최우선 → 완료 차시에 자물쇠가 겹치지 않는다.
+                        완료 아님 + 잠김 → 자물쇠, 그 외 → 빈 원 */}
+                    {done
                       ? <CheckCircle2 size={16} strokeWidth={2} color={active ? "#fff" : UI.correct} style={{ flexShrink: 0 }} />
+                      : !unlocked
+                      ? <Lock size={15} strokeWidth={1.5} color={active ? "#fff" : UI.faint} style={{ flexShrink: 0 }} />
                       : <Circle size={16} strokeWidth={1.5} color={active ? UI.lime : "#cfd6d2"} style={{ flexShrink: 0 }} />}
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{id}. {l.shortTitle || l.title}</span>
                   </button>

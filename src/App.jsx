@@ -42,7 +42,7 @@ export default function App() {
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [authMode, setAuthMode] = useState("login");
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
-  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
+  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
@@ -169,6 +169,12 @@ export default function App() {
         onHome={() => setPage("landing")}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
+        {/* 저장 실패 누적 시 안내 배너 — 진도/오답이 서버에 저장되지 않고 있을 때 */}
+        {saveError && (
+          <div style={{ background: UI.redSoft, borderBottom: `1px solid ${UI.redLine}`, color: UI.red, fontSize: 13.5, fontWeight: 600, padding: "10px 32px", textAlign: "center" }}>
+            학습 기록 저장에 문제가 있습니다 — 기록은 이 브라우저에 임시 보관되며, 연결이 회복되면 다시 저장됩니다.
+          </div>
+        )}
         {/* 상단 탭 — sticky 고정. 차시 탭은 엑셀 시트탭 모양 */}
         <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px 0", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
           {currentLesson && !lessonLocked && STEP_TABS.map(({ key, label, Icon }) => {
