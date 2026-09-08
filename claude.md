@@ -157,6 +157,26 @@ computil-platform/
 
 ---
 
+## Supabase 스키마 변경 규칙
+
+`supabase/schema.sql`은 전체 스키마의 참조본일 뿐, **라이브 DB에 자동 반영되지 않는다.**
+실제로 과거에 `schema.sql`에 있는 테이블(`wrong_notes`·`day_clears`)이 라이브 DB에는 없어
+오답/일차 클리어 저장이 조용히 실패한 사고가 있었다. 그래서 아래 규칙을 지킨다.
+
+- 새 테이블·컬럼·제약·인덱스·RLS 정책을 추가하면, **반드시 `supabase/migrations/` 아래
+  멱등(idempotent) SQL 파일로 남긴다.** 파일명은 `YYYYMMDDHHMMSS_설명.sql`.
+- 멱등하게 작성한다: `create table if not exists`, `add column if not exists`,
+  제약/정책은 `drop ... if exists` 후 `create` (또는 `do $$ ... exception when duplicate_object then null; end $$`).
+  이미 있으면 아무것도 바뀌지 않고, 없으면 만들어지게.
+- 마이그레이션 내용은 `schema.sql`과 일치시킨다(참조본도 같이 갱신).
+- RLS 정책은 기본적으로 "본인 행만 CRUD"(`auth.uid() = user_id`)로 만든다.
+- 에이전트는 `supabase db push`를 실행하지 않는다. **SQL 파일만 준비**하고,
+  보고에 **"SQL Editor에서 실행 필요"**를 반드시 명시한다(적용은 사람이 한다).
+- 저장이 실패해도 사용자 데이터가 사라지지 않도록, 클라이언트 저장 로직은
+  localStorage 미러 + 실패 재시도 큐를 유지한다(`src/hooks/useLearningData.js` 참고).
+
+---
+
 ## 자체 스프레드시트 엔진 (excel-engine/)
 
 `src/excel-engine/` 아래에 SheetJS/외부 라이브러리 없이 직접 구현한 수식 계산 엔진이 있다.
