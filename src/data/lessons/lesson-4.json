@@ -305,7 +305,7 @@
       "contentBlocks": [
         {
           "type": "text",
-          "text": "**구문**: =CHOOSE(숫자, 값1, 값2, 값3, ...)"
+          "text": "**구문**: {{syntax:CHOOSE}}"
         },
         {
           "type": "bullets",

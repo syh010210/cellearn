@@ -1,4 +1,5 @@
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, ArrowRight, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, ArrowRight, SyntaxLine, C } from './shared.jsx';
+import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
 
 export function StringExtractDiagram() {
   const str = 'ABC456XYZ';
@@ -68,7 +69,7 @@ export function StringExtractDiagram() {
         {/* Three function cards */}
         <div style={{ display: 'flex', gap: 16 }}>
           <Card bg="#14532d" border="#22c55e" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.greenLight, marginBottom: 6 }}>구문: =LEFT(텍스트, 개수)</div>
+            <SyntaxLine fn="LEFT" color={C.greenLight} size={15} style={{ marginBottom: 6 }} />
             <div style={{ fontSize: 14, color: C.green, lineHeight: 1.6, marginBottom: 10 }}>문자열의 가장 왼쪽(첫 번째)부터 지정한 개수만큼 문자를 반환합니다.</div>
             <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>왼쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -77,7 +78,7 @@ export function StringExtractDiagram() {
             </div>
           </Card>
           <Card bg="#2e1065" border="#a855f7" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.purpleLight, marginBottom: 6 }}>구문: =MID(텍스트, 시작위치, 개수)</div>
+            <SyntaxLine fn="MID" color={C.purpleLight} size={15} style={{ marginBottom: 6 }} />
             <div style={{ fontSize: 14, color: C.purple, lineHeight: 1.6, marginBottom: 10 }}>시작위치는 1번부터 셉니다. 지정한 위치부터 지정한 개수만큼 반환합니다.</div>
             <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>4번째 위치에서 2글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -86,7 +87,7 @@ export function StringExtractDiagram() {
             </div>
           </Card>
           <Card bg="#431407" border="#f97316" style={{ flex: 1 }}>
-            <div style={{ fontWeight: 700, fontSize: 15, color: C.orange, marginBottom: 6 }}>구문: =RIGHT(텍스트, 개수)</div>
+            <SyntaxLine fn="RIGHT" color={C.orange} size={15} style={{ marginBottom: 6 }} />
             <div style={{ fontSize: 14, color: C.orange, lineHeight: 1.6, marginBottom: 10 }}>문자열의 가장 오른쪽(마지막)부터 지정한 개수만큼 문자를 반환합니다.</div>
             <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>오른쪽부터 3글자 추출</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -104,7 +105,7 @@ export function StringLenCaseDiagram() {
   const rows = [
     {
       fn: 'LEN', fnBg: '#172554', fnBorder: '#3b82f6', fnColor: C.blueLight,
-      syntax: '=LEN(텍스트)',
+      syntax: FUNCTION_SYNTAX['LEN'],
       formula: '=LEN("Excel Exam")',
       result: '10',
       resultSize: 24,
@@ -112,7 +113,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'UPPER', fnBg: '#14532d', fnBorder: '#22c55e', fnColor: C.greenLight,
-      syntax: '=UPPER(텍스트)',
+      syntax: FUNCTION_SYNTAX['UPPER'],
       formula: '=UPPER("hello world")',
       result: 'HELLO WORLD',
       resultSize: 15,
@@ -120,7 +121,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'LOWER', fnBg: '#431407', fnBorder: '#f97316', fnColor: C.orange,
-      syntax: '=LOWER(텍스트)',
+      syntax: FUNCTION_SYNTAX['LOWER'],
       formula: '=LOWER("EXCEL EXAM")',
       result: 'excel exam',
       resultSize: 15,
@@ -128,7 +129,7 @@ export function StringLenCaseDiagram() {
     },
     {
       fn: 'PROPER', fnBg: '#2e1065', fnBorder: '#a855f7', fnColor: C.purpleLight,
-      syntax: '=PROPER(텍스트)',
+      syntax: FUNCTION_SYNTAX['PROPER'],
       formula: '=PROPER("hello world")',
       result: 'Hello World',
       resultSize: 15,
@@ -201,7 +202,7 @@ export function StringFindTrimDiagram() {
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
             <Card bg="#14532d" border="#22c55e" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.greenLight, marginBottom: 4 }}>FIND</div>
-              <div style={{ fontWeight: 700, fontSize: 12.5, color: C.greenLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =FIND(찾을문자, 텍스트)</div>
+              <SyntaxLine fn="FIND" color={C.greenLight} size={12.5} style={{ marginBottom: 6 }} />
               <div style={{ fontSize: 14, color: C.green, marginBottom: 8 }}>대소문자 구분 O</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =FIND("j","John_j")'}
@@ -212,7 +213,7 @@ export function StringFindTrimDiagram() {
             </Card>
             <Card bg="#172554" border="#3b82f6" bw={2} style={{ flex: 1, padding: 12 }}>
               <div style={{ fontWeight: 700, fontSize: 17, color: C.blueLight, marginBottom: 4 }}>SEARCH</div>
-              <div style={{ fontWeight: 700, fontSize: 12.5, color: C.blueLight, marginBottom: 6, whiteSpace: 'nowrap' }}>구문: =SEARCH(찾을문자, 텍스트)</div>
+              <SyntaxLine fn="SEARCH" color={C.blueLight} size={12.5} style={{ marginBottom: 6 }} />
               <div style={{ fontSize: 14, color: C.blue, marginBottom: 8 }}>대소문자 구분 X</div>
               <div style={{ fontSize: 14, color: C.textMuted, marginBottom: 6 }}>
                 {'예) =SEARCH("j","John_j")'}
@@ -262,7 +263,7 @@ export function StringFindTrimDiagram() {
           <div style={{ fontWeight: 700, fontSize: 17, color: C.purpleLight, textAlign: 'center', marginBottom: 6 }}>
             TRIM 함수 — 불필요한 공백 제거
           </div>
-          <div style={{ fontWeight: 700, fontSize: 13.5, color: C.purpleLight, textAlign: 'center', marginBottom: 12 }}>구문: =TRIM(텍스트)</div>
+          <SyntaxLine fn="TRIM" color={C.purpleLight} size={13.5} style={{ textAlign: 'center', marginBottom: 12 }} />
 
           <div style={{ fontSize: 13, color: C.textDim, marginBottom: 6 }}>입력 값 (A2) <span style={{ color: C.textSlate }}>— 공백은 이해를 돕기 위해 _ 로 표시</span></div>
           <div style={{

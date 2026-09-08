@@ -2,10 +2,20 @@ import { useState, useEffect } from "react";
 import MiniExcel from "./MiniExcel";
 import { DIAGRAM_REGISTRY } from "../diagrams/registry.js";
 import { generateExcel } from "../../utils/excelGenerator";
+import { FUNCTION_SYNTAX } from "../../data/functionSyntax.js";
 import { UI } from "../../theme";
 
+// {{syntax:NAME}} 토큰을 functionSyntax.js 의 표시용 구문으로 치환한다.
+// (미등록 함수면 토큰을 그대로 두어 눈에 띄게 한다.)
+function syntaxTokens(str) {
+  return str.replace(/\{\{\s*syntax:\s*([A-Za-z0-9._]+)\s*\}\}/g, (m, name) => {
+    const s = FUNCTION_SYNTAX[name.toUpperCase()];
+    return s ?? m;
+  });
+}
+
 function bold(str) {
-  return str.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  return syntaxTokens(str).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
 }
 
 function ListItem({ item }) {
@@ -63,7 +73,7 @@ function renderBlock(block, i, lesson) {
     return (
       <div key={i} style={{ margin: "26px 0 12px", borderLeft: `3px solid ${UI.teal}`, paddingLeft: 12 }}>
         <span style={{ fontSize: 17, fontWeight: 700, color: UI.ink }}>
-          {block.text}
+          {syntaxTokens(block.text)}
         </span>
       </div>
     );

@@ -1,4 +1,5 @@
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, SyntaxLine, C } from './shared.jsx';
+import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
 
 // ──────────────────────────────────────────────
 // StatBasicDiagram
@@ -6,10 +7,10 @@ import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } fro
 export function StatBasicDiagram() {
   const data = [80, 95, 70, 85, 75];
   const cards = [
-    { fn: 'AVERAGE', syntax: '구문: =AVERAGE(범위)', desc: '범위 안의 숫자들의 평균', example: '=AVERAGE(B2:B6)', result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
-    { fn: 'MEDIAN',  syntax: '구문: =MEDIAN(범위)',  desc: '범위를 정렬한 가운데 값', example: '=MEDIAN(B2:B6)',  result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
-    { fn: 'MAX',     syntax: '구문: =MAX(범위)',     desc: '범위 안의 가장 큰 값',   example: '=MAX(B2:B6)',     result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
-    { fn: 'MIN',     syntax: '구문: =MIN(범위)',     desc: '범위 안의 가장 작은 값', example: '=MIN(B2:B6)',     result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
+    { fn: 'AVERAGE', desc: '범위 안의 숫자들의 평균', example: '=AVERAGE(B2:B6)', result: '= 81', bg: C.blueCard,   border: C.blueDim,  color: C.blue,        resColor: C.blue        },
+    { fn: 'MEDIAN',  desc: '범위를 정렬한 가운데 값', example: '=MEDIAN(B2:B6)',  result: '= 80', bg: C.purpleCard, border: C.purple,   color: C.purpleLight, resColor: C.purpleLight  },
+    { fn: 'MAX',     desc: '범위 안의 가장 큰 값',   example: '=MAX(B2:B6)',     result: '= 95', bg: '#0a2e1c',    border: C.green,    color: C.greenLight,  resColor: C.greenLight   },
+    { fn: 'MIN',     desc: '범위 안의 가장 작은 값', example: '=MIN(B2:B6)',     result: '= 70', bg: '#300a0a',    border: C.red,      color: C.redLight,    resColor: C.redLight     },
   ];
 
   const hdrCell = {
@@ -55,7 +56,7 @@ export function StatBasicDiagram() {
             display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5,
           }}>
             <div style={{ color: card.color, fontSize: 17, fontWeight: 700 }}>{card.fn}</div>
-            <div style={{ color: card.color, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>{card.syntax}</div>
+            <SyntaxLine fn={card.fn} color={card.color} size={12.5} />
             <div style={{ color: card.color, fontSize: 14, opacity: 0.85 }}>{card.desc}</div>
             <div style={{ color: card.color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{card.example}</div>
             <div style={{ color: card.resColor, fontSize: 15, fontWeight: 700 }}>{card.result}</div>
@@ -64,7 +65,7 @@ export function StatBasicDiagram() {
       </div>
 
       <BottomBar>
-        <BLine>=AVERAGE(범위)  ·  =MEDIAN(범위)  ·  =MAX(범위)  ·  =MIN(범위)</BLine>
+        <BLine>{FUNCTION_SYNTAX['AVERAGE']}  ·  {FUNCTION_SYNTAX['MEDIAN']}  ·  {FUNCTION_SYNTAX['MAX']}  ·  {FUNCTION_SYNTAX['MIN']}</BLine>
         <BLine color={C.blue} bold>모두 숫자 범위 하나(예: B2:B6)를 인수로 받습니다</BLine>
       </BottomBar>
     </Wrap>
@@ -76,14 +77,14 @@ export function StatBasicDiagram() {
 // ──────────────────────────────────────────────
 // 함수 비교 카드 — 왼쪽 정렬 · 표준 순서(함수명→구문→설명→수식→값)
 // 텍스트 크기는 2차시 FIND/SEARCH 카드와 맞춤(함수명 17 · 구문 12.5 · 설명 14 · 수식 14 · 값 16)
-function FuncCard({ name, syntax, desc, formula, value, valueSize = 16, color, valColor, bg, border }) {
+function FuncCard({ name, desc, formula, value, valueSize = 16, color, valColor, bg, border }) {
   return (
     <div style={{
       flex: 1, background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: '12px 14px',
       display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5,
     }}>
       <div style={{ color, fontSize: 17, fontWeight: 700 }}>{name}</div>
-      <div style={{ color, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>{syntax}</div>
+      <SyntaxLine fn={name} color={color} size={12.5} />
       <div style={{ color, fontSize: 14, opacity: 0.85 }}>{desc}</div>
       <div style={{ color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{formula}</div>
       <div style={{ color: valColor, fontSize: valueSize, fontWeight: 700 }}>{value}</div>
@@ -144,13 +145,13 @@ export function StatRankDiagram() {
       </div>
       <div style={{ display: 'flex', gap: 12 }}>
         <FuncCard
-          name="RANK.EQ" syntax="구문: =RANK.EQ(값, 범위, [정렬])"
+          name="RANK.EQ"
           desc="동점이면 공동으로 순위 부여 (실생활에서 쓰는 방식)"
           formula="=RANK.EQ(B3, $B$2:$B$5, 0)" value="= 2"
           color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
         />
         <FuncCard
-          name="RANK.AVG" syntax="구문: =RANK.AVG(값, 범위, [정렬])"
+          name="RANK.AVG"
           desc="동점이면 순위들의 평균 부여"
           formula="=RANK.AVG(B3, $B$2:$B$5, 0)" value="= (2+3)/2 = 2.5" valueSize={15}
           color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
@@ -194,13 +195,13 @@ export function StatLargeSmallDiagram() {
       {/* 아래: LARGE / SMALL 설명 */}
       <div style={{ display: 'flex', gap: 12, maxWidth: 620, margin: '0 auto' }}>
         <FuncCard
-          name="LARGE" syntax="구문: =LARGE(범위, K)"
+          name="LARGE"
           desc="범위에서 K번째로 큰 값"
           formula="=LARGE(B2:B5, 2)" value="= 85 (2번째로 큰 값)" valueSize={15}
           color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
         />
         <FuncCard
-          name="SMALL" syntax="구문: =SMALL(범위, K)"
+          name="SMALL"
           desc="범위에서 K번째로 작은 값"
           formula="=SMALL(B2:B5, 1)" value="= 78 (가장 작은 값)" valueSize={15}
           color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
@@ -254,7 +255,7 @@ export function StatCountDiagram() {
         {/* COUNT — B(텍스트)와 D(숫자) 비교: 숫자만 셀 수 있음 */}
         <div style={{ flex: 1, background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 5 }}>
           <div style={{ color: C.blue, fontSize: 17, fontWeight: 700 }}>COUNT</div>
-          <div style={{ color: C.blue, fontSize: 12.5, fontWeight: 700, opacity: 0.95 }}>구문: =COUNT(범위)</div>
+          <SyntaxLine fn="COUNT" color={C.blue} size={12.5} />
           <div style={{ color: C.blue, fontSize: 14, opacity: 0.85 }}>숫자가 든 셀만 셉니다</div>
           <div style={{ marginTop: 2 }}>
             <div style={{ fontSize: 13.5, fontWeight: 700, color: C.blue }}>=COUNT(B2:B5) <span style={{ color: C.redLight }}>= 0</span></div>
@@ -265,13 +266,13 @@ export function StatCountDiagram() {
         </div>
 
         <FuncCard
-          name="COUNTA" syntax="구문: =COUNTA(범위)"
+          name="COUNTA"
           desc="비어있지 않은 모든 셀만 셉니다"
           formula="=COUNTA(B2:B5)" value="= 4"
           color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}
         />
         <FuncCard
-          name="COUNTBLANK" syntax="구문: =COUNTBLANK(범위)"
+          name="COUNTBLANK"
           desc="빈 셀만 셉니다"
           formula="=COUNTBLANK(C2:C5)" value="= 2"
           color={C.textMuted} valColor={C.text} bg={C.bg} border={C.textSlate}
@@ -334,7 +335,7 @@ export function StatCondCountDiagram() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Prob>직급이 &quot;대리&quot;인 직원은 몇 명?</Prob>
           <FuncCard
-            name="COUNTIF" syntax="구문: =COUNTIF(범위, 조건)"
+            name="COUNTIF"
             desc="조건에 맞는 셀 개수"
             formula={'=COUNTIF(B2:B5, "대리")'} value="= 3"
             color={C.purpleLight} valColor={C.purpleLight} bg={C.purpleCard} border={C.purple}
@@ -343,7 +344,7 @@ export function StatCondCountDiagram() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Prob>직급이 &quot;대리&quot;이고 급여가 3,000,000원 이상인 직원은 몇 명?</Prob>
           <FuncCard
-            name="COUNTIFS" syntax="구문: =COUNTIFS(범위1, 조건1, 범위2, 조건2, …)"
+            name="COUNTIFS"
             desc="COUNTIF + S(조건이 여러 개) — 여러 개의 조건을 동시에 만족하는 셀의 개수"
             formula={'=COUNTIFS(B2:B5, "대리", C2:C5, ">=3000000")'} value="= 2" valueSize={15}
             color={C.blueLight} valColor={C.blueLight} bg={C.blueCard} border={C.blueDim}
@@ -356,7 +357,7 @@ export function StatCondCountDiagram() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Prob>부서가 &quot;영업부&quot;인 직원의 평균 성과급은?</Prob>
           <FuncCard
-            name="AVERAGEIF" syntax="구문: =AVERAGEIF(조건범위, 조건, [평균범위])"
+            name="AVERAGEIF"
             desc="조건에 맞는 행의 평균"
             formula={'=AVERAGEIF(D2:D5, "영업부", E2:E5)'} value="= 400,000" valueSize={15}
             color={C.orange} valColor={C.orange} bg="#251005" border={C.orange}
@@ -365,7 +366,7 @@ export function StatCondCountDiagram() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <Prob>부서가 &quot;영업부&quot;이고 성과급이 350,000원 초과인 직원의 평균 성과급은?</Prob>
           <FuncCard
-            name="AVERAGEIFS" syntax="구문: =AVERAGEIFS(평균범위, 조건범위1, 조건1, …)"
+            name="AVERAGEIFS"
             desc={<>AVERAGEIF + S(조건이 여러 개) — 여러 개의 조건을 동시에 만족하는 셀의 평균<br />⚠️ 평균범위는 맨 앞으로!</>}
             formula={'=AVERAGEIFS(E2:E5, D2:D5, "영업부", E2:E5, ">350000")'} value="= 450,000" valueSize={15}
             color={C.greenLight} valColor={C.greenLight} bg="#0a2e1c" border={C.green}

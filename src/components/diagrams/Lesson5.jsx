@@ -1,7 +1,7 @@
 // Lesson5.jsx — 데이터베이스 함수 (DSUM, DAVERAGE, DCOUNT, DMAX) 다이어그램
 // 4차시 VlookupDiagram 패턴(ExamProblem · Row/Fixed/Fill · ExcelGrid · ArgButtons · rangeSides · explain 칠판)을 공유 컴포넌트로 따른다.
 import { useState } from 'react';
-import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, C } from './shared.jsx';
+import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, SyntaxLine, C } from './shared.jsx';
 
 const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
 
@@ -125,7 +125,7 @@ export function DbSumDiagram() {
         <Fill min={360} max={500}>
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DSUM</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DSUM(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <SyntaxLine fn="DSUM" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 합계를 구합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -212,7 +212,7 @@ export function DbSumSeparateDiagram() {
         <Fill min={360} max={500}>
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DSUM</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DSUM(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <SyntaxLine fn="DSUM" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>붙어 있지 않은 조건은 지정된 칸에 제목+값을 만들어 조건 범위로 씁니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -301,7 +301,7 @@ export function DbAverageDiagram() {
         <Fill min={360} max={500}>
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DAVERAGE</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DAVERAGE(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <SyntaxLine fn="DAVERAGE" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 평균을 구합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -401,7 +401,7 @@ export function DbCountDiagram() {
         <Fill min={360} max={500}>
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>DCOUNT</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =DCOUNT(전체 표 범위, 계산할 열, 조건 범위)</div>
+            <SyntaxLine fn="DCOUNT" color={C.blue} colors={[null, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 숫자 셀 개수를 셉니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: compare ? 16 : 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0', minHeight: 58, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>

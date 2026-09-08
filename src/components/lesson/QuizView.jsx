@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useLayoutEffect } from "react";
 import { PenLine } from "lucide-react";
 import { UI } from "../../theme";
 
@@ -6,6 +6,14 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [show, setShow] = useState(null);
+
+  // 퀴즈는 항상 1번 문제부터 보이도록 진입 시 스크롤을 맨 위로 되돌린다.
+  // (개념 학습에서 아래로 스크롤된 상태로 넘어오면 4번쯤에서 시작하는 것처럼 보이던 문제 해결)
+  // 이전 시도의 답안/점수는 state 로만 관리되어 그대로 보존된다.
+  useLayoutEffect(() => {
+    document.getElementById("main-content")?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+  }, [lesson.id]);
   const score = submitted ? lesson.quiz.filter((q) => answers[q.id] === q.answer).length : 0;
 
   function submit() {

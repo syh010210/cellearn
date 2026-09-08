@@ -34,16 +34,12 @@ function serializeArg(node) {
 function cleanHintName(s) {
   return String(s).replace(/[[\]]/g, "").replace(/,?\s*\.\.\.$/, "").trim();
 }
-// 표시용 인수명 정규화 (집계 첫 인수 → 범위, lookup 범위 → 참조 범위)
-function canonArgName(base) {
-  if (base === "숫자1" || base === "숫자" || base === "값1") return "범위";
-  if (base === "범위") return "참조 범위";
-  return base;
-}
+// 표시용 인수명 — functionSyntax.js(단일 출처)의 인수 이름을 그대로 쓴다.
+// (집계 함수는 "범위", 참조/검색 함수는 "참조 범위" 등 이미 표시에 맞게 정의돼 있다.)
 function argName(fname, i) {
   const hints = FUNCTION_HINTS[fname]?.args || [];
   const raw = hints.length ? hints[Math.min(i, hints.length - 1)] : "인수";
-  return canonArgName(cleanHintName(raw));
+  return cleanHintName(raw);
 }
 // 인수명별 마지막 안내 문장 (없으면 앞부분만)
 const ARG_TAIL = {

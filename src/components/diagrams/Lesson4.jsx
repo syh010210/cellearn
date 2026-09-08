@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, Row, Fixed, Fill, C, ExamProblem, ArgButtons, rangeSides } from './shared.jsx';
+import { Wrap, Title, Subtitle, BottomBar, BLine, ArrowDown, ExcelGrid, TableCaption, Row, Fixed, Fill, C, ExamProblem, ArgButtons, rangeSides, SyntaxLine } from './shared.jsx';
 
 // ──────────────────────────────────────────────
 // VlookupHlookupIntroDiagram — 문제 유형 앞에 두는 두 함수 공통 설명
@@ -139,7 +139,7 @@ export function VlookupDiagram() {
           {/* VLOOKUP 박스 (구문 + 수식) */}
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <SyntaxLine fn="VLOOKUP" color={C.blue} colors={[C.amberLight, C.blueLight, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -261,7 +261,7 @@ export function HlookupTwoTableDiagram() {
           {/* HLOOKUP 박스 (구문 + 수식) */}
           <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
-            <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
+            <SyntaxLine fn="HLOOKUP" color={C.orange} colors={[C.amberLight, C.blueLight, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 행에서 찾을 값을 가로로 찾아 같은 열의 지정 행 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -414,7 +414,7 @@ export function VlookupApproxDiagram() {
           {/* HLOOKUP 박스 — 두 표의 정답 */}
           <div style={{ background: '#2a1608', border: `2px solid ${C.orange}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.orange, fontSize: 18, fontWeight: 700 }}>HLOOKUP</div>
-            <div style={{ color: C.orange, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =HLOOKUP(찾을 값, 참조 범위, 행 번호, 일치 옵션)</div>
+            <SyntaxLine fn="HLOOKUP" color={C.orange} colors={[C.amberLight, C.blueLight, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>기준표 첫 행에서 총점이 속한 구간을 찾아 같은 열의 등급을 반환</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 15.5, fontWeight: 700, letterSpacing: '-0.01em', padding: '2px 0' }}>
@@ -516,7 +516,7 @@ export function VlookupOneTableDiagram() {
           {/* VLOOKUP + MIN 박스 */}
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>VLOOKUP</div>
-            <div style={{ color: C.blue, fontSize: 13.5, fontWeight: 700, opacity: 0.95 }}>구문: =VLOOKUP(찾을 값, 참조 범위, 열 번호, 일치 옵션)</div>
+            <SyntaxLine fn="VLOOKUP" color={C.blue} colors={[C.amberLight, C.blueLight, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>참조 범위의 첫 열에서 찾을 값을 세로로 찾아 같은 행의 지정 열 값을 반환</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
@@ -615,7 +615,7 @@ export function MatchIndexDiagram() {
         <Fill min={360} max={540} gap={0}>
           <div style={{ background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700 }}>INDEX</div>
-            <div style={{ color: C.greenLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
+            <SyntaxLine fn="INDEX" color={C.greenLight} size={14} colors={[C.blueLight, C.amberLight, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>지정한 범위 안에서 행 번호와 열 번호가 만나는 칸의 값을 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px' }}>
@@ -643,7 +643,7 @@ export function MatchIndexDiagram() {
         <Fill min={360} max={540} gap={0}>
           <div style={{ background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>MATCH</div>
-            <div style={{ color: C.purpleLight, fontSize: 14, fontWeight: 700, opacity: 0.95 }}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <SyntaxLine fn="MATCH" color={C.purpleLight} size={14} />
             <div style={{ color: C.text, fontSize: 14.5, lineHeight: 1.6 }}>찾을 값이 지정한 범위 안에서 몇 번째에 있는지 위치 번호를 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={{ color: C.text, fontSize: 17, fontWeight: 700, textAlign: 'center', padding: '4px 0 2px', lineHeight: 2 }}>
@@ -788,7 +788,6 @@ export function IndexMatchDiagram() {
   // 단계 박스 공통
   const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
   const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
-  const synSt = (c) => ({ color: c, fontSize: 14, fontWeight: 700, opacity: 0.95 });
   const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
   const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
 
@@ -815,7 +814,7 @@ export function IndexMatchDiagram() {
           {/* STEP 1 — MAX */}
           <div style={{ ...boxBase, background: '#2a1206', border: `2px solid ${C.orange}` }}>
             <div style={nameSt(C.orangeLight)}>1단계 · MAX — 최고값</div>
-            <div style={synSt(C.orangeLight)}>구문: =MAX(범위)</div>
+            <SyntaxLine fn="MAX" color={C.orangeLight} size={14} />
             <div style={descSt}>매출액 범위에서 가장 큰 값을 반환합니다.</div>
             <div style={{ borderTop: `1px solid ${C.orange}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
@@ -826,7 +825,7 @@ export function IndexMatchDiagram() {
           {/* STEP 2 — MATCH */}
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>2단계 · MATCH — 위치 번호</div>
-            <div style={synSt(C.purpleLight)}>구문: =MATCH(찾을 값, 범위, [옵션])</div>
+            <SyntaxLine fn="MATCH" color={C.purpleLight} size={14} />
             <div style={descSt}>MAX로 구한 최고 매출액을 매출액 범위에서 몇 번째에 있는지 위치 번호를 반환합니다.<br />MAX로 가장 큰 값을 찾은 곳이 I27:I32이므로, MATCH의 범위도 제목 셀인 I26을 뺀 I27:I32로 지정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
@@ -837,7 +836,7 @@ export function IndexMatchDiagram() {
           {/* STEP 3 — INDEX */}
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>3단계 · INDEX — 값 추출</div>
-            <div style={synSt(C.greenLight)}>구문: =INDEX(범위, 행 번호, 열 번호)</div>
+            <SyntaxLine fn="INDEX" color={C.greenLight} size={14} />
             <div style={descSt}>범위를 표 전체로 잡고, 앞 단계 MATCH가 제목 셀(I26)을 뺀 매출액 범위를 지정했으므로 INDEX 범위도 표 전체를 선택하되 제목 행은 빼고 F27:I32로 지정합니다.<br />행 번호에는 MAX로 구한 최고 매출액이 MATCH가 찾은 매출액 범위에서 몇 번째인지, 그 위치 번호를 넣습니다.<br />열 번호에는 지정한 범위에서 꺼내려는 값이 있는 열 번호를 넣습니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
@@ -954,7 +953,6 @@ export function ChooseRankDiagram() {
   // 단계 박스 공통 (개념4와 동일)
   const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
   const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
-  const synSt = (c) => ({ color: c, fontSize: 14, fontWeight: 700, opacity: 0.95 });
   const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
   const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
 
@@ -986,7 +984,7 @@ export function ChooseRankDiagram() {
           {/* STEP 1 — RANK.EQ */}
           <div style={{ ...boxBase, background: C.purpleCard, border: `2px solid ${C.purple}` }}>
             <div style={nameSt(C.purpleLight)}>1단계 · RANK.EQ — 순위 구하기</div>
-            <div style={synSt(C.purpleLight)}>구문: =RANK.EQ(값, 범위, [정렬])</div>
+            <SyntaxLine fn="RANK.EQ" color={C.purpleLight} size={14} />
             <div style={descSt}>성적이 참조 범위에서 몇 위인지 순위를 반환합니다. 자동 채우기로 복사하므로 참조 범위는 $로 고정합니다.</div>
             <div style={{ borderTop: `1px solid ${C.purple}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>
@@ -997,7 +995,7 @@ export function ChooseRankDiagram() {
           {/* STEP 2 — CHOOSE */}
           <div style={{ ...boxBase, background: '#071a0b', border: `2px solid ${C.green}` }}>
             <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 순위로 값 선택</div>
-            <div style={synSt(C.greenLight)}>구문: =CHOOSE(순번, 값1, 값2, 값3, ...)</div>
+            <SyntaxLine fn="CHOOSE" color={C.greenLight} size={14} />
             <div style={descSt}>1단계에서 구한 순위를 숫자 자리에 넣으면, 순위가 1이면 값1, 2면 값2가 반환됩니다.<br />그래서 값1부터 &quot;최우수&quot;, &quot;우수&quot;, &quot;보통&quot;을 적으면 1~3위에 맞게 나오고, 4위부터는 모두 &quot;노력&quot;이 나오도록 나머지 값을 &quot;노력&quot;으로 채웁니다.</div>
             <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
             <div style={{ ...formulaSt, fontSize: 13, whiteSpace: 'nowrap' }}>

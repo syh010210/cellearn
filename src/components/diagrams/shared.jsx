@@ -1,5 +1,7 @@
 // Shared utilities for all diagram components. Inline styles only — no Tailwind.
 
+import { FUNCTION_ARGS } from '../../data/functionSyntax.js';
+
 // 다이어그램의 모든 텍스트(한글·영문·숫자·수식)는 페이지 기본 글꼴로 통일한다.
 export const FONT = "'Noto Sans KR', sans-serif";
 
@@ -304,6 +306,28 @@ export function ArgButtons({ tabs, active, onSelect }) {
           {t.key}
         </button>
       ))}
+    </div>
+  );
+}
+
+// 함수 구문 한 줄 — "구문: =…" 형태로 표시한다.
+// 인수 이름은 functionSyntax.js(단일 출처)에서 가져오므로 다이어그램마다 손으로 적지 않는다.
+//  fn      : 함수명 (예: "VLOOKUP")
+//  colors  : 인수별 색 배열. colors[i] 가 있으면 i번째 인수를 그 색으로 강조한다.
+//            (아래 색으로 구분한 수식과 짝을 맞출 때 사용. 없으면 전부 color 로 표시)
+//  color   : 기본 글자색 · prefix : 앞 라벨(기본 "구문: ") · size/weight/opacity : 텍스트 스타일
+export function SyntaxLine({ fn, colors, color, prefix = '구문: ', size = 13.5, weight = 700, opacity = 0.95, style = {} }) {
+  const key = String(fn).toUpperCase();
+  const args = FUNCTION_ARGS[key] || [];
+  return (
+    <div style={{ color, fontSize: size, fontWeight: weight, opacity, ...style }}>
+      {prefix}{`=${key}(`}
+      {args.map((a, i) => (
+        <span key={i} style={colors && colors[i] ? { color: colors[i] } : undefined}>
+          {a}{i < args.length - 1 ? ', ' : ''}
+        </span>
+      ))}
+      {')'}
     </div>
   );
 }
