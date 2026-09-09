@@ -128,6 +128,12 @@ export function WeekdayDiagram() {
     return s;
   };
 
+  // 단계 박스 스타일 (4차시 IndexMatchDiagram과 동일)
+  const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
+  const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
+  const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
+  const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
+
   return (
     <Wrap>
       <Title>날짜의 요일 번호 구하기: WEEKDAY</Title>
@@ -146,19 +152,23 @@ export function WeekdayDiagram() {
         </Fixed>
 
         <Fill min={360} max={500}>
-          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WEEKDAY + CHOOSE</div>
-            <SyntaxLine fn="WEEKDAY" color={C.blue} colors={[C.blueLight, C.blueLight]} />
-            <SyntaxLine fn="CHOOSE" color={C.greenLight} />
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>WEEKDAY가 돌려준 숫자를 CHOOSE의 첫 인수로 넘겨 요일 텍스트로 바꿉니다.</div>
-            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 104, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-              <div style={{ fontWeight: 400, fontSize: 15 }}><span style={{ color: C.blueLight }}>1단계</span> =WEEKDAY(B2, 2) → 1</div>
-              <div style={{ display: 'inline-block', alignSelf: 'center', textAlign: 'left' }}>
-                <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.greenLight }}>2단계</span> =CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>,</div>
-                <div style={{ whiteSpace: 'nowrap' }}>&quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;)</div>
-              </div>
-              <div><span style={{ color: C.greenLight }}>→ 월</span></div>
+          <div>
+            {/* 1단계 — WEEKDAY */}
+            <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${active === '1단계 WEEKDAY' ? C.blue : C.blueDim}` }}>
+              <div style={nameSt(C.blueLight)}>1단계 · WEEKDAY — 요일 번호</div>
+              <SyntaxLine fn="WEEKDAY" color={C.blue} size={14} />
+              <div style={descSt}>마감일자의 요일을 1~7 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다.</div>
+              <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
+              <div style={formulaSt}>=WEEKDAY(B2, 2) = <span style={{ color: C.blueLight }}>1</span></div>
+            </div>
+
+            {/* 2단계 — CHOOSE */}
+            <div style={{ ...boxBase, marginTop: 16, background: C.greenDark, border: `2px solid ${active === '2단계 CHOOSE' ? C.green : C.greenDark}` }}>
+              <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 요일 텍스트</div>
+              <SyntaxLine fn="CHOOSE" color={C.greenLight} size={14} />
+              <div style={descSt}>1단계가 돌려준 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 &quot;월&quot;, 3이면 세 번째 값 &quot;수&quot;가 나옵니다. 숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.</div>
+              <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
+              <div style={formulaSt}>=CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>, &quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;) = <span style={{ color: C.greenLight }}>&quot;월&quot;</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 단계를 하나씩 확인하세요</div>

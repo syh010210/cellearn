@@ -177,3 +177,31 @@ Lesson7.jsx의 WeekdayDiagram만 고친다. 다른 세 다이어그램은 건드
   - 오른쪽 — TableCaption(C.amber) "반환 유형 2 (문제에서 사용)" / 1행(숫자): 1 2 3 4 5 6 7 — bg C.amberBg, border C.amber, color C.amber, bold, 15 / 2행(요일): 월 화 수 목 금 토 일 — bg C.bgDark, border C.amber, color C.amber, 15
   - 두 표 모두 상태에 따라 바뀌지 않는다(색 토글 없음).
 - 검증: npm run build 통과. lesson-7.json 파싱 정상. 버튼을 눌러도 표·함수 박스·칠판 높이가 변하지 않는지 확인. 변경 파일은 lesson-7.json, Lesson7.jsx, docs/LESSON7_PLAN.md(+실습 xlsx가 있으면 그 파일)뿐이어야 한다.
+
+### 4-3 — WeekdayDiagram 함수 박스를 단계별 박스로 분리
+
+Lesson7.jsx의 WeekdayDiagram만 고친다. data·tabs·dataSt·ExamProblem·explain·아래 비교표 두 개는 그대로 두고, 오른쪽 Fill 안의 함수 박스만 바꾼다.
+
+지금은 함수 박스 하나 안에 1단계·2단계 줄이 같이 들어 있다. 4차시 IndexMatchDiagram처럼 단계마다 박스를 따로 만든다. Lesson4.jsx의 IndexMatchDiagram이 쓰는 박스 스타일(boxBase·nameSt·descSt·formulaSt, SyntaxLine size 14, 구분선 `borderTop 1px solid, margin '4px 0 2px'`)을 그대로 따르고, 새 스타일 값을 만들지 않는다.
+
+Fill(min 360, max 500) 안에 박스 2개를 세로로(간격 marginTop 16):
+
+1단계 박스 (blue: bg C.blueCard / border C.blueDim)
+- 제목(bold, nameSt(C.blueLight)): 1단계 · WEEKDAY — 요일 번호
+- SyntaxLine(fn="WEEKDAY", color C.blue, size 14)
+- 설명(descSt): 마감일자의 요일을 1~7 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다.
+- 구분선(C.blueDim)
+- 수식(formulaSt): =WEEKDAY(B2, 2) = 1
+
+2단계 박스 (green: bg C.greenDark / border C.green)
+- 제목(bold, nameSt(C.greenLight)): 2단계 · CHOOSE — 요일 텍스트
+- SyntaxLine(fn="CHOOSE", color C.greenLight, size 14)
+- 설명(descSt): 1단계가 돌려준 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 "월", 3이면 세 번째 값 "수"가 나옵니다. 숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.
+- 구분선(C.green)
+- 수식(formulaSt, 길면 두 줄): =CHOOSE(`<blueLight>`WEEKDAY(B2, 2)`</blueLight>`, "월","화","수","목","금","토","일") = "월" (2단계 수식 안의 WEEKDAY 부분만 1단계 색 C.blueLight)
+
+버튼-박스 대응: ArgButtons tabs는 그대로. 높이가 밀리지 않게 두 박스 모두 항상 2px 테두리를 쓰고 색만 바꾼다.
+- 1단계 박스 테두리: active === '1단계 WEEKDAY' ? C.blue : C.blueDim
+- 2단계 박스 테두리: active === '2단계 CHOOSE' ? C.green : C.greenDark (비활성은 박스 배경색과 같은 greenDark로 두어 색만 토글, 두께 불변)
+
+검증: npm run build 통과. 버튼을 눌러도 두 박스의 높이·위치가 변하지 않는지 확인. 변경 파일은 Lesson7.jsx, docs/LESSON7_PLAN.md 두 개뿐이어야 한다.
