@@ -169,7 +169,7 @@ export function WeekdayDiagram() {
 
       <Row gap={20} style={{ marginTop: 16 }}>
         <Fill min={260}>
-          <TableCaption color={C.textMuted}>반환 유형 1 (생략 가능)</TableCaption>
+          <TableCaption color={C.textMuted}>반환 유형 1</TableCaption>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
             {['1', '2', '3', '4', '5', '6', '7'].map((v, i) => (
               <Cell key={'l-n' + i} bg={C.bgDark} border={C.border}

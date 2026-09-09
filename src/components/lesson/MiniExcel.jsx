@@ -845,7 +845,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       {/* 문제 카드 */}
       <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 20px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
         <span style={{ display: "inline-block", background: "#1f2937", color: "#fff", fontSize: 11.5, fontWeight: 800, letterSpacing: 1, padding: "3px 11px", borderRadius: 999, marginBottom: 10 }}>문제</span>
-        <p style={{ color: "#1f2937", fontSize: 18.5, fontWeight: 600, margin: 0, lineHeight: 1.6 }}>{practice.instruction}</p>
+        <p style={{ color: "#1f2937", fontSize: 18.5, fontWeight: 600, margin: 0, lineHeight: 1.6, whiteSpace: "pre-line" }}>{practice.instruction}</p>
       </div>
 
       {/* 엑셀 카드 */}
