@@ -87,8 +87,8 @@ export function VlookupDiagram() {
   // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 형광펜으로 표시 (열 번호 탭에서는 숨김)
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, content: hi(val) };
-    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
+    if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { content: hi(val) };
+    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
 
@@ -216,8 +216,8 @@ export function HlookupTwoTableDiagram() {
   // 표2: 상품코드 열(C3:C5)을 형광펜으로 표시 (행 번호 탭에서는 숨김)
   const salesSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.orangeLight, bg: '#3a1c08' };
-    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
-    if (ci === 4 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
+    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bg: C.amberLight, color: '#0b1220' };
+    if (ci === 4 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
 
@@ -341,8 +341,8 @@ export function VlookupApproxDiagram() {
 
   const scoreSt = (ri, ci) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bold: true, bg: C.amberLight, color: '#0b1220' };
-    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { bold: true, color: C.greenLight, content: ANS[ri - 1] };
+    if (ci === 2 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { bg: C.amberLight, color: '#0b1220' };
+    if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };
 
