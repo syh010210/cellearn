@@ -132,7 +132,7 @@ export function fillFromReason(input, cell, ri, ci, cells) {
 // acceptableAnswers: 정답으로 인정하는 여러 수식 형태(예: DB함수 필드 = 열 번호 4 / 제목 셀 D1).
 function acceptableAnswers(cell) {
   if (Array.isArray(cell.acceptableAnswers) && cell.acceptableAnswers.length) return cell.acceptableAnswers;
-  return cell.answer ? [cell.answer] : [];
+  return cell.answer != null ? [cell.answer] : [];  // "" 도 유효한 정답(빈칸 유지)일 수 있으므로 != null
 }
 // 최상위 인수 중 다른 개수 (가장 가까운 정답 형태를 고르는 데 사용)
 function argDiffCount(a, b) {
@@ -150,10 +150,31 @@ function closestAnswer(input, answers) {
   return best;
 }
 
+// 값(plain) 비교용 정규화: 공백 제거 + 대소문자 무시. ">=20"과 ">= 20"을 같게 본다.
+const normPlain = (s) => String(s ?? "").replace(/\s/g, "").toUpperCase();
+
+// plain(값) 셀 오답 사유: 제목 칸 / 값 칸 / AND·OR 배치 오류
+function plainWrongReason(cell, input, cells, conditionType) {
+  if (cell.role === "condTitle") return "조건 열 제목이 표의 열 제목과 다릅니다";
+  const inNorm = normPlain(input);
+  // 입력한 값이 다른 조건값 칸의 정답과 일치하면 → 값은 맞는데 행(위치)을 잘못 적은 것
+  let misplaced = false;
+  cells.forEach((row) => row.forEach((c) => {
+    if (c === cell || !c.plain || c.role !== "condValue") return;
+    const accs = Array.isArray(c.acceptableAnswers) && c.acceptableAnswers.length ? c.acceptableAnswers : (c.answer != null ? [c.answer] : []);
+    if (accs.some((a) => a !== "" && normPlain(a) === inNorm)) misplaced = true;
+  }));
+  if (misplaced) {
+    if (conditionType === "AND") return "AND 조건은 같은 행에 나란히 적어야 합니다";
+    if (conditionType === "OR") return "OR 조건은 서로 다른 행에 적어야 합니다";
+  }
+  return "조건값이 다릅니다";
+}
+
 // 순수 채점 함수. cells는 {editable, input, answer, acceptableAnswers, result, format, fillFrom, requiredFunctions} 셀의 2차원 배열.
 // sheet는 excel-engine Sheet 인스턴스(getCellValue/getDisplayValue 제공).
 // 반환: [{ ri, ci, addr, status:'correct'|'wrong'|'empty', reason, answer, studentInput }]
-export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
+export function gradePractice({ cells, cols, sheet, requiredFunctions = [], conditionType }) {
   const addrOf = (ri, ci) => `${cols[ci]}${ri + 1}`;
   const results = [];
 
@@ -164,6 +185,18 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
     const answers = acceptableAnswers(cell);
     const base = { ri, ci, addr: addrOf(ri, ci), answer, studentInput: input };
 
+    // 0. plain(값) 셀: 수식이 아니라 값 자체로 채점(공백 제거·대소문자 무시). 조건 제목/값 칸 등.
+    if (cell.plain) {
+      const inNorm = normPlain(input);
+      if (answers.some((a) => normPlain(a) === inNorm)) {
+        results.push({ ...base, status: "correct", reason: "정답" });
+      } else if (input === "") {
+        results.push({ ...base, status: "empty", reason: "입력하지 않았습니다" });
+      } else {
+        results.push({ ...base, status: "wrong", reason: plainWrongReason(cell, input, cells, conditionType) });
+      }
+      return;
+    }
     // 1. 미입력
     if (input === "") { results.push({ ...base, status: "empty", reason: "입력하지 않았습니다" }); return; }
     // 2. 값 직접 입력

@@ -210,6 +210,11 @@ function check(label, actual, expected) {
   check('DAVERAGE', s.getDisplayValue('F2'), 310);
   s.setCellInput('F3', '=DCOUNT(A1:C4,"급여",E1:E2)');
   check('DCOUNT', s.getDisplayValue('F3'), 2);
+  // 계산할 열(field)은 열 번호(3)·제목 셀(C1)·제목 텍스트("급여") 세 형태 모두 같은 결과여야 한다
+  s.setCellInput('F4', '=DSUM(A1:C4,3,E1:E2)');
+  check('DSUM 필드=열번호', s.getDisplayValue('F4'), 620);
+  s.setCellInput('F5', '=DSUM(A1:C4,C1,E1:E2)');
+  check('DSUM 필드=제목 셀', s.getDisplayValue('F5'), 620);
 }
 
 // ==== 컴활 2급 함수 추가분 ====

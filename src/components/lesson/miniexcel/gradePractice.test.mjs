@@ -94,5 +94,27 @@ check("acceptableAnswers: 사유는 유효 필드형태를 오답으로 안 짚�
     sheet: { getCellValue: () => 5, getDisplayValue: () => "5" } })[0].reason,
   "3번째 인수(조건 범위)가 다릅니다.");
 
+// ── plain(값) 셀 채점: 조건 제목/값/AND·OR 배치 ──
+const P = (o) => ({ editable: true, plain: true, ...o });
+check("plain 값 정답(공백 무시)",
+  gradePractice({ cells: [[P({ role: "condValue", answer: ">=20", input: ">= 20" })]], cols: ["A"], sheet: {} })[0].status, "correct");
+check("plain 빈칸 정답(정답이 빈칸)",
+  gradePractice({ cells: [[P({ role: "condValue", answer: "", input: "" })]], cols: ["A"], sheet: {} })[0].status, "correct");
+check("plain 제목 오답 사유",
+  gradePractice({ cells: [[P({ role: "condTitle", answer: "브랜드", input: "제조사" })]], cols: ["A"], sheet: {} })[0].reason,
+  "조건 열 제목이 표의 열 제목과 다릅니다");
+check("plain 값 오답 사유",
+  gradePractice({ cells: [[P({ role: "condValue", answer: "삼성", input: "엘지" })]], cols: ["A"], sheet: {} })[0].reason,
+  "조건값이 다릅니다");
+// OR 배치 오류: >=100을 다른 행(G3)이 아니라 같은 행(G2)에 적음
+const orCells = [
+  [P({ role: "condTitle", answer: "지역", input: "지역" }), P({ role: "condTitle", answer: "수강생수", input: "수강생수" })],
+  [P({ role: "condValue", answer: "분당", input: "분당" }), P({ role: "condValue", answer: "", input: ">=100" })],
+  [P({ role: "condValue", answer: "", input: "" }), P({ role: "condValue", answer: ">=100", input: "" })],
+];
+check("OR 배치 오류 사유",
+  gradePractice({ cells: orCells, cols: ["A", "B"], sheet: {}, conditionType: "OR" }).find((r) => r.ri === 1 && r.ci === 1).reason,
+  "OR 조건은 서로 다른 행에 적어야 합니다");
+
 console.log(`\n총 ${pass + fail}개 중 ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail > 0 ? 1 : 0);

@@ -45,7 +45,7 @@ export function DbCommonIntroDiagram() {
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '2px 0' }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.7 }}>
             <div><b style={{ color: C.blueLight }}>전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 <b>표의 전체</b>를 드래그해야 합니다. 예) A1:D4</span></div>
-            <div><b style={{ color: C.greenLight }}>계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 <b>셀 번호(혹은 셀 주소)</b>를 넣거나, 첫 열부터 셀 때의 <b>열 번호(숫자)</b>를 입력합니다. 예) D1 또는 4</span></div>
+            <div><b style={{ color: C.greenLight }}>계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 <b>셀 번호(혹은 셀 주소)</b>를 넣거나, 첫 열부터 셀 때의 <b>열 번호(숫자)</b>를 입력합니다. <b>열 제목 텍스트</b>를 따옴표로 감싸 직접 입력해도 됩니다. 예) D1 또는 4 또는 &quot;판매량&quot;</span></div>
             <div><b style={{ color: C.amberLight }}>조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;<b>조건 열 제목</b>&apos;과 &apos;<b>해당 조건값</b>&apos;이 <b>한 세트</b>. 예) E1:E2</span></div>
           </div>
         </Fill>
@@ -89,7 +89,7 @@ export function DbSumDiagram() {
   ];
   const explain = {
     '전체 표 범위': '제목이 있는 1행부터 표 끝까지 전부 선택합니다. VLOOKUP과 달리 제목 행을 빼지 않습니다.',
-    '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1을 클릭해도 됩니다.',
+    '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1을 클릭하거나, 열 제목 텍스트 "판매량"을 따옴표로 감싸 입력해도 됩니다.',
     '조건 범위': '조건 열 제목 "제품군"과 바로 아래 조건값 "세탁기"가 위아래로 붙어 있어 [B1:B2]를 그대로 드래그하면 됩니다. 따로 조건 범위를 만들 필요가 없습니다.',
   };
 
@@ -166,7 +166,7 @@ export function DbSumSeparateDiagram() {
   ];
   const explain = {
     '전체 표 범위': '제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
-    '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다.',
+    '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1이나 열 제목 텍스트 "판매량"(따옴표)으로 지정해도 됩니다.',
     '조건 범위': '조건값 "냉장고"는 제품군 제목 바로 아래 칸(B2)이 아니라 표 중간에 흩어져 있어 제목과 함께 드래그할 수 없습니다. 문제가 지정한 [F1:F2]에 조건 열 제목 "제품군"과 조건값 "냉장고"를 직접 입력해 조건 범위로 씁니다.',
   };
 
@@ -250,7 +250,7 @@ export function DbAverageDiagram() {
   ];
   const explain = {
     '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
-    '계산할 열': '평균을 구할 단가는 표의 왼쪽부터 3번째 열입니다.',
+    '계산할 열': '평균을 구할 단가는 표의 왼쪽부터 3번째 열입니다. 제목 셀 C1이나 열 제목 텍스트 "단가"(따옴표)으로 지정해도 됩니다.',
     '조건 범위': '두 조건이 같은 행에 나란히 있으면 "둘 다 만족"(AND)입니다. 제목 2칸 + 값 2칸, 모두 4칸을 지정합니다.',
   };
   // 두 조건 모두 만족: 에어컨(ri1), 스타일러(ri3) / 청소기(ri2)는 B사라 제외
@@ -274,7 +274,7 @@ export function DbAverageDiagram() {
   };
   return (
     <Wrap>
-      <Title>AND 조건 — 같은 행에 나란히</Title>
+      <Title>AND 조건</Title>
 
       <ExamProblem notes={['조건은 [F1:G2] 영역에 입력하시오', 'DAVERAGE 함수 사용']}>
         [표1]에서 <b style={{ color: C.amberLight }}>제조사</b>가 &quot;A사&quot;이면서 <b style={{ color: C.amberLight }}>재고량</b>이 20 이상인 가전의
@@ -335,7 +335,7 @@ export function DbCountDiagram() {
   ];
   const explain = {
     '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
-    '계산할 열': '개수를 셀 판매량은 표의 왼쪽부터 3번째 열입니다.',
+    '계산할 열': '개수를 셀 판매량은 표의 왼쪽부터 3번째 열입니다. 제목 셀 C1이나 열 제목 텍스트 "판매량"(따옴표)으로 지정해도 됩니다.',
     '조건 범위': '조건값이 서로 다른 행에 있으면 "하나라도 만족"(OR)입니다. 빈칸까지 포함해 F1:G3 여섯 칸을 지정합니다.',
   };
   // 조건 중 하나라도 만족: 서울점(65>=50, ri1), 대구점(ri2) / 부산점(ri3) 제외
@@ -361,7 +361,7 @@ export function DbCountDiagram() {
 
   return (
     <Wrap>
-      <Title>OR 조건 — 행을 바꿔 엇갈리게</Title>
+      <Title>OR 조건</Title>
 
       <ExamProblem notes={['조건은 [F1:G3] 영역에 입력하시오', 'DCOUNT 함수 사용']}>
         [표1]에서 <b style={{ color: C.amberLight }}>매장위치</b>가 &quot;대구점&quot;이거나 <b style={{ color: C.amberLight }}>판매량</b>이 50 이상인 지점 수를 [H2] 셀에 계산하시오.

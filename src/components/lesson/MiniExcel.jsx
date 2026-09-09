@@ -572,7 +572,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       commitInput(selected.ri, selected.ci, inputVal);
     }
     const results = gradePractice({
-      cells: cur, cols: practice.cols, sheet: sheetRef.current, requiredFunctions: practice.requiredFunctions,
+      cells: cur, cols: practice.cols, sheet: sheetRef.current, requiredFunctions: practice.requiredFunctions, conditionType: practice.conditionType,
     });
     setCells((prev) =>
       prev.map((row, ri) =>
