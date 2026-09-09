@@ -2,7 +2,7 @@
 
 사용자 제공 기준 목록. 미니 엑셀 자동완성/힌트 화이트리스트(`src/excel-engine/functions/index.js`의 `EXAM_FUNCTIONS`)의 기준이 된다.
 
-> ⚠️ 참고: 파일명은 `_78` 이지만 아래 목록은 실제로 **82개**이며, 현재 코드의 `EXAM_FUNCTIONS`(82개)와 **완전히 동일**하다(양방향 차집합 없음).
+> 참고: 아래 목록은 **82개**이며, 현재 코드의 `EXAM_FUNCTIONS`(82개)와 **완전히 동일**하다(양방향 차집합 없음).
 
 ## 날짜/시간 (15)
 DATE, DAY, DAYS, EDATE, EOMONTH, HOUR, MINUTE, MONTH, NOW, SECOND, TIME, TODAY, WEEKDAY, WORKDAY, YEAR

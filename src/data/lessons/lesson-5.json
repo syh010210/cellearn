@@ -364,7 +364,7 @@
         "DCOUNT"
       ],
       "answer": 0,
-      "explanation": "DMIN은 조건(부서=영업)을 만족하는 레코드들 중 지정한 필드(급여)의 최솟값을 반환합니다. 합계는 DSUM, 평균은 DAVERAGE, 개수는 DCOUNT입니다."
+      "explanation": "DMIN은 조건(부서=영업)을 만족하는 행들 중 지정한 열의 최솟값을 반환합니다. 합계는 DSUM, 평균은 DAVERAGE, 개수는 DCOUNT입니다."
     }
   ],
   "practiceAnswers": [
