@@ -127,6 +127,7 @@ export function VlookupDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[등급표] 세로 참조 범위</TableCaption>
             <ExcelGrid data={code} startRow={11} cellStyle={codeSt} minColW={82} firstColW={64}
+              reserveLabelRow
               labelRow={[
                 active === '참조 범위' ? { text: '첫 열', color: C.blueLight } : null,
                 null,

@@ -152,7 +152,7 @@ export function colLetter(i) {
 //  data      : 2차원 배열(문자/숫자). 빈 칸은 '' 또는 null.
 //  startCol  : 첫 열 인덱스(0=A). startRow: 첫 행 번호(1=1행).
 //  cellStyle : (ri, ci, val) => ({ bg, color, bold, align, dim }) 로 개별 셀 강조.
-export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow, rowLabels }) {
+export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW = 56, firstColW, labelRow, rowLabels, reserveLabelRow = false }) {
   const nCols = Math.max(...data.map((r) => r.length));
   // 셀 병합(rowSpan) — cellStyle이 { rowSpan: n } 을 반환하면 같은 열 아래 n-1칸을 건너뛴다
   const skip = new Set();
@@ -221,18 +221,19 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               )}
             </tr>
           ))}
-          {/* 라벨 행: 같은 표 안의 테두리 없는 행 → 위 데이터 열과 폭이 정확히 일치(강조 열이 어느 위치든 가운데 정렬) */}
-          {labelRow && (
+          {/* 라벨 행: 같은 표 안의 테두리 없는 행 → 위 데이터 열과 폭이 정확히 일치(강조 열이 어느 위치든 가운데 정렬).
+              reserveLabelRow=true 면 라벨이 없어도 빈 칸(NBSP)으로 항상 렌더해 버튼 전환 시 표 높이가 흔들리지 않게 한다. */}
+          {(labelRow || reserveLabelRow) && (
             <tr>
               <td style={{ border: 'none', minWidth: 26, padding: '3px 4px' }} />
               {Array.from({ length: nCols }, (_, ci) => {
-                const lab = labelRow[ci];
+                const lab = labelRow ? labelRow[ci] : null;
                 return (
                   <td key={ci} style={{
                     border: 'none', padding: '3px 4px',
                     fontSize: 13.5, fontWeight: 700, textAlign: 'center',
                     whiteSpace: 'nowrap', color: (lab && lab.color) || C.text,
-                  }}>{(lab && lab.text) || ''}</td>
+                  }}>{(lab && lab.text) || ' '}</td>
                 );
               })}
               {rowLabels && <td style={{ border: 'none' }} />}

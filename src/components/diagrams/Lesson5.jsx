@@ -118,7 +118,7 @@ export function DbSumDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 판매 현황</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
+              reserveLabelRow labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
           </div>
         </Fixed>
 
@@ -201,7 +201,7 @@ export function DbSumSeparateDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 판매 현황</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={72} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
+              reserveLabelRow labelRow={active === '계산할 열' ? [null, null, null, { text: '4번째', color: C.greenLight }] : [null, null, null, null]} />
           </div>
           <div>
             <TableCaption color={C.amberLight}>[조건 범위] F1:F2에 직접 입력</TableCaption>
@@ -290,7 +290,7 @@ export function DbAverageDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 가전 재고</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={72}
-              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : [null, null, null, null]} />
+              reserveLabelRow labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null] : [null, null, null, null]} />
           </div>
           <div>
             <TableCaption color={C.amberLight}>[조건 범위] 같은 행 = AND</TableCaption>
@@ -389,7 +389,7 @@ export function DbCountDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 지점 판매</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={70} firstColW={74}
-              labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null]
+              reserveLabelRow labelRow={active === '계산할 열' ? [null, null, { text: '3번째', color: C.greenLight }, null]
                 : compare ? [null, null, null, { text: '4번째(문자)', color: C.greenLight }] : [null, null, null, null]} />
           </div>
           <div>
