@@ -101,92 +101,100 @@ export function WeekdayDiagram() {
   const [active, setActive] = useState(null);
 
   const data = [
-    ['작업명', '마감일자', '요일'],
-    ['UI 디자인', '2026-06-22', '월'],
-    ['API 연동', '2026-06-24', '수'],
-    ['QA 테스트', '2026-06-27', '토'],
-    ['배포', '2026-06-28', '일'],
+    ['작업명', '마감일자', '요일번호', '요일'],
+    ['UI 디자인', '2026-06-22', 1, '월'],
+    ['API 연동', '2026-06-24', 3, '수'],
+    ['QA 테스트', '2026-06-27', 6, '토'],
+    ['배포', '2026-06-28', 7, '일'],
   ];
   const LAST = data.length - 1; // 4
 
   const tabs = [
-    { key: '날짜', color: C.blueLight },
-    { key: '반환 유형', color: C.greenLight },
+    { key: '1단계 WEEKDAY', color: C.blueLight },
+    { key: '2단계 CHOOSE', color: C.greenLight },
   ];
   const explain = {
-    '날짜': '요일을 알고 싶은 날짜 셀입니다. [B2] 하나만 적고 아래로 채웁니다.',
-    '반환 유형': '1 또는 생략 = 일요일부터 1, 2 = 월요일부터 1.\nCHOOSE에 "월"부터 나열하려면 2를 써야 숫자와 요일이 맞습니다.',
+    '1단계 WEEKDAY': '마감일자[B2]의 요일을 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다. 6/22(월) → 1',
+    '2단계 CHOOSE': '1단계 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 "월", 3이면 세 번째 값 "수"가 나옵니다.\n숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.',
   };
 
   const dataSt = (ri, ci) => {
-    const boxes = active === '날짜' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }] : [];
+    const boxes = active === '1단계 WEEKDAY' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
+      : active === '2단계 CHOOSE' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.greenLight }] : [];
     const s = rangeSides(ri, ci, boxes);
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 2 && ri >= 1 && ri <= LAST) s.bold = true; // 요일 결과 열 강조
+    if (active === '1단계 WEEKDAY' && ci === 2 && ri >= 1 && ri <= LAST) s.bold = true; // 요일번호 열 강조
+    if (active === '2단계 CHOOSE' && ci === 3 && ri >= 1 && ri <= LAST) s.bold = true; // 요일 열 강조
     return s;
   };
-
-  // 반환 유형 비교표 (MathRoundDiagram 격자 방식)
-  const cmpHead = ['반환 유형', '월', '화', '수', '목', '금', '토', '일'];
-  const row1 = ['1 (생략)', '2', '3', '4', '5', '6', '7', '1'];
-  const row2 = ['2', '1', '2', '3', '4', '5', '6', '7'];
-  const active2 = active === '반환 유형';
 
   return (
     <Wrap>
       <Title>날짜의 요일 번호 구하기: WEEKDAY</Title>
 
       <ExamProblem notes={['WEEKDAY, CHOOSE 함수 사용', '월요일이 1이 되도록 반환 유형 지정']}>
-        [표1]의 <b style={{ color: C.blueLight }}>마감일자[B2:B5]</b>의 요일을 [C2:C5] 영역에
-        &quot;월&quot;~&quot;일&quot;로 표시하시오.
+        [표1]의 <b style={{ color: C.blueLight }}>마감일자[B2:B5]</b>로 요일번호[C2:C5]를 구하고,
+        그 번호로 <b style={{ color: C.greenLight }}>요일[D2:D5]</b>을 &quot;월&quot;~&quot;일&quot;로 표시하시오.
       </ExamProblem>
 
       <Row gap={20}>
         <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 스프린트 마감일</TableCaption>
-            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={90} />
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={74} firstColW={90} />
           </div>
         </Fixed>
 
         <Fill min={360} max={500}>
           <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WEEKDAY</div>
-            <SyntaxLine fn="WEEKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} />
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>날짜의 요일을 1~7 숫자로 돌려줍니다. 반환 유형이 어느 요일을 1로 셀지 정합니다.</div>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WEEKDAY + CHOOSE</div>
+            <SyntaxLine fn="WEEKDAY" color={C.blue} colors={[C.blueLight, C.blueLight]} />
+            <SyntaxLine fn="CHOOSE" color={C.greenLight} />
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>WEEKDAY가 돌려준 숫자를 CHOOSE의 첫 인수로 넘겨 요일 텍스트로 바꿉니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 104, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-              <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>=WEEKDAY(B2, 2) → 1</div>
+              <div style={{ fontWeight: 400, fontSize: 15 }}><span style={{ color: C.blueLight }}>1단계</span> =WEEKDAY(B2, 2) → 1</div>
               <div style={{ display: 'inline-block', alignSelf: 'center', textAlign: 'left' }}>
-                <div style={{ whiteSpace: 'nowrap' }}>=CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>,</div>
+                <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.greenLight }}>2단계</span> =CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>,</div>
                 <div style={{ whiteSpace: 'nowrap' }}>&quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;)</div>
               </div>
               <div><span style={{ color: C.greenLight }}>→ 월</span></div>
             </div>
           </div>
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 개의 인수를 하나씩 확인하세요</div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 단계를 하나씩 확인하세요</div>
           <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
           <ExplainBoard tabs={tabs} active={active} explain={explain} />
         </Fill>
       </Row>
 
-      <div style={{ marginTop: 16 }}>
-        <TableCaption color={C.textMuted}>반환 유형별 요일 번호</TableCaption>
-        <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(7, 1fr)', width: '100%' }}>
-          {cmpHead.map((h, i) => (
-            <Cell key={'h' + i} bg={C.blueCard} border={C.blueDim}
-              style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-          ))}
-          {row1.map((v, i) => (
-            <Cell key={'r1' + i} bg={C.bgDark} border={C.border}
-              style={{ color: C.text, fontWeight: i === 0 ? 700 : 400, fontSize: 15 }}>{v}</Cell>
-          ))}
-          {row2.map((v, i) => (
-            <Cell key={'r2' + i} bg={active2 ? C.amberBg : C.bgDark} border={active2 ? C.amber : C.border}
-              style={{ color: active2 ? C.amber : C.text, fontWeight: (active2 || i === 0) ? 700 : 400, fontSize: 15 }}>{v}</Cell>
-          ))}
-        </div>
-      </div>
+      <Row gap={20} style={{ marginTop: 16 }}>
+        <Fill min={260}>
+          <TableCaption color={C.textMuted}>반환 유형 1 (생략 가능)</TableCaption>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
+            {['1', '2', '3', '4', '5', '6', '7'].map((v, i) => (
+              <Cell key={'l-n' + i} bg={C.bgDark} border={C.border}
+                style={{ color: C.textMuted, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
+            ))}
+            {['일', '월', '화', '수', '목', '금', '토'].map((v, i) => (
+              <Cell key={'l-d' + i} bg={C.bgDark} border={C.border}
+                style={{ color: C.text, fontSize: 15 }}>{v}</Cell>
+            ))}
+          </div>
+        </Fill>
+        <Fill min={260}>
+          <TableCaption color={C.amber}>반환 유형 2 (문제에서 사용)</TableCaption>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
+            {['1', '2', '3', '4', '5', '6', '7'].map((v, i) => (
+              <Cell key={'r-n' + i} bg={C.amberBg} border={C.amber}
+                style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
+            ))}
+            {['월', '화', '수', '목', '금', '토', '일'].map((v, i) => (
+              <Cell key={'r-d' + i} bg={C.bgDark} border={C.amber}
+                style={{ color: C.amber, fontSize: 15 }}>{v}</Cell>
+            ))}
+          </div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }

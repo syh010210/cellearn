@@ -137,3 +137,43 @@ diff 보고 후 멈춘다.
 - 2026-06-22 월, 06-26 금, 06-27 토, 06-15 월
 - WORKDAY 계산(공휴일 없음): 6/22+5 → 6/29, 6/23+3 → 6/26, 6/25+2 → 6/29
 - WEEKDAY(, 2): 6/22 → 1(월), 6/24 → 3(수), 6/27 → 6(토), 6/28 → 7(일)
+
+## 4단계 — 개념2 실습·WeekdayDiagram 보강
+
+0~3단계 공통 규칙을 그대로 적용한다. 4-1 끝, 4-2 끝에 각각 diff를 보고하고 멈춘다. 커밋·푸시하지 않는다.
+
+### 4-1 — lesson-7.json 개념2 실습 교체
+
+개념2의 practice만 바꾼다. 개념2의 text·heading·bullets, 다른 개념, quiz는 한 글자도 바꾸지 않는다.
+
+- instruction: "개발자 로그온 기록입니다. [B2:D2] 영역에 YEAR · MONTH · DAY 함수로 [A2] 셀의 날짜에서 연도, 월, 일을 각각 추출하고, [E2] 셀에 DATE 함수로 그 세 값을 다시 하나의 날짜로 조합하세요."
+- cols: ["A","B","C","D","E"]
+- 1행(머리글, editable false): 기록일자 | 연도 | 월 | 일 | 조합된 날짜
+- 2행: A2 "2026-06-15" (editable false) / B2 answer "=YEAR(A2)" result 2026 / C2 answer "=MONTH(A2)" result 6 / D2 answer "=DAY(A2)" result 15 / E2 answer "=DATE(B2,C2,D2)" result "2026-06-15"
+- practiceAnswers에서 sheet "요소조합"의 D2 항목 하나를 위 네 개(B2·C2·D2·E2)로 교체한다. 다른 sheet 항목은 그대로.
+- 7차시 실습 엑셀 파일이 src/data/lessons 아래에 있으면 요소조합 시트를 같은 데이터로 갱신하고 경로를 보고한다. 없으면 없다고만 적는다.
+
+### 4-2 — WeekdayDiagram 단계형으로 수정
+
+Lesson7.jsx의 WeekdayDiagram만 고친다. 다른 세 다이어그램은 건드리지 않는다. export 이름과 registry 키는 그대로.
+
+- ExamProblem notes ['WEEKDAY, CHOOSE 함수 사용', '월요일이 1이 되도록 반환 유형 지정']:
+  [표1]의 `<b blueLight>`마감일자[B2:B5]`</b>`로 요일번호[C2:C5]를 구하고, 그 번호로 `<b greenLight>`요일[D2:D5]`</b>`을 "월"~"일"로 표시하시오.
+- data = `[['작업명','마감일자','요일번호','요일'],['UI 디자인','2026-06-22',1,'월'],['API 연동','2026-06-24',3,'수'],['QA 테스트','2026-06-27',6,'토'],['배포','2026-06-28',7,'일']]`. TableCaption "[표1] 스프린트 마감일". firstColW 90, minColW 74.
+- tabs: { '1단계 WEEKDAY', C.blueLight }, { '2단계 CHOOSE', C.greenLight }.
+- dataSt: 머리글 행 { bold, color: C.blueLight, bg: C.blueCard }.
+  - '1단계 WEEKDAY' 활성 → rangeSides로 B2:B5(ri 1~4, ci 1) 파란 테두리, C열(ci 2) ri 1~4 bold.
+  - '2단계 CHOOSE' 활성 → rangeSides로 C2:C5(ci 2) 초록 테두리, D열(ci 3) ri 1~4 bold.
+  - 비활성 상태에서도 C·D열 값은 그대로 보인다(숨기지 않는다).
+- 함수 박스: 함수명 줄 "WEEKDAY + CHOOSE" → SyntaxLine(fn="WEEKDAY", colors [C.blueLight, C.blueLight]) → SyntaxLine(fn="CHOOSE", color C.greenLight) → 설명 "WEEKDAY가 돌려준 숫자를 CHOOSE의 첫 인수로 넘겨 요일 텍스트로 바꿉니다." → 구분선 → 수식 영역(minHeight 104, 두 줄 모두 항상 보이고 세로 가운데 정렬):
+  - 1단계 줄(15): `<blueLight>`1단계`</blueLight>` =WEEKDAY(B2, 2) → 1
+  - 2단계 줄(16 bold, nowrap 2줄로 접기): `<greenLight>`2단계`</greenLight>` =CHOOSE(`<blueLight>`WEEKDAY(B2, 2)`</blueLight>`, "월","화","수","목","금","토","일") / → 월 (greenLight)
+- 안내 문구 "버튼을 눌러 두 단계를 하나씩 확인하세요".
+- explain:
+  - '1단계 WEEKDAY': '마감일자[B2]의 요일을 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다. 6/22(월) → 1'
+  - '2단계 CHOOSE': '1단계 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 "월", 3이면 세 번째 값 "수"가 나옵니다.\n숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.'
+- 기존 "반환 유형별 요일 번호" 비교표는 아래 두 표로 교체한다. Row(marginTop 16) 안에 Fill(min 260) 두 개, 각 Fill 안에 TableCaption + Cell 격자(gridTemplateColumns 'repeat(7, 1fr)'), 두 줄 구조:
+  - 왼쪽 — TableCaption(C.textMuted) "반환 유형 1 (생략 가능)" / 1행(숫자): 1 2 3 4 5 6 7 — bg C.bgDark, border C.border, color C.textMuted, bold, 15 / 2행(요일): 일 월 화 수 목 금 토 — bg C.bgDark, border C.border, color C.text, 15
+  - 오른쪽 — TableCaption(C.amber) "반환 유형 2 (문제에서 사용)" / 1행(숫자): 1 2 3 4 5 6 7 — bg C.amberBg, border C.amber, color C.amber, bold, 15 / 2행(요일): 월 화 수 목 금 토 일 — bg C.bgDark, border C.amber, color C.amber, 15
+  - 두 표 모두 상태에 따라 바뀌지 않는다(색 토글 없음).
+- 검증: npm run build 통과. lesson-7.json 파싱 정상. 버튼을 눌러도 표·함수 박스·칠판 높이가 변하지 않는지 확인. 변경 파일은 lesson-7.json, Lesson7.jsx, docs/LESSON7_PLAN.md(+실습 xlsx가 있으면 그 파일)뿐이어야 한다.

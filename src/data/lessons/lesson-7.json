@@ -102,20 +102,22 @@
         }
       ],
       "practice": {
-        "instruction": "개발자 로그온 기록입니다. [D2] 셀에 DATE 함수를 사용하여 각각 분리된 연, 월, 일을 결합한 표준 날짜를 생성하세요.",
-        "cols": ["A", "B", "C", "D"],
+        "instruction": "개발자 로그온 기록입니다. [B2:D2] 영역에 YEAR · MONTH · DAY 함수로 [A2] 셀의 날짜에서 연도, 월, 일을 각각 추출하고, [E2] 셀에 DATE 함수로 그 세 값을 다시 하나의 날짜로 조합하세요.",
+        "cols": ["A", "B", "C", "D", "E"],
         "rows": [
           [
+            { "val": "기록일자", "editable": false },
             { "val": "연도", "editable": false },
             { "val": "월", "editable": false },
             { "val": "일", "editable": false },
-            { "val": "조합된 표준날짜", "editable": false }
+            { "val": "조합된 날짜", "editable": false }
           ],
           [
-            { "val": 2026, "editable": false },
-            { "val": 6, "editable": false },
-            { "val": 15, "editable": false },
-            { "val": "", "editable": true, "answer": "=DATE(A2,B2,C2)", "result": "2026-06-15" }
+            { "val": "2026-06-15", "editable": false },
+            { "val": "", "editable": true, "answer": "=YEAR(A2)", "result": 2026 },
+            { "val": "", "editable": true, "answer": "=MONTH(A2)", "result": 6 },
+            { "val": "", "editable": true, "answer": "=DAY(A2)", "result": 15 },
+            { "val": "", "editable": true, "answer": "=DATE(B2,C2,D2)", "result": "2026-06-15" }
           ]
         ]
       }
@@ -356,7 +358,10 @@
   "practiceAnswers": [
     { "sheet": "시스템정보", "cell": "C2", "formula": "=YEAR(B2)" },
     { "sheet": "시스템정보", "cell": "C3", "formula": "=MONTH(B3)" },
-    { "sheet": "요소조합", "cell": "D2", "formula": "=DATE(A2,B2,C2)" },
+    { "sheet": "요소조합", "cell": "B2", "formula": "=YEAR(A2)" },
+    { "sheet": "요소조합", "cell": "C2", "formula": "=MONTH(A2)" },
+    { "sheet": "요소조합", "cell": "D2", "formula": "=DAY(A2)" },
+    { "sheet": "요소조합", "cell": "E2", "formula": "=DATE(B2,C2,D2)" },
     { "sheet": "요일판별", "cell": "C2", "formula": "=WEEKDAY(B2,2)" },
     { "sheet": "근무일연산", "cell": "C2", "formula": "=WORKDAY(B2,5)" }
   ]
