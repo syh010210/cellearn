@@ -4,17 +4,17 @@
   "shortTitle": "수학 · 삼각 함수",
   "concepts": [
     {
-      "heading": "1. 기본 수학 함수와 데이터 변환 (ABS, INT, MOD, POWER, VALUE)",
+      "heading": "1. 기본 수학 함수 (ABS, INT, MOD, POWER)",
       "content": "수치 데이터를 정제하고 기본적인 연산을 수행하는 함수들입니다.",
       "contentBlocks": [
         {
           "type": "text",
-          "text": "수치 데이터를 정제하고 기본적인 연산을 수행하는 핵심 수학 함수들입니다. 각 함수의 동작 방식과 차이를 명확히 구분하는 것이 중요합니다."
+          "text": "수치 데이터를 다루는 기본 수학 함수들입니다. 각 함수의 동작 방식과 차이를 명확히 구분하는 것이 중요합니다."
         },
         {
           "type": "image",
           "url": "/images/math-abs-int-mod-power.svg",
-          "alt": "ABS · INT · MOD · POWER · VALUE 함수 비교 및 예시"
+          "alt": "ABS · INT · MOD · POWER 함수 비교 및 예시"
         },
         {
           "type": "heading",
@@ -26,19 +26,18 @@
             "**ABS(숫자)**: 숫자의 부호를 제거하고 절댓값(양수 형태)으로 반환합니다.",
             "**INT(숫자)**: 소수점을 버리고 '작거나 같은 가장 가까운 정수'로 내림합니다.",
             "**MOD(숫자, 나누는수)**: 숫자를 특정 수로 나눈 나머지를 반환합니다.",
-            "**POWER(숫자, K)**: 숫자의 K제곱 값을 구합니다. 엑셀 기호 '^'와 동일합니다.",
-            "**VALUE(텍스트)**: 따옴표가 붙은 문자 형식의 숫자(\"123\")를 계산 가능한 숫자(123)로 강제 변환합니다."
+            "**POWER(숫자, K)**: 숫자의 K제곱 값을 구합니다. 엑셀 기호 '^'와 동일합니다."
           ]
         }
       ],
       "practice": {
-        "instruction": "[C2] 셀에 수확량[B2]을 박스당 단위 3으로 나눈 나머지를 구하고, [C3] 셀에 텍스트로 저장된 수치[B3]을 계산 가능한 숫자로 바꾸세요.",
+        "instruction": "[C2] 셀에 수확량[B2]을 박스당 단위 3으로 나눈 나머지를 구하고, [C3] 셀에 한 변의 길이[B3]로 만든 정육면체 상자의 부피(3제곱)를 구하세요.",
         "cols": ["A", "B", "C"],
         "rows": [
           [
             { "val": "구분", "editable": false },
             { "val": "입력값", "editable": false },
-            { "val": "변환 결과", "editable": false }
+            { "val": "계산 결과", "editable": false }
           ],
           [
             { "val": "잔여 수량 계산", "editable": false },
@@ -46,9 +45,9 @@
             { "val": "", "editable": true, "answer": "=MOD(B2,3)", "result": 1 }
           ],
           [
-            { "val": "텍스트 수치 변환", "editable": false },
-            { "val": "\"500\"", "editable": false },
-            { "val": "", "editable": true, "answer": "=VALUE(B3)", "result": 500 }
+            { "val": "상자 부피 계산", "editable": false },
+            { "val": 2, "editable": false },
+            { "val": "", "editable": true, "answer": "=POWER(B3,3)", "result": 8 }
           ]
         ]
       }
@@ -312,15 +311,15 @@
     },
     {
       "id": 6,
-      "question": "VALUE 함수를 사용해야 하는 가장 적절한 상황은?",
+      "question": "수식 '=POWER(3, 4)'의 결과로 올바른 것은?",
       "options": [
-        "숫자를 텍스트 문자열 형태로 변환하여 셀에 표시할 때",
-        "외부 데이터로 가져온 값이 텍스트 형식으로 저장되어 SUM 등 수식 계산이 안 될 때",
-        "소수점을 제거하고 정수로 변환할 때",
-        "셀의 내용을 삭제하고 비워둘 때"
+        "12",
+        "64",
+        "81",
+        "7"
       ],
-      "answer": 1,
-      "explanation": "VALUE 함수는 텍스트 형식으로 저장된 숫자를 계산 가능한 숫자형으로 변환합니다. 웹 · DB에서 받아온 데이터가 겉보기에는 숫자지만 텍스트로 저장되어 SUM 결과가 0이 나올 때 VALUE로 해결합니다."
+      "answer": 2,
+      "explanation": "POWER(숫자, 지수)는 숫자를 지수만큼 거듭제곱합니다. 3의 4제곱이므로 3×3×3×3 = 81입니다. 3×4=12(곱하기)나 4의 3제곱인 64와 혼동하지 않도록 주의하세요. 엑셀에서는 =3^4 로 써도 같습니다."
     },
     {
       "id": 7,
@@ -373,7 +372,7 @@
   ],
   "practiceAnswers": [
     { "sheet": "수학함수", "cell": "C2", "formula": "=MOD(B2,3)" },
-    { "sheet": "수학함수", "cell": "C3", "formula": "=VALUE(B3)" },
+    { "sheet": "수학함수", "cell": "C3", "formula": "=POWER(B3,3)" },
     { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
     { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-2)" },
     { "sheet": "단일조건합", "cell": "D2", "formula": "=SUMIF(B2:B4,\"채소\",C2:C4)" },

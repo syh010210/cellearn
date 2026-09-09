@@ -1,4 +1,4 @@
-// Lesson6.jsx — 수학 함수 (ABS·INT·MOD·POWER·VALUE, ROUND계열, SUMIF, SUMIFS) 다이어그램
+// Lesson6.jsx — 수학 함수 (ABS·INT·MOD·POWER, ROUND계열, SUMIF, SUMIFS) 다이어그램
 // 2~5차시 형식을 따른다: 정적 카드는 3차시 FuncCard, 인터랙티브는 5차시 DbSumDiagram 구조.
 import { useState } from 'react';
 import {
@@ -36,17 +36,15 @@ export function MathBasicDiagram() {
       bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
     { name: 'POWER', desc: '거듭제곱', formula: '=POWER(2, 3)', value: '= 8',
       bg: C.orangeBg, border: C.orange, color: C.orange, valColor: C.orangeLight },
-    { name: 'VALUE', desc: '텍스트 → 숫자', formula: '=VALUE("500")', value: '= 500',
-      bg: C.amberBg, border: C.amber, color: C.amber, valColor: C.amberLight },
   ];
 
   return (
     <Wrap>
-      <Title>기본 수학 함수: ABS · INT · MOD · POWER · VALUE</Title>
+      <Title>기본 수학 함수: ABS · INT · MOD · POWER</Title>
 
       <Row gap={12}>
         {cards.map((c) => (
-          <Fill key={c.name} min={150}><MathCard c={c} /></Fill>
+          <Fill key={c.name} min={170}><MathCard c={c} /></Fill>
         ))}
       </Row>
     </Wrap>
