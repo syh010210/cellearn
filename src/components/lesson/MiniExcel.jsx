@@ -12,7 +12,7 @@ import { useKeyboard } from "./miniexcel/useKeyboard.js";
 // 자동완성 목록 = 컴활 2급 실기 출제 함수만 (엔진에 등록된 그 외 함수는 노출하지 않음)
 const FUNC_NAMES = [...EXAM_FUNCTIONS].sort();
 
-// Phase 3: 셀 표시 형식 (지원: #,##0 / #,##0.00 / 0% / 0.0% / yyyy-mm-dd / @)
+// Phase 3: 셀 표시 형식 (지원: #,##0 / #,##0.00 / 0% / 0.0% / yyyy-mm-dd / yyyy-mm-dd hh:mm / hh:mm:ss / @)
 function excelSerialToDate(n) {
   if (isNaN(n)) return null;
   const d = new Date(Math.round((n - 25569) * 86400 * 1000));
@@ -20,6 +20,25 @@ function excelSerialToDate(n) {
   const p = (x) => String(x).padStart(2, "0");
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
 }
+// 일련번호 → yyyy-mm-dd hh:mm (분 단위로 반올림, 반올림이 자정을 넘기면 Date가 다음 날로 정규화)
+function excelSerialToDateTime(n) {
+  if (isNaN(n)) return null;
+  const d = new Date(Math.round((n - 25569) * 86400 * 1000 / 60000) * 60000);
+  if (isNaN(d.getTime())) return null;
+  const p = (x) => String(x).padStart(2, "0");
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+}
+// 일련번호의 소수부 → hh:mm:ss (초 단위로 반올림해 부동소수 오차로 8.999초가 나오지 않게)
+function excelSerialToTime(n) {
+  if (isNaN(n)) return null;
+  const p = (x) => String(x).padStart(2, "0");
+  const frac = n - Math.floor(n);
+  let secs = Math.round(frac * 86400);
+  secs = ((secs % 86400) + 86400) % 86400;
+  return `${p(Math.floor(secs / 3600))}:${p(Math.floor(secs / 60) % 60)}:${p(secs % 60)}`;
+}
+// 엔진의 getDateFormat 반환값 → formatValue 형식 코드
+const DATE_FMT = { date: "yyyy-mm-dd", datetime: "yyyy-mm-dd hh:mm", time: "hh:mm:ss" };
 function formatValue(v, fmt) {
   if (!fmt) return String(v);
   const n = typeof v === "number" ? v : parseFloat(v);
@@ -29,6 +48,8 @@ function formatValue(v, fmt) {
     case "0%":       return isNaN(n) ? String(v) : `${Math.round(n * 100)}%`;
     case "0.0%":     return isNaN(n) ? String(v) : `${(n * 100).toFixed(1)}%`;
     case "yyyy-mm-dd": return excelSerialToDate(n) ?? String(v);
+    case "yyyy-mm-dd hh:mm": return excelSerialToDateTime(n) ?? String(v);
+    case "hh:mm:ss": return excelSerialToTime(n) ?? String(v);
     case "@":        return String(v);
     default:         return String(v);
   }
@@ -755,8 +776,13 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       const raw = sheetRef.current?.getCellValue(addr);
       if (raw === undefined || raw === "") return { text: cell.input || "", align: "left", isNumber: false };
       if (isErrorValue(raw)) return { text: raw.error, align: "center", isNumber: false };
-      if (typeof raw === "number" && sheetRef.current?.isDateCell(addr)) return { text: formatValue(raw, "yyyy-mm-dd"), align: "right", isNumber: true };
-      if (typeof raw === "number") return { text: cell.format ? formatValue(raw, cell.format) : String(raw), align: "right", isNumber: true };
+      if (typeof raw === "number") {
+        // 우선순위: JSON에 지정된 cell.format > 엔진이 추론한 날짜/시간 형식 > 숫자 그대로
+        if (cell.format) return { text: formatValue(raw, cell.format), align: "right", isNumber: true };
+        const dfmt = raw >= 0 ? sheetRef.current?.getDateFormat(addr) : null;
+        if (dfmt) return { text: formatValue(raw, DATE_FMT[dfmt]), align: "right", isNumber: true };
+        return { text: String(raw), align: "right", isNumber: true };
+      }
       if (typeof raw === "boolean") return { text: raw ? "TRUE" : "FALSE", align: "center", isNumber: false };
       return { text: cell.format ? formatValue(raw, cell.format) : String(raw), align: "left", isNumber: false };
     }

@@ -224,7 +224,7 @@ function check(label, actual, expected) {
   const s = new Sheet();
   // 절대값: DATE(2026,9,7) = 46272
   s.setCellInput('A1', '=DATE(2026,9,7)');
-  check('DATE 일련번호 46272', s.getDisplayValue('A1'), 46272);
+  check('DATE 날짜 표시(46272)', s.getDisplayValue('A1'), '2026-09-07');
 
   s.setCellInput('B1', '=DAYS(DATE(2024,12,31),DATE(2024,1,1))');
   check('DAYS 정상', s.getDisplayValue('B1'), 365);
@@ -244,7 +244,7 @@ function check(label, actual, expected) {
   check('EOMONTH 에러', s.getDisplayValue('D3'), ERRORS.VALUE);
 
   s.setCellInput('E1', '=TIME(12,0,0)');
-  check('TIME 정상(0.5)', s.getDisplayValue('E1'), 0.5);
+  check('TIME 시간 표시(0.5)', s.getDisplayValue('E1'), '12:00:00');
   s.setCellInput('E2', '=TIME("x",0,0)');
   check('TIME 에러', s.getDisplayValue('E2'), ERRORS.VALUE);
 

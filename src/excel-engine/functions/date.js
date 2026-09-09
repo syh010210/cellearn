@@ -233,4 +233,25 @@ export function formatSerialAsDate(serial) {
   return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())}`;
 }
 
+// 일련번호를 yyyy-mm-dd hh:mm 문자열로 (표시용). 소수부를 분 단위로 반올림하며,
+// 반올림이 하루를 넘기면(23:59:xx → 24:00) 다음 날로 넘긴다.
+export function formatSerialAsDateTime(serial) {
+  const p = (x) => String(x).padStart(2, '0');
+  let dayPart = Math.floor(serial);
+  const frac = serial - dayPart;
+  let mins = Math.round(frac * 1440);
+  if (mins >= 1440) { mins -= 1440; dayPart += 1; }
+  const d = serialToDate(dayPart);
+  return `${d.getUTCFullYear()}-${p(d.getUTCMonth() + 1)}-${p(d.getUTCDate())} ${p(Math.floor(mins / 60))}:${p(mins % 60)}`;
+}
+
+// 일련번호의 소수부를 hh:mm:ss 문자열로 (표시용). 초 단위로 반올림해 부동소수 오차(8.999초 등)를 없앤다.
+export function formatSerialAsTime(serial) {
+  const p = (x) => String(x).padStart(2, '0');
+  const frac = serial - Math.floor(serial);
+  let secs = Math.round(frac * 86400);
+  secs = ((secs % 86400) + 86400) % 86400;
+  return `${p(Math.floor(secs / 3600))}:${p(Math.floor(secs / 60) % 60)}:${p(secs % 60)}`;
+}
+
 export { dateToSerial, serialToDate };

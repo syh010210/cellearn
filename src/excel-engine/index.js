@@ -14,7 +14,15 @@ import { evaluate } from './evaluator.js';
 import { DependencyGraph } from './dependencyGraph.js';
 import { parseRangeRef, expandRange } from './cellAddress.js';
 import { ERRORS, isErrorValue, makeError } from './errors.js';
-import { dateToSerial, serialToDate, formatSerialAsDate } from './functions/date.js';
+import { dateToSerial, serialToDate, formatSerialAsDate, formatSerialAsDateTime, formatSerialAsTime } from './functions/date.js';
+
+// 최상위 노드가 아래 함수 호출이면 결과를 날짜/시간 형식으로 표시한다.
+// functions/date.js에 실제로 구현된 함수만 넣는다. IF/CHOOSE 등에 중첩된 경우는 다루지 않는다(최상위만).
+const DATE_FUNC_FORMAT = {
+  DATE: 'date', TODAY: 'date', WORKDAY: 'date', EOMONTH: 'date', EDATE: 'date',
+  NOW: 'datetime',
+  TIME: 'time',
+};
 
 // "2026-09-07" 또는 "2026/9/7" 형태면 엑셀 일련번호로, 아니면 null
 function parseDateInput(str) {
@@ -34,6 +42,7 @@ export class Sheet {
     this.formulas = new Map(); // address -> 파싱된 AST (수식 셀만 존재)
     this.computedValues = new Map(); // address -> 계산된 값 또는 에러 객체
     this.dateCells = new Set(); // 날짜로 입력된 셀 (표시를 yyyy-mm-dd로)
+    this.dateFormatCells = new Map(); // 날짜/시간 함수 수식 셀 (주소 → 'date' | 'datetime' | 'time')
     this.graph = new DependencyGraph();
     this.listeners = new Set(); // 셀 변경 구독자 (React re-render 트리거용)
   }
@@ -75,6 +84,11 @@ export class Sheet {
         const ast = parseFormula(input);
         this.formulas.set(address, ast);
 
+        // 최상위가 날짜/시간 함수면 결과를 날짜 형식으로 표시하도록 기록 (중첩은 다루지 않음)
+        const dfmt = ast.type === 'FunctionCall' ? DATE_FUNC_FORMAT[ast.name] : undefined;
+        if (dfmt) this.dateFormatCells.set(address, dfmt);
+        else this.dateFormatCells.delete(address);
+
         const refs = collectReferences(ast);
         const cellDeps = new Set();
         refs.forEach((r) => {
@@ -91,6 +105,7 @@ export class Sheet {
       } catch (e) {
         // 수식 문법 오류
         this.formulas.set(address, null);
+        this.dateFormatCells.delete(address);
         this.computedValues.set(address, makeError(ERRORS.NAME));
         this.graph.clearCell(address);
         this.notify([address]);
@@ -100,6 +115,7 @@ export class Sheet {
       this.formulas.delete(address);
       this.graph.clearCell(address);
       this.dateCells.delete(address);
+      this.dateFormatCells.delete(address);
 
       let value;
       if (typeof input === 'number') {
@@ -167,8 +183,21 @@ export class Sheet {
     const v = this.getCellValue(address);
     if (v === undefined) return '';
     if (isErrorValue(v)) return v.error;
-    if (this.dateCells.has(address) && typeof v === 'number') return formatSerialAsDate(v);
+    // 숫자가 아니거나 음수면 날짜 변환하지 않고 원래대로
+    const dfmt = this.getDateFormat(address);
+    if (dfmt && typeof v === 'number' && v >= 0) {
+      if (dfmt === 'datetime') return formatSerialAsDateTime(v);
+      if (dfmt === 'time') return formatSerialAsTime(v);
+      return formatSerialAsDate(v);
+    }
     return v;
+  }
+
+  // 셀의 날짜/시간 표시 형식: 날짜 입력 셀은 'date', 날짜/시간 함수 수식 셀은 그 형식, 아니면 null
+  getDateFormat(address) {
+    address = address.toUpperCase();
+    if (this.dateCells.has(address)) return 'date';
+    return this.dateFormatCells.get(address) ?? null;
   }
 
   // 날짜로 입력된 셀인지 (MiniExcel 표시용)
@@ -198,6 +227,7 @@ export class Sheet {
     this.formulas.clear();
     this.computedValues.clear();
     this.dateCells.clear();
+    this.dateFormatCells.clear();
     this.graph = new DependencyGraph();
     this.notify([]);
   }
