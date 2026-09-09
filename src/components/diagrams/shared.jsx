@@ -221,30 +221,26 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               )}
             </tr>
           ))}
-        </tbody>
-      </table>
-      </div>
-      {/* 라벨 행: 테두리 없는 별도 표. 같은 min-width라 위 표 컬럼과 정확히 정렬 */}
-      {labelRow && (
-        <table style={{ borderCollapse: 'collapse', fontFamily: FONT, marginLeft: 1 }}>
-          <tbody>
+          {/* 라벨 행: 같은 표 안의 테두리 없는 행 → 위 데이터 열과 폭이 정확히 일치(강조 열이 어느 위치든 가운데 정렬) */}
+          {labelRow && (
             <tr>
-              <td style={{ minWidth: 26, padding: '3px 4px', border: 'none' }} />
+              <td style={{ border: 'none', minWidth: 26, padding: '3px 4px' }} />
               {Array.from({ length: nCols }, (_, ci) => {
                 const lab = labelRow[ci];
                 return (
                   <td key={ci} style={{
-                    minWidth: ci === 0 ? (firstColW || minColW) : minColW,
-                    padding: '3px 4px', border: 'none',
+                    border: 'none', padding: '3px 4px',
                     fontSize: 13.5, fontWeight: 700, textAlign: 'center',
                     whiteSpace: 'nowrap', color: (lab && lab.color) || C.text,
-                  }}>{(lab && lab.text) || ' '}</td>
+                  }}>{(lab && lab.text) || ''}</td>
                 );
               })}
+              {rowLabels && <td style={{ border: 'none' }} />}
             </tr>
-          </tbody>
-        </table>
-      )}
+          )}
+        </tbody>
+      </table>
+      </div>
     </div>
   );
 }

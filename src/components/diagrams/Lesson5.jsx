@@ -40,13 +40,13 @@ export function DbCommonIntroDiagram() {
         <Fill min={300} gap={6} style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '14px 16px' }}>
           <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>데이터베이스 함수</div>
           <div style={{ color: C.blueLight, fontSize: 14, fontWeight: 700 }}>조건에 맞는 행만 골라 계산하는 형태</div>
-          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=DFUNCTION(<span style={{ color: C.blueLight }}>① 전체 표 범위</span>, <span style={{ color: C.greenLight }}>② 계산할 열 제목</span>, <span style={{ color: C.amberLight }}>③ 조건 범위</span>)</div>
+          <div style={{ color: C.text, fontSize: 15, fontWeight: 700 }}>=DFUNCTION(<span style={{ color: C.blueLight }}>전체 표 범위</span>, <span style={{ color: C.greenLight }}>계산할 열 제목</span>, <span style={{ color: C.amberLight }}>조건 범위</span>)</div>
           <div style={{ color: C.textMuted, fontSize: 13.5, lineHeight: 1.6 }}>조건 범위에 맞는 행을 전체 표에서 찾아, 그 행들의 지정한 열 값을 계산해 반환</div>
           <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '2px 0' }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 14.5, lineHeight: 1.7 }}>
-            <div><b style={{ color: C.blueLight }}>① 전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 표의 전체를 드래그해야 합니다. 예) A1:D4</span></div>
-            <div><b style={{ color: C.greenLight }}>② 계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 셀 번호(혹은 셀 주소)를 넣거나, 첫 열부터 셀 때의 열 번호(숫자)를 입력합니다. 예) D1 또는 4</span></div>
-            <div><b style={{ color: C.amberLight }}>③ 조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;조건 열 제목&apos;과 &apos;해당 조건값&apos;이 한 세트. 예) E1:E2</span></div>
+            <div><b style={{ color: C.blueLight }}>전체 표 범위</b><span style={{ color: C.text }}>: 반드시 맨 위의 제목(필드명) 행을 포함하여 <b>표의 전체</b>를 드래그해야 합니다. 예) A1:D4</span></div>
+            <div><b style={{ color: C.greenLight }}>계산할 열</b><span style={{ color: C.text }}>: 합계나 평균 등을 구할 열의 제목 셀을 클릭하여 <b>셀 번호(혹은 셀 주소)</b>를 넣거나, 첫 열부터 셀 때의 <b>열 번호(숫자)</b>를 입력합니다. 예) D1 또는 4</span></div>
+            <div><b style={{ color: C.amberLight }}>조건 범위</b><span style={{ color: C.text }}>: 반드시 &apos;<b>조건 열 제목</b>&apos;과 &apos;<b>해당 조건값</b>&apos;이 <b>한 세트</b>. 예) E1:E2</span></div>
           </div>
         </Fill>
       </Row>
@@ -88,7 +88,7 @@ export function DbSumDiagram() {
     { key: '조건 범위', color: C.amberLight },
   ];
   const explain = {
-    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다. VLOOKUP과 달리 제목 행을 빼지 않습니다.',
+    '전체 표 범위': '제목이 있는 1행부터 표 끝까지 전부 선택합니다. VLOOKUP과 달리 제목 행을 빼지 않습니다.',
     '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다. 제목 셀 D1을 클릭해도 됩니다.',
     '조건 범위': '조건 열 제목 "제품군"과 바로 아래 조건값 "세탁기"가 위아래로 붙어 있어 [B1:B2]를 그대로 드래그하면 됩니다. 따로 조건 범위를 만들 필요가 없습니다.',
   };
@@ -165,7 +165,7 @@ export function DbSumSeparateDiagram() {
     { key: '조건 범위', color: C.amberLight },
   ];
   const explain = {
-    '전체 표 범위': '열 제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
+    '전체 표 범위': '제목이 있는 1행부터 표 끝까지 전부 선택합니다.',
     '계산할 열': '합계를 구할 판매량은 표의 왼쪽부터 4번째 열입니다.',
     '조건 범위': '조건값 "냉장고"는 제품군 제목 바로 아래 칸(B2)이 아니라 표 중간에 흩어져 있어 제목과 함께 드래그할 수 없습니다. 문제가 지정한 [F1:F2]에 조건 열 제목 "제품군"과 조건값 "냉장고"를 직접 입력해 조건 범위로 씁니다.',
   };
