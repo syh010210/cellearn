@@ -265,8 +265,10 @@ export function SumifsDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>합계 범위를 맨 앞에 쓰고, (조건 범위, 조건) 쌍을 필요한 만큼 이어 붙입니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 104, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-              <div style={{ textAlign: 'left', whiteSpace: 'nowrap' }}>=SUMIFS(<span style={{ color: C.blueLight }}>D2:D5</span>, <span style={{ color: C.greenLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;과일&quot;</span>,</div>
-              <div style={{ textAlign: 'left', whiteSpace: 'nowrap' }}><span style={{ color: C.amberLight }}>C2:C5</span>, <span style={{ color: C.amberLight }}>{'">="&AVERAGE(C2:C5)'}</span>)</div>
+              <div style={{ display: 'inline-block', alignSelf: 'center', textAlign: 'left' }}>
+                <div style={{ whiteSpace: 'nowrap' }}>=SUMIFS(<span style={{ color: C.blueLight }}>D2:D5</span>, <span style={{ color: C.greenLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;과일&quot;</span>,</div>
+                <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.amberLight }}>C2:C5</span>, <span style={{ color: C.amberLight }}>{'">="&AVERAGE(C2:C5)'}</span>)</div>
+              </div>
               <div><span style={{ color: C.greenLight }}>→ 430,000</span></div>
               <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>AVERAGE(C2:C5) = 20 (출하량 평균)</div>
             </div>
