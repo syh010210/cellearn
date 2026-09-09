@@ -3,25 +3,8 @@
 import { useState } from 'react';
 import {
   Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
-  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, Cell, C,
+  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, Cell, FuncCard, C,
 } from './shared.jsx';
-
-// 3차시 FuncCard와 같은 줄 순서·크기: 함수명(17) → SyntaxLine(12.5) → 설명(14) → 수식(14) → 값(16)
-function MathCard({ c }) {
-  return (
-    <div style={{
-      background: c.bg, border: `2px solid ${c.border}`, borderRadius: 10, padding: '12px 14px',
-      display: 'flex', flexDirection: 'column', gap: 5,
-    }}>
-      <div style={{ color: c.color, fontSize: 17, fontWeight: 700 }}>{c.name}</div>
-      <SyntaxLine fn={c.name} color={c.color} size={12.5} />
-      <div style={{ color: c.color, fontSize: 14, opacity: 0.85 }}>{c.desc}</div>
-      <div style={{ color: c.color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{c.formula}</div>
-      <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value}</div>
-      {c.value2 && <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value2}</div>}
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────
 // MathBasicDiagram — 개념1 (정적 카드형)
@@ -44,7 +27,7 @@ export function MathBasicDiagram() {
 
       <Row gap={12}>
         {cards.map((c) => (
-          <Fill key={c.name} min={170}><MathCard c={c} /></Fill>
+          <Fill key={c.name} min={170}><FuncCard c={c} /></Fill>
         ))}
       </Row>
     </Wrap>
@@ -110,7 +93,7 @@ export function MathRoundDiagram() {
 
       <Row gap={12} style={{ marginTop: 16 }}>
         {cards.map((c) => (
-          <Fill key={c.name} min={150}><MathCard c={c} /></Fill>
+          <Fill key={c.name} min={150}><FuncCard c={c} /></Fill>
         ))}
       </Row>
     </Wrap>

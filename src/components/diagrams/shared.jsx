@@ -348,6 +348,23 @@ export function SyntaxLine({ fn, colors, color, prefix = '구문: ', size = 13.5
   );
 }
 
+// 3차시 FuncCard와 같은 줄 순서·크기: 함수명(17) → SyntaxLine(12.5) → 설명(14) → 수식(14) → 값(16)
+export function FuncCard({ c }) {
+  return (
+    <div style={{
+      background: c.bg, border: `2px solid ${c.border}`, borderRadius: 10, padding: '12px 14px',
+      display: 'flex', flexDirection: 'column', gap: 5,
+    }}>
+      <div style={{ color: c.color, fontSize: 17, fontWeight: 700 }}>{c.name}</div>
+      <SyntaxLine fn={c.name} color={c.color} size={12.5} />
+      <div style={{ color: c.color, fontSize: 14, opacity: 0.85 }}>{c.desc}</div>
+      <div style={{ color: c.color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{c.formula}</div>
+      <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value}</div>
+      {c.value2 && <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value2}</div>}
+    </div>
+  );
+}
+
 // 범위 바깥쪽 변에만 테두리를 그려 '범위를 감싼 것'처럼 보이게 한다 (ExcelGrid cellStyle 안에서 사용).
 //  boxes = [{ r1, r2, c1, c2, color }] (data 인덱스 기준)
 export function rangeSides(ri, ci, boxes) {

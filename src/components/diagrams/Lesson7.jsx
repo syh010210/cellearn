@@ -1,487 +1,281 @@
-import { Wrap, Title, Subtitle, BottomBar, BLine, Cell, Card, ArrowDown, C } from './shared.jsx';
+// Lesson7.jsx — 날짜 · 시간 함수 (TODAY·NOW·YEAR·MONTH·DAY, HOUR·MINUTE·SECOND·DATE·TIME, WEEKDAY, WORKDAY) 다이어그램
+// 5·6차시 형식을 따른다: 정적 카드는 shared FuncCard, 인터랙티브(개념3·4)는 6차시 SumifDiagram 구조.
+import { useState } from 'react';
+import {
+  Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
+  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, Cell, FuncCard, C,
+} from './shared.jsx';
 
-/* ──────────────────────────────────────────────
-   DatetimeBasicDiagram
-   TODAY / NOW / YEAR / MONTH / DAY
-────────────────────────────────────────────── */
+// 표 머리글 행 공통 스타일
+const headSt = (ri) => (ri === 0 ? { bold: true, color: C.blueLight, bg: C.blueCard } : {});
+
+// ─────────────────────────────────────────────
+// DatetimeBasicDiagram — 개념1 (정적 카드형)
+// ─────────────────────────────────────────────
 export function DatetimeBasicDiagram() {
-  const hdrCell = (text) => (
-    <Cell bg={C.blueCard} border={C.blueDim} bw={1} style={{ fontWeight: 700, fontSize: 15, color: C.blueLight }}>
-      {text}
-    </Cell>
-  );
+  const data = [
+    ['서버명', '배포일자'],
+    ['메인 DB', '2026-06-27'],
+  ];
 
-  const darkCell = (text, color) => (
-    <Cell bg={C.bgDark} border={C.border} bw={1} style={{ fontSize: 15, color: color || C.text }}>
-      {text}
-    </Cell>
-  );
+  const cards = [
+    { name: 'TODAY', desc: '오늘 날짜(인수 없음)', formula: '=TODAY()', value: '= 오늘 날짜',
+      bg: C.amberBg, border: C.amber, color: C.amber, valColor: C.amberLight },
+    { name: 'NOW', desc: '오늘 날짜와 현재 시각(인수 없음)', formula: '=NOW()', value: '= 오늘 날짜 + 시각',
+      bg: C.orangeBg, border: C.orange, color: C.orange, valColor: C.orangeLight },
+    { name: 'YEAR', desc: '연도만 추출', formula: '=YEAR(B2)', value: '= 2026',
+      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
+    { name: 'MONTH', desc: '월(1~12)만 추출', formula: '=MONTH(B2)', value: '= 6',
+      bg: C.purpleCard, border: C.purple, color: C.purpleLight, valColor: C.purpleLight },
+    { name: 'DAY', desc: '일(1~31)만 추출', formula: '=DAY(B2)', value: '= 27',
+      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
+  ];
 
   return (
     <Wrap>
-      <Title>날짜 · 시간 자동 입력 및 단위 추출 함수</Title>
-      <Subtitle>TODAY / NOW / YEAR / MONTH / DAY</Subtitle>
+      <Title>현재 날짜와 날짜 단위 추출: TODAY · NOW · YEAR · MONTH · DAY</Title>
 
-      <div style={{ display: 'flex', gap: 16 }}>
-        {/* Left panel */}
-        <div style={{ flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
-          <div style={{ color: C.amber, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            실시간 날짜 · 시간 반환
-          </div>
+      <Row>
+        <Fixed>
+          <TableCaption color={C.blueLight}>[표1] 배포 일지</TableCaption>
+          <ExcelGrid data={data} startRow={1} cellStyle={headSt} minColW={100} />
+        </Fixed>
+      </Row>
 
-          {/* Table */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 2, borderRadius: 6, overflow: 'hidden' }}>
-            {hdrCell('함수')}
-            {hdrCell('인수')}
-            {hdrCell('반환값')}
-
-            {darkCell('TODAY()')}
-            {darkCell('없음()')}
-            {darkCell('2026-06-27', C.amber)}
-
-            {darkCell('NOW()')}
-            {darkCell('없음()')}
-            {darkCell('2026-06-27 14:30', C.amber)}
-          </div>
-
-          {/* Difference card */}
-          <div style={{
-            background: C.amberBg, border: `1px solid ${C.amber}`, borderRadius: 8,
-            padding: 10, marginTop: 10,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ color: C.amber, fontSize: 15, fontWeight: 700 }}>
-              TODAY = 날짜만&nbsp;&nbsp;·&nbsp;&nbsp;NOW = 날짜 + 시간 모두
-            </span>
-          </div>
-
-          {/* Note */}
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
-            TODAY(), NOW()는 인수가 없어도 반드시 괄호 () 붙여야 합니다
-          </div>
-        </div>
-
-        {/* Right panel */}
-        <div style={{ flex: 1, marginLeft: 12, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
-          <div style={{ color: C.blue, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            날짜에서 단위 추출
-          </div>
-
-          <div style={{ textAlign: 'center', marginBottom: 8, color: C.text }}>
-            기준 날짜: B2 = 2026-06-27
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* YEAR */}
-            <div style={{
-              background: C.blueCard, border: `2px solid ${C.blue}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.blueLight, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=YEAR(B2)</span>
-              <span style={{ color: C.blue, fontSize: 22, fontWeight: 700 }}>→ 2026</span>
-            </div>
-
-            {/* MONTH */}
-            <div style={{
-              background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.purpleLight, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=MONTH(B2)</span>
-              <span style={{ color: C.purpleLight, fontSize: 22, fontWeight: 700 }}>→ 6</span>
-            </div>
-
-            {/* DAY */}
-            <div style={{
-              background: C.amberBg, border: `2px solid ${C.amber}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.amber, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=DAY(B2)</span>
-              <span style={{ color: C.amber, fontSize: 22, fontWeight: 700 }}>→ 27</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine>=TODAY()&nbsp;&nbsp;·&nbsp;&nbsp;=NOW()&nbsp;&nbsp;·&nbsp;&nbsp;=YEAR(날짜)&nbsp;&nbsp;·&nbsp;&nbsp;=MONTH(날짜)&nbsp;&nbsp;·&nbsp;&nbsp;=DAY(날짜)</BLine>
-        <BLine color={C.blue} bold>
-          날짜 구분자 하이픈(-) 또는 슬래시(/) 모두 인식&nbsp;&nbsp;·&nbsp;&nbsp;YEAR/MONTH/DAY 결과는 정수
-        </BLine>
-      </BottomBar>
+      <Row gap={12} style={{ marginTop: 16 }}>
+        {cards.map((c) => (
+          <Fill key={c.name} min={150}><FuncCard c={c} /></Fill>
+        ))}
+      </Row>
     </Wrap>
   );
 }
 
-/* ──────────────────────────────────────────────
-   DatetimeComposeDiagram
-   HOUR / MINUTE / SECOND ←→ DATE / TIME
-────────────────────────────────────────────── */
+// ─────────────────────────────────────────────
+// DatetimeComposeDiagram — 개념2 (정적 카드형)
+// ─────────────────────────────────────────────
 export function DatetimeComposeDiagram() {
+  const data = [
+    ['연도', '월', '일', '시', '분', '초', '기록시각'],
+    [2026, 6, 15, 14, 35, 9, '14:35:09'],
+  ];
+
+  const cards = [
+    { name: 'HOUR', desc: '시(0~23)만 추출', formula: '=HOUR(G2)', value: '= 14',
+      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
+    { name: 'MINUTE', desc: '분(0~59)만 추출', formula: '=MINUTE(G2)', value: '= 35',
+      bg: C.purpleCard, border: C.purple, color: C.purpleLight, valColor: C.purpleLight },
+    { name: 'SECOND', desc: '초(0~59)만 추출', formula: '=SECOND(G2)', value: '= 9',
+      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
+    { name: 'DATE', desc: '연도·월·일 → 날짜', formula: '=DATE(A2, B2, C2)', value: '= 2026-06-15',
+      bg: C.amberBg, border: C.amber, color: C.amber, valColor: C.amberLight },
+    { name: 'TIME', desc: '시·분·초 → 시간', formula: '=TIME(D2, E2, F2)', value: '= 14:35:09',
+      bg: C.orangeBg, border: C.orange, color: C.orange, valColor: C.orangeLight },
+  ];
+
   return (
     <Wrap>
-      <Title>시간 분해 및 날짜 · 시간 조합 함수</Title>
-      <Subtitle>HOUR / MINUTE / SECOND ←→ DATE / TIME</Subtitle>
+      <Title>시간 분해와 날짜 · 시간 조합: HOUR · MINUTE · SECOND · DATE · TIME</Title>
+      <Subtitle>분해(HOUR · MINUTE · SECOND) ↔ 조합(DATE · TIME)</Subtitle>
 
-      <div style={{ display: 'flex', gap: 16 }}>
-        {/* Left panel — decompose */}
-        <div style={{ flex: 1, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
-          <div style={{ color: C.amber, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            시간 데이터 분해
-          </div>
-          <div style={{ color: C.textDim, fontSize: 15, textAlign: 'center', marginBottom: 10 }}>
-            기준 시간: A2 = 14:35:09
-          </div>
+      <Row>
+        <Fixed>
+          <TableCaption color={C.blueLight}>[표1] 로그온 기록</TableCaption>
+          <ExcelGrid data={data} startRow={1} cellStyle={headSt} minColW={56} firstColW={60} />
+        </Fixed>
+      </Row>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {/* HOUR */}
-            <div style={{
-              background: C.blueCard, border: `2px solid ${C.blue}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.blueLight, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=HOUR(A2)</span>
-              <span style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>→ 14 (시: 0~23)</span>
-            </div>
-
-            {/* MINUTE */}
-            <div style={{
-              background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.purpleLight, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=MINUTE(A2)</span>
-              <span style={{ color: C.purpleLight, fontSize: 18, fontWeight: 700 }}>→ 35 (분: 0~59)</span>
-            </div>
-
-            {/* SECOND */}
-            <div style={{
-              background: C.amberBg, border: `2px solid ${C.amber}`, borderRadius: 8,
-              padding: 12, display: 'flex', alignItems: 'center', gap: 12,
-            }}>
-              <span style={{ color: C.amber, fontSize: 14, fontFamily: 'monospace', flex: 1 }}>=SECOND(A2)</span>
-              <span style={{ color: C.amber, fontSize: 18, fontWeight: 700 }}>→ 09 (초: 0~59)</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Right panel — compose */}
-        <div style={{ flex: 1, marginLeft: 12, background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: 16 }}>
-          <div style={{ color: C.green, fontSize: 17, fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
-            흩어진 숫자 → 날짜 · 시간 조합
-          </div>
-
-          {/* DATE card */}
-          <div style={{
-            background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 8,
-            padding: 14, marginBottom: 8,
-          }}>
-            <div style={{
-              color: C.greenLight, fontSize: 15, fontFamily: 'monospace',
-              textAlign: 'center', fontWeight: 700,
-            }}>
-              =DATE(A2, B2, C2)
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 6 }}>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>A2=2026</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>B2=6</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>C2=15</span>
-            </div>
-            <div style={{
-              color: C.greenLight, fontSize: 20, fontWeight: 700,
-              textAlign: 'center', marginTop: 4,
-            }}>
-              → 2026-06-15
-            </div>
-          </div>
-
-          {/* TIME card */}
-          <div style={{
-            background: C.purpleCard, border: `2px solid ${C.purple}`, borderRadius: 8,
-            padding: 14,
-          }}>
-            <div style={{
-              color: C.purpleLight, fontSize: 15, fontFamily: 'monospace',
-              textAlign: 'center', fontWeight: 700,
-            }}>
-              =TIME(D2, E2, F2)
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 16, marginTop: 6 }}>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>D2=14</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>E2=35</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>F2=9</span>
-            </div>
-            <div style={{
-              color: C.purpleLight, fontSize: 20, fontWeight: 700,
-              textAlign: 'center', marginTop: 4,
-            }}>
-              → 14:35:09
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine>분해: HOUR(시)/MINUTE(분)/SECOND(초)&nbsp;&nbsp;←→&nbsp;&nbsp;조합: DATE(연월일)/TIME(시분초)</BLine>
-        <BLine color={C.blue} bold>
-          DATE/TIME은 각 숫자 인수를 엑셀 표준 날짜 · 시간 형식으로 조합합니다
-        </BLine>
-      </BottomBar>
+      <Row gap={12} style={{ marginTop: 16 }}>
+        {cards.map((c) => (
+          <Fill key={c.name} min={150}><FuncCard c={c} /></Fill>
+        ))}
+      </Row>
     </Wrap>
   );
 }
 
-/* ──────────────────────────────────────────────
-   WeekdayDiagram
-   WEEKDAY — 요일 번호 반환 함수
-────────────────────────────────────────────── */
+// ─────────────────────────────────────────────
+// WeekdayDiagram — 개념3 (인터랙티브, SumifDiagram 구조)
+// ─────────────────────────────────────────────
 export function WeekdayDiagram() {
-  const hdr = (text) => (
-    <Cell bg={C.blueCard} border={C.blueDim} bw={1} style={{ fontWeight: 700, fontSize: 14, color: C.blueLight }}>
-      {text}
-    </Cell>
-  );
+  const [active, setActive] = useState(null);
 
-  const dark = (text, color) => (
-    <Cell bg={C.bgDark} border={C.border} bw={1} style={{ fontSize: 14, color: color || C.text }}>
-      {text}
-    </Cell>
-  );
+  const data = [
+    ['작업명', '마감일자', '요일'],
+    ['UI 디자인', '2026-06-22', '월'],
+    ['API 연동', '2026-06-24', '수'],
+    ['QA 테스트', '2026-06-27', '토'],
+    ['배포', '2026-06-28', '일'],
+  ];
+  const LAST = data.length - 1; // 4
 
-  const highlight = (text, bg, border, color) => (
-    <Cell bg={bg} border={border} bw={1} style={{ fontSize: 14, color: color, fontWeight: 700 }}>
-      {text}
-    </Cell>
-  );
+  const tabs = [
+    { key: '날짜', color: C.blueLight },
+    { key: '반환 유형', color: C.greenLight },
+  ];
+  const explain = {
+    '날짜': '요일을 알고 싶은 날짜 셀입니다. [B2] 하나만 적고 아래로 채웁니다.',
+    '반환 유형': '1 또는 생략 = 일요일부터 1, 2 = 월요일부터 1.\nCHOOSE에 "월"부터 나열하려면 2를 써야 숫자와 요일이 맞습니다.',
+  };
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '날짜' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ci === 2 && ri >= 1 && ri <= LAST) s.bold = true; // 요일 결과 열 강조
+    return s;
+  };
+
+  // 반환 유형 비교표 (MathRoundDiagram 격자 방식)
+  const cmpHead = ['반환 유형', '월', '화', '수', '목', '금', '토', '일'];
+  const row1 = ['1 (생략)', '2', '3', '4', '5', '6', '7', '1'];
+  const row2 = ['2', '1', '2', '3', '4', '5', '6', '7'];
+  const active2 = active === '반환 유형';
 
   return (
     <Wrap>
-      <Title>WEEKDAY — 요일 번호 반환 함수</Title>
-      <Subtitle>=WEEKDAY(날짜, 옵션) → 요일에 해당하는 정수 반환</Subtitle>
+      <Title>날짜의 요일 번호 구하기: WEEKDAY</Title>
 
-      <div style={{ display: 'flex', gap: 16 }}>
-        {/* Left table — option 1 */}
-        <div style={{ flex: 1 }}>
-          <div style={{ color: C.amber, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            옵션 1 (생략 가능: 일요일=1)
+      <ExamProblem notes={['WEEKDAY, CHOOSE 함수 사용', '월요일이 1이 되도록 반환 유형 지정']}>
+        [표1]의 <b style={{ color: C.blueLight }}>마감일자[B2:B5]</b>의 요일을 [C2:C5] 영역에
+        &quot;월&quot;~&quot;일&quot;로 표시하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 스프린트 마감일</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={90} />
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, borderRadius: 6, overflow: 'hidden' }}>
-            {hdr('요일')} {hdr('반환값')} {hdr('영문')} {hdr('비고')}
+        </Fixed>
 
-            {/* Sunday highlight */}
-            {highlight('일', C.amberBg, C.amber, C.amber)}
-            {highlight('1', C.amberBg, C.amber, C.amber)}
-            {highlight('Sun', C.amberBg, C.amber, C.amber)}
-            {highlight('★', C.amberBg, C.amber, C.amber)}
-
-            {dark('월')} {dark('2')} {dark('Mon')} {dark('')}
-            {dark('화')} {dark('3')} {dark('Tue')} {dark('')}
-            {dark('수')} {dark('4')} {dark('Wed')} {dark('')}
-            {dark('목')} {dark('5')} {dark('Thu')} {dark('')}
-            {dark('금')} {dark('6')} {dark('Fri')} {dark('')}
-
-            {/* Saturday */}
-            {highlight('토', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('7', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('Sat', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('', C.purpleCard, C.purple, C.purpleLight)}
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WEEKDAY</div>
+            <SyntaxLine fn="WEEKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} />
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>날짜의 요일을 1~7 숫자로 돌려줍니다. 반환 유형이 어느 요일을 1로 셀지 정합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 104, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>=WEEKDAY(B2, 2) → 1</div>
+              <div style={{ display: 'inline-block', alignSelf: 'center', textAlign: 'left' }}>
+                <div style={{ whiteSpace: 'nowrap' }}>=CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>,</div>
+                <div style={{ whiteSpace: 'nowrap' }}>&quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;)</div>
+              </div>
+              <div><span style={{ color: C.greenLight }}>→ 월</span></div>
+            </div>
           </div>
-        </div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+        </Fill>
+      </Row>
 
-        {/* Right table — option 2 */}
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div style={{ color: C.blue, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            옵션 2 (월요일=1: 업무일 기준)
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 2, borderRadius: 6, overflow: 'hidden' }}>
-            {hdr('요일')} {hdr('반환값')} {hdr('영문')} {hdr('비고')}
-
-            {/* Monday highlight */}
-            {highlight('월', C.blueCard, C.blueDim, C.blue)}
-            {highlight('1', C.blueCard, C.blueDim, C.blue)}
-            {highlight('Mon', C.blueCard, C.blueDim, C.blue)}
-            {highlight('★', C.blueCard, C.blueDim, C.blue)}
-
-            {dark('화')} {dark('2')} {dark('Tue')} {dark('')}
-            {dark('수')} {dark('3')} {dark('Wed')} {dark('')}
-            {dark('목')} {dark('4')} {dark('Thu')} {dark('')}
-            {dark('금')} {dark('5')} {dark('Fri')} {dark('')}
-
-            {/* Saturday */}
-            {highlight('토', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('6', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('Sat', C.purpleCard, C.purple, C.purpleLight)}
-            {highlight('', C.purpleCard, C.purple, C.purpleLight)}
-
-            {/* Sunday */}
-            {highlight('일', C.amberBg, C.amber, C.amber)}
-            {highlight('7', C.amberBg, C.amber, C.amber)}
-            {highlight('Sun', C.amberBg, C.amber, C.amber)}
-            {highlight('', C.amberBg, C.amber, C.amber)}
-          </div>
+      <div style={{ marginTop: 16 }}>
+        <TableCaption color={C.textMuted}>반환 유형별 요일 번호</TableCaption>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(7, 1fr)', width: '100%' }}>
+          {cmpHead.map((h, i) => (
+            <Cell key={'h' + i} bg={C.blueCard} border={C.blueDim}
+              style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
+          ))}
+          {row1.map((v, i) => (
+            <Cell key={'r1' + i} bg={C.bgDark} border={C.border}
+              style={{ color: C.text, fontWeight: i === 0 ? 700 : 400, fontSize: 15 }}>{v}</Cell>
+          ))}
+          {row2.map((v, i) => (
+            <Cell key={'r2' + i} bg={active2 ? C.amberBg : C.bgDark} border={active2 ? C.amber : C.border}
+              style={{ color: active2 ? C.amber : C.text, fontWeight: (active2 || i === 0) ? 700 : 400, fontSize: 15 }}>{v}</Cell>
+          ))}
         </div>
       </div>
-
-      <BottomBar>
-        <BLine>=WEEKDAY(날짜, 1) → 일요일=1&nbsp;&nbsp;·&nbsp;&nbsp;=WEEKDAY(날짜, 2) → 월요일=1</BLine>
-        <BLine color={C.blue} bold>
-          컴활 실기: 옵션2와 CHOOSE 함수 조합으로 요일명 텍스트 반환하는 문제 자주 출제
-        </BLine>
-      </BottomBar>
     </Wrap>
   );
 }
 
-/* ──────────────────────────────────────────────
-   WorkdayDiagram
-   WORKDAY — 주말·공휴일 제외 근무일 계산
-────────────────────────────────────────────── */
+// ─────────────────────────────────────────────
+// WorkdayDiagram — 개념4 (인터랙티브, SumifDiagram 구조 · 공휴일 미포함)
+// ─────────────────────────────────────────────
 export function WorkdayDiagram() {
-  const calCellStyle = (bg, border, color, bold = false) => ({
-    background: bg || C.bgDark,
-    border: `1px solid ${border || C.border}`,
-    borderRadius: 4,
-    padding: '8px 4px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 56,
-    gap: 2,
-    color: color || C.text,
-    fontWeight: bold ? 700 : 400,
-    fontSize: 14,
-  });
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['프로젝트명', '개발시작일', '소요일수', '완료예정일'],
+    ['API 연동', '2026-06-22', 5, '2026-06-29'],
+    ['UI 디자인', '2026-06-23', 3, '2026-06-26'],
+    ['QA 테스트', '2026-06-25', 2, '2026-06-29'],
+  ];
+  const LAST = data.length - 1; // 3
+
+  const tabs = [
+    { key: '시작 날짜', color: C.blueLight },
+    { key: '일수', color: C.greenLight },
+  ];
+  const explain = {
+    '시작 날짜': '기준 날짜 [B2]. 이 날은 세지 않고 다음 날부터 1일째로 셉니다.',
+    '일수': '건너뛸 근무일 수 [C2]. 주말은 자동으로 빠집니다. 셋째 인수 [휴일 범위]는 생략하면 되고 시험에는 거의 나오지 않습니다.',
+  };
+
+  const dataSt = (ri, ci) => {
+    const boxes = active === '시작 날짜' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
+      : active === '일수' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.greenLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ci === 3 && ri >= 1 && ri <= LAST) s.bold = true; // 완료예정일 열 강조
+    return s;
+  };
+
+  // 계산 과정 띠 (6/22 월 시작, 5근무일 → 6/29 월)
+  const steps = [
+    { t: '6/23 화\n1일째', bg: C.greenDark, border: C.green, color: C.greenLight },
+    { t: '6/24 수\n2일째', bg: C.greenDark, border: C.green, color: C.greenLight },
+    { t: '6/25 목\n3일째', bg: C.greenDark, border: C.green, color: C.greenLight },
+    { t: '6/26 금\n4일째', bg: C.greenDark, border: C.green, color: C.greenLight },
+    { t: '6/27 토\n주말', bg: C.purpleCard, border: C.purple, color: C.purpleLight },
+    { t: '6/28 일\n주말', bg: C.purpleCard, border: C.purple, color: C.purpleLight },
+    { t: '6/29 월\n5일째 ★', bg: C.greenBg, border: C.greenLight, color: C.greenLight },
+  ];
 
   return (
     <Wrap>
-      <Title>WORKDAY — 주말 · 공휴일 제외 근무일 계산</Title>
-      <Subtitle>=WORKDAY(시작일, 근무일수, [공휴일범위]) → 완료 예정일 반환</Subtitle>
+      <Title>주말을 뺀 완료일 구하기: WORKDAY</Title>
 
-      <div style={{ display: 'flex', gap: 16 }}>
-        {/* Left — arg cards */}
-        <div style={{ width: 260, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* ① 시작일 */}
-          <div style={{
-            background: C.blueCard, border: `2px solid ${C.blue}`, borderRadius: 8, padding: 10,
-          }}>
-            <div style={{ color: C.blue, fontWeight: 700, fontSize: 15, textAlign: 'center' }}>① 시작일</div>
-            <div style={{ color: C.blueLight, fontSize: 14, fontFamily: 'monospace', textAlign: 'center' }}>"2026-06-22"</div>
+      <ExamProblem notes={['WORKDAY 함수 사용', '주말(토 · 일)은 근무일에서 제외']}>
+        [표1]의 <b style={{ color: C.blueLight }}>개발시작일[B2:B4]</b>에서
+        <b style={{ color: C.greenLight }}> 소요일수[C2:C4]</b>만큼 지난 완료예정일을 [D2:D4] 영역에 계산하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 외주 개발 일정</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={88} />
           </div>
+        </Fixed>
 
-          {/* ② 근무일수 */}
-          <div style={{
-            background: '#071a0b', border: `2px solid ${C.green}`, borderRadius: 8, padding: 10,
-          }}>
-            <div style={{ color: C.green, fontWeight: 700, fontSize: 15, textAlign: 'center' }}>② 근무일수</div>
-            <div style={{ color: C.greenLight, fontSize: 14, textAlign: 'center' }}>5 (5근무일)</div>
-          </div>
-
-          {/* ③ 공휴일 */}
-          <div style={{
-            background: '#251005', border: `1px solid ${C.orange}`, borderRadius: 8, padding: 10,
-          }}>
-            <div style={{ color: C.orange, fontWeight: 700, fontSize: 14, textAlign: 'center' }}>③ 공휴일 범위 [선택]</div>
-            <div style={{ color: C.orange, fontSize: 13, textAlign: 'center' }}>E2:E5 등 셀 범위</div>
-          </div>
-
-          {/* Warning */}
-          <div style={{
-            background: C.redBg, border: `1px solid ${C.red}`, borderRadius: 8, padding: 10,
-          }}>
-            <div style={{ color: C.redLight, fontSize: 14, fontWeight: 700 }}>⚠ 결과가 일련번호로 보이면:</div>
-            <div style={{ color: C.redLight, fontSize: 14 }}>셀 서식 → 간단한 날짜 선택</div>
-          </div>
-
-          {/* Result box */}
-          <div style={{
-            background: C.greenBg, border: `2px solid ${C.green}`, borderRadius: 8,
-            padding: 12, marginTop: 4, textAlign: 'center',
-          }}>
-            <div style={{ color: C.greenLight, fontSize: 14, fontFamily: 'monospace' }}>
-              =WORKDAY("2026-06-22", 5)
-            </div>
-            <div style={{ color: C.greenLight, fontSize: 18, fontWeight: 700, marginTop: 4 }}>
-              → 2026-06-29 (월요일)
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WORKDAY</div>
+            <SyntaxLine fn="WORKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} />
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>시작 날짜에서 주말(토 · 일)을 건너뛰고 일수만큼 지난 날짜를 돌려줍니다. 시작 날짜 자신은 세지 않습니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=WORKDAY(<span style={{ color: C.blueLight }}>B2</span>, <span style={{ color: C.greenLight }}>C2</span>) <span style={{ color: C.greenLight }}>→ 2026-06-29</span></div>
             </div>
           </div>
-        </div>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+        </Fill>
+      </Row>
 
-        {/* Right — calendar */}
-        <div style={{ flex: 1, marginLeft: 12 }}>
-          <div style={{ color: C.textMuted, fontSize: 15, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            2026년 6월 캘린더
-          </div>
-
-          {/* Calendar grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
-            {/* Header */}
-            {['월', '화', '수', '목', '금', '토', '일'].map((d, i) => (
-              <div key={d} style={{
-                textAlign: 'center', fontWeight: 700, fontSize: 14,
-                color: i === 5 ? C.purpleLight : i === 6 ? C.amber : C.textDim,
-                padding: '4px 0',
-              }}>
-                {d}
-              </div>
-            ))}
-
-            {/* Week row: 22~28 */}
-            <div style={calCellStyle('#071a0b', C.green, C.greenLight, true)}>
-              <span>22</span><span style={{ fontSize: 11 }}>▶1일</span>
-            </div>
-            <div style={calCellStyle('#071a0b', C.green, C.greenLight, true)}>
-              <span>23</span><span style={{ fontSize: 11 }}>▶2</span>
-            </div>
-            <div style={calCellStyle('#071a0b', C.green, C.greenLight, true)}>
-              <span>24</span><span style={{ fontSize: 11 }}>▶3</span>
-            </div>
-            <div style={calCellStyle('#071a0b', C.green, C.greenLight, true)}>
-              <span>25</span><span style={{ fontSize: 11 }}>▶4</span>
-            </div>
-            <div style={calCellStyle('#071a0b', C.green, C.greenLight, true)}>
-              <span>26</span><span style={{ fontSize: 11 }}>▶5일</span>
-            </div>
-            <div style={calCellStyle(C.purpleCard, C.purple, C.purpleLight)}>
-              <span>27</span><span style={{ fontSize: 11 }}>토 SKIP</span>
-            </div>
-            <div style={calCellStyle(C.purpleCard, C.purple, C.purpleLight)}>
-              <span>28</span><span style={{ fontSize: 11 }}>일 SKIP</span>
-            </div>
-
-            {/* Next row: 29 = completion */}
-            <div style={calCellStyle(C.greenBg, C.green, C.greenLight, true)}>
-              <span style={{ fontSize: 16 }}>29</span>
-              <span style={{ fontSize: 12 }}>★완료일</span>
-            </div>
-            {[30, '', '', '', '', ''].map((d, i) => (
-              <div key={i} style={calCellStyle()}>
-                <span style={{ color: C.textDim }}>{d}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Legend */}
-          <div style={{ display: 'flex', gap: 12, marginTop: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: C.green }} />
-              <span style={{ color: C.textMuted, fontSize: 13 }}>근무일</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 12, height: 12, borderRadius: '50%', background: C.purple }} />
-              <span style={{ color: C.textMuted, fontSize: 13 }}>토 · 일(주말)</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <div style={{ width: 16, height: 16, borderRadius: '50%', background: C.green, border: `2px solid ${C.greenLight}` }} />
-              <span style={{ color: C.textMuted, fontSize: 13 }}>완료일</span>
-            </div>
-          </div>
+      <div style={{ marginTop: 16 }}>
+        <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — B2 = 6/22(월)</TableCaption>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
+          {steps.map((s, i) => (
+            <Cell key={i} bg={s.bg} border={s.border}
+              style={{ color: s.color, fontWeight: 700, fontSize: 15, whiteSpace: 'pre-line' }}>{s.t}</Cell>
+          ))}
         </div>
       </div>
-
-      <BottomBar>
-        <BLine>WORKDAY 핵심 — 주말(토 · 일) 자동 제외&nbsp;&nbsp;·&nbsp;&nbsp;주중 공휴일은 세 번째 인수로 지정</BLine>
-        <BLine color={C.blue} bold>
-          결과가 일련번호로 보이면: Ctrl+1 → 표시 형식 → 날짜 선택
-        </BLine>
-      </BottomBar>
     </Wrap>
   );
 }
