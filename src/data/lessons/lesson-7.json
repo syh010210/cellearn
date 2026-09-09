@@ -170,7 +170,7 @@
       "contentBlocks": [
         {
           "type": "text",
-          "text": "시작일에서 **주말(토 · 일)을 자동 제외**하고 지정한 순수 근무일수만큼 경과한 날짜를 계산합니다. 프로젝트 완료 예정일 산출에 자주 활용됩니다."
+          "text": "시작일에서 **주말(토 · 일)을 자동 제외**하고 지정한 순수 근무일수만큼 경과한 날짜를 계산합니다."
         },
         {
           "type": "image",
@@ -187,7 +187,8 @@
             "**=WORKDAY(시작 날짜, 일수, [휴일 범위])**",
             "**시작 날짜**: 일정이 시작되는 날짜. 이 날은 세지 않고 다음 날부터 센다.",
             "**일수**: 주말 제외 순수 근무일 수 (음수 입력 시 이전 날짜 계산)",
-            "**[휴일 범위]**: 주중 공휴일 날짜가 입력된 셀 범위 (선택 사항, 시험에 거의 나오지 않음)"
+            "**[휴일 범위]**: 주중 공휴일 날짜가 입력된 셀 범위 (선택 사항, 시험에 거의 나오지 않음)",
+            "결과를 \"6/29\"처럼 월/일로만 표시하라는 문제도 나옵니다. **=MONTH(WORKDAY(...))&\"/\"&DAY(WORKDAY(...))** 형태로 씁니다."
           ]
         },
         {
@@ -203,18 +204,20 @@
         }
       ],
       "practice": {
-        "instruction": "외주 개발 일정표입니다. 개발 시작일 [B2]에서 주말을 제외하고 순수 5근무일이 소요되는 프로젝트의 예상 완료일을 [C2] 셀에 계산하세요.",
-        "cols": ["A", "B", "C"],
+        "instruction": "[표1]에서 개발시작일[B2]과 소요일수[C2]를 이용하여 완료예정일[D2]을 계산하시오.\n▶ 완료예정일 : 개발시작일에 주말(토 · 일)을 제외하고 소요일수를 더한 날짜 [표시 예 : 2026-06-22, 5 → 6/29]\n▶ WORKDAY, MONTH, DAY 함수와 & 연산자 사용",
+        "cols": ["A", "B", "C", "D"],
         "rows": [
           [
             { "val": "프로젝트명", "editable": false },
             { "val": "개발시작일", "editable": false },
-            { "val": "예상완료일", "editable": false }
+            { "val": "소요일수", "editable": false },
+            { "val": "완료예정일", "editable": false }
           ],
           [
             { "val": "API 연동", "editable": false },
             { "val": "2026-06-22", "editable": false },
-            { "val": "", "editable": true, "answer": "=WORKDAY(B2,5)", "result": "2026-06-29" }
+            { "val": 5, "editable": false },
+            { "val": "", "editable": true, "answer": "=MONTH(WORKDAY(B2,C2))&\"/\"&DAY(WORKDAY(B2,C2))", "result": "6/29" }
           ]
         ]
       }
@@ -350,6 +353,6 @@
     { "sheet": "요소조합", "cell": "D2", "formula": "=DAY(A2)" },
     { "sheet": "요소조합", "cell": "E2", "formula": "=DATE(B2,C2,D2)" },
     { "sheet": "요일판별", "cell": "C2", "formula": "=WEEKDAY(B2,2)" },
-    { "sheet": "근무일연산", "cell": "C2", "formula": "=WORKDAY(B2,5)" }
+    { "sheet": "근무일연산", "cell": "D2", "formula": "=MONTH(WORKDAY(B2,C2))&\"/\"&DAY(WORKDAY(B2,C2))" }
   ]
 }

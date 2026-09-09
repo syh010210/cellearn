@@ -1,9 +1,8 @@
 // Lesson7.jsx — 날짜 · 시간 함수 (TODAY·NOW·YEAR·MONTH·DAY, HOUR·MINUTE·SECOND·DATE·TIME, WEEKDAY, WORKDAY) 다이어그램
 // 5·6차시 형식을 따른다: 정적 카드는 shared FuncCard, 인터랙티브(개념3·4)는 6차시 SumifDiagram 구조.
-import { useState } from 'react';
 import {
   Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
-  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, Cell, FuncCard, C,
+  rangeSides, SyntaxLine, Cell, FuncCard, C,
 } from './shared.jsx';
 
 // 표 머리글 행 공통 스타일
@@ -203,8 +202,6 @@ export function WeekdayDiagram() {
 // WorkdayDiagram — 개념4 (인터랙티브, SumifDiagram 구조 · 공휴일 미포함)
 // ─────────────────────────────────────────────
 export function WorkdayDiagram() {
-  const [active, setActive] = useState(null);
-
   const data = [
     ['프로젝트명', '개발시작일', '소요일수', '완료예정일'],
     ['API 연동', '2026-06-22', 5, '2026-06-29'],
@@ -213,23 +210,22 @@ export function WorkdayDiagram() {
   ];
   const LAST = data.length - 1; // 3
 
-  const tabs = [
-    { key: '시작 날짜', color: C.blueLight },
-    { key: '일수', color: C.greenLight },
-  ];
-  const explain = {
-    '시작 날짜': '기준 날짜 [B2]. 이 날은 세지 않고 다음 날부터 1일째로 셉니다.',
-    '일수': '건너뛸 근무일 수 [C2]. 주말은 자동으로 빠집니다. 셋째 인수 [휴일 범위]는 생략하면 되고 시험에는 거의 나오지 않습니다.',
-  };
-
+  // 정적 강조: 개발시작일(B2:B4) 파랑 테두리, 소요일수(C2:C4) 초록 테두리, 완료예정일(D2:D4) 굵게
   const dataSt = (ri, ci) => {
-    const boxes = active === '시작 날짜' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
-      : active === '일수' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.greenLight }] : [];
-    const s = rangeSides(ri, ci, boxes);
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 3 && ri >= 1 && ri <= LAST) s.bold = true; // 완료예정일 열 강조
+    const s = rangeSides(ri, ci, [
+      { r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blue },
+      { r1: 1, r2: LAST, c1: 2, c2: 2, color: C.green },
+    ]);
+    if (ci === 3 && ri >= 1 && ri <= LAST) s.bold = true;
     return s;
   };
+
+  // 단계 박스 스타일 (개념3 단계 박스 / 4차시 IndexMatchDiagram과 동일)
+  const boxBase = { borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 };
+  const nameSt = (c) => ({ color: c, fontSize: 17, fontWeight: 700 });
+  const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
+  const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
 
   // 계산 과정 띠 (6/22 월 시작, 5근무일 → 6/29 월)
   const steps = [
@@ -244,11 +240,11 @@ export function WorkdayDiagram() {
 
   return (
     <Wrap>
-      <Title>주말을 뺀 완료일 구하기: WORKDAY</Title>
+      <Title>주말을 빼고 날짜 더하기: WORKDAY</Title>
 
-      <ExamProblem notes={['WORKDAY 함수 사용', '주말(토 · 일)은 근무일에서 제외']}>
-        [표1]의 <b style={{ color: C.blueLight }}>개발시작일[B2:B4]</b>에서
-        <b style={{ color: C.greenLight }}> 소요일수[C2:C4]</b>만큼 지난 완료예정일을 [D2:D4] 영역에 계산하시오.
+      <ExamProblem notes={['완료예정일 : 개발시작일에 주말(토 · 일)을 제외하고 소요일수를 더한 날짜', 'WORKDAY 함수 사용']}>
+        [표1]의 <b style={{ color: C.blueLight }}>개발시작일[B2:B4]</b>과
+        <b style={{ color: C.greenLight }}> 소요일수[C2:C4]</b>를 이용하여 완료예정일[D2:D4]을 계산하시오.
       </ExamProblem>
 
       <Row gap={20}>
@@ -257,33 +253,27 @@ export function WorkdayDiagram() {
             <TableCaption color={C.blueLight}>[표1] 외주 개발 일정</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={88} />
           </div>
+          <div>
+            <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — B2 = 6/22(월)</TableCaption>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
+              {steps.map((s, i) => (
+                <Cell key={i} bg={s.bg} border={s.border}
+                  style={{ color: s.color, fontWeight: 700, fontSize: 15, whiteSpace: 'pre-line', padding: '6px 2px' }}>{s.t}</Cell>
+              ))}
+            </div>
+          </div>
         </Fixed>
 
         <Fill min={360} max={500}>
-          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>WORKDAY</div>
-            <SyntaxLine fn="WORKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} />
-            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>시작 날짜에서 주말(토 · 일)을 건너뛰고 일수만큼 지난 날짜를 돌려줍니다. 시작 날짜 자신은 세지 않습니다.</div>
-            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
-              <div>=WORKDAY(<span style={{ color: C.blueLight }}>B2</span>, <span style={{ color: C.greenLight }}>C2</span>) <span style={{ color: C.greenLight }}>→ 2026-06-29</span></div>
-            </div>
+          <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${C.blue}` }}>
+            <div style={nameSt(C.blueLight)}>WORKDAY</div>
+            <SyntaxLine fn="WORKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} size={14} />
+            <div style={descSt}>시작 날짜에서 주말(토 · 일)을 건너뛰고 일수만큼 지난 날짜를 돌려줍니다. 시작 날짜 자신은 세지 않습니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>=WORKDAY(<span style={{ color: C.blueLight }}>B2</span>, <span style={{ color: C.greenLight }}>C2</span>) <span style={{ color: C.greenLight }}>→ 2026-06-29</span></div>
           </div>
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 개의 인수를 하나씩 확인하세요</div>
-          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
-          <ExplainBoard tabs={tabs} active={active} explain={explain} />
         </Fill>
       </Row>
-
-      <div style={{ marginTop: 16 }}>
-        <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — B2 = 6/22(월)</TableCaption>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
-          {steps.map((s, i) => (
-            <Cell key={i} bg={s.bg} border={s.border}
-              style={{ color: s.color, fontWeight: 700, fontSize: 15, whiteSpace: 'pre-line' }}>{s.t}</Cell>
-          ))}
-        </div>
-      </div>
     </Wrap>
   );
 }
