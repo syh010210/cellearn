@@ -2,7 +2,7 @@
 // 2~5차시 형식을 따른다: 정적 카드는 3차시 FuncCard, 인터랙티브는 5차시 DbSumDiagram 구조.
 import { useState } from 'react';
 import {
-  Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
+  Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
   ArgButtons, rangeSides, SyntaxLine, ExplainBoard, BottomBar, BLine, Cell, C,
 } from './shared.jsx';
 import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
@@ -58,51 +58,53 @@ export function MathBasicDiagram() {
 // MathRoundDiagram — 개념2 (정적 카드형)
 // ─────────────────────────────────────────────
 export function MathRoundDiagram() {
-  const kRows = [
-    { k: 'K=2', label: '소수 둘째 자리', hi: false },
-    { k: 'K=1', label: '소수 첫째 자리', hi: false },
-    { k: 'K=0', label: '정수', hi: false },
-    { k: 'K=-1', label: '십의 자리', hi: true },
-    { k: 'K=-2', label: '백의 자리', hi: true },
+  const kHeads = ['K=-3', 'K=-2', 'K=-1', 'K=0', 'K=1', 'K=2', 'K=3'];
+  const neg = [true, true, true, false, false, false, false]; // 음수 K = 정수 자리 강조 열
+  const meaning = ['천의 자리', '백의 자리', '십의 자리', '일의 자리(정수)', '소수 첫째', '소수 둘째', '소수 셋째'];
+  // 값은 3737.3737을 K별로 처리한 결과(직접 계산해 문자열로 고정). diff = ROUND와 다른 셀
+  const funcRows = [
+    { name: 'ROUND',     color: C.blue,       vals: ['4000', '3700', '3740', '3737', '3737.4', '3737.37', '3737.374'], diff: [false, false, false, false, false, false, false] },
+    { name: 'ROUNDUP',   color: C.greenLight, vals: ['4000', '3800', '3740', '3738', '3737.4', '3737.38', '3737.374'], diff: [false, true,  false, true,  false, true,  false] },
+    { name: 'ROUNDDOWN', color: C.redLight,   vals: ['3000', '3700', '3730', '3737', '3737.3', '3737.37', '3737.373'], diff: [true,  false, true,  false, true,  false, true ] },
   ];
 
-  const cards = [
-    { name: 'ROUND', desc: '반올림(버릴 자리가 5 이상이면 올림)', formula: '=ROUND(3.987, 2)', value: '= 3.99',
-      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
-    { name: 'ROUNDUP', desc: '무조건 올림', formula: '=ROUNDUP(3.987, 2)', value: '= 3.99',
-      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
-    { name: 'ROUNDDOWN', desc: '무조건 내림(절삭)', formula: '=ROUNDDOWN(3.987, 2)', value: '= 3.98',
-      bg: C.redDark, border: C.red, color: C.redLight, valColor: C.redLight },
-  ];
+  const headCell = (text, isNeg, key) => (
+    <Cell key={key} bg={isNeg ? C.amberBg : C.blueCard} border={isNeg ? C.amber : C.blueDim}
+      style={{ color: isNeg ? C.amber : C.blueLight, fontWeight: 700, fontSize: 15 }}>{text}</Cell>
+  );
 
   return (
     <Wrap>
       <Title>자릿수 제어 함수: ROUND · ROUNDUP · ROUNDDOWN</Title>
+      <Subtitle>예시 숫자 3737.3737 을 자릿수 K별로 처리한 결과</Subtitle>
 
-      <Row gap={20}>
-        <Fixed>
-          <TableCaption color={C.blueLight}>자릿수 K의 의미</TableCaption>
-          <div style={{ display: 'grid', gridTemplateColumns: '92px 150px' }}>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>K값</Cell>
-            <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>의미</Cell>
-            {kRows.map((r) => [
-              <Cell key={r.k + '-k'} bg={r.hi ? C.amberBg : C.bgDark} border={r.hi ? C.amber : C.border}
-                style={{ color: r.hi ? C.amber : C.text, fontWeight: r.hi ? 700 : 400, fontSize: 15 }}>{r.k}</Cell>,
-              <Cell key={r.k + '-l'} bg={r.hi ? C.amberBg : C.bgDark} border={r.hi ? C.amber : C.border}
-                style={{ color: r.hi ? C.amber : C.text, fontWeight: r.hi ? 700 : 400, fontSize: 15 }}>{r.label}</Cell>,
-            ])}
-          </div>
-        </Fixed>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(7, 1fr)', width: '100%', marginTop: 16 }}>
+        {/* 머리글 행 */}
+        {headCell('함수', false, 'h-fn')}
+        {kHeads.map((k, i) => headCell(k, neg[i], 'h-' + i))}
 
-        <Fill min={360}>
-          <div style={{ color: C.textDim, fontSize: 15 }}>예시: 3.987을 K=2로 처리</div>
-          {cards.map((c) => <MathCard key={c.name} c={c} />)}
-        </Fill>
-      </Row>
+        {/* 함수별 값 행 */}
+        {funcRows.map((r) => [
+          <Cell key={r.name + '-n'} bg={C.bgDark} border={C.border}
+            style={{ color: r.color, fontWeight: 700, fontSize: 15 }}>{r.name}</Cell>,
+          ...r.vals.map((v, i) => (
+            <Cell key={r.name + '-' + i} bg={C.bgDark} border={C.border}
+              style={{ color: r.diff[i] ? r.color : C.text, fontWeight: r.diff[i] ? 700 : 400, fontSize: 15 }}>{v}</Cell>
+          )),
+        ])}
+
+        {/* 의미 행 */}
+        <Cell key="m-fn" bg={C.bgDark} border={C.border}
+          style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>자리</Cell>
+        {meaning.map((m, i) => (
+          <Cell key={'m-' + i} bg={neg[i] ? C.amberBg : C.bgDark} border={neg[i] ? C.amber : C.border}
+            style={{ color: C.amber, fontWeight: 700, fontSize: 15 }}>{m}</Cell>
+        ))}
+      </div>
 
       <BottomBar>
         <BLine>{FUNCTION_SYNTAX['ROUND']}  ·  {FUNCTION_SYNTAX['ROUNDUP']}  ·  {FUNCTION_SYNTAX['ROUNDDOWN']}</BLine>
-        <BLine color={C.blue} bold>K 양수 = 소수 자리 · K=0 = 정수 · K 음수 = 정수 자리(십·백…)</BLine>
+        <BLine color={C.blue} bold>K 양수 = 소수 몇째 자리까지 · K=0 = 정수 · K 음수 = 십·백·천의 자리에서 처리</BLine>
       </BottomBar>
     </Wrap>
   );
