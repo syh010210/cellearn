@@ -2,13 +2,10 @@
 // 2~5차시 형식을 따른다: 정적 카드는 3차시 FuncCard, 인터랙티브는 5차시 DbSumDiagram 구조.
 import { useState } from 'react';
 import {
-  Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
+  Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
   ArgButtons, rangeSides, SyntaxLine, ExplainBoard, BottomBar, BLine, Cell, C,
 } from './shared.jsx';
 import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
-
-// 데이터 표 헤더 공통 스타일
-const headSt = (ri) => (ri === 0 ? { bold: true, color: C.blueLight, bg: C.blueCard } : {});
 
 // 3차시 FuncCard와 같은 줄 순서·크기: 함수명(17) → SyntaxLine(12.5) → 설명(14) → 수식(14) → 값(16)
 function MathCard({ c }) {
@@ -31,54 +28,28 @@ function MathCard({ c }) {
 // MathBasicDiagram — 개념1 (정적 카드형)
 // ─────────────────────────────────────────────
 export function MathBasicDiagram() {
-  const data = [
-    ['구분', '값'],
-    ['절댓값', -3.7],
-    ['내림', 3.9],
-    ['나머지', 17],
-    ['거듭제곱', 2],
-    ['텍스트 숫자', '"500"'],
-  ];
-
   const cards = [
-    { name: 'ABS', desc: '부호를 없앤 절댓값', formula: '=ABS(B2)', value: '= 3.7',
+    { name: 'ABS', desc: '부호를 없앤 절댓값', formula: '=ABS(-3.7)', value: '= 3.7',
       bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
-    { name: 'INT', desc: '더 작은 정수로 내림', formula: '=INT(B3)', value: '= 3', value2: '=INT(-3.1) → -4',
+    { name: 'INT', desc: '더 작은 정수로 내림', formula: '=INT(3.9)', value: '= 3', value2: '=INT(-3.1) → -4',
       bg: C.purpleCard, border: C.purple, color: C.purpleLight, valColor: C.red },
-    { name: 'MOD', desc: '나눈 나머지', formula: '=MOD(B4, 5)', value: '= 2',
+    { name: 'MOD', desc: '나눈 나머지', formula: '=MOD(17, 5)', value: '= 2',
       bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
-    { name: 'POWER', desc: '거듭제곱', formula: '=POWER(B5, 3)', value: '= 8',
+    { name: 'POWER', desc: '거듭제곱', formula: '=POWER(2, 3)', value: '= 8',
       bg: C.orangeBg, border: C.orange, color: C.orange, valColor: C.orangeLight },
-    { name: 'VALUE', desc: '텍스트 → 숫자', formula: '=VALUE(B6)', value: '= 500',
+    { name: 'VALUE', desc: '텍스트 → 숫자', formula: '=VALUE("500")', value: '= 500',
       bg: C.amberBg, border: C.amber, color: C.amber, valColor: C.amberLight },
   ];
 
   return (
     <Wrap>
       <Title>기본 수학 함수: ABS · INT · MOD · POWER · VALUE</Title>
-      <Subtitle>예시 데이터</Subtitle>
 
-      <Row>
-        <Fixed><ExcelGrid data={data} startRow={1} cellStyle={headSt} minColW={90} /></Fixed>
-      </Row>
-
-      <Row gap={12} style={{ marginTop: 16 }}>
+      <Row gap={12}>
         {cards.map((c) => (
           <Fill key={c.name} min={150}><MathCard c={c} /></Fill>
         ))}
       </Row>
-
-      <div style={{
-        marginTop: 16, background: C.redBg, border: `1px solid ${C.red}`, borderRadius: 8,
-        padding: '12px 16px', color: C.redLight, fontSize: 15, lineHeight: 1.6,
-      }}>
-        <b style={{ color: C.red }}>⚠ INT 음수 주의</b> — INT(-3.1) = -4. 0 방향이 아니라 더 작은 정수 쪽으로 내립니다.
-      </div>
-
-      <BottomBar>
-        <BLine>{FUNCTION_SYNTAX['ABS']}  ·  {FUNCTION_SYNTAX['INT']}  ·  {FUNCTION_SYNTAX['MOD']}  ·  {FUNCTION_SYNTAX['POWER']}  ·  {FUNCTION_SYNTAX['VALUE']}</BLine>
-        <BLine color={C.blue} bold>VALUE는 텍스트로 저장된 숫자를 계산에 쓸 때 사용합니다</BLine>
-      </BottomBar>
     </Wrap>
   );
 }
