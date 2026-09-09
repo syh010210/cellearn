@@ -311,6 +311,21 @@ export function ArgButtons({ tabs, active, onSelect }) {
   );
 }
 
+// 오른쪽 칠판: 모든 설명을 한 칸에 겹쳐 두어 버튼을 눌러도 크기가 변하지 않는다.
+// 4·5·6차시 인터랙티브 다이어그램 공용. tabs=[{key,color}], explain={key: 설명}.
+export function ExplainBoard({ tabs, active, explain }) {
+  return (
+    <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
+      {tabs.map((t) => (
+        <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
+          <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
+          <span style={{ color: C.text }}> — {explain[t.key]}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // 함수 구문 한 줄 — "구문: =…" 형태로 표시한다.
 // 인수 이름은 functionSyntax.js(단일 출처)에서 가져오므로 다이어그램마다 손으로 적지 않는다.
 //  fn      : 함수명 (예: "VLOOKUP")

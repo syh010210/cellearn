@@ -198,7 +198,7 @@
       }
     },
     {
-      "heading": "4. 복합 다중 조건과 와일드카드 결합 합계 (SUMIFS)",
+      "heading": "4. 다중 조건 합계 (SUMIFS)",
       "content": "여러 개의 조건을 동시에 만족(AND)하는 행들만 추출하여 더하는 함수입니다.",
       "contentBlocks": [
         {
@@ -208,7 +208,7 @@
         {
           "type": "image",
           "url": "/images/math-sumifs.svg",
-          "alt": "SUMIFS 다중 조건 AND 필터링 및 와일드카드 활용"
+          "alt": "SUMIFS 다중 조건 AND 필터링"
         },
         {
           "type": "heading",
@@ -223,23 +223,23 @@
         },
         {
           "type": "heading",
-          "text": "고급 조건 표현 문법"
+          "text": "조건 쓰는 법"
         },
         {
           "type": "bullets",
           "items": [
-            "**와일드카드(*)**: \"*베리*\" → '베리'가 포함된 모든 텍스트 매칭 (블루베리, 라즈베리 등)",
             "**함수 연동 조건**: \">=\"&AVERAGE(범위) — 비교 연산자를 쌍따옴표로 감싸고 & 로 함수와 연결",
             "**조건을 셀로 참조**: 조건 자리에 \">=15\" 대신 셀 D2처럼 셀 주소를 쓸 수 있음"
           ]
         }
       ],
       "practice": {
-        "instruction": "농장 출하 데이터입니다. [F2] 셀에 SUMIFS 함수를 사용하여 작물명에 '베리'가 포함되면서 출하량이 15kg 이상인 총 출하금액을 구하세요.",
-        "cols": ["A", "B", "C", "D", "E", "F"],
+        "instruction": "농장 출하 데이터입니다. [G2] 셀에 SUMIFS 함수를 사용하여 분류가 [E2] 셀의 값('과일')이면서 출하량이 [F2] 셀의 조건('>=15')을 만족하는 작물의 출하금액 합계를 구하세요.",
+        "cols": ["A", "B", "C", "D", "E", "F", "G"],
         "rows": [
           [
             { "val": "작물명", "editable": false },
+            { "val": "분류", "editable": false },
             { "val": "출하량", "editable": false },
             { "val": "출하금액", "editable": false },
             { "val": "조건1", "editable": false },
@@ -248,14 +248,16 @@
           ],
           [
             { "val": "블루베리", "editable": false },
+            { "val": "과일", "editable": false },
             { "val": 20, "editable": false },
             { "val": 180000, "editable": false },
-            { "val": "*베리*", "editable": false },
+            { "val": "과일", "editable": false },
             { "val": ">=15", "editable": false },
-            { "val": "", "editable": true, "answer": "=SUMIFS(C2:C4,A2:A4,\"*베리*\",B2:B4,\">=15\")", "result": 180000 }
+            { "val": "", "editable": true, "answer": "=SUMIFS(D2:D5,B2:B5,E2,C2:C5,F2)", "result": 430000 }
           ],
           [
             { "val": "딸기", "editable": false },
+            { "val": "과일", "editable": false },
             { "val": 30, "editable": false },
             { "val": 250000, "editable": false },
             { "val": "", "editable": false },
@@ -264,8 +266,18 @@
           ],
           [
             { "val": "라즈베리", "editable": false },
+            { "val": "과일", "editable": false },
             { "val": 8, "editable": false },
             { "val": 90000, "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "상추", "editable": false },
+            { "val": "채소", "editable": false },
+            { "val": 25, "editable": false },
+            { "val": 60000, "editable": false },
             { "val": "", "editable": false },
             { "val": "", "editable": false },
             { "val": "", "editable": false }
@@ -402,6 +414,6 @@
     { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
     { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-1)" },
     { "sheet": "단일조건합", "cell": "E2", "formula": "=SUMIF($B$2:$B$4,D2,$C$2:$C$4)" },
-    { "sheet": "다중조건합", "cell": "F2", "formula": "=SUMIFS(C2:C4,A2:A4,\"*베리*\",B2:B4,\">=15\")" }
+    { "sheet": "다중조건합", "cell": "G2", "formula": "=SUMIFS(D2:D5,B2:B5,E2,C2:C5,F2)" }
   ]
 }

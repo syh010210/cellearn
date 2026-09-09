@@ -1,23 +1,9 @@
 // Lesson5.jsx — 데이터베이스 함수 (DSUM, DAVERAGE, DCOUNT, DMAX) 다이어그램
 // 4차시 VlookupDiagram 패턴(ExamProblem · Row/Fixed/Fill · ExcelGrid · ArgButtons · rangeSides · explain 칠판)을 공유 컴포넌트로 따른다.
 import { useState } from 'react';
-import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, SyntaxLine, C } from './shared.jsx';
+import { Wrap, Title, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem, ArgButtons, rangeSides, SyntaxLine, ExplainBoard, C } from './shared.jsx';
 
 const LIGHT_BLUE = 'rgba(96,165,250,0.22)';
-
-// 오른쪽 칠판: 모든 설명을 한 칸에 겹쳐 두어 버튼을 눌러도 크기가 변하지 않는다.
-function ExplainBoard({ tabs, active, explain }) {
-  return (
-    <div style={{ display: 'grid', background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 10, padding: '13px 16px' }}>
-      {tabs.map((t) => (
-        <div key={t.key} style={{ gridColumn: 1, gridRow: 1, visibility: active === t.key ? 'visible' : 'hidden', fontSize: 15, lineHeight: 1.7, whiteSpace: 'pre-line' }}>
-          <span style={{ color: t.color, fontWeight: 700 }}>{t.key}</span>
-          <span style={{ color: C.text }}> — {explain[t.key]}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 // ─────────────────────────────────────────────
 // DbCommonIntroDiagram — 데이터베이스 함수 공통 형식 (개념1 맨 앞)

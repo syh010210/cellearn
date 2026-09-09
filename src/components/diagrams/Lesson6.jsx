@@ -1,329 +1,296 @@
 // Lesson6.jsx — 수학 함수 (ABS·INT·MOD·POWER·VALUE, ROUND계열, SUMIF, SUMIFS) 다이어그램
-import { C, Wrap, Title, BottomBar, BLine, Cell } from './shared.jsx';
+// 2~5차시 형식을 따른다: 정적 카드는 3차시 FuncCard, 인터랙티브는 5차시 DbSumDiagram 구조.
+import { useState } from 'react';
+import {
+  Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
+  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, BottomBar, BLine, Cell, C,
+} from './shared.jsx';
+import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
+
+// 데이터 표 헤더 공통 스타일
+const headSt = (ri) => (ri === 0 ? { bold: true, color: C.blueLight, bg: C.blueCard } : {});
+
+// 3차시 FuncCard와 같은 줄 순서·크기: 함수명(17) → SyntaxLine(12.5) → 설명(14) → 수식(14) → 값(16)
+function MathCard({ c }) {
+  return (
+    <div style={{
+      background: c.bg, border: `2px solid ${c.border}`, borderRadius: 10, padding: '12px 14px',
+      display: 'flex', flexDirection: 'column', gap: 5,
+    }}>
+      <div style={{ color: c.color, fontSize: 17, fontWeight: 700 }}>{c.name}</div>
+      <SyntaxLine fn={c.name} color={c.color} size={12.5} />
+      <div style={{ color: c.color, fontSize: 14, opacity: 0.85 }}>{c.desc}</div>
+      <div style={{ color: c.color, fontSize: 14, fontWeight: 700, opacity: 0.9 }}>{c.formula}</div>
+      <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value}</div>
+      {c.value2 && <div style={{ color: c.valColor, fontSize: 16, fontWeight: 700 }}>{c.value2}</div>}
+    </div>
+  );
+}
 
 // ─────────────────────────────────────────────
-// MathBasicDiagram
+// MathBasicDiagram — 개념1 (정적 카드형)
 // ─────────────────────────────────────────────
 export function MathBasicDiagram() {
-  const fnCards = [
-    {
-      name: 'ABS', desc: '절댓값',
-      formula: 'ABS(-3.7)', result: '→ 3.7',
-      bg: C.blueCard, border: C.blueDim, color: C.blue, descColor: C.blueLight,
-      resultColor: C.blue, resultNote: null,
-    },
-    {
-      name: 'INT', desc: '바닥 방향 내림',
-      formula: 'INT(3.9) → 3', result: 'INT(-3.1) → -4',
-      bg: C.purpleCard, border: C.purple, color: C.purpleLight, descColor: C.purple,
-      resultColor: C.red, resultNote: '(음수 주의!)',
-    },
-    {
-      name: 'MOD', desc: '나머지',
-      formula: 'MOD(17, 5)', result: '→ 2',
-      bg: C.greenDark, border: C.green, color: C.greenLight, descColor: C.green,
-      resultColor: C.greenLight, resultNote: null,
-    },
-    {
-      name: 'POWER', desc: '거듭제곱',
-      formula: 'POWER(2, 3)', result: '→ 8',
-      bg: '#251005', border: C.orange, color: C.orange, descColor: C.orange,
-      resultColor: C.orange, resultNote: null,
-    },
-    {
-      name: 'VALUE', desc: '텍스트 → 숫자',
-      formula: 'VALUE("500")', result: '→ 500',
-      bg: C.amberBg, border: C.amber, color: C.amber, descColor: C.amberLight,
-      resultColor: C.amber, resultNote: null,
-    },
+  const data = [
+    ['구분', '값'],
+    ['절댓값', -3.7],
+    ['내림', 3.9],
+    ['나머지', 17],
+    ['거듭제곱', 2],
+    ['텍스트 숫자', '"500"'],
+  ];
+
+  const cards = [
+    { name: 'ABS', desc: '부호를 없앤 절댓값', formula: '=ABS(B2)', value: '= 3.7',
+      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
+    { name: 'INT', desc: '더 작은 정수로 내림', formula: '=INT(B3)', value: '= 3', value2: '=INT(-3.1) → -4',
+      bg: C.purpleCard, border: C.purple, color: C.purpleLight, valColor: C.red },
+    { name: 'MOD', desc: '나눈 나머지', formula: '=MOD(B4, 5)', value: '= 2',
+      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
+    { name: 'POWER', desc: '거듭제곱', formula: '=POWER(B5, 3)', value: '= 8',
+      bg: C.orangeBg, border: C.orange, color: C.orange, valColor: C.orangeLight },
+    { name: 'VALUE', desc: '텍스트 → 숫자', formula: '=VALUE(B6)', value: '= 500',
+      bg: C.amberBg, border: C.amber, color: C.amber, valColor: C.amberLight },
   ];
 
   return (
     <Wrap>
       <Title>기본 수학 함수: ABS · INT · MOD · POWER · VALUE</Title>
+      <Subtitle>예시 데이터</Subtitle>
 
-      {/* Five function cards */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-        {fnCards.map(fc => (
-          <div key={fc.name} style={{
-            flex: 1, minWidth: 140, background: fc.bg, border: `2px solid ${fc.border}`,
-            borderRadius: 8, padding: 12,
-          }}>
-            <div style={{ color: fc.color, fontSize: 18, fontWeight: 700, textAlign: 'center' }}>{fc.name}</div>
-            <div style={{ color: fc.descColor, fontSize: 14, textAlign: 'center' }}>{fc.desc}</div>
-            <div style={{ color: C.text, fontSize: 14, fontFamily: 'monospace', textAlign: 'center', marginTop: 6 }}>{fc.formula}</div>
-            <div style={{ color: fc.resultColor, fontSize: fc.resultNote ? 14 : 20, fontWeight: 700, textAlign: 'center' }}>
-              {fc.result}
-            </div>
-            {fc.resultNote && (
-              <div style={{ color: fc.resultColor, fontSize: 12, textAlign: 'center' }}>{fc.resultNote}</div>
-            )}
-          </div>
+      <Row>
+        <Fixed><ExcelGrid data={data} startRow={1} cellStyle={headSt} minColW={90} /></Fixed>
+      </Row>
+
+      <Row gap={12} style={{ marginTop: 16 }}>
+        {cards.map((c) => (
+          <Fill key={c.name} min={150}><MathCard c={c} /></Fill>
         ))}
-      </div>
+      </Row>
 
-      {/* INT warning */}
       <div style={{
-        background: C.redBg, border: `1px solid ${C.red}`, borderRadius: 8, padding: 12, marginBottom: 12,
-        display: 'flex', alignItems: 'center', gap: 12,
+        marginTop: 16, background: C.redBg, border: `1px solid ${C.red}`, borderRadius: 8,
+        padding: '12px 16px', color: C.redLight, fontSize: 15, lineHeight: 1.6,
       }}>
-        <span style={{ color: C.red, fontSize: 15, fontWeight: 700, whiteSpace: 'nowrap' }}>⚠ INT 음수 주의</span>
-        <span style={{ color: C.redLight, fontSize: 15 }}>
-          INT(-3.1) = -4  (0방향이 아닌 더 작은 정수쪽으로)
-        </span>
-      </div>
-
-      {/* VALUE use case */}
-      <div style={{
-        background: C.blueCard, border: `1px solid ${C.blueDim}`, borderRadius: 8, padding: 12,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <span style={{ color: C.blueLight, fontSize: 15, textAlign: 'center' }}>
-          VALUE 사용 이유: 엑셀에서 텍스트처럼 저장된 숫자를 실제 계산에 사용할 때
-        </span>
+        <b style={{ color: C.red }}>⚠ INT 음수 주의</b> — INT(-3.1) = -4. 0 방향이 아니라 더 작은 정수 쪽으로 내립니다.
       </div>
 
       <BottomBar>
-        <BLine color={C.textMuted}>ABS(절댓값)  ·  INT(내림)  ·  MOD(나머지)  ·  POWER(거듭제곱)  ·  VALUE(텍스트→숫자)</BLine>
-        <BLine color={C.blue} bold>
-          ※ INT와 TRUNC의 차이: INT는 음수에서 더 작은 정수, TRUNC는 항상 0방향 절삭
-        </BLine>
+        <BLine>{FUNCTION_SYNTAX['ABS']}  ·  {FUNCTION_SYNTAX['INT']}  ·  {FUNCTION_SYNTAX['MOD']}  ·  {FUNCTION_SYNTAX['POWER']}  ·  {FUNCTION_SYNTAX['VALUE']}</BLine>
+        <BLine color={C.blue} bold>VALUE는 텍스트로 저장된 숫자를 계산에 쓸 때 사용합니다</BLine>
       </BottomBar>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// MathRoundDiagram
+// MathRoundDiagram — 개념2 (정적 카드형)
 // ─────────────────────────────────────────────
 export function MathRoundDiagram() {
   const kRows = [
-    { k: 'K=2',  label: '소수 둘째 자리', highlight: false },
-    { k: 'K=1',  label: '소수 첫째 자리', highlight: false },
-    { k: 'K=0',  label: '정수',           highlight: false },
-    { k: 'K=-1', label: '십의 자리',      highlight: true },
-    { k: 'K=-2', label: '백의 자리',      highlight: true },
+    { k: 'K=2', label: '소수 둘째 자리', hi: false },
+    { k: 'K=1', label: '소수 첫째 자리', hi: false },
+    { k: 'K=0', label: '정수', hi: false },
+    { k: 'K=-1', label: '십의 자리', hi: true },
+    { k: 'K=-2', label: '백의 자리', hi: true },
   ];
 
-  const roundCards = [
-    { name: 'ROUND',     desc: '반올림 · 8이므로 올림', result: '= 3.99', color: C.blue,     bg: C.blueCard,  border: C.blueDim },
-    { name: 'ROUNDUP',   desc: '무조건 올림',            result: '= 3.99', color: C.greenLight, bg: C.greenDark, border: C.green },
-    { name: 'ROUNDDOWN', desc: '무조건 내림',            result: '= 3.98', color: C.redLight,  bg: '#300a0a',   border: C.red },
+  const cards = [
+    { name: 'ROUND', desc: '반올림(버릴 자리가 5 이상이면 올림)', formula: '=ROUND(3.987, 2)', value: '= 3.99',
+      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
+    { name: 'ROUNDUP', desc: '무조건 올림', formula: '=ROUNDUP(3.987, 2)', value: '= 3.99',
+      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
+    { name: 'ROUNDDOWN', desc: '무조건 내림(절삭)', formula: '=ROUNDDOWN(3.987, 2)', value: '= 3.98',
+      bg: C.redDark, border: C.red, color: C.redLight, valColor: C.redLight },
   ];
 
   return (
     <Wrap>
       <Title>자릿수 제어 함수: ROUND · ROUNDUP · ROUNDDOWN</Title>
 
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Left: K-value table */}
-        <div style={{ width: 220 }}>
-          <div style={{ color: C.textMuted, fontSize: 15, fontWeight: 700, marginBottom: 8 }}>K값 규칙</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+      <Row gap={20}>
+        <Fixed>
+          <TableCaption color={C.blueLight}>자릿수 K의 의미</TableCaption>
+          <div style={{ display: 'grid', gridTemplateColumns: '92px 150px' }}>
             <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>K값</Cell>
             <Cell bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>의미</Cell>
-            {kRows.map(r => (
-              <>
-                <Cell
-                  key={r.k + '-k'}
-                  bg={r.highlight ? C.amberBg : C.bgDark}
-                  border={r.highlight ? C.amber : C.border}
-                  style={{ color: r.highlight ? C.amber : C.text, fontSize: 15 }}
-                >
-                  {r.k}
-                </Cell>
-                <Cell
-                  key={r.k + '-label'}
-                  bg={r.highlight ? C.amberBg : C.bgDark}
-                  border={r.highlight ? C.amber : C.border}
-                  style={{ color: r.highlight ? C.amber : C.text, fontSize: 15 }}
-                >
-                  {r.label}
-                </Cell>
-              </>
-            ))}
+            {kRows.map((r) => [
+              <Cell key={r.k + '-k'} bg={r.hi ? C.amberBg : C.bgDark} border={r.hi ? C.amber : C.border}
+                style={{ color: r.hi ? C.amber : C.text, fontWeight: r.hi ? 700 : 400, fontSize: 15 }}>{r.k}</Cell>,
+              <Cell key={r.k + '-l'} bg={r.hi ? C.amberBg : C.bgDark} border={r.hi ? C.amber : C.border}
+                style={{ color: r.hi ? C.amber : C.text, fontWeight: r.hi ? 700 : 400, fontSize: 15 }}>{r.label}</Cell>,
+            ])}
           </div>
-        </div>
+        </Fixed>
 
-        {/* Right: comparison cards */}
-        <div style={{ flex: 1, marginLeft: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ color: C.textDim, fontSize: 15, marginBottom: 8 }}>예시: 3.987을 K=2로 처리</div>
-          {roundCards.map(rc => (
-            <div key={rc.name} style={{
-              background: rc.bg, border: `2px solid ${rc.border}`, borderRadius: 8, padding: 12,
-              display: 'flex', flexDirection: 'row', gap: 12, alignItems: 'center',
-            }}>
-              <div style={{ color: rc.color, fontSize: 17, fontWeight: 700, width: 110, flexShrink: 0 }}>{rc.name}</div>
-              <div style={{ color: C.textMuted, fontSize: 15, flex: 1 }}>{rc.desc}</div>
-              <div style={{ color: rc.color, fontSize: 22, fontWeight: 700, marginLeft: 'auto', whiteSpace: 'nowrap' }}>
-                {rc.result}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+        <Fill min={360}>
+          <div style={{ color: C.textDim, fontSize: 15 }}>예시: 3.987을 K=2로 처리</div>
+          {cards.map((c) => <MathCard key={c.name} c={c} />)}
+        </Fill>
+      </Row>
 
       <BottomBar>
-        <BLine color={C.textMuted}>=ROUND(숫자, K)  ·  =ROUNDUP(숫자, K)  ·  =ROUNDDOWN(숫자, K)</BLine>
-        <BLine color={C.blue} bold>K양수 = 소수 자리 제어  /  K음수 = 정수 자리 제어  (K=0 이면 정수로 반올림)</BLine>
+        <BLine>{FUNCTION_SYNTAX['ROUND']}  ·  {FUNCTION_SYNTAX['ROUNDUP']}  ·  {FUNCTION_SYNTAX['ROUNDDOWN']}</BLine>
+        <BLine color={C.blue} bold>K 양수 = 소수 자리 · K=0 = 정수 · K 음수 = 정수 자리(십·백…)</BLine>
       </BottomBar>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// SumifDiagram
+// SumifDiagram — 개념3 (인터랙티브, DbSumDiagram 구조)
 // ─────────────────────────────────────────────
 export function SumifDiagram() {
-  const gridBase = { display: 'grid', gap: 0 };
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['작물명', '분류', '수확량', '지정 분류'],
+    ['상추', '채소', 35, '채소'],
+    ['사과', '과일', 12, ''],
+    ['깻잎', '채소', 20, ''],
+    ['딸기', '과일', 18, ''],
+  ];
+  const LAST = data.length - 1; // 4
+
+  const tabs = [
+    { key: '범위', color: C.blueLight },
+    { key: '조건', color: C.greenLight },
+    { key: '합계 범위', color: C.amberLight },
+  ];
+  const explain = {
+    '범위': '조건을 검사할 열입니다. 제목 행을 빼고 데이터 [B2:B5]만 잡습니다.',
+    '조건': '찾을 값입니다. "채소"처럼 직접 따옴표로 쓰거나, 값이 들어 있는 셀 D2를 지정합니다.',
+    '합계 범위': '조건에 맞는 행에서 실제로 더할 열입니다. 범위와 행 수가 같아야 합니다. 생략하면 범위 자체를 더합니다.',
+  };
+
+  // 채소 행 = ri1(상추), ri3(깻잎)
+  const dataSt = (ri, ci) => {
+    const boxes = active === '범위' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
+      : active === '조건' ? [{ r1: 1, r2: 1, c1: 3, c2: 3, color: C.greenLight }]
+      : active === '합계 범위' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.amberLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (active === '합계 범위' && ci === 2 && (ri === 1 || ri === 3)) s.bold = true;
+    return s;
+  };
 
   return (
     <Wrap>
-      <Title>조건부 합계 함수: SUM · SUMIF</Title>
+      <Title>조건에 맞는 행만 더하기: SUMIF</Title>
 
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* Left: data table */}
-        <div style={{ flex: 1 }}>
-          <div style={{ color: C.textMuted, fontSize: 14, marginBottom: 6 }}>예시 데이터</div>
-          <div style={{ ...gridBase, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-            {['작물명', '분류', '수확량'].map(h => (
-              <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-            ))}
-            {/* 상추 — included */}
-            {['상추', '채소✓', '35'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* 사과 — excluded */}
-            {['사과', '과일', '12'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textSlate, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* 깻잎 — included */}
-            {['깻잎', '채소✓', '20'].map((v, i) => (
-              <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-            ))}
-            {/* 딸기 — excluded */}
-            {['딸기', '과일', '18'].map((v, i) => (
-              <Cell key={i} bg={C.bgDark} border={C.border} style={{ color: C.textSlate, fontSize: 15 }}>{v}</Cell>
-            ))}
+      <ExamProblem notes={['SUMIF 함수 사용']}>
+        [표1]에서 <b style={{ color: C.amberLight }}>분류[B2:B5]</b>가 &quot;채소&quot;인 작물의
+        <b style={{ color: C.greenLight }}> 수확량[C2:C5]</b> 합계를 [E2] 셀에 계산하시오.
+      </ExamProblem>
+
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 수확 일지</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={78}
+              reserveLabelRow labelRow={active === '합계 범위' ? [null, null, { text: '합계', color: C.amberLight }, null] : [null, null, null, null]} />
           </div>
+        </Fixed>
 
-          <div style={{ color: C.amber, fontSize: 15, fontWeight: 700, textAlign: 'center', marginTop: 8 }}>
-            조건: 분류 = &quot;채소&quot;
-          </div>
-        </div>
-
-        {/* Right: comparison cards */}
-        <div style={{ flex: 1.2, marginLeft: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* SUM card */}
-          <div style={{
-            background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 8, padding: 14,
-          }}>
-            <div style={{ color: C.blue, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>SUM — 전체 합계</div>
-            <div style={{ color: C.text, fontSize: 14, fontFamily: 'monospace', textAlign: 'center' }}>=SUM(C2:C5)</div>
-            <div style={{ color: C.textMuted, fontSize: 15, textAlign: 'center' }}>35 + 12 + 20 + 18 = 85</div>
-            <div style={{ color: C.blue, fontSize: 28, fontWeight: 700, textAlign: 'center', marginTop: 4 }}>= 85</div>
-          </div>
-
-          {/* SUMIF card */}
-          <div style={{
-            background: C.greenDark, border: `2px solid ${C.green}`, borderRadius: 8, padding: 14,
-          }}>
-            <div style={{ color: C.green, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>SUMIF — 조건 합계</div>
-            <div style={{ color: C.text, fontSize: 14, fontFamily: 'monospace', textAlign: 'center' }}>
-              =SUMIF(B2:B5, &quot;채소&quot;, C2:C5)
-            </div>
-            <div style={{ color: C.textMuted, fontSize: 15, textAlign: 'center' }}>35 + 20 = 55</div>
-            <div style={{ color: C.greenLight, fontSize: 28, fontWeight: 700, textAlign: 'center', marginTop: 4 }}>= 55</div>
-          </div>
-
-          {/* Syntax box */}
-          <div style={{
-            background: C.bgDark, border: `1px solid ${C.border}`, borderRadius: 8, padding: 10,
-          }}>
-            <div style={{ color: C.textMuted, fontSize: 15, fontWeight: 700, textAlign: 'center' }}>
-              SUMIF(조건범위, 조건, 합계범위)
-            </div>
-            <div style={{ color: C.amber, fontSize: 14, textAlign: 'center' }}>
-              자동채우기 시 범위에 $ 절대참조 적용 필수
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>SUMIF</div>
+            <SyntaxLine fn="SUMIF" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>범위에서 조건에 맞는 행을 찾아, 그 행의 합계 범위 값을 더합니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 84, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>=SUM(C2:C5) → 85 (전체 합계)</div>
+              <div>=SUMIF(<span style={{ color: C.blueLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;채소&quot;</span>, <span style={{ color: C.amberLight }}>C2:C5</span>) <span style={{ color: C.greenLight }}>→ 55</span></div>
+              <div>=SUMIF(<span style={{ color: C.blueLight }}>$B$2:$B$5</span>, <span style={{ color: C.greenLight }}>D2</span>, <span style={{ color: C.amberLight }}>$C$2:$C$5</span>) <span style={{ color: C.greenLight }}>→ 55</span></div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine color={C.textMuted}>=SUMIF(조건 범위, 조건, 합계 범위)  — 조건에 맞는 행의 합계</BLine>
-        <BLine color={C.blue} bold>합계 범위 생략 시 조건 범위가 합계 범위로 사용됩니다 · F4 → $ 절대참조</BLine>
-      </BottomBar>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+          <div style={{ color: C.amber, fontSize: 15, lineHeight: 1.6 }}>아래로 자동 채우기 할 때는 범위와 합계 범위를 F4로 $ 고정합니다. 조건(D2)만 상대 참조.</div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
 
 // ─────────────────────────────────────────────
-// SumifsDiagram
+// SumifsDiagram — 개념4 (인터랙티브, DbSumDiagram 구조 · 와일드카드 없음)
 // ─────────────────────────────────────────────
 export function SumifsDiagram() {
-  const gridBase = { display: 'grid', gap: 0 };
+  const [active, setActive] = useState(null);
+
+  const data = [
+    ['작물명', '분류', '출하량', '출하금액', '조건1', '조건2'],
+    ['블루베리', '과일', 20, '180,000', '과일', '>=15'],
+    ['딸기', '과일', 30, '250,000', '', ''],
+    ['라즈베리', '과일', 8, '90,000', '', ''],
+    ['상추', '채소', 25, '60,000', '', ''],
+  ];
+  const LAST = data.length - 1; // 4
+
+  const tabs = [
+    { key: '합계 범위', color: C.blueLight },
+    { key: '조건 범위1', color: C.greenLight },
+    { key: '조건1', color: C.greenLight },
+    { key: '조건 범위2', color: C.amberLight },
+    { key: '조건2', color: C.amberLight },
+  ];
+  const explain = {
+    '합계 범위': '더할 열이 첫 번째 인수입니다. SUMIF와 반대이니 시험에서 가장 많이 틀리는 자리입니다.',
+    '조건 범위1': '첫 번째 조건을 검사할 열 [B2:B5].',
+    '조건1': '첫 번째 조건 "과일". E2 셀을 지정했습니다.',
+    '조건 범위2': '두 번째 조건을 검사할 열 [C2:C5].',
+    '조건2': '두 번째 조건 ">=15". F2 셀을 지정했습니다. 조건은 전부 AND로 묶입니다.',
+  };
+
+  // 두 조건 모두 만족: 블루베리(ri1), 딸기(ri2)
+  const dataSt = (ri, ci) => {
+    const boxes = active === '합계 범위' ? [{ r1: 1, r2: LAST, c1: 3, c2: 3, color: C.blueLight }]
+      : active === '조건 범위1' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.greenLight }]
+      : active === '조건1' ? [{ r1: 1, r2: 1, c1: 4, c2: 4, color: C.greenLight }]
+      : active === '조건 범위2' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.amberLight }]
+      : active === '조건2' ? [{ r1: 1, r2: 1, c1: 5, c2: 5, color: C.amberLight }] : [];
+    const s = rangeSides(ri, ci, boxes);
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ci === 3 && (ri === 1 || ri === 2)) s.bold = true; // 두 조건 만족 행의 출하금액
+    return s;
+  };
 
   return (
     <Wrap>
-      <Title>다중 조건 합계: SUMIFS · 와일드카드(*) 활용</Title>
+      <Title>여러 조건을 모두 만족하는 행만 더하기: SUMIFS</Title>
 
-      {/* Data table 6 cols */}
-      <div style={{ ...gridBase, gridTemplateColumns: 'repeat(6, 1fr)', marginBottom: 16 }}>
-        {['작물명', '출하량', '출하금액', '조건1결과', '조건2결과', 'SUMIFS포함여부'].map(h => (
-          <Cell key={h} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-        ))}
-        {/* 블루베리 — both conditions met */}
-        {['블루베리', '20', '180,000', '*베리*✓', '20>=15✓', '포함✓'].map((v, i) => (
-          <Cell key={i} bg={C.greenDark} border={C.green} style={{ color: C.greenLight, fontWeight: 700, fontSize: 15 }}>{v}</Cell>
-        ))}
-        {/* 딸기 — condition1 fails */}
-        {['딸기', '30', '250,000', '*베리*✗', '제외✗', '제외✗'].map((v, i) => (
-          <Cell key={i} bg='#300a0a' border={C.red} style={{ color: C.redLight, fontSize: 15 }}>{v}</Cell>
-        ))}
-        {/* 라즈베리 — condition2 fails */}
-        {['라즈베리', '8', '90,000', '*베리*✓', '8<15✗', '제외✗'].map((v, i) => (
-          <Cell key={i} bg='#300a0a' border={C.red} style={{ color: C.redLight, fontSize: 15 }}>{v}</Cell>
-        ))}
-      </div>
+      <ExamProblem notes={['SUMIFS 함수 사용', '조건은 [E2], [F2] 셀 참조']}>
+        [표1]에서 <b style={{ color: C.greenLight }}>분류[B2:B5]</b>가 &quot;과일&quot;이면서
+        <b style={{ color: C.amberLight }}> 출하량[C2:C5]</b>이 15 이상인 작물의
+        <b style={{ color: C.blueLight }}> 출하금액[D2:D5]</b> 합계를 [G2] 셀에 계산하시오.
+      </ExamProblem>
 
-      {/* SUMIFS panel + wildcard box */}
-      <div style={{ display: 'flex', gap: 0 }}>
-        {/* SUMIFS panel */}
-        <div style={{
-          flex: 1, background: '#251005', border: `2px solid ${C.orange}`, borderRadius: 8, padding: 12,
-        }}>
-          <div style={{ color: C.orange, fontSize: 14, fontFamily: 'monospace', textAlign: 'center', fontWeight: 700 }}>
-            =SUMIFS(합계범위, 조건범위1, 조건1, 조건범위2, 조건2)
+      <Row gap={20}>
+        <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div>
+            <TableCaption color={C.blueLight}>[표1] 출하 현황</TableCaption>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={68} firstColW={72} />
           </div>
-          <div style={{ color: C.orange, fontSize: 14, fontFamily: 'monospace', textAlign: 'center', marginTop: 4 }}>
-            =SUMIFS(C2:C4, A2:A4, &quot;*베리*&quot;, B2:B4, &quot;&gt;=15&quot;)
-          </div>
-          <div style={{ color: C.red, fontWeight: 700, fontSize: 14, textAlign: 'center', marginTop: 8 }}>
-            합계범위가 항상 첫 번째!
-          </div>
-          <div style={{ color: C.orangeLight, fontSize: 18, fontWeight: 700, textAlign: 'center' }}>
-            = 180,000 (블루베리만 포함)
-          </div>
-        </div>
+        </Fixed>
 
-        {/* Wildcard box */}
-        <div style={{
-          flex: 1, marginLeft: 12, background: C.blueCard, border: `1.5px solid ${C.blueDim}`, borderRadius: 8, padding: 12,
-        }}>
-          <div style={{ color: C.blue, fontSize: 16, fontWeight: 700, textAlign: 'center', marginBottom: 8 }}>
-            와일드카드(*) 사용법
+        <Fill min={360} max={500}>
+          <div style={{ background: C.blueCard, border: `2px solid ${C.blueDim}`, borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ color: C.blue, fontSize: 18, fontWeight: 700 }}>SUMIFS</div>
+            <SyntaxLine fn="SUMIFS" color={C.blue} colors={[C.blueLight, C.greenLight, C.greenLight, C.amberLight, C.amberLight]} />
+            <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>합계 범위를 맨 앞에 쓰고, (조건 범위, 조건) 쌍을 필요한 만큼 이어 붙입니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
+            <div style={{ color: C.text, fontSize: 15.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=SUMIFS(<span style={{ color: C.blueLight }}>D2:D5</span>, <span style={{ color: C.greenLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>E2</span>, <span style={{ color: C.amberLight }}>C2:C5</span>, <span style={{ color: C.amberLight }}>F2</span>) <span style={{ color: C.greenLight }}>→ 430,000</span></div>
+            </div>
           </div>
-          <div style={{ color: C.blueLight, fontSize: 14, marginBottom: 4 }}>*베리* = 베리가 포함된 모든 텍스트</div>
-          <div style={{ color: C.blueLight, fontSize: 14, marginBottom: 4 }}>베리* = 베리로 시작</div>
-          <div style={{ color: C.blueLight, fontSize: 14 }}>*베리 = 베리로 끝남</div>
-        </div>
-      </div>
-
-      <BottomBar>
-        <BLine color={C.textMuted}>=SUMIFS(합계범위, 조건범위1, 조건1, ...) — 합계범위가 항상 첫 번째!</BLine>
-        <BLine color={C.blue} bold>SUMIF vs SUMIFS: SUMIF는 조건 1개, SUMIFS는 여러 조건 지원</BLine>
-      </BottomBar>
+          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 다섯 개의 인수를 하나씩 확인하세요</div>
+          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
+          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+          <div style={{ color: C.amber, fontSize: 15, lineHeight: 1.6 }}>{'함수를 조건으로 쓸 때는 ">="&AVERAGE(범위)처럼 비교 연산자만 따옴표로 감싸고 &로 잇습니다.'}</div>
+        </Fill>
+      </Row>
     </Wrap>
   );
 }
