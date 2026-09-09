@@ -86,7 +86,7 @@
         }
       ],
       "practice": {
-        "instruction": "수확물 정산 금액 표입니다. [C2] 셀에 평균 단가[B2]를 소수 첫째 자리까지 반올림하고, [C3] 셀에 지원금[B3]을 십의 자리까지 내림(절삭)하세요.",
+        "instruction": "[C2] 셀에 평균 단가[B2]를 반올림하여 소수 첫째 자리까지 표시하고, [C3] 셀에 지원금[B3]을 십의 자리에서 내림하세요.",
         "cols": ["A", "B", "C"],
         "rows": [
           [
@@ -129,7 +129,7 @@
           "items": [
             "**SUM(범위)**: 범위 내 모든 숫자의 합계를 구합니다.",
             "**SUMIF(조건 범위, 조건, [합계 범위])**: 조건 범위에서 조건과 일치하는 행의 합계 범위 값을 더합니다.",
-            "시험에서는 조건 범위와 합계 범위가 같다면 합계 범위를 반드시 생략해야 합니다. 예: 성적[B2:B10]이 90 이상인 학생들의 성적 합계 → =SUMIF(B2:B10, \">=90\")"
+            "시험에서는 조건 범위와 합계 범위가 같다면 합계 범위를 반드시 생략해야 합니다.\n예: 성적[B2:B10]이 90 이상인 학생들의 성적 합계 → =SUMIF(B2:B10, \">=90\"), 조건 범위와 합계 범위가 같음"
           ]
         }
       ],
@@ -201,34 +201,28 @@
         }
       ],
       "practice": {
-        "instruction": "농장 출하 데이터입니다. [G2] 셀에 SUMIFS 함수를 사용하여 분류가 [E2] 셀의 값('과일')이면서 출하량이 [F2] 셀의 조건('>=15')을 만족하는 작물의 출하금액 합계를 구하세요.",
-        "cols": ["A", "B", "C", "D", "E", "F", "G"],
+        "instruction": "농장 출하 데이터입니다. [E2] 셀에 분류[B2:B6]가 \"과일\"이면서 출하량[C2:C6]이 출하량의 중간값 이상인 작물의 출하금액[D2:D6] 합계를 계산하세요. (SUMIFS, MEDIAN 함수 사용)",
+        "cols": ["A", "B", "C", "D", "E"],
         "rows": [
           [
             { "val": "작물명", "editable": false },
             { "val": "분류", "editable": false },
             { "val": "출하량", "editable": false },
             { "val": "출하금액", "editable": false },
-            { "val": "조건1", "editable": false },
-            { "val": "조건2", "editable": false },
-            { "val": "만족 금액합계", "editable": false }
+            { "val": "조건 만족 합계", "editable": false }
           ],
           [
             { "val": "블루베리", "editable": false },
             { "val": "과일", "editable": false },
             { "val": 20, "editable": false },
             { "val": 180000, "editable": false },
-            { "val": "과일", "editable": false },
-            { "val": ">=15", "editable": false },
-            { "val": "", "editable": true, "answer": "=SUMIFS(D2:D5,B2:B5,E2,C2:C5,F2)", "result": 430000 }
+            { "val": "", "editable": true, "answer": "=SUMIFS(D2:D6,B2:B6,\"과일\",C2:C6,\">=\"&MEDIAN(C2:C6))", "result": 450000 }
           ],
           [
             { "val": "딸기", "editable": false },
             { "val": "과일", "editable": false },
             { "val": 30, "editable": false },
             { "val": 250000, "editable": false },
-            { "val": "", "editable": false },
-            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
@@ -236,17 +230,20 @@
             { "val": "과일", "editable": false },
             { "val": 8, "editable": false },
             { "val": 90000, "editable": false },
-            { "val": "", "editable": false },
-            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "상추", "editable": false },
             { "val": "채소", "editable": false },
-            { "val": 25, "editable": false },
+            { "val": 22, "editable": false },
             { "val": 60000, "editable": false },
-            { "val": "", "editable": false },
-            { "val": "", "editable": false },
+            { "val": "", "editable": false }
+          ],
+          [
+            { "val": "사과", "editable": false },
+            { "val": "과일", "editable": false },
+            { "val": 25, "editable": false },
+            { "val": 200000, "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -381,6 +378,6 @@
     { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
     { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-1)" },
     { "sheet": "단일조건합", "cell": "D2", "formula": "=SUMIF(B2:B4,\"채소\",C2:C4)" },
-    { "sheet": "다중조건합", "cell": "G2", "formula": "=SUMIFS(D2:D5,B2:B5,E2,C2:C5,F2)" }
+    { "sheet": "다중조건합", "cell": "E2", "formula": "=SUMIFS(D2:D6,B2:B6,\"과일\",C2:C6,\">=\"&MEDIAN(C2:C6))" }
   ]
 }
