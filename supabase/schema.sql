@@ -118,6 +118,17 @@ create table if not exists public.visits (
 );
 create index if not exists visits_date_idx on public.visits(visit_date);
 
+-- visits.user_id 는 클라이언트가 보내지 않고, insert 시 트리거가 auth.uid()로 채운다.
+create or replace function public.visits_set_user_id()
+returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  new.user_id := auth.uid();
+  return new;
+end $$;
+drop trigger if exists visits_set_user_id on public.visits;
+create trigger visits_set_user_id before insert on public.visits
+  for each row execute function public.visits_set_user_id();
+
 -- =============================================================
 --  가입 시 profiles 자동 생성 트리거
 --  회원가입할 때 프론트가 넘긴 user_metadata 를 profiles 로 복사
@@ -203,11 +214,10 @@ drop policy if exists day_clears_admin_read on public.day_clears;
 create policy day_clears_admin_read on public.day_clears
   for select using (public.is_admin());
 
--- visits: 방문 기록 insert 는 누구나(비로그인 포함, user_id 는 본인이거나 null), 조회는 관리자만
+-- visits: 방문 기록 insert 는 누구나(비로그인 포함). user_id 는 트리거가 채우므로 check(true).
 drop policy if exists visits_insert on public.visits;
 create policy visits_insert on public.visits
-  for insert to anon, authenticated
-  with check (user_id is null or user_id = auth.uid());
+  for insert to anon, authenticated with check (true);
 drop policy if exists visits_admin_read on public.visits;
 create policy visits_admin_read on public.visits
   for select using (public.is_admin());

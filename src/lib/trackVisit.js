@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase";
 
 // 방문자 접속 현황 기록.
 // - 로그인 여부와 무관하게 방문자를 센다(익명 visitor_id 기준).
@@ -8,6 +8,7 @@ import { supabase } from "./supabase";
 
 const LS_VISITOR = "cellearn:visitor_id";
 const LS_FIRST = "cellearn:first_touch";
+const LS_LAST_VISIT = "cellearn:lastVisitDate";
 
 // KST(Asia/Seoul) 기준 yyyy-mm-dd 문자열 (en-CA 로케일이 ISO 형식으로 준다)
 export function kstDateStr(d = new Date()) {
@@ -96,21 +97,47 @@ function getFirstTouch() {
 }
 
 // 앱 로드 시 하루 한 번 호출. 관리자·미설정·에러는 조용히 스킵.
-export async function trackVisit({ userId = null, isAdmin = false } = {}) {
+export async function trackVisit({ isAdmin = false } = {}) {
   try {
     if (!supabase || isAdmin) return;
+
+    const today = kstDateStr();
+    // 하루 1회: 오늘 이미 기록했으면 네트워크 요청 자체를 보내지 않는다.
+    try { if (localStorage.getItem(LS_LAST_VISIT) === today) return; } catch { /* 무시 */ }
+
     const visitorId = getVisitorId();
     if (!visitorId) return;
     const ft = getFirstTouch();
     const { device, os, browser } = parseUA(typeof navigator !== "undefined" ? navigator.userAgent : "");
+    // user_id 는 payload 에 넣지 않는다 — DB 트리거(visits_set_user_id)가 auth.uid()로 채운다.
     const row = {
       visitor_id: visitorId,
-      user_id: userId || null,
-      visit_date: kstDateStr(),
+      visit_date: today,
       device, os, browser,
       source: ft.source, medium: ft.medium, campaign: ft.campaign, content: ft.content,
       referrer: ft.referrer, landing_path: ft.landing_path,
     };
-    await supabase.from("visits").upsert(row, { onConflict: "visitor_id,visit_date", ignoreDuplicates: true });
+    // REST 로 직접 POST — 헤더에 Prefer: return=minimal 을 명시해 응답 표현(SELECT)을 요구하지 않는다.
+    // (supabase-js v2 의 .insert() 는 이 헤더를 명시적으로 붙이지 않으므로 fetch 로 보낸다.)
+    // 인증 토큰: 로그인 상태면 사용자 JWT, 아니면 anon 키 → 트리거의 auth.uid() 가 이 토큰으로 결정된다.
+    let accessToken = SUPABASE_ANON_KEY;
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (data?.session?.access_token) accessToken = data.session.access_token;
+    } catch { /* 세션 없음 → anon 키 사용 */ }
+
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/visits`, {
+      method: "POST",
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify(row),
+    });
+    // 409 = 같은 날 재방문(unique 위반, 23505) → 정상으로 간주. 그 외 실패는 lastVisitDate 갱신 안 함(다음 로드에 재시도).
+    if (!res.ok && res.status !== 409) return;
+    try { localStorage.setItem(LS_LAST_VISIT, today); } catch { /* 무시 */ }
   } catch { /* 접속 기록 실패는 앱에 영향 주지 않는다 */ }
 }

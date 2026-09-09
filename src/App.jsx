@@ -61,7 +61,7 @@ export default function App() {
   useEffect(() => {
     if (loading || trackedRef.current) return;
     trackedRef.current = true;
-    trackVisit({ userId: user?.id ?? null, isAdmin });
+    trackVisit({ isAdmin }); // user_id 는 서버 트리거가 채움
   }, [loading, user, isAdmin]);
 
   // 로그인/결제 상태가 바뀌면 자동 이동. 결제 필요 여부는 learn 렌더 게이트(canLearn)가 판단 →
