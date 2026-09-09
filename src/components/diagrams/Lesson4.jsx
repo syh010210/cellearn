@@ -75,10 +75,11 @@ export function VlookupDiagram() {
   };
 
   // 사원코드 문자열에서 다섯 번째 글자(A·B·C)에만 형광펜 배경
-  const hi = (s) => {
+  // 5번째 글자 형광펜. on=false여도 같은 padding을 투명 배경으로 유지 → 버튼 전환 시 칸 폭이 변하지 않는다.
+  const hi = (s, on) => {
     const str = String(s);
     return (
-      <span>{str.slice(0, 4)}<span style={{ background: C.amberLight, color: '#0b1220', borderRadius: 3, padding: '1px 3px', fontWeight: 700 }}>{str.slice(4, 5)}</span>{str.slice(5)}</span>
+      <span>{str.slice(0, 4)}<span style={{ background: on ? C.amberLight : 'transparent', color: on ? '#0b1220' : 'inherit', borderRadius: 3, padding: '1px 3px' }}>{str.slice(4, 5)}</span>{str.slice(5)}</span>
     );
   };
 
@@ -87,7 +88,7 @@ export function VlookupDiagram() {
   // 표1: 사원코드(A3:A5)의 다섯 번째 문자를 형광펜으로 표시 (열 번호 탭에서는 숨김)
   const loanSt = (ri, ci, val) => {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (ci === 0 && (active === '찾을 값' || active === '참조 범위' || active === '일치 옵션')) return { content: hi(val) };
+    if (ci === 0) return { content: hi(val, active === '찾을 값' || active === '참조 범위' || active === '일치 옵션') };
     if (ci === 3 && active === '일치 옵션' && ri >= 1 && revealed >= ri) return { color: C.greenLight, content: ANS[ri - 1] };
     return {};
   };

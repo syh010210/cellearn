@@ -129,7 +129,28 @@ export function fillFromReason(input, cell, ri, ci, cells) {
   return argDiffReason(input, shifted, { padDefaults: true }) || `${cell.fillFrom}에서 자동 채우기한 결과와 다릅니다`;
 }
 
-// 순수 채점 함수. cells는 {editable, input, answer, result, format, fillFrom, requiredFunctions} 셀의 2차원 배열.
+// acceptableAnswers: 정답으로 인정하는 여러 수식 형태(예: DB함수 필드 = 열 번호 4 / 제목 셀 D1).
+function acceptableAnswers(cell) {
+  if (Array.isArray(cell.acceptableAnswers) && cell.acceptableAnswers.length) return cell.acceptableAnswers;
+  return cell.answer ? [cell.answer] : [];
+}
+// 최상위 인수 중 다른 개수 (가장 가까운 정답 형태를 고르는 데 사용)
+function argDiffCount(a, b) {
+  const x = astOf(a), y = astOf(b);
+  if (!x || !y || x.type !== "FunctionCall" || y.type !== "FunctionCall" || x.name !== y.name) return Infinity;
+  const n = Math.max(x.args.length, y.args.length);
+  let d = 0;
+  for (let i = 0; i < n; i++) if (argSer(x, i, true) !== argSer(y, i, true)) d++;
+  return d;
+}
+// 학생 입력과 인수가 가장 적게 다른 정답 형태 → 유효 대체 형태(필드 4 ≡ D1)를 오답 사유로 지목하지 않게 한다.
+function closestAnswer(input, answers) {
+  let best = answers[0], bestD = Infinity;
+  for (const a of answers) { const d = argDiffCount(input, a); if (d < bestD) { bestD = d; best = a; } }
+  return best;
+}
+
+// 순수 채점 함수. cells는 {editable, input, answer, acceptableAnswers, result, format, fillFrom, requiredFunctions} 셀의 2차원 배열.
 // sheet는 excel-engine Sheet 인스턴스(getCellValue/getDisplayValue 제공).
 // 반환: [{ ri, ci, addr, status:'correct'|'wrong'|'empty', reason, answer, studentInput }]
 export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
@@ -140,6 +161,7 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
     if (!cell.editable) return;
     const input = (cell.input || "").trim();
     const answer = cell.answer;
+    const answers = acceptableAnswers(cell);
     const base = { ri, ci, addr: addrOf(ri, ci), answer, studentInput: input };
 
     // 1. 미입력
@@ -151,10 +173,15 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
     const up = input.toUpperCase();
     const missing = req.find((fn) => !up.includes(String(fn).toUpperCase()));
     if (missing) { results.push({ ...base, status: "wrong", reason: `${missing} 함수를 사용하지 않았습니다` }); return; }
+    // 3.5 정답으로 인정하는 형태(열 번호/제목 셀 등) 중 하나와 AST가 일치하면 정답 (엔진 계산 결과와 무관하게 인정)
+    if (answers.length && answers.some((a) => astEqualFormula(input, a))) {
+      results.push({ ...base, status: "correct", reason: "정답" });
+      return;
+    }
     // 4. 계산 결과 에러 — 인수 단위로 비교해 어느 인수가 틀렸는지 먼저 안내
     const raw = sheet?.getCellValue(base.addr);
     if (isErrorValue(raw)) {
-      const argReason = answer ? argDiffReason(input, answer) : null;
+      const argReason = answers.length ? argDiffReason(input, closestAnswer(input, answers)) : null;
       results.push({ ...base, status: "wrong", reason: argReason || `수식 오류 (${raw.error}) — 참조 범위와 찾을 값을 확인하세요` });
       return;
     }
@@ -179,7 +206,7 @@ export function gradePractice({ cells, cols, sheet, requiredFunctions = [] }) {
         (!isNaN(parseFloat(String(computed))) && !isNaN(parseFloat(String(expected))) &&
           parseFloat(String(computed)) === parseFloat(String(expected)));
       if (!eq) {
-        const argReason = argDiffReason(input, answer);
+        const argReason = answers.length ? argDiffReason(input, closestAnswer(input, answers)) : null;
         results.push({ ...base, status: "wrong", reason: argReason || "결과값이 다릅니다" });
         return;
       }

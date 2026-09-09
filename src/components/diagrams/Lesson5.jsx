@@ -128,9 +128,9 @@ export function DbSumDiagram() {
             <SyntaxLine fn="DSUM" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 합계를 구합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>B1:B2</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 13</div>
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>B1:B2</span>) <span style={{ color: C.greenLight }}>→ 13</span></div>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>D1</span>, <span style={{ color: C.amberLight }}>B1:B2</span>) <span style={{ color: C.greenLight }}>→ 13</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
@@ -215,9 +215,9 @@ export function DbSumSeparateDiagram() {
             <SyntaxLine fn="DSUM" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>붙어 있지 않은 조건은 지정된 칸에 제목+값을 만들어 조건 범위로 씁니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>F1:F2</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 10</div>
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>4</span>, <span style={{ color: C.amberLight }}>F1:F2</span>) <span style={{ color: C.greenLight }}>→ 10</span></div>
+              <div>=DSUM(<span style={{ color: C.blueLight }}>A1:D6</span>, <span style={{ color: C.greenLight }}>D1</span>, <span style={{ color: C.amberLight }}>F1:F2</span>) <span style={{ color: C.greenLight }}>→ 10</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
@@ -300,9 +300,9 @@ export function DbAverageDiagram() {
             <SyntaxLine fn="DAVERAGE" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 평균을 구합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0' }}>
-              <div>=DAVERAGE(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G2</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 1,900,000</div>
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=DAVERAGE(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G2</span>) <span style={{ color: C.greenLight }}>→ 1,900,000</span></div>
+              <div>=DAVERAGE(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>C1</span>, <span style={{ color: C.amberLight }}>F1:G2</span>) <span style={{ color: C.greenLight }}>→ 1,900,000</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
@@ -386,9 +386,9 @@ export function DbCountDiagram() {
             <SyntaxLine fn="DCOUNT" color={C.blue} colors={[null, C.greenLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>조건을 만족하는 행에서 지정한 열의 숫자 셀 개수를 셉니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 18, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0', minHeight: 58, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div>=DCOUNT(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G3</span>)</div>
-              <div style={{ color: C.greenLight }}>→ 2</div>
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '4px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=DCOUNT(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>3</span>, <span style={{ color: C.amberLight }}>F1:G3</span>) <span style={{ color: C.greenLight }}>→ 2</span></div>
+              <div>=DCOUNT(<span style={{ color: C.blueLight }}>A1:D4</span>, <span style={{ color: C.greenLight }}>C1</span>, <span style={{ color: C.amberLight }}>F1:G3</span>) <span style={{ color: C.greenLight }}>→ 2</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>

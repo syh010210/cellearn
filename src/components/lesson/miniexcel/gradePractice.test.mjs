@@ -1,4 +1,4 @@
-import { argDiffReason, astEqualFormula, fillFromReason } from "./gradePractice.js";
+import { argDiffReason, astEqualFormula, fillFromReason, gradePractice } from "./gradePractice.js";
 
 let pass = 0;
 let fail = 0;
@@ -75,6 +75,24 @@ check("fillFrom 복사",
   fillFromReason("=VLOOKUP(C2,$A$6:$C$8,3,0)",
     { fillFrom: "D2", answer: "=VLOOKUP(C3,$A$6:$C$8,3,0)" }, 2, 3, makeCells("=VLOOKUP(C2,$A$6:$C$8,3,0)")),
   "자동 채우기가 아니라 복사했습니다. 찾을 값이 바뀌어야 합니다");
+
+// ── acceptableAnswers: DB함수 필드 = 열 번호(4) / 제목 셀(D1) 둘 다 정답 ──
+const okSheet = { getCellValue: () => 13, getDisplayValue: () => "999" }; // 결과값이 틀려도 AST 일치면 정답
+const accCell = (input) => ({
+  editable: true, input,
+  answer: "=DSUM(A1:D4,4,B1:B2)",
+  acceptableAnswers: ["=DSUM(A1:D4,4,B1:B2)", "=DSUM(A1:D4,D1,B1:B2)"],
+  result: 13,
+});
+check("acceptableAnswers: 열 번호(4) 형태 정답",
+  gradePractice({ cells: [[accCell("=DSUM(A1:D4,4,B1:B2)")]], cols: ["A"], sheet: okSheet })[0].status, "correct");
+check("acceptableAnswers: 제목 셀(D1) 형태도 정답",
+  gradePractice({ cells: [[accCell("=DSUM(A1:D4,D1,B1:B2)")]], cols: ["A"], sheet: okSheet })[0].status, "correct");
+// 필드는 유효 대체 형태(D1)라 오답 사유는 조건 범위(3번째)만 지목해야 한다
+check("acceptableAnswers: 사유는 유효 필드형태를 오답으로 안 짚음",
+  gradePractice({ cells: [[accCell("=DSUM(A1:D4,D1,C1:C2)")]], cols: ["A"],
+    sheet: { getCellValue: () => 5, getDisplayValue: () => "5" } })[0].reason,
+  "3번째 인수(조건 범위)가 다릅니다.");
 
 console.log(`\n총 ${pass + fail}개 중 ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail > 0 ? 1 : 0);
