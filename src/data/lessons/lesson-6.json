@@ -32,7 +32,7 @@
         }
       ],
       "practice": {
-        "instruction": "농장 실험실 데이터입니다. [C2] 셀에 MOD 함수를 사용하여 수확량을 박스당 단위(3)로 나눈 나머지를 구하고, [C3] 셀에 VALUE 함수를 사용하여 텍스트로 저장된 수치를 계산 가능한 숫자로 바꾸세요.",
+        "instruction": "[C2] 셀에 수확량[B2]을 박스당 단위 3으로 나눈 나머지를 구하고, [C3] 셀에 텍스트로 저장된 수치[B3]을 계산 가능한 숫자로 바꾸세요.",
         "cols": ["A", "B", "C"],
         "rows": [
           [
@@ -74,7 +74,7 @@
           "type": "numbered",
           "items": [
             {
-              "text": "**K가 양수(1, 2, 3)**: 소수점 아래 K번째 자리까지 표시합니다. (K=2이면 소수 둘째 자리까지 표시)",
+              "text": "**K가 양수(1, 2, 3)**: 소수점 아래 K번째 자리까지 표시합니다.",
               "subItems": ["ROUNDUP(3.14, 1) → 3.2 (K=1이므로 **소수점 아래 첫째 자리**까지 **표시**)"]
             },
             { "text": "**K가 0**: 정수 형태로 나타냅니다." },
@@ -86,7 +86,7 @@
         }
       ],
       "practice": {
-        "instruction": "수확물 정산 금액 표입니다. [C2] 셀에 ROUND 함수를 사용하여 평균 단가를 소수 첫째 자리(K=1)까지 반올림하고, [C3] 셀에 ROUNDDOWN을 사용하여 십의 자리(K=-1)까지 내림(절삭)하세요.",
+        "instruction": "수확물 정산 금액 표입니다. [C2] 셀에 평균 단가[B2]를 소수 첫째 자리까지 반올림하고, [C3] 셀에 지원금[B3]을 십의 자리까지 내림(절삭)하세요.",
         "cols": ["A", "B", "C"],
         "rows": [
           [
@@ -128,52 +128,37 @@
           "type": "bullets",
           "items": [
             "**SUM(범위)**: 범위 내 모든 숫자의 합계를 구합니다.",
-            "**SUMIF(조건범위, 조건, [합계범위])**: 조건범위에서 조건과 일치하는 행의 합계범위 값을 더합니다.",
-            "합계범위를 생략하면 조건범위 자체가 합계범위로 사용됩니다."
-          ]
-        },
-        {
-          "type": "heading",
-          "text": "⚠ 절대 참조($) 필수 적용"
-        },
-        {
-          "type": "bullets",
-          "items": [
-            "수식을 아래로 자동 채우기 할 때 **조건범위와 합계범위가 함께 밀리지 않도록** F4 키로 절대 참조 처리해야 합니다.",
-            "예: =SUMIF(**$B$2:$B$5**, D2, **$C$2:$C$5**) — D2(조건)만 상대 참조로 이동"
+            "**SUMIF(조건 범위, 조건, [합계 범위])**: 조건 범위에서 조건과 일치하는 행의 합계 범위 값을 더합니다.",
+            "시험에서는 조건 범위와 합계 범위가 같다면 합계 범위를 반드시 생략해야 합니다. 예: 성적[B2:B10]이 90 이상인 학생들의 성적 합계 → =SUMIF(B2:B10, \">=90\")"
           ]
         }
       ],
       "practice": {
-        "instruction": "주말농장 수확 일지입니다. [E2] 셀에 SUMIF 함수를 사용하여 분류가 '채소'인 작물들의 수확량 합계를 계산하세요.",
-        "cols": ["A", "B", "C", "D", "E"],
+        "instruction": "주말농장 수확 일지입니다. [D2] 셀에 분류[B2:B4]가 \"채소\"인 작물의 수확량[C2:C4] 합계를 계산하세요.",
+        "cols": ["A", "B", "C", "D"],
         "rows": [
           [
             { "val": "작물명", "editable": false },
             { "val": "분류", "editable": false },
             { "val": "수확량", "editable": false },
-            { "val": "지정 분류", "editable": false },
             { "val": "채소 총수확량", "editable": false }
           ],
           [
             { "val": "상추", "editable": false },
             { "val": "채소", "editable": false },
             { "val": 35, "editable": false },
-            { "val": "채소", "editable": false },
-            { "val": "", "editable": true, "answer": "=SUMIF($B$2:$B$4,D2,$C$2:$C$4)", "result": 55 }
+            { "val": "", "editable": true, "answer": "=SUMIF(B2:B4,\"채소\",C2:C4)", "result": 55 }
           ],
           [
             { "val": "사과", "editable": false },
             { "val": "과일", "editable": false },
             { "val": 12, "editable": false },
-            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ],
           [
             { "val": "깻잎", "editable": false },
             { "val": "채소", "editable": false },
             { "val": 20, "editable": false },
-            { "val": "", "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -395,7 +380,7 @@
     { "sheet": "수학함수", "cell": "C3", "formula": "=VALUE(B3)" },
     { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
     { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-1)" },
-    { "sheet": "단일조건합", "cell": "E2", "formula": "=SUMIF($B$2:$B$4,D2,$C$2:$C$4)" },
+    { "sheet": "단일조건합", "cell": "D2", "formula": "=SUMIF(B2:B4,\"채소\",C2:C4)" },
     { "sheet": "다중조건합", "cell": "G2", "formula": "=SUMIFS(D2:D5,B2:B5,E2,C2:C5,F2)" }
   ]
 }

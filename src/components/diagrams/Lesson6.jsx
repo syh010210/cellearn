@@ -126,32 +126,33 @@ export function SumifDiagram() {
   const [active, setActive] = useState(null);
 
   const data = [
-    ['작물명', '분류', '수확량', '지정 분류'],
-    ['상추', '채소', 35, '채소'],
-    ['사과', '과일', 12, ''],
-    ['깻잎', '채소', 20, ''],
-    ['딸기', '과일', 18, ''],
+    ['작물명', '분류', '수확량'],
+    ['상추', '채소', 35],
+    ['사과', '과일', 12],
+    ['깻잎', '채소', 20],
+    ['딸기', '과일', 18],
   ];
   const LAST = data.length - 1; // 4
 
   const tabs = [
-    { key: '범위', color: C.blueLight },
+    { key: '조건 범위', color: C.blueLight },
     { key: '조건', color: C.greenLight },
     { key: '합계 범위', color: C.amberLight },
   ];
   const explain = {
-    '범위': '조건을 검사할 열입니다. 제목 행을 빼고 데이터 [B2:B5]만 잡습니다.',
-    '조건': '찾을 값입니다. "채소"처럼 직접 따옴표로 쓰거나, 값이 들어 있는 셀 D2를 지정합니다.',
-    '합계 범위': '조건에 맞는 행에서 실제로 더할 열입니다. 범위와 행 수가 같아야 합니다. 생략하면 범위 자체를 더합니다.',
+    '조건 범위': '조건을 검사할 열입니다. 제목 행을 빼고 데이터 [B2:B5]만 잡습니다.',
+    '조건': '조건입니다. "채소", ">=80"처럼 직접 조건을 적습니다.',
+    '합계 범위': '조건에 맞는 행에서 실제로 더할 열입니다.\n시험에서는 조건 범위와 합계 범위가 같다면 반드시 생략해야 합니다.',
   };
 
   // 채소 행 = ri1(상추), ri3(깻잎)
   const dataSt = (ri, ci) => {
-    const boxes = active === '범위' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
-      : active === '조건' ? [{ r1: 1, r2: 1, c1: 3, c2: 3, color: C.greenLight }]
+    const boxes = active === '조건 범위' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
       : active === '합계 범위' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.amberLight }] : [];
     const s = rangeSides(ri, ci, boxes);
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    // 조건: 조건 범위(B열) 안에서 "채소"인 셀만 배경+굵게 (테두리 대신)
+    if (active === '조건' && ci === 1 && (ri === 1 || ri === 3)) return { ...s, bg: C.greenLight, color: C.bgDark, bold: true };
     if (active === '합계 범위' && ci === 2 && (ri === 1 || ri === 3)) s.bold = true;
     return s;
   };
@@ -170,7 +171,7 @@ export function SumifDiagram() {
           <div>
             <TableCaption color={C.blueLight}>[표1] 수확 일지</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={78}
-              reserveLabelRow labelRow={active === '합계 범위' ? [null, null, { text: '합계', color: C.amberLight }, null] : [null, null, null, null]} />
+              reserveLabelRow labelRow={active === '합계 범위' ? [null, null, { text: '합계', color: C.amberLight }] : [null, null, null]} />
           </div>
         </Fixed>
 
@@ -180,16 +181,14 @@ export function SumifDiagram() {
             <SyntaxLine fn="SUMIF" color={C.blue} colors={[C.blueLight, C.greenLight, C.amberLight]} />
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>범위에서 조건에 맞는 행을 찾아, 그 행의 합계 범위 값을 더합니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
-            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 84, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+            <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
               <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>=SUM(C2:C5) → 85 (전체 합계)</div>
               <div>=SUMIF(<span style={{ color: C.blueLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;채소&quot;</span>, <span style={{ color: C.amberLight }}>C2:C5</span>) <span style={{ color: C.greenLight }}>→ 55</span></div>
-              <div>=SUMIF(<span style={{ color: C.blueLight }}>$B$2:$B$5</span>, <span style={{ color: C.greenLight }}>D2</span>, <span style={{ color: C.amberLight }}>$C$2:$C$5</span>) <span style={{ color: C.greenLight }}>→ 55</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 세 개의 인수를 하나씩 확인하세요</div>
           <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
           <ExplainBoard tabs={tabs} active={active} explain={explain} />
-          <div style={{ color: C.amber, fontSize: 15, lineHeight: 1.6 }}>아래로 자동 채우기 할 때는 범위와 합계 범위를 F4로 $ 고정합니다. 조건(D2)만 상대 참조.</div>
         </Fill>
       </Row>
     </Wrap>
