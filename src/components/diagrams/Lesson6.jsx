@@ -73,11 +73,11 @@ export function MathRoundDiagram() {
   );
 
   const cards = [
-    { name: 'ROUND', desc: '반올림 — 버릴 자리가 5 이상이면 올림', formula: '=ROUND(3737.3737, 2)', value: '= 3737.37',
+    { name: 'ROUND', desc: '반올림', formula: '=ROUND(3737.3737, 2)', value: '= 3737.37',
       bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
-    { name: 'ROUNDUP', desc: '무조건 올림', formula: '=ROUNDUP(3737.3737, 2)', value: '= 3737.38',
+    { name: 'ROUNDUP', desc: '올림', formula: '=ROUNDUP(3737.3737, 2)', value: '= 3737.38',
       bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
-    { name: 'ROUNDDOWN', desc: '무조건 내림(절삭)', formula: '=ROUNDDOWN(3737.3737, 2)', value: '= 3737.37',
+    { name: 'ROUNDDOWN', desc: '내림', formula: '=ROUNDDOWN(3737.3737, 2)', value: '= 3737.37',
       bg: C.redDark, border: C.red, color: C.redLight, valColor: C.redLight },
   ];
 
