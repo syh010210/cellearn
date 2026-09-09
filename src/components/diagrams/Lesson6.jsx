@@ -3,9 +3,8 @@
 import { useState } from 'react';
 import {
   Wrap, Title, Subtitle, Row, Fixed, Fill, ExcelGrid, TableCaption, ExamProblem,
-  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, BottomBar, BLine, Cell, C,
+  ArgButtons, rangeSides, SyntaxLine, ExplainBoard, Cell, C,
 } from './shared.jsx';
-import { FUNCTION_SYNTAX } from '../../data/functionSyntax.js';
 
 // 3차시 FuncCard와 같은 줄 순서·크기: 함수명(17) → SyntaxLine(12.5) → 설명(14) → 수식(14) → 값(16)
 function MathCard({ c }) {
@@ -73,6 +72,15 @@ export function MathRoundDiagram() {
       style={{ color: isNeg ? C.amber : C.blueLight, fontWeight: 700, fontSize: 15 }}>{text}</Cell>
   );
 
+  const cards = [
+    { name: 'ROUND', desc: '반올림 — 버릴 자리가 5 이상이면 올림', formula: '=ROUND(3737.3737, 2)', value: '= 3737.37',
+      bg: C.blueCard, border: C.blueDim, color: C.blue, valColor: C.blueLight },
+    { name: 'ROUNDUP', desc: '무조건 올림', formula: '=ROUNDUP(3737.3737, 2)', value: '= 3737.38',
+      bg: C.greenDark, border: C.green, color: C.greenLight, valColor: C.greenLight },
+    { name: 'ROUNDDOWN', desc: '무조건 내림(절삭)', formula: '=ROUNDDOWN(3737.3737, 2)', value: '= 3737.37',
+      bg: C.redDark, border: C.red, color: C.redLight, valColor: C.redLight },
+  ];
+
   return (
     <Wrap>
       <Title>자릿수 제어 함수: ROUND · ROUNDUP · ROUNDDOWN</Title>
@@ -102,10 +110,11 @@ export function MathRoundDiagram() {
         ))}
       </div>
 
-      <BottomBar>
-        <BLine>{FUNCTION_SYNTAX['ROUND']}  ·  {FUNCTION_SYNTAX['ROUNDUP']}  ·  {FUNCTION_SYNTAX['ROUNDDOWN']}</BLine>
-        <BLine color={C.blue} bold>K 양수 = 소수 몇째 자리까지 · K=0 = 정수 · K 음수 = 십·백·천의 자리에서 처리</BLine>
-      </BottomBar>
+      <Row gap={12} style={{ marginTop: 16 }}>
+        {cards.map((c) => (
+          <Fill key={c.name} min={150}><MathCard c={c} /></Fill>
+        ))}
+      </Row>
     </Wrap>
   );
 }
