@@ -49,6 +49,30 @@ function measureText(str) {
   return _measureCtx.measureText(String(str)).width;
 }
 
+// 실습 로드 시 각 열 너비를 내용에 맞춰 자동 계산 (엑셀 "열 너비 자동 맞춤").
+// - 측정 대상은 처음 로드된 표시값(제목·데이터)뿐. editable 셀은 로드 시 비어 있어 val이 있을 때만 반영
+//   → 수식 편집/채점 결과로는 폭이 바뀌지 않는다.
+// - 각 열 = max(기본 너비, 가장 긴 셀 폭 + 좌우 패딩), 상한은 기본 너비의 2.5배.
+// - 빈 열은 기본 너비 유지. 결과를 state에 담아 매 렌더 재측정하지 않는다.
+const COL_W_MAX = Math.round(COL_W * 2.5);
+function computeInitialColWidths(practice) {
+  const totalColCount = practice.cols.length + FILLER_COLS;
+  const widths = Array(totalColCount).fill(COL_W);
+  for (let ci = 0; ci < totalColCount; ci++) {
+    let maxW = 0;
+    for (const row of practice.rows) {
+      const cell = row[ci];
+      if (!cell) continue;
+      const v = cell.val;
+      if (v === undefined || v === null || v === "") continue;
+      const text = cell.format ? formatValue(v, cell.format) : String(v);
+      if (text) maxW = Math.max(maxW, measureText(text));
+    }
+    if (maxW > 0) widths[ci] = Math.min(COL_W_MAX, Math.max(COL_W, Math.ceil(maxW) + CELL_PAD_X));
+  }
+  return widths;
+}
+
 export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
   // 데이터 범위 뒤로 빈 열/행을 2개씩만 붙인다(엑셀 시트 여백처럼).
   // 빈 셀은 editable:false(선택·이동은 되지만 편집 불가, Sheet에 등록하지 않음).
@@ -78,7 +102,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const [cursorPos, setCursorPos] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
   const [formulaError, setFormulaError] = useState(null); // 잘못된 수식 커밋 시도 시 안내문
-  const [colWidths, setColWidths] = useState(() => Array(practice.cols.length + FILLER_COLS).fill(COL_W));
+  const [colWidths, setColWidths] = useState(() => computeInitialColWidths(practice));
   const [guideX, setGuideX] = useState(null); // 열 너비 드래그 중 세로 안내선 x (컨테이너 기준)
   const resizeRef = useRef(null); // { ci, startX, startW }
   // 범위 선택 드래그 (수식 모드에서 참조 삽입)
@@ -148,7 +172,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     sheetRef.current = sheet;
 
     setCells(initCells());
-    setColWidths(Array(practice.cols.length + FILLER_COLS).fill(COL_W)); // 실습마다 열 너비 초기화(저장 안 함)
+    setColWidths(computeInitialColWidths(practice)); // 실습마다 내용에 맞춰 자동 계산(저장 안 함)
     setSelection(null);
     setInputVal("");
     setGraded(false);
@@ -918,7 +942,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
           ref={containerRef}
           tabIndex={0}
           onKeyDown={handleContainerKeyDown}
-          style={{ position: "relative", overflow: "hidden", width: "fit-content", maxWidth: "100%", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderTop: "1px solid #d0d0d0", borderRadius: 0, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
+          style={{ position: "relative", overflowX: "auto", overflowY: "hidden", width: "fit-content", maxWidth: "100%", borderLeft: "1px solid #d0d0d0", borderRight: "1px solid #d0d0d0", borderTop: "1px solid #d0d0d0", borderRadius: 0, outline: "none", touchAction: (dragging || rangeSelecting || selDragging) ? "none" : "auto" }}
         >
           <table style={{ borderCollapse: "collapse", fontSize: CELL_FONT, fontFamily: FONT, tableLayout: "fixed", width: ROWNUM_W + colWidths.reduce((a, b) => a + b, 0) }}>
             <colgroup>
