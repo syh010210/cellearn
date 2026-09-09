@@ -227,16 +227,16 @@ export function WorkdayDiagram() {
   const descSt = { color: C.text, fontSize: 14, lineHeight: 1.6 };
   const formulaSt = { color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' };
 
-  // 계산 과정 띠 (6/22 월 시작, 5근무일 → 6/29 월)
-  const steps = [
-    { t: '6/23 화\n1일째', bg: C.greenDark, border: C.green, color: C.greenLight },
-    { t: '6/24 수\n2일째', bg: C.greenDark, border: C.green, color: C.greenLight },
-    { t: '6/25 목\n3일째', bg: C.greenDark, border: C.green, color: C.greenLight },
-    { t: '6/26 금\n4일째', bg: C.greenDark, border: C.green, color: C.greenLight },
-    { t: '6/27 토\n주말', bg: C.purpleCard, border: C.purple, color: C.purpleLight },
-    { t: '6/28 일\n주말', bg: C.purpleCard, border: C.purple, color: C.purpleLight },
-    { t: '6/29 월\n5일째 ★', bg: C.greenBg, border: C.greenLight, color: C.greenLight },
-  ];
+  // 2026년 6월 달력 (1일=월요일). 22 시작 → 근무일 23~26·29(주말 27·28 건너뜀) → 5일째 29 완료
+  const dow = ['월', '화', '수', '목', '금', '토', '일'];
+  const dayLabel = { 22: '시작', 23: '1일째', 24: '2일째', 25: '3일째', 26: '4일째', 27: '×', 28: '×', 29: '5일째' };
+  const dayStyle = (d) => {
+    if (d === 22) return { bg: C.blueCard, border: C.blue, color: C.blue, bold: true };
+    if (d >= 23 && d <= 26) return { bg: C.greenDark, border: C.green, color: C.greenLight, bold: true };
+    if (d === 27 || d === 28) return { bg: C.purpleCard, border: C.purple, color: C.purpleLight, bold: true };
+    if (d === 29) return { bg: C.greenBg, border: C.greenLight, color: C.greenLight, bold: true };
+    return { bg: C.bgDark, border: C.border, color: C.textDim, bold: false }; // 1~21, 30
+  };
 
   return (
     <Wrap>
@@ -254,11 +254,22 @@ export function WorkdayDiagram() {
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={88} />
           </div>
           <div>
-            <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — B2 = 6/22(월)</TableCaption>
+            <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — 2026년 6월</TableCaption>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
-              {steps.map((s, i) => (
-                <Cell key={i} bg={s.bg} border={s.border}
-                  style={{ color: s.color, fontWeight: 700, fontSize: 15, whiteSpace: 'pre-line', padding: '6px 2px' }}>{s.t}</Cell>
+              {dow.map((h, i) => (
+                <Cell key={'h' + i} bg={C.bgDark} border={C.border}
+                  style={{ color: C.textDim, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
+              ))}
+              {Array.from({ length: 30 }, (_, k) => {
+                const d = k + 1;
+                const st = dayStyle(d);
+                return (
+                  <Cell key={'d' + d} bg={st.bg} border={st.border} bw={2}
+                    style={{ color: st.color, fontWeight: st.bold ? 700 : 400, fontSize: 15, whiteSpace: 'pre-line', padding: '6px 2px' }}>{`${d}\n${dayLabel[d] || ''}`}</Cell>
+                );
+              })}
+              {Array.from({ length: 5 }, (_, k) => (
+                <Cell key={'b' + k} bg="transparent" border="transparent" bw={2} style={{ fontSize: 15 }}>{''}</Cell>
               ))}
             </div>
           </div>
