@@ -174,7 +174,9 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
   };
   return (
     <div style={{ display: 'inline-block', maxWidth: '100%' }}>
-      <div style={{ overflowX: 'auto', border: rowLabels ? 'none' : `1px solid ${C.border}`, borderRadius: rowLabels ? 0 : 6, maxWidth: '100%' }}>
+      {/* labelRow/rowLabels가 있으면 컨테이너 테두리를 두지 않고 셀 테두리로만 표를 그린다.
+          → 예약된 빈 라벨 행이 컨테이너 border·borderRadius 안에 갇혀 표의 일부처럼 보이지 않게. */}
+      <div style={{ overflowX: 'auto', border: (rowLabels || labelRow || reserveLabelRow) ? 'none' : `1px solid ${C.border}`, borderRadius: (rowLabels || labelRow || reserveLabelRow) ? 0 : 6, maxWidth: '100%' }}>
       <table style={{ borderCollapse: 'collapse', fontFamily: FONT }}>
         <thead>
           <tr>
@@ -221,22 +223,24 @@ export function ExcelGrid({ data, startCol = 0, startRow = 1, cellStyle, minColW
               )}
             </tr>
           ))}
-          {/* 라벨 행: 같은 표 안의 테두리 없는 행 → 위 데이터 열과 폭이 정확히 일치(강조 열이 어느 위치든 가운데 정렬).
-              reserveLabelRow=true 면 라벨이 없어도 빈 칸(NBSP)으로 항상 렌더해 버튼 전환 시 표 높이가 흔들리지 않게 한다. */}
+          {/* 라벨 행: 같은 표 안의 행이라 데이터 열과 폭이 정확히 일치(강조 열이 어느 위치든 가운데 정렬).
+              테두리·배경 없이 고정 height(22)만 차지 → 라벨이 없어도(빈 문자열) 자리가 예약돼 버튼 전환 시 표 높이가 그대로다.
+              컨테이너 border를 없앴으므로(위 참고) 이 행은 표 테두리 바깥에 놓여 선이 보이지 않는다. */}
           {(labelRow || reserveLabelRow) && (
             <tr>
-              <td style={{ border: 'none', minWidth: 26, padding: '3px 4px' }} />
+              <td style={{ border: 'none', background: 'transparent', boxShadow: 'none', minWidth: 26, height: 22, padding: '3px 4px' }} />
               {Array.from({ length: nCols }, (_, ci) => {
                 const lab = labelRow ? labelRow[ci] : null;
                 return (
                   <td key={ci} style={{
-                    border: 'none', padding: '3px 4px',
+                    border: 'none', background: 'transparent', boxShadow: 'none',
+                    height: 22, lineHeight: '16px', padding: '3px 4px',
                     fontSize: 13.5, fontWeight: 700, textAlign: 'center',
                     whiteSpace: 'nowrap', color: (lab && lab.color) || C.text,
-                  }}>{(lab && lab.text) || ' '}</td>
+                  }}>{(lab && lab.text) || ''}</td>
                 );
               })}
-              {rowLabels && <td style={{ border: 'none' }} />}
+              {rowLabels && <td style={{ border: 'none', background: 'transparent' }} />}
             </tr>
           )}
         </tbody>
