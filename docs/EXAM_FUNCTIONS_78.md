@@ -1,0 +1,30 @@
+# 컴활 2급 실기 출제 함수 목록
+
+사용자 제공 기준 목록. 미니 엑셀 자동완성/힌트 화이트리스트(`src/excel-engine/functions/index.js`의 `EXAM_FUNCTIONS`)의 기준이 된다.
+
+> ⚠️ 참고: 파일명은 `_78` 이지만 아래 목록은 실제로 **82개**이며, 현재 코드의 `EXAM_FUNCTIONS`(82개)와 **완전히 동일**하다(양방향 차집합 없음).
+
+## 날짜/시간 (15)
+DATE, DAY, DAYS, EDATE, EOMONTH, HOUR, MINUTE, MONTH, NOW, SECOND, TIME, TODAY, WEEKDAY, WORKDAY, YEAR
+
+## 논리 (9)
+AND, FALSE, IF, IFS, IFERROR, NOT, OR, TRUE, SWITCH
+
+## 데이터베이스 (6)
+DAVERAGE, DCOUNT, DCOUNTA, DMAX, DMIN, DSUM
+
+## 텍스트 (10)
+FIND, LEFT, LEN, LOWER, MID, PROPER, RIGHT, SEARCH, TRIM, UPPER
+
+## 수학 (13)
+ABS, INT, MOD, POWER, RAND, RANDBETWEEN, ROUND, ROUNDDOWN, ROUNDUP, SUM, SUMIF, SUMIFS, TRUNC
+
+## 찾기/참조 (9)
+CHOOSE, COLUMN, COLUMNS, HLOOKUP, INDEX, MATCH, ROW, ROWS, VLOOKUP
+
+## 통계 (20)
+AVERAGE, AVERAGEA, AVERAGEIF, AVERAGEIFS, COUNT, COUNTA, COUNTBLANK, COUNTIF, COUNTIFS, LARGE, MAX, MAXA, MEDIAN, MIN, MINA, MODE.SNGL, RANK.EQ, SMALL, STDEV.S, VAR.S
+
+---
+
+합계: **82개**
