@@ -146,7 +146,12 @@ export function WeekdayDiagram() {
           <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${C.blue}` }}>
             <div style={nameSt(C.blueLight)}>1단계 · WEEKDAY — 요일 번호</div>
             <SyntaxLine fn="WEEKDAY" color={C.blue} size={14} />
-            <div style={descSt}>WEEKDAY 함수는 마감일자의 요일을 1부터 7까지의 숫자로 바꿉니다. 2단계에서 &quot;월&quot;부터 나열할 것이므로 월요일이 1이 되는 반환 유형 2를 씁니다.</div>
+            <div style={{ ...descSt, whiteSpace: 'pre-line' }}>
+              {'WEEKDAY 함수는 마감일자의 요일을 1부터 7까지의 숫자로 바꿉니다.\n문제에서 월요일이 1이 되도록 반환 유형을 지정하라고 했으므로 2를 씁니다.\n'}
+              <span style={{ color: C.textMuted }}>1 — 숫자 1(일요일)에서 7(토요일)까지</span>
+              {'\n'}
+              <span style={{ color: C.blueLight, fontWeight: 700 }}>2 — 숫자 1(월요일)에서 7(일요일)까지</span>
+            </div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>=WEEKDAY(B2, 2) = <span style={{ color: C.blueLight }}>1</span></div>
           </div>
