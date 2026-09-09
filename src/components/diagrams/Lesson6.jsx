@@ -222,7 +222,7 @@ export function SumifsDiagram() {
     '조건 범위1': '첫 번째 조건을 검사할 열 [B2:B5].',
     '조건1': '첫 번째 조건입니다. "과일"처럼 직접 적습니다.',
     '조건 범위2': '두 번째 조건을 검사할 열 [C2:C5].',
-    '조건2': '두 번째 조건입니다. 평균 이상처럼 함수를 조건으로 쓸 때는 비교 연산자만 따옴표로 감싸고 &로 함수를 잇습니다.\n조건이 여러 개면 모두 만족(AND)하는 행만 더합니다.',
+    '조건2': '두 번째 조건입니다. 평균 이상처럼 함수를 조건으로 쓸 때는 비교 연산자만 따옴표로 감싸고 &로 함수를 잇습니다.\n"비교연산자(=,<>,>,>=,<,<=)"&함수',
   };
 
   // 두 조건(과일 AND 출하량>=평균20) 모두 만족: 블루베리(ri1), 딸기(ri2)
@@ -265,8 +265,9 @@ export function SumifsDiagram() {
             <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6 }}>합계 범위를 맨 앞에 쓰고, (조건 범위, 조건) 쌍을 필요한 만큼 이어 붙입니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '8px 0 6px' }} />
             <div style={{ color: C.text, fontSize: 15.5, fontWeight: 700, textAlign: 'center', letterSpacing: '-0.01em', padding: '6px 0', minHeight: 62, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
+              <div>=SUMIFS(<span style={{ color: C.blueLight }}>D2:D5</span>, <span style={{ color: C.greenLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;과일&quot;</span>, <span style={{ color: C.amberLight }}>C2:C5</span>, <span style={{ color: C.amberLight }}>{'">="&AVERAGE(C2:C5)'}</span>)</div>
+              <div><span style={{ color: C.greenLight }}>→ 430,000</span></div>
               <div style={{ color: C.textMuted, fontWeight: 400, fontSize: 15 }}>AVERAGE(C2:C5) = 20 (출하량 평균)</div>
-              <div>=SUMIFS(<span style={{ color: C.blueLight }}>D2:D5</span>, <span style={{ color: C.greenLight }}>B2:B5</span>, <span style={{ color: C.greenLight }}>&quot;과일&quot;</span>, <span style={{ color: C.amberLight }}>C2:C5</span>, <span style={{ color: C.amberLight }}>{'">="&AVERAGE(C2:C5)'}</span>) <span style={{ color: C.greenLight }}>→ 430,000</span></div>
             </div>
           </div>
           <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 다섯 개의 인수를 하나씩 확인하세요</div>

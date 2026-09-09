@@ -15,7 +15,12 @@ function syntaxTokens(str) {
 }
 
 function bold(str) {
-  return syntaxTokens(str).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // 굵게(**...**) 파싱을 먼저 끝낸 뒤, 남은 개행을 <br />로 바꾼다.
+  // (** 정규식은 개행을 넘지 않으므로 순서가 뒤바뀌어도 태그가 깨지지 않지만,
+  //  요구된 "굵게 후 개행 분리" 순서를 명시적으로 지킨다.)
+  return syntaxTokens(str)
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\n/g, "<br />");
 }
 
 function ListItem({ item }) {
@@ -49,7 +54,7 @@ function renderBlock(block, i, lesson) {
   }
   if (block.type === "text") {
     return (
-      <p key={i} style={{ color: UI.ink, lineHeight: 1.8, margin: "0 0 12px", whiteSpace: "pre-line" }}
+      <p key={i} style={{ color: UI.ink, lineHeight: 1.8, margin: "0 0 12px" }}
          dangerouslySetInnerHTML={{ __html: bold(block.text) }} />
     );
   }

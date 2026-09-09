@@ -102,7 +102,7 @@
           [
             { "val": "유기농 딸기 지원금", "editable": false },
             { "val": 1545, "editable": false },
-            { "val": "", "editable": true, "answer": "=ROUNDDOWN(B3,-1)", "result": 1540 }
+            { "val": "", "editable": true, "answer": "=ROUNDDOWN(B3,-2)", "result": 1500 }
           ]
         ]
       }
@@ -129,7 +129,7 @@
           "items": [
             "**SUM(범위)**: 범위 내 모든 숫자의 합계를 구합니다.",
             "**SUMIF(조건 범위, 조건, [합계 범위])**: 조건 범위에서 조건과 일치하는 행의 합계 범위 값을 더합니다.",
-            "시험에서는 조건 범위와 합계 범위가 같다면 합계 범위를 반드시 생략해야 합니다.\n예: 성적[B2:B10]이 90 이상인 학생들의 성적 합계 → =SUMIF(B2:B10, \">=90\"), 조건 범위와 합계 범위가 같음"
+            "시험에서는 조건 범위와 합계 범위가 같다면 합계 범위를 반드시 생략해야 합니다.\n예: 성적[B2:B10]이 90 이상인 학생들의 성적 합계 → =SUMIF(B2:B10, \">=90\"), 조건 범위와 합계 범위가 성적으로 같음"
           ]
         }
       ],
@@ -376,7 +376,7 @@
     { "sheet": "수학함수", "cell": "C2", "formula": "=MOD(B2,3)" },
     { "sheet": "수학함수", "cell": "C3", "formula": "=VALUE(B3)" },
     { "sheet": "자릿수정돈", "cell": "C2", "formula": "=ROUND(B2,1)" },
-    { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-1)" },
+    { "sheet": "자릿수정돈", "cell": "C3", "formula": "=ROUNDDOWN(B3,-2)" },
     { "sheet": "단일조건합", "cell": "D2", "formula": "=SUMIF(B2:B4,\"채소\",C2:C4)" },
     { "sheet": "다중조건합", "cell": "E2", "formula": "=SUMIFS(D2:D6,B2:B6,\"과일\",C2:C6,\">=\"&MEDIAN(C2:C6))" }
   ]

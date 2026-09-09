@@ -702,7 +702,9 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     const partial = m[1];
     const tokenStart = pos - partial.length;
     const prev = before.slice(0, tokenStart).replace(/\s+$/, "").slice(-1);
-    const okPrev = prev === "=" || prev === "(" || prev === "," || "+-*/^<>=".includes(prev);
+    // 수식 시작(=)·여는 괄호·쉼표 뒤뿐 아니라 연산자(&, 산술/비교) 뒤에서도 후보가 뜨게 한다.
+    // 다자 연산자(<=, >=, <>)는 마지막 문자가 =·>·<라 아래 단일 문자 검사로 모두 걸린다.
+    const okPrev = prev === "(" || prev === "," || "&+-*/^<>=".includes(prev);
     if (!okPrev) return null;
     const up = partial.toUpperCase();
     const items = FUNC_NAMES.filter((n) => n.startsWith(up)).slice(0, 8);
