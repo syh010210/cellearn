@@ -98,8 +98,6 @@ export function DatetimeComposeDiagram() {
 // WeekdayDiagram — 개념3 (인터랙티브, SumifDiagram 구조)
 // ─────────────────────────────────────────────
 export function WeekdayDiagram() {
-  const [active, setActive] = useState(null);
-
   const data = [
     ['작업명', '마감일자', '요일번호', '요일'],
     ['UI 디자인', '2026-06-22', 1, '월'],
@@ -109,22 +107,14 @@ export function WeekdayDiagram() {
   ];
   const LAST = data.length - 1; // 4
 
-  const tabs = [
-    { key: '1단계 WEEKDAY', color: C.blueLight },
-    { key: '2단계 CHOOSE', color: C.greenLight },
-  ];
-  const explain = {
-    '1단계 WEEKDAY': '마감일자[B2]의 요일을 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다. 6/22(월) → 1',
-    '2단계 CHOOSE': '1단계 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 "월", 3이면 세 번째 값 "수"가 나옵니다.\n숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.',
-  };
-
+  // 정적 강조: 마감일자(B2:B5) 파랑 테두리, 요일번호(C2:C5) 초록 테두리, 요일(D2:D5) 굵게
   const dataSt = (ri, ci) => {
-    const boxes = active === '1단계 WEEKDAY' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blueLight }]
-      : active === '2단계 CHOOSE' ? [{ r1: 1, r2: LAST, c1: 2, c2: 2, color: C.greenLight }] : [];
-    const s = rangeSides(ri, ci, boxes);
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
-    if (active === '1단계 WEEKDAY' && ci === 2 && ri >= 1 && ri <= LAST) s.bold = true; // 요일번호 열 강조
-    if (active === '2단계 CHOOSE' && ci === 3 && ri >= 1 && ri <= LAST) s.bold = true; // 요일 열 강조
+    const s = rangeSides(ri, ci, [
+      { r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blue },
+      { r1: 1, r2: LAST, c1: 2, c2: 2, color: C.green },
+    ]);
+    if (ci === 3 && ri >= 1 && ri <= LAST) s.bold = true;
     return s;
   };
 
@@ -151,29 +141,24 @@ export function WeekdayDiagram() {
           </div>
         </Fixed>
 
-        <Fill min={360} max={500}>
-          <div>
-            {/* 1단계 — WEEKDAY */}
-            <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${active === '1단계 WEEKDAY' ? C.blue : C.blueDim}` }}>
-              <div style={nameSt(C.blueLight)}>1단계 · WEEKDAY — 요일 번호</div>
-              <SyntaxLine fn="WEEKDAY" color={C.blue} size={14} />
-              <div style={descSt}>마감일자의 요일을 1~7 숫자로 바꿉니다. 반환 유형 2를 쓰면 월요일이 1입니다.</div>
-              <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
-              <div style={formulaSt}>=WEEKDAY(B2, 2) = <span style={{ color: C.blueLight }}>1</span></div>
-            </div>
-
-            {/* 2단계 — CHOOSE */}
-            <div style={{ ...boxBase, marginTop: 16, background: C.greenDark, border: `2px solid ${active === '2단계 CHOOSE' ? C.green : C.greenDark}` }}>
-              <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 요일 텍스트</div>
-              <SyntaxLine fn="CHOOSE" color={C.greenLight} size={14} />
-              <div style={descSt}>1단계가 돌려준 숫자를 CHOOSE의 첫 인수로 넣습니다. 1이면 첫 번째 값 &quot;월&quot;, 3이면 세 번째 값 &quot;수&quot;가 나옵니다. 숫자 대신 WEEKDAY 수식을 그대로 넣어 한 수식으로 씁니다.</div>
-              <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
-              <div style={formulaSt}>=CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>, &quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;) = <span style={{ color: C.greenLight }}>&quot;월&quot;</span></div>
-            </div>
+        <Fill min={360} max={500} gap={12}>
+          {/* 1단계 — WEEKDAY */}
+          <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${C.blue}` }}>
+            <div style={nameSt(C.blueLight)}>1단계 · WEEKDAY — 요일 번호</div>
+            <SyntaxLine fn="WEEKDAY" color={C.blue} size={14} />
+            <div style={descSt}>WEEKDAY 함수는 마감일자의 요일을 1부터 7까지의 숫자로 바꿉니다. 2단계에서 &quot;월&quot;부터 나열할 것이므로 월요일이 1이 되는 반환 유형 2를 씁니다.</div>
+            <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>=WEEKDAY(B2, 2) = <span style={{ color: C.blueLight }}>1</span></div>
           </div>
-          <div style={{ color: C.textDim, fontSize: 14, textAlign: 'center' }}>버튼을 눌러 두 단계를 하나씩 확인하세요</div>
-          <ArgButtons tabs={tabs} active={active} onSelect={setActive} />
-          <ExplainBoard tabs={tabs} active={active} explain={explain} />
+
+          {/* 2단계 — CHOOSE */}
+          <div style={{ ...boxBase, background: C.greenDark, border: `2px solid ${C.green}` }}>
+            <div style={nameSt(C.greenLight)}>2단계 · CHOOSE — 요일 텍스트</div>
+            <SyntaxLine fn="CHOOSE" color={C.greenLight} size={14} />
+            <div style={descSt}>CHOOSE의 첫 인수 자리에 1단계 WEEKDAY 수식을 그대로 넣습니다. 숫자가 1이면 첫 번째 값 &quot;월&quot;, 3이면 세 번째 값 &quot;수&quot;가 나옵니다.</div>
+            <div style={{ borderTop: `1px solid ${C.green}`, margin: '4px 0 2px' }} />
+            <div style={formulaSt}>=CHOOSE(<span style={{ color: C.blueLight }}>WEEKDAY(B2, 2)</span>, &quot;월&quot;,&quot;화&quot;,&quot;수&quot;,&quot;목&quot;,&quot;금&quot;,&quot;토&quot;,&quot;일&quot;) = <span style={{ color: C.greenLight }}>&quot;월&quot;</span></div>
+          </div>
         </Fill>
       </Row>
 
