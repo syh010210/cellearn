@@ -225,7 +225,7 @@ export function IfAndDiagram() {
         <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 자격시험 결과</TableCaption>
-            <div style={{ color: C.textMuted, fontSize: 15, marginBottom: 6 }}>논리1 = 1과목 ≥40, 논리2 = 2과목 ≥40, 논리3 = 평균 ≥60</div>
+            <div style={{ color: C.textMuted, fontSize: 15, marginBottom: 6, textAlign: 'center' }}>논리1 = 1과목 ≥40, 논리2 = 2과목 ≥40, 논리3 = 평균 ≥60</div>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={68} firstColW={78} />
           </div>
         </Fixed>
@@ -261,34 +261,32 @@ export function IfAndDiagram() {
 // ─────────────────────────────────────────────
 export function IfOrDiagram() {
   const data = [
-    ['회원명', '구입횟수', '구입총액', '등급'],
-    ['김민지', 160, '820,000', 'VIP'],
-    ['이도현', 90, '1,250,000', 'VIP'],
-    ['박서준', 40, '300,000', '일반'],
-    ['최유나', 150, '500,000', 'VIP'],
-    ['정하늘', 120, '700,000', '일반'],
+    ['회원명', '구입횟수', '구입총액', '등급', '논리1', '논리2', 'OR 결과'],
+    ['김민지', 160, '820,000', 'VIP', 'TRUE', 'TRUE', 'TRUE'],
+    ['이도현', 90, '1,250,000', 'VIP', 'FALSE', 'TRUE', 'TRUE'],
+    ['박서준', 40, '300,000', '일반', 'FALSE', 'FALSE', 'FALSE'],
+    ['최유나', 150, '500,000', 'VIP', 'TRUE', 'FALSE', 'TRUE'],
+    ['정하늘', 120, '700,000', '일반', 'FALSE', 'FALSE', 'FALSE'],
   ];
   const LAST = data.length - 1; // 5
 
+  // 머리글 열별 색: 앞 네 칸·논리1 = blueLight, 논리2 = purpleLight, OR 결과 = greenLight
+  const headColors = [C.blueLight, C.blueLight, C.blueLight, C.blueLight, C.blueLight, C.purpleLight, C.greenLight];
   const dataSt = (ri, ci) => {
-    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
+    if (ri === 0) return { bold: true, color: headColors[ci], bg: C.blueCard };
     const s = rangeSides(ri, ci, [
       { r1: 1, r2: LAST, c1: 1, c2: 1, color: C.blue },
       { r1: 1, r2: LAST, c1: 2, c2: 2, color: C.purple },
     ]);
-    if (ci === 3 && ri >= 1 && ri <= LAST) {
-      s.bold = true;
-      s.color = data[ri][3] === 'VIP' ? C.greenLight : C.textMuted;
+    if (ci === 3) { s.bold = true; s.color = data[ri][3] === 'VIP' ? C.greenLight : C.textMuted; } // 등급
+    if (ci >= 4 && ci <= 6) { // 논리1 · 논리2 · OR 결과
+      const v = data[ri][ci];
+      if (v === 'TRUE') { s.bg = C.greenDark; s.color = C.greenLight; }
+      else if (v === 'FALSE') { s.bg = C.redDark; s.color = C.redLight; }
+      if (ci === 6) s.bold = true; // OR 결과 칸만 bold
     }
     return s;
   };
-
-  const truth = [
-    { a: 'TRUE', b: 'TRUE', r: 'TRUE', ok: true },
-    { a: 'TRUE', b: 'FALSE', r: 'TRUE', ok: true },
-    { a: 'FALSE', b: 'TRUE', r: 'TRUE', ok: true },
-    { a: 'FALSE', b: 'FALSE', r: 'FALSE', ok: false },
-  ];
 
   return (
     <Wrap>
@@ -303,20 +301,22 @@ export function IfOrDiagram() {
         <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 회원 구매 현황</TableCaption>
-            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={90} firstColW={72} />
+            <div style={{ color: C.textMuted, fontSize: 15, marginBottom: 6, textAlign: 'center' }}>논리1 = 구입횟수 ≥150, 논리2 = 구입총액 &gt; 평균(714,000)</div>
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={76} firstColW={78} />
           </div>
         </Fixed>
+      </Row>
 
-        <Fill min={360} max={500} gap={12}>
+      <Row gap={20} style={{ marginTop: 16 }}>
+        <Fill>
           <StepBox title="1단계 · OR — 하나라도 TRUE인지" color={C.blueLight} bg={C.blueCard} border={C.blue}
             fn="OR" syntaxColors={[C.blueLight, C.purpleLight]}
-            desc="나열한 조건 중 하나라도 TRUE면 TRUE입니다. 전부 FALSE일 때만 FALSE입니다. 평균 범위는 아래로 채워도 고정되도록 $를 붙입니다.">
-            <div style={{ display: 'inline-block', textAlign: 'left' }}>
-              <div style={{ whiteSpace: 'nowrap' }}>{'=OR('}<span style={{ color: C.blueLight }}>{'B2>=150'}</span>{','}</div>
-              <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.purpleLight }}>{'C2>AVERAGE($C$2:$C$6)'}</span>{')'}</div>
-            </div>
+            desc={'나열한 조건 중 하나라도 TRUE면 TRUE입니다. 전부 FALSE일 때만 FALSE입니다. 평균 범위는 아래로 채워도 고정되도록 $를 붙입니다.\n김민지는 둘 다, 이도현은 총액만, 최유나는 횟수만 TRUE라 세 명 모두 VIP입니다. 박서준과 정하늘은 둘 다 FALSE라 일반입니다.'}>
+            <div style={{ whiteSpace: 'nowrap' }}>{'=OR('}<span style={{ color: C.blueLight }}>{'B2>=150'}</span>{', '}<span style={{ color: C.purpleLight }}>{'C2>AVERAGE($C$2:$C$6)'}</span>{')'}</div>
             <div><span style={{ color: C.greenLight }}>= TRUE</span></div>
           </StepBox>
+        </Fill>
+        <Fill>
           <StepBox title="2단계 · IF — 결과 표시" color={C.greenLight} bg={C.greenDark} border={C.green}
             fn="IF" syntaxColors={[C.amberLight, C.greenLight, C.redLight]}
             desc="IF의 논리 검사 자리에 1단계 OR 수식을 그대로 넣습니다.">
@@ -326,24 +326,6 @@ export function IfOrDiagram() {
             </div>
             <div><span style={{ color: C.greenLight }}>{'= "VIP"'}</span></div>
           </StepBox>
-        </Fill>
-      </Row>
-
-      <Row style={{ marginTop: 16 }}>
-        <Fill max={500}>
-          <div style={{ textAlign: 'center' }}>
-            <TableCaption color={C.textMuted}>OR — 하나라도 TRUE면 TRUE</TableCaption>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%' }}>
-            {['논리1', '논리2', 'OR 결과'].map((h, i) => (
-              <Cell key={'h' + i} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-            ))}
-            {truth.map((t, i) => [
-              <Cell key={'a' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15 }}>{t.a}</Cell>,
-              <Cell key={'b' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15 }}>{t.b}</Cell>,
-              <Cell key={'r' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15, fontWeight: 700 }}>{t.r}</Cell>,
-            ])}
-          </div>
         </Fill>
       </Row>
     </Wrap>
