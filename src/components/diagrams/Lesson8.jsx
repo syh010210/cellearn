@@ -40,11 +40,11 @@ export function IfDiagram() {
   const [active, setActive] = useState(null);
 
   const data = [
-    ['응시자', '응시일', '요일구분'],
-    ['김민지', '2026-06-22', '평일'],
-    ['이도현', '2026-06-27', '주말'],
-    ['박서준', '2026-06-26', '평일'],
-    ['최유나', '2026-06-28', '주말'],
+    ['응시자', '응시일', '요일', '요일구분'],
+    ['김민지', '2026-06-22', '월요일', '평일'],
+    ['이도현', '2026-06-27', '토요일', '주말'],
+    ['박서준', '2026-06-26', '금요일', '평일'],
+    ['최유나', '2026-06-28', '일요일', '주말'],
   ];
   const LAST = data.length - 1; // 4
 
@@ -54,7 +54,7 @@ export function IfDiagram() {
     { key: '거짓일 때', color: C.redLight },
   ];
   const explain = {
-    '논리 검사': 'WEEKDAY(B2, 2)로 요일 번호를 구해 5 이하인지 비교합니다. 월요일이 1이므로 금요일(5)까지 TRUE, 토(6)·일(7)은 FALSE입니다.',
+    '논리 검사': 'WEEKDAY(B2, 2)로 요일 번호를 구해 5 이하인지 비교합니다. 월요일이 1이므로 금요일까지 TRUE, 토(6)·일(7)은 FALSE입니다.',
     '참일 때': '논리 검사가 TRUE인 행에 표시할 값입니다. 문자는 큰따옴표로 감쌉니다.',
     '거짓일 때': 'FALSE인 행에 표시할 값입니다. 공백을 표시하라는 문제면 큰따옴표 두 개 ""를 씁니다.',
   };
@@ -63,9 +63,10 @@ export function IfDiagram() {
     if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const boxes = active === '논리 검사' ? [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.amberLight }] : [];
     const s = rangeSides(ri, ci, boxes);
-    if (active === '참일 때' && ci === 2 && (ri === 1 || ri === 3)) { s.bg = C.greenBg; s.color = C.greenLight; }
-    if (active === '거짓일 때' && ci === 2 && (ri === 2 || ri === 4)) { s.bg = C.redBg; s.color = C.redLight; }
-    if (ci === 2 && ri >= 1 && ri <= LAST) s.bold = true;
+    if (ci === 2 && ri >= 1 && ri <= LAST) s.color = C.textMuted; // 요일 열 = 참고용
+    if (active === '참일 때' && ci === 3 && (ri === 1 || ri === 3)) { s.bg = C.greenBg; s.color = C.greenLight; }
+    if (active === '거짓일 때' && ci === 3 && (ri === 2 || ri === 4)) { s.bg = C.redBg; s.color = C.redLight; }
+    if (ci === 3 && ri >= 1 && ri <= LAST) s.bold = true;
     return s;
   };
 
@@ -75,14 +76,14 @@ export function IfDiagram() {
 
       <ExamProblem notes={['요일 계산 시 월요일이 1인 유형으로 지정', 'IF, WEEKDAY 함수 사용']}>
         [표1]에서 <b style={{ color: C.amberLight }}>응시일[B2:B5]</b>이 월요일부터 금요일이면
-        <b style={{ color: C.greenLight }}> &quot;평일&quot;</b>, 그 외에는 <b style={{ color: C.redLight }}>&quot;주말&quot;</b>을 요일구분[C2:C5]에 표시하시오.
+        <b style={{ color: C.greenLight }}> &quot;평일&quot;</b>, 그 외에는 <b style={{ color: C.redLight }}>&quot;주말&quot;</b>을 요일구분[D2:D5]에 표시하시오.
       </ExamProblem>
 
       <Row gap={20}>
         <Fixed style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <TableCaption color={C.blueLight}>[표1] 자격시험 응시 명단</TableCaption>
-            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={96} firstColW={72} />
+            <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={84} firstColW={72} />
           </div>
         </Fixed>
 

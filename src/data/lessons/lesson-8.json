@@ -43,22 +43,25 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 예약일[B2]이 월요일부터 금요일이면 \"평일요금\", 그 외에는 \"주말요금\"을 요금구분[C2]에 표시하시오.\n▶ 요일 계산 시 월요일이 1인 유형으로 지정\n▶ IF, WEEKDAY 함수 사용",
-        "cols": ["A", "B", "C"],
+        "instruction": "[표1]에서 체중[B2]과 신장[C2]을 이용한 체질량지수가 25 이상이면 \"비만\", 그렇지 않으면 \"정상\"을 판정[D2]에 표시하시오.\n▶ 체질량지수 = 체중 ÷ (신장)²\n▶ IF 함수 사용",
+        "cols": ["A", "B", "C", "D"],
         "rows": [
           [
-            { "val": "예약자", "editable": false },
-            { "val": "예약일", "editable": false },
-            { "val": "요금구분", "editable": false }
+            { "val": "이름", "editable": false },
+            { "val": "체중(kg)", "editable": false },
+            { "val": "신장(m)", "editable": false },
+            { "val": "판정", "editable": false }
           ],
           [
             { "val": "김서연", "editable": false },
-            { "val": "2026-07-04", "editable": false },
-            { "val": "", "editable": true, "answer": "=IF(WEEKDAY(B2,2)<=5,\"평일요금\",\"주말요금\")", "result": "주말요금" }
+            { "val": 78, "editable": false },
+            { "val": 1.72, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")", "acceptableAnswers": ["=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")", "=IF(B2/C2^2>=25,\"비만\",\"정상\")"], "result": "비만" }
           ],
           [
             { "val": "박지훈", "editable": false },
-            { "val": "2026-07-07", "editable": false },
+            { "val": 60, "editable": false },
+            { "val": 1.70, "editable": false },
             { "val": "", "editable": false }
           ]
         ]
@@ -443,7 +446,7 @@
     }
   ],
   "practiceAnswers": [
-    { "sheet": "단일조건", "cell": "C2", "formula": "=IF(WEEKDAY(B2,2)<=5,\"평일요금\",\"주말요금\")" },
+    { "sheet": "단일조건", "cell": "D2", "formula": "=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")" },
     { "sheet": "중첩IF", "cell": "C2", "formula": "=IF(RIGHT(A2,1)=\"1\",\"개발부\",IF(RIGHT(A2,1)=\"2\",\"기획부\",\"영업부\"))" },
     { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(B2>=40,C2>=40,AVERAGE(B2:C2)>=60),\"합격\",\"불합격\")" },
     { "sheet": "OR조건", "cell": "D2", "formula": "=IF(OR(B2>=30,C2>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
