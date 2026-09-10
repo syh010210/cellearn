@@ -774,7 +774,8 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     if (cell.editable) {
       const addr = getAddr(ri, ci);
       const raw = sheetRef.current?.getCellValue(addr);
-      if (raw === undefined || raw === "") return { text: cell.input || "", align: "left", isNumber: false };
+      if (raw === undefined) return { text: cell.input || "", align: "left", isNumber: false };
+      if (raw === "") return { text: "", align: "left", isNumber: false };
       if (isErrorValue(raw)) return { text: raw.error, align: "center", isNumber: false };
       if (typeof raw === "number") {
         // 우선순위: JSON에 지정된 cell.format > 엔진이 추론한 날짜/시간 형식 > 숫자 그대로
