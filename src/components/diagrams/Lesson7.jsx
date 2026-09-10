@@ -259,7 +259,14 @@ export function WorkdayDiagram() {
           <div style={{ ...boxBase, background: C.blueCard, border: `2px solid ${C.blue}` }}>
             <div style={nameSt(C.blueLight)}>WORKDAY</div>
             <SyntaxLine fn="WORKDAY" color={C.blue} colors={[C.blueLight, C.greenLight]} size={14} />
-            <div style={descSt}>시작 날짜에서 주말(토 · 일)을 건너뛰고 일수만큼 지난 날짜를 돌려줍니다. 시작 날짜 자신은 세지 않습니다.</div>
+            <div style={{ ...descSt, whiteSpace: 'pre-line' }}>
+              {'시작 날짜 다음 날부터 하루씩 세는데 토 · 일은 빼고 셉니다. 일수만큼 다 세면 그날이 결과입니다.\n'}
+              <span style={{ color: C.blueLight }}>시작 날짜 — 일정이 시작되는 날짜</span>
+              {'\n'}
+              <span style={{ color: C.greenLight }}>일수 — 주말을 뺀 순수 근무일 수 (음수면 이전 날짜)</span>
+              {'\n'}
+              <span style={{ color: C.textMuted }}>[휴일 범위] — 주중 공휴일이 적힌 셀 범위. 생략해도 되고 시험에 거의 나오지 않습니다.</span>
+            </div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>=WORKDAY(<span style={{ color: C.blueLight }}>B2</span>, <span style={{ color: C.greenLight }}>C2</span>) <span style={{ color: C.greenLight }}>→ 2026-06-29</span></div>
           </div>
