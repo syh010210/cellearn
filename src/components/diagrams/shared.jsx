@@ -365,6 +365,27 @@ export function FuncCard({ c }) {
   );
 }
 
+// 단계형/인수형 다이어그램의 설명 박스 (4차시 IndexMatchDiagram 박스를 공용화).
+// 줄 구성: 함수명(제목) → SyntaxLine → 설명 → 구분선 → 수식(children). 테두리 2px 고정.
+//  title       : 함수명·단계명 (제목 줄)
+//  color       : 제목·SyntaxLine 색
+//  bg / border : 박스 배경 / 테두리 색 (테두리는 2px 고정, 구분선도 이 색)
+//  fn          : SyntaxLine 함수명 (없으면 구문 줄 생략)
+//  syntaxColors: SyntaxLine 인수별 색 배열 (선택)
+//  desc        : 설명 (문자열 또는 노드, whiteSpace pre-line)
+//  children    : 수식+결과 줄
+export function StepBox({ title, color, bg, border, fn, syntaxColors, desc, children }) {
+  return (
+    <div style={{ background: bg, border: `2px solid ${border}`, borderRadius: 10, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <div style={{ color, fontSize: 18, fontWeight: 700 }}>{title}</div>
+      {fn && <SyntaxLine fn={fn} color={color} colors={syntaxColors} size={14} />}
+      <div style={{ color: C.text, fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-line' }}>{desc}</div>
+      <div style={{ borderTop: `1px solid ${border}`, margin: '4px 0 2px' }} />
+      <div style={{ color: C.text, fontSize: 16, fontWeight: 700, textAlign: 'center', padding: '2px 0' }}>{children}</div>
+    </div>
+  );
+}
+
 // 범위 바깥쪽 변에만 테두리를 그려 '범위를 감싼 것'처럼 보이게 한다 (ExcelGrid cellStyle 안에서 사용).
 //  boxes = [{ r1, r2, c1, c2, color }] (data 인덱스 기준)
 export function rangeSides(ri, ci, boxes) {

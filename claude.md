@@ -231,6 +231,16 @@ computil-platform/
 모든 학습 다이어그램은 `src/components/diagrams/LessonN.jsx`의 React 컴포넌트이며
 `registry.js`에 경로 → 컴포넌트로 등록한다. `public/images/*.svg`는 만들지 않는다.
 
+### 유형
+
+| 유형 | 구조 | 쓰는 경우 | 본보기 |
+|---|---|---|---|
+| A. 카드형 | Row 안 Fixed(ExcelGrid) → Row 안 Fill(FuncCard) 여러 개 | 인수가 한 개 이하이거나 함수 여러 개를 나란히 소개할 때 | Lesson6 MathBasicDiagram, Lesson7 DatetimeBasicDiagram |
+| B. 인수형 | ExamProblem → Row[ Fixed(TableCaption+ExcelGrid) / Fill(함수 박스 → 안내 문구 → ArgButtons → ExplainBoard) ] | 함수 하나의 인수를 하나씩 짚을 때. 버튼을 눌러야 새 정보(범위 강조·설명)가 나온다 | Lesson4 VlookupDiagram, Lesson5 DbSumDiagram, Lesson6 SumifDiagram |
+| C. 단계형 | ExamProblem → Row[ Fixed(TableCaption+ExcelGrid) / Fill(단계 박스 2~3개, 버튼 없음) ] | 함수 두 개 이상을 순서대로 이을 때. 박스에 설명·수식이 다 있으므로 버튼을 두지 않는다 | Lesson4 IndexMatchDiagram, Lesson7 WeekdayDiagram·WorkdayDiagram |
+
+박스 줄 구성은 세 유형 모두 같다: 함수명(18, bold) → SyntaxLine(size 14) → 설명(14) → 구분선 → 수식+결과(16, bold, 가운데).
+
 ### 구조
 - 최상위는 항상 `<Wrap>`. 그 안에 `Title` → (`Subtitle`) → (`ProblemBox`) → 본문 → (`BottomBar`) 순서.
 - 본문의 세로 배치는 Wrap 안에 그대로 나열한다. 블록 사이 간격은 `marginTop: 16` 하나로 통일.
