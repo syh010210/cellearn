@@ -96,6 +96,7 @@
       ],
       "practice": {
         "instruction": "[표1]에서 사번[A2]의 오른쪽 한 글자가 1이면 \"개발부\", 2이면 \"기획부\", 3이면 \"영업부\"를 부서[C2]에 표시하시오.\n▶ IF, RIGHT 함수 사용",
+        "requiredFunctions": ["IF", "RIGHT"],
         "cols": ["A", "B", "C"],
         "rows": [
           [
@@ -155,6 +156,7 @@
       ],
       "practice": {
         "instruction": "[표1]에서 필기[B2], 실기[C2]가 각각 40 이상이면서 평균이 60 이상이면 \"합격\", 그 외에는 \"불합격\"을 결과[D2]에 표시하시오.\n▶ IF, AVERAGE, AND 함수 사용",
+        "requiredFunctions": ["IF", "AVERAGE", "AND"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
@@ -217,6 +219,7 @@
       ],
       "practice": {
         "instruction": "[표1]에서 방문횟수[B2:B4]가 30 이상이거나 결제금액[C2:C4]이 결제금액의 평균보다 크면 \"단골\", 그렇지 않으면 \"일반\"을 구분[D2]에 표시하시오.\n▶ AVERAGE, IF, OR 함수 사용",
+        "requiredFunctions": ["AVERAGE", "IF", "OR"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
@@ -298,6 +301,7 @@
       ],
       "practice": {
         "instruction": "[표1]에서 기록[B2:B4]에 대한 순위를 구하여 순위[C3]에 표시하시오.\n▶ 순위는 기록이 가장 빠른 것이 1위\n▶ 기록이 비어 있는 경우 \"실격\"\n▶ IFERROR, RANK.EQ 함수 사용",
+        "requiredFunctions": ["IFERROR", "RANK.EQ"],
         "cols": ["A", "B", "C"],
         "rows": [
           [
