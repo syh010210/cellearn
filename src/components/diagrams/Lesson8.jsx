@@ -153,7 +153,7 @@ export function NestedIfDiagram() {
           </StepBox>
           <StepBox title="2단계 · 거짓일 때 자리에 두 번째 IF" color={C.blueLight} bg={C.blueCard} border={C.blue}
             fn="IF" syntaxColors={[C.amberLight, C.greenLight, C.redLight]}
-            desc="첫 번째 IF의 거짓일 때 자리에 IF를 하나 더 넣습니다. 여기 온 값은 이미 10 미만이므로 5 이상인지만 검사하면 됩니다. 닫는 괄호는 IF 개수만큼 두 개입니다.">
+            desc={'첫 번째 IF의 거짓일 때 자리에 IF를 하나 더 넣습니다.\n문제에 "10년 미만 5년 이상"이라고 적혀 있어 조건이 두 개처럼 보이지만, 10년 미만은 첫 번째 IF의 거짓일 때에 해당해 이미 걸러진 상태입니다. 그래서 두 번째 IF에는 5 이상인지만 적습니다.\n닫는 괄호는 IF 개수만큼 두 개입니다.'}>
             <div style={{ display: 'inline-block', textAlign: 'left' }}>
               <div style={{ whiteSpace: 'nowrap' }}>{'=IF(YEAR($E$2)-YEAR(B2)>=10, "★",'}</div>
               <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.blueLight }}>{'IF(YEAR($E$2)-YEAR(B2)>=5, "☆", "")'}</span>{')'}</div>
@@ -170,7 +170,7 @@ export function NestedIfDiagram() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%' }}>
             <TwoLineCell top="10년 이상" bottom="★" bg={C.greenDark} border={C.green} color={C.greenLight} />
-            <TwoLineCell top="5년 이상 10년 미만" bottom="☆" bg={C.blueCard} border={C.blue} color={C.blueLight} />
+            <TwoLineCell top="10년 미만 5년 이상" bottom="☆" bg={C.blueCard} border={C.blue} color={C.blueLight} />
             <TwoLineCell top="5년 미만" bottom="공백" bg={C.bgDark} border={C.border} color={C.textMuted} />
           </div>
         </Fill>
