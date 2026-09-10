@@ -24,7 +24,7 @@
           "type": "bullets",
           "items": [
             "**=IF(논리 검사, 참일 때, 거짓일 때)**",
-            "**논리 검사**: 비교 연산자(>=, <=, >, <, =, <>)로 참·거짓을 판정하는 식. WEEKDAY(B2,2)<=5처럼 함수 결과를 비교해도 됩니다.",
+            "**논리 검사**: 비교 연산자(>=, <=, >, <, =, <>)로 참·거짓을 판정하는 식. WEEKDAY(B2,2)<=5처럼 함수 결과와 비교하는 경우가 많습니다.",
             "**참일 때**: 논리 검사가 TRUE일 때 표시할 값",
             "**거짓일 때**: 논리 검사가 FALSE일 때 표시할 값"
           ]
@@ -89,14 +89,13 @@
           "type": "bullets",
           "items": [
             "**높은 기준부터 순차적으로 내려오며 작성합니다.** (>=90 먼저 → >=80 → 나머지)",
-            "**앞 단계에서 통과한 조건은 자동으로 배제됩니다.** 첫 번째 IF에서 90 이상인 행은 거기서 끝나므로, 두 번째 IF에 도달한 값은 이미 90 미만입니다.",
-            "그래서 두 번째 조건에는 90 미만을 다시 쓰지 않습니다. 이미 걸러진 조건을 또 쓰면 불필요하게 길어집니다.",
+            "**앞 단계에서 통과한 조건은 자동으로 배제됩니다.** 90 이상은 첫 IF에서 끝나므로, 두 번째 IF에는 90 미만인 값만 옵니다. 그래서 조건에 80 이상만 적으면 됩니다.",
             "**닫는 괄호 수 = IF 함수 개수** — IF가 2개면 마지막에 )) 두 개로 닫습니다."
           ]
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 사번[A2]의 오른쪽 한 글자가 1이면 \"개발부\", 2이면 \"기획부\", 3이면 \"영업부\"를 부서[C2]에 표시하시오.\n▶ IF, RIGHT 함수 사용",
+        "instruction": "[표1]에서 사번[A2]의 오른쪽 한 글자가 1이면 \"개발부\", 2이면 \"기획부\", 3이면 \"영업부\"를 부서[C2:C3]에 표시하시오.\n▶ IF, RIGHT 함수 사용",
         "requiredFunctions": ["IF", "RIGHT"],
         "cols": ["A", "B", "C"],
         "rows": [
@@ -113,7 +112,7 @@
           [
             { "val": "EMP-3", "editable": false },
             { "val": "박지훈", "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IF(RIGHT(A3,1)=\"1\",\"개발부\",IF(RIGHT(A3,1)=\"2\",\"기획부\",\"영업부\"))", "result": "영업부" }
           ]
         ]
       }
@@ -156,7 +155,7 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 필기[B2], 실기[C2]가 각각 40 이상이면서 평균이 60 이상이면 \"합격\", 그 외에는 \"불합격\"을 결과[D2]에 표시하시오.\n▶ IF, AVERAGE, AND 함수 사용",
+        "instruction": "[표1]에서 필기[B2], 실기[C2]가 각각 40 이상이면서 평균이 60 이상이면 \"합격\", 그 외에는 \"불합격\"을 결과[D2:D3]에 표시하시오.\n▶ IF, AVERAGE, AND 함수 사용",
         "requiredFunctions": ["IF", "AVERAGE", "AND"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
@@ -176,7 +175,7 @@
             { "val": "박지훈", "editable": false },
             { "val": 70, "editable": false },
             { "val": 65, "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IF(AND(B3>=40,C3>=40,AVERAGE(B3:C3)>=60),\"합격\",\"불합격\")", "result": "합격" }
           ]
         ]
       }
@@ -219,7 +218,7 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 방문횟수[B2:B4]가 30 이상이거나 결제금액[C2:C4]이 결제금액의 평균보다 크면 \"단골\", 그렇지 않으면 \"일반\"을 구분[D2]에 표시하시오.\n▶ AVERAGE, IF, OR 함수 사용",
+        "instruction": "[표1]에서 방문횟수[B2:B4]가 30 이상이거나 결제금액[C2:C4]이 결제금액의 평균보다 크면 \"단골\", 그렇지 않으면 \"일반\"을 구분[D2:D4]에 표시하시오.\n▶ AVERAGE, IF, OR 함수 사용",
         "requiredFunctions": ["AVERAGE", "IF", "OR"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
@@ -239,13 +238,13 @@
             { "val": "박지훈", "editable": false },
             { "val": 35, "editable": false },
             { "val": 40000, "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IF(OR(B3>=30,C3>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")", "result": "단골" }
           ],
           [
             { "val": "이수민", "editable": false },
             { "val": 20, "editable": false },
             { "val": 60000, "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IF(OR(B4>=30,C4>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")", "result": "일반" }
           ]
         ]
       }
@@ -301,7 +300,7 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 기록[B2:B4]에 대한 순위를 구하여 순위[C3]에 표시하시오.\n▶ 순위는 기록이 가장 빠른 것이 1위\n▶ 기록이 비어 있는 경우 \"실격\"\n▶ IFERROR, RANK.EQ 함수 사용",
+        "instruction": "[표1]에서 기록[B2:B4]에 대한 순위를 구하여 순위[C2:C4]에 표시하시오.\n▶ 순위는 기록이 가장 빠른 것이 1위\n▶ 기록이 비어 있는 경우 \"실격\"\n▶ IFERROR, RANK.EQ 함수 사용",
         "requiredFunctions": ["IFERROR", "RANK.EQ"],
         "cols": ["A", "B", "C"],
         "rows": [
@@ -313,7 +312,7 @@
           [
             { "val": "김서연", "editable": false },
             { "val": 14.2, "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IFERROR(RANK.EQ(B2,$B$2:$B$4,1),\"실격\")", "result": 2 }
           ],
           [
             { "val": "박지훈", "editable": false },
@@ -323,7 +322,7 @@
           [
             { "val": "이수민", "editable": false },
             { "val": 13.8, "editable": false },
-            { "val": "", "editable": false }
+            { "val": "", "editable": true, "answer": "=IFERROR(RANK.EQ(B4,$B$2:$B$4,1),\"실격\")", "result": 1 }
           ]
         ]
       }
@@ -455,8 +454,14 @@
     { "sheet": "단일조건", "cell": "D2", "formula": "=IF(B2/POWER(C2,2)>=25,\"비만\",\"정상\")" },
     { "sheet": "단일조건", "cell": "D3", "formula": "=IF(B3/POWER(C3,2)>=25,\"비만\",\"정상\")" },
     { "sheet": "중첩IF", "cell": "C2", "formula": "=IF(RIGHT(A2,1)=\"1\",\"개발부\",IF(RIGHT(A2,1)=\"2\",\"기획부\",\"영업부\"))" },
+    { "sheet": "중첩IF", "cell": "C3", "formula": "=IF(RIGHT(A3,1)=\"1\",\"개발부\",IF(RIGHT(A3,1)=\"2\",\"기획부\",\"영업부\"))" },
     { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(B2>=40,C2>=40,AVERAGE(B2:C2)>=60),\"합격\",\"불합격\")" },
+    { "sheet": "AND조건", "cell": "D3", "formula": "=IF(AND(B3>=40,C3>=40,AVERAGE(B3:C3)>=60),\"합격\",\"불합격\")" },
     { "sheet": "OR조건", "cell": "D2", "formula": "=IF(OR(B2>=30,C2>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
-    { "sheet": "에러처리", "cell": "C3", "formula": "=IFERROR(RANK.EQ(B3,$B$2:$B$4,1),\"실격\")" }
+    { "sheet": "OR조건", "cell": "D3", "formula": "=IF(OR(B3>=30,C3>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
+    { "sheet": "OR조건", "cell": "D4", "formula": "=IF(OR(B4>=30,C4>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
+    { "sheet": "에러처리", "cell": "C2", "formula": "=IFERROR(RANK.EQ(B2,$B$2:$B$4,1),\"실격\")" },
+    { "sheet": "에러처리", "cell": "C3", "formula": "=IFERROR(RANK.EQ(B3,$B$2:$B$4,1),\"실격\")" },
+    { "sheet": "에러처리", "cell": "C4", "formula": "=IFERROR(RANK.EQ(B4,$B$2:$B$4,1),\"실격\")" }
   ]
 }
