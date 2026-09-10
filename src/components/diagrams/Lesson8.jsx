@@ -106,19 +106,19 @@ export function IfDiagram() {
 // ─────────────────────────────────────────────
 export function NestedIfDiagram() {
   const data = [
-    ['회원명', '가입일', '등급', '', '기준일'],
-    ['김민지', '2014-03-05', '★', '', '2026-09-10'],
-    ['이도현', '2019-11-20', '☆', '', ''],
-    ['박서준', '2023-06-01', '', '', ''],
-    ['최유나', '2016-09-10', '★', '', ''],
-    ['정하늘', '2021-01-15', '☆', '', ''],
+    ['회원명', '가입일', '등급', '기준일'],
+    ['김민지', '2014-03-05', '★', '2026-09-10'],
+    ['이도현', '2019-11-20', '☆', ''],
+    ['박서준', '2023-06-01', '', ''],
+    ['최유나', '2016-09-10', '★', ''],
+    ['정하늘', '2021-01-15', '☆', ''],
   ];
   const LAST = data.length - 1; // 5
 
   const dataSt = (ri, ci) => {
-    if (ri === 0) return (ci <= 2 || ci === 4) ? { bold: true, color: C.blueLight, bg: C.blueCard } : {};
+    if (ri === 0) return { bold: true, color: C.blueLight, bg: C.blueCard };
     const s = rangeSides(ri, ci, [{ r1: 1, r2: LAST, c1: 1, c2: 1, color: C.amber }]);
-    if (ci === 4 && ri === 1) { s.bg = C.blueCard; s.bold = true; } // E2 기준일
+    if (ci === 3 && ri === 1) { s.bg = C.blueCard; s.bold = true; } // D2 기준일
     if (ci === 2 && ri >= 1 && ri <= LAST) {
       s.bold = true;
       const v = data[ri][2];
@@ -133,7 +133,7 @@ export function NestedIfDiagram() {
       <Title>결과가 셋 이상일 때: 중첩 IF</Title>
 
       <ExamProblem notes={['가입기간 = 기준일의 연도 − 가입일의 연도', 'IF, YEAR 함수 사용']}>
-        [표1]에서 기준일[E2]을 기준으로 <b style={{ color: C.amberLight }}>가입일[B2:B6]</b>의 가입기간이
+        [표1]에서 기준일[D2]을 기준으로 <b style={{ color: C.amberLight }}>가입일[B2:B6]</b>의 가입기간이
         10년 이상이면 &quot;★&quot;, 10년 미만 5년 이상이면 &quot;☆&quot;, 5년 미만이면 공백을 등급[C2:C6]에 표시하시오.
       </ExamProblem>
 
@@ -149,14 +149,14 @@ export function NestedIfDiagram() {
           <StepBox title="1단계 · 첫 번째 IF — 가장 높은 기준" color={C.greenLight} bg={C.greenDark} border={C.green}
             fn="IF" syntaxColors={[C.amberLight, C.greenLight, C.redLight]}
             desc="높은 기준부터 검사합니다. 가입기간이 10 이상이면 여기서 ★로 끝나고, 아니면 거짓일 때 자리로 넘어갑니다.">
-            <div>{'=IF('}<span style={{ color: C.amberLight }}>{'YEAR($E$2)-YEAR(B2)>=10'}</span>{', '}<span style={{ color: C.greenLight }}>{'"★"'}</span>{', '}<span style={{ color: C.redLight }}>거짓일 때</span>{')'}</div>
+            <div>{'=IF('}<span style={{ color: C.amberLight }}>{'YEAR($D$2)-YEAR(B2)>=10'}</span>{', '}<span style={{ color: C.greenLight }}>{'"★"'}</span>{', '}<span style={{ color: C.redLight }}>거짓일 때</span>{')'}</div>
           </StepBox>
           <StepBox title="2단계 · 거짓일 때 자리에 두 번째 IF" color={C.blueLight} bg={C.blueCard} border={C.blue}
             fn="IF" syntaxColors={[C.amberLight, C.greenLight, C.redLight]}
             desc={'첫 번째 IF의 거짓일 때 자리에 IF를 하나 더 넣습니다.\n문제에 "10년 미만 5년 이상"이라고 적혀 있어 조건이 두 개처럼 보이지만, 10년 미만은 첫 번째 IF의 거짓일 때에 해당해 이미 걸러진 상태입니다. 그래서 두 번째 IF에는 5 이상인지만 적습니다.\n닫는 괄호는 IF 개수만큼 두 개입니다.'}>
             <div style={{ display: 'inline-block', textAlign: 'left' }}>
-              <div style={{ whiteSpace: 'nowrap' }}>{'=IF(YEAR($E$2)-YEAR(B2)>=10, "★",'}</div>
-              <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.blueLight }}>{'IF(YEAR($E$2)-YEAR(B2)>=5, "☆", "")'}</span>{')'}</div>
+              <div style={{ whiteSpace: 'nowrap' }}>{'=IF(YEAR($D$2)-YEAR(B2)>=10, "★",'}</div>
+              <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.blueLight }}>{'IF(YEAR($D$2)-YEAR(B2)>=5, "☆", "")'}</span>{')'}</div>
             </div>
             <div><span style={{ color: C.greenLight }}>{'= "★"'}</span></div>
           </StepBox>
@@ -206,12 +206,29 @@ export function IfAndDiagram() {
     return s;
   };
 
-  const truth = [
-    { a: 'TRUE', b: 'TRUE', r: 'TRUE', ok: true },
-    { a: 'TRUE', b: 'FALSE', r: 'FALSE', ok: false },
-    { a: 'FALSE', b: 'TRUE', r: 'FALSE', ok: false },
-    { a: 'FALSE', b: 'FALSE', r: 'FALSE', ok: false },
+  // 행별 판정표 (다이어그램 데이터와 동일)
+  const heads = [
+    { t: '응시자', c: C.blueLight },
+    { t: '1과목', c: C.blueLight },
+    { t: '2과목', c: C.blueLight },
+    { t: '합격여부', c: C.blueLight },
+    { t: '평균', c: C.blueLight },
+    { t: '논리1\n(1과목 ≥40)', c: C.blueLight },
+    { t: '논리2\n(2과목 ≥40)', c: C.purpleLight },
+    { t: '논리3\n(평균 ≥60)', c: C.orangeLight },
+    { t: 'AND 결과', c: C.greenLight },
   ];
+  const judge = [
+    { name: '김민지', s1: 70, s2: 80, res: '합격', avg: 75, l1: true, l2: true, l3: true, and: true },
+    { name: '이도현', s1: 35, s2: 95, res: '불합격', avg: 65, l1: false, l2: true, l3: true, and: false },
+    { name: '박서준', s1: 55, s2: 60, res: '불합격', avg: 57.5, l1: true, l2: true, l3: false, and: false },
+    { name: '최유나', s1: 40, s2: 80, res: '합격', avg: 60, l1: true, l2: true, l3: true, and: true },
+    { name: '정하늘', s1: 90, s2: 30, res: '불합격', avg: 60, l1: true, l2: false, l3: true, and: false },
+  ];
+  const boolCell = (key, val, bold) => (
+    <Cell key={key} bg={val ? C.greenDark : C.redDark} border={val ? C.green : C.red}
+      style={{ color: val ? C.greenLight : C.redLight, fontSize: 15, fontWeight: bold ? 700 : 400 }}>{val ? 'TRUE' : 'FALSE'}</Cell>
+  );
 
   return (
     <Wrap>
@@ -233,7 +250,7 @@ export function IfAndDiagram() {
         <Fill min={360} max={500} gap={12}>
           <StepBox title="1단계 · AND — 모두 TRUE인지" color={C.blueLight} bg={C.blueCard} border={C.blue}
             fn="AND" syntaxColors={[C.blueLight, C.purpleLight, C.orangeLight]}
-            desc="나열한 조건이 전부 TRUE일 때만 TRUE입니다. 하나라도 FALSE면 FALSE입니다. 조건은 셋 이상 넣을 수 있습니다.">
+            desc={'나열한 조건이 전부 TRUE일 때만 TRUE입니다. 하나라도 FALSE면 FALSE입니다. 조건은 셋 이상 넣을 수 있습니다.\n이도현은 1과목이, 정하늘은 2과목이, 박서준은 평균이 FALSE라 세 명 모두 불합격입니다.'}>
             <div style={{ display: 'inline-block', textAlign: 'left' }}>
               <div style={{ whiteSpace: 'nowrap' }}>{'=AND('}<span style={{ color: C.blueLight }}>{'B2>=40'}</span>{', '}<span style={{ color: C.purpleLight }}>{'C2>=40'}</span>{','}</div>
               <div style={{ whiteSpace: 'nowrap' }}><span style={{ color: C.orangeLight }}>{'AVERAGE(B2:C2)>=60'}</span>{')'}</div>
@@ -253,18 +270,24 @@ export function IfAndDiagram() {
       </Row>
 
       <Row style={{ marginTop: 16 }}>
-        <Fill max={500}>
+        <Fill>
           <div style={{ textAlign: 'center' }}>
-            <TableCaption color={C.textMuted}>AND — 모두 TRUE일 때만 TRUE</TableCaption>
+            <TableCaption color={C.textMuted}>행별 조건 판정 — 세 조건이 모두 TRUE인 행만 합격</TableCaption>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', width: '100%' }}>
-            {['논리1', '논리2', 'AND 결과'].map((h, i) => (
-              <Cell key={'h' + i} bg={C.blueCard} border={C.blueDim} style={{ color: C.blueLight, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
+          <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(8, 1fr)', width: '100%' }}>
+            {heads.map((h, i) => (
+              <Cell key={'h' + i} bg={C.blueCard} border={C.blueDim} style={{ color: h.c, fontWeight: 700, fontSize: 15, whiteSpace: 'pre-line' }}>{h.t}</Cell>
             ))}
-            {truth.map((t, i) => [
-              <Cell key={'a' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15 }}>{t.a}</Cell>,
-              <Cell key={'b' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15 }}>{t.b}</Cell>,
-              <Cell key={'r' + i} bg={t.ok ? C.greenDark : C.redDark} border={t.ok ? C.green : C.red} style={{ color: t.ok ? C.greenLight : C.redLight, fontSize: 15, fontWeight: 700 }}>{t.r}</Cell>,
+            {judge.map((r, i) => [
+              <Cell key={'n' + i} bg={C.bgDark} border={C.border} style={{ color: C.text, fontSize: 15 }}>{r.name}</Cell>,
+              <Cell key={'s1' + i} bg={C.bgDark} border={C.border} style={{ color: C.text, fontSize: 15 }}>{r.s1}</Cell>,
+              <Cell key={'s2' + i} bg={C.bgDark} border={C.border} style={{ color: C.text, fontSize: 15 }}>{r.s2}</Cell>,
+              <Cell key={'res' + i} bg={C.bgDark} border={C.border} style={{ color: r.res === '합격' ? C.greenLight : C.redLight, fontSize: 15, fontWeight: 700 }}>{r.res}</Cell>,
+              <Cell key={'avg' + i} bg={C.bgDark} border={C.border} style={{ color: C.text, fontSize: 15 }}>{r.avg}</Cell>,
+              boolCell('l1' + i, r.l1, false),
+              boolCell('l2' + i, r.l2, false),
+              boolCell('l3' + i, r.l3, false),
+              boolCell('and' + i, r.and, true),
             ])}
           </div>
         </Fill>

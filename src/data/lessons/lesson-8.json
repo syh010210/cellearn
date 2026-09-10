@@ -155,27 +155,33 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 필기[B2], 실기[C2]가 각각 40 이상이면서 평균이 60 이상이면 \"합격\", 그 외에는 \"불합격\"을 결과[D2:D3]에 표시하시오.\n▶ IF, AVERAGE, AND 함수 사용",
-        "requiredFunctions": ["IF", "AVERAGE", "AND"],
+        "instruction": "[표1]에서 배송일[B2:B4]이 토요일이면서 재고[C2:C4]가 0보다 크면 \"당일출고\", 그렇지 않으면 공백을 출고여부[D2:D4]에 표시하시오.\n▶ 요일 계산 시 일요일이 1인 유형으로 지정\n▶ IF, AND, WEEKDAY 함수 사용",
+        "requiredFunctions": ["IF", "AND", "WEEKDAY"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
-            { "val": "응시자", "editable": false },
-            { "val": "필기", "editable": false },
-            { "val": "실기", "editable": false },
-            { "val": "결과", "editable": false }
+            { "val": "주문번호", "editable": false },
+            { "val": "배송일", "editable": false },
+            { "val": "재고", "editable": false },
+            { "val": "출고여부", "editable": false }
           ],
           [
-            { "val": "김서연", "editable": false },
-            { "val": 38, "editable": false },
-            { "val": 95, "editable": false },
-            { "val": "", "editable": true, "answer": "=IF(AND(B2>=40,C2>=40,AVERAGE(B2:C2)>=60),\"합격\",\"불합격\")", "result": "불합격" }
+            { "val": "OD-101", "editable": false },
+            { "val": "2026-06-27", "editable": false },
+            { "val": 12, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(AND(WEEKDAY(B2,1)=7,C2>0),\"당일출고\",\"\")", "result": "당일출고" }
           ],
           [
-            { "val": "박지훈", "editable": false },
-            { "val": 70, "editable": false },
-            { "val": 65, "editable": false },
-            { "val": "", "editable": true, "answer": "=IF(AND(B3>=40,C3>=40,AVERAGE(B3:C3)>=60),\"합격\",\"불합격\")", "result": "합격" }
+            { "val": "OD-102", "editable": false },
+            { "val": "2026-06-27", "editable": false },
+            { "val": 0, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(AND(WEEKDAY(B3,1)=7,C3>0),\"당일출고\",\"\")", "result": "" }
+          ],
+          [
+            { "val": "OD-103", "editable": false },
+            { "val": "2026-06-29", "editable": false },
+            { "val": 8, "editable": false },
+            { "val": "", "editable": true, "answer": "=IF(AND(WEEKDAY(B4,1)=7,C4>0),\"당일출고\",\"\")", "result": "" }
           ]
         ]
       }
@@ -455,8 +461,9 @@
     { "sheet": "단일조건", "cell": "D3", "formula": "=IF(B3/POWER(C3,2)>=25,\"비만\",\"정상\")" },
     { "sheet": "중첩IF", "cell": "C2", "formula": "=IF(RIGHT(A2,1)=\"1\",\"개발부\",IF(RIGHT(A2,1)=\"2\",\"기획부\",\"영업부\"))" },
     { "sheet": "중첩IF", "cell": "C3", "formula": "=IF(RIGHT(A3,1)=\"1\",\"개발부\",IF(RIGHT(A3,1)=\"2\",\"기획부\",\"영업부\"))" },
-    { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(B2>=40,C2>=40,AVERAGE(B2:C2)>=60),\"합격\",\"불합격\")" },
-    { "sheet": "AND조건", "cell": "D3", "formula": "=IF(AND(B3>=40,C3>=40,AVERAGE(B3:C3)>=60),\"합격\",\"불합격\")" },
+    { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(WEEKDAY(B2,1)=7,C2>0),\"당일출고\",\"\")" },
+    { "sheet": "AND조건", "cell": "D3", "formula": "=IF(AND(WEEKDAY(B3,1)=7,C3>0),\"당일출고\",\"\")" },
+    { "sheet": "AND조건", "cell": "D4", "formula": "=IF(AND(WEEKDAY(B4,1)=7,C4>0),\"당일출고\",\"\")" },
     { "sheet": "OR조건", "cell": "D2", "formula": "=IF(OR(B2>=30,C2>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
     { "sheet": "OR조건", "cell": "D3", "formula": "=IF(OR(B3>=30,C3>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
     { "sheet": "OR조건", "cell": "D4", "formula": "=IF(OR(B4>=30,C4>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
