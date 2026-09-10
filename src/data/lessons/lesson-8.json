@@ -43,7 +43,8 @@
         }
       ],
       "practice": {
-        "instruction": "[표1]에서 체중[B2]과 신장[C2]을 이용한 체질량지수가 25 이상이면 \"비만\", 그렇지 않으면 \"정상\"을 판정[D2]에 표시하시오.\n▶ 체질량지수 = 체중 ÷ (신장)²\n▶ IF 함수 사용",
+        "instruction": "[표1]에서 체중[B2]과 신장[C2]을 이용한 체질량지수가 25 이상이면 \"비만\", 그렇지 않으면 \"정상\"을 판정[D2]에 표시하시오.\n▶ 체질량지수 = 체중 ÷ (신장)²\n▶ IF, POWER 함수 사용",
+        "requiredFunctions": ["IF", "POWER"],
         "cols": ["A", "B", "C", "D"],
         "rows": [
           [
@@ -56,7 +57,7 @@
             { "val": "김서연", "editable": false },
             { "val": 78, "editable": false },
             { "val": 1.72, "editable": false },
-            { "val": "", "editable": true, "answer": "=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")", "acceptableAnswers": ["=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")", "=IF(B2/C2^2>=25,\"비만\",\"정상\")"], "result": "비만" }
+            { "val": "", "editable": true, "answer": "=IF(B2/POWER(C2,2)>=25,\"비만\",\"정상\")", "result": "비만" }
           ],
           [
             { "val": "박지훈", "editable": false },
@@ -446,7 +447,7 @@
     }
   ],
   "practiceAnswers": [
-    { "sheet": "단일조건", "cell": "D2", "formula": "=IF(B2/(C2*C2)>=25,\"비만\",\"정상\")" },
+    { "sheet": "단일조건", "cell": "D2", "formula": "=IF(B2/POWER(C2,2)>=25,\"비만\",\"정상\")" },
     { "sheet": "중첩IF", "cell": "C2", "formula": "=IF(RIGHT(A2,1)=\"1\",\"개발부\",IF(RIGHT(A2,1)=\"2\",\"기획부\",\"영업부\"))" },
     { "sheet": "AND조건", "cell": "D2", "formula": "=IF(AND(B2>=40,C2>=40,AVERAGE(B2:C2)>=60),\"합격\",\"불합격\")" },
     { "sheet": "OR조건", "cell": "D2", "formula": "=IF(OR(B2>=30,C2>AVERAGE($C$2:$C$4)),\"단골\",\"일반\")" },
