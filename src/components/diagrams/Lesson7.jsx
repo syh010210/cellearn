@@ -253,26 +253,6 @@ export function WorkdayDiagram() {
             <TableCaption color={C.blueLight}>[표1] 외주 개발 일정</TableCaption>
             <ExcelGrid data={data} startRow={1} cellStyle={dataSt} minColW={78} firstColW={88} />
           </div>
-          <div>
-            <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — 2026년 6월</TableCaption>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
-              {dow.map((h, i) => (
-                <Cell key={'h' + i} bg={C.bgDark} border={C.border}
-                  style={{ color: C.textDim, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
-              ))}
-              {Array.from({ length: 30 }, (_, k) => {
-                const d = k + 1;
-                const st = dayStyle(d);
-                return (
-                  <Cell key={'d' + d} bg={st.bg} border={st.border} bw={2}
-                    style={{ color: st.color, fontWeight: st.bold ? 700 : 400, fontSize: 15, whiteSpace: 'pre-line', padding: '6px 2px' }}>{`${d}\n${dayLabel[d] || ''}`}</Cell>
-                );
-              })}
-              {Array.from({ length: 5 }, (_, k) => (
-                <Cell key={'b' + k} bg="transparent" border="transparent" bw={2} style={{ fontSize: 15 }}>{''}</Cell>
-              ))}
-            </div>
-          </div>
         </Fixed>
 
         <Fill min={360} max={500}>
@@ -282,6 +262,36 @@ export function WorkdayDiagram() {
             <div style={descSt}>시작 날짜에서 주말(토 · 일)을 건너뛰고 일수만큼 지난 날짜를 돌려줍니다. 시작 날짜 자신은 세지 않습니다.</div>
             <div style={{ borderTop: `1px solid ${C.blueDim}`, margin: '4px 0 2px' }} />
             <div style={formulaSt}>=WORKDAY(<span style={{ color: C.blueLight }}>B2</span>, <span style={{ color: C.greenLight }}>C2</span>) <span style={{ color: C.greenLight }}>→ 2026-06-29</span></div>
+          </div>
+        </Fill>
+      </Row>
+
+      <Row style={{ marginTop: 16 }}>
+        <Fill max={500}>
+          <div style={{ textAlign: 'center' }}>
+            <TableCaption color={C.textMuted}>=WORKDAY(B2, C2) 계산 과정 — 2026년 6월</TableCaption>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', width: '100%' }}>
+            {dow.map((h, i) => (
+              <Cell key={'h' + i} bg={C.bgDark} border={C.border}
+                style={{ color: C.textDim, fontWeight: 700, fontSize: 15 }}>{h}</Cell>
+            ))}
+            {Array.from({ length: 30 }, (_, k) => {
+              const d = k + 1;
+              const st = dayStyle(d);
+              return (
+                <Cell key={'d' + d} bg={st.bg} border={st.border} bw={2}
+                  style={{ color: st.color, fontWeight: st.bold ? 700 : 400, fontSize: 15, padding: '6px 2px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div>{d}</div>
+                    <div>{dayLabel[d] || ' '}</div>
+                  </div>
+                </Cell>
+              );
+            })}
+            {Array.from({ length: 5 }, (_, k) => (
+              <Cell key={'b' + k} bg="transparent" border="transparent" bw={2} style={{ fontSize: 15 }}>{''}</Cell>
+            ))}
           </div>
         </Fill>
       </Row>
