@@ -19,7 +19,7 @@ export const CALC_SUBTYPES = [
 // 전체 시험지 구성(로드맵 표시용). ready=false 는 아직 준비 중(P2~P3).
 export const EXAM_SECTIONS = [
   { key: "기본1", label: "기본작업-1 · 데이터 입력", ready: false },
-  { key: "기본2", label: "기본작업-2 · 서식", ready: false },
+  { key: "기본2", label: "기본작업-2 · 서식", ready: true },
   { key: "기본3", label: "기본작업-3 · 조건부서식(고급필터 · 텍스트나누기 준비중)", ready: true },
   { key: "계산", label: "계산작업 · 함수 5문제", ready: true },
   { key: "분석1", label: "분석작업-1 · 정렬(부분합 · 통합 · 피벗 등 확장중)", ready: true },
@@ -67,6 +67,12 @@ export function pickAnalysis(subtypeKeys = []) {
     if (pool.length) chosen.push({ ...pool[Math.floor(Math.random() * pool.length)], sheetName: `분석작업-${i + 1}` });
   });
   return chosen;
+}
+
+// 기본작업-2 (서식) — 지금은 한 문제. sheetName 고정.
+export function pickBasic2() {
+  const pool = bySection("기본2");
+  return pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], sheetName: "기본작업-2" } : null;
 }
 
 // 매크로/차트 (고정 슬롯)

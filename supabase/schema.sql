@@ -118,6 +118,23 @@ create table if not exists public.visits (
 );
 create index if not exists visits_date_idx on public.visits(visit_date);
 
+-- ── 7) exam_attempts : 실전 모의고사 응시 기록(불변) ───────────
+create table if not exists public.exam_attempts (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  grade        grade_level not null default '2급',
+  seed         text not null,
+  config       jsonb not null default '{}',
+  problem_set  jsonb not null,
+  items        jsonb not null,
+  correct      integer not null,
+  total        integer not null,
+  elapsed_ms   integer not null,
+  overtime     boolean not null default false,
+  created_at   timestamptz not null default now()
+);
+create index if not exists exam_attempts_user_created_idx on public.exam_attempts(user_id, created_at desc);
+
 -- visits.user_id 는 클라이언트가 보내지 않고, insert 시 트리거가 auth.uid()로 채운다.
 create or replace function public.visits_set_user_id()
 returns trigger language plpgsql security definer set search_path = public as $$
@@ -165,6 +182,7 @@ alter table public.progress    enable row level security;
 alter table public.wrong_notes enable row level security;
 alter table public.day_clears  enable row level security;
 alter table public.visits      enable row level security;
+alter table public.exam_attempts enable row level security;
 -- 비로그인(anon) 방문자도 접속 기록을 남길 수 있게 INSERT 권한 부여
 grant insert on public.visits to anon, authenticated;
 
@@ -212,6 +230,17 @@ create policy day_clears_self on public.day_clears
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
 drop policy if exists day_clears_admin_read on public.day_clears;
 create policy day_clears_admin_read on public.day_clears
+  for select using (public.is_admin());
+
+-- exam_attempts: 본인 select/insert + 관리자 조회. update/delete 없음(불변).
+drop policy if exists exam_attempts_select_self on public.exam_attempts;
+create policy exam_attempts_select_self on public.exam_attempts
+  for select using (auth.uid() = user_id);
+drop policy if exists exam_attempts_insert_self on public.exam_attempts;
+create policy exam_attempts_insert_self on public.exam_attempts
+  for insert with check (auth.uid() = user_id);
+drop policy if exists exam_attempts_admin_read on public.exam_attempts;
+create policy exam_attempts_admin_read on public.exam_attempts
   for select using (public.is_admin());
 
 -- visits: 방문 기록 insert 는 누구나(비로그인 포함). user_id 는 트리거가 채우므로 check(true).

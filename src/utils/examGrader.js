@@ -1,5 +1,7 @@
 import XLSX from "xlsx-js-style";
-import { loadXlsxZip, getConditionalFormats, getChartTypes, hasMacro, normFormula } from "./xlsxInspect";
+import { loadXlsxZip, getConditionalFormats, getChartTypes, hasMacro, normFormula } from "./xlsxInspect.js";
+import { parseWorkbookStyles } from "./xlsxStyles.js";
+import { gradeBasic2 } from "./basic2Grader.js";
 
 // 실전 모드 채점 — 작업(problem)별로 실채점 디스패치.
 //  · 계산(answers)            : 정답 셀 수식 문자열 정확 일치
@@ -59,14 +61,35 @@ function gradeMacro(zip, p) {
 }
 
 export async function gradeExamFile(file, problems) {
-  const buf = await file.arrayBuffer();
+  return gradeExamBuffer(await file.arrayBuffer(), problems);
+}
+
+// 파일을 한 번만 읽은 buffer 로 채점. (테스트는 이 함수를 Buffer 로 직접 호출한다.)
+export async function gradeExamBuffer(buf, problems) {
   const wb = XLSX.read(buf, { type: "array", cellFormula: true });
   const needZip = problems.some((p) => p.expect && ["condformat", "chart", "macro"].includes(p.expect.kind));
   let zip = null;
   if (needZip) { try { zip = await loadXlsxZip(buf); } catch { zip = null; } }
 
+  // 기본작업-2(서식) 는 XML 서식 파서로 채점. 파일이 필요하면 buffer 로 한 번만 파싱한다.
+  let styles = null;
+  if (problems.some((p) => p.section === "기본2")) { try { styles = await parseWorkbookStyles(buf); } catch { styles = null; } }
+
   const results = [];
   for (const p of problems) {
+    // ── 기본작업-2: 항목별 서식 채점 (basic2Grader). 기존 결과 형태를 유지하고 필드만 추가한다.
+    if (p.section === "기본2") {
+      const g = styles ? gradeBasic2(styles, p) : { items: [], earned: 0, total: 0, sheetFound: false };
+      results.push({
+        id: p.id, title: p.title, sheetName: p.sheetName, section: p.section,
+        items: g.items,                                        // { no, points, ok, earned, reasons, details }
+        correct: g.items.filter((it) => it.ok).length,
+        total: g.items.length,
+        earned: g.earned, totalPoints: g.total, sheetFound: g.sheetFound,
+      });
+      continue;
+    }
+
     let items;
     const kind = p.answers ? "formula" : p.expect?.kind;
     if (kind === "formula") items = gradeCalc(wb, p);
