@@ -22,7 +22,7 @@ const itemKey = (pid, no) => `${pid}:${no ?? 0}`;
 // 시트 칩은 작업(section) 단위로 묶는다. (계산작업 5문제 → "계산작업" 칩 하나)
 const SECTION_LABEL = { "기본2": "기본작업-2", "기본3": "기본작업-3", "계산": "계산작업", "분석": "분석작업", "매크로": "매크로작업", "차트": "차트작업" };
 
-export default function ExamPanel({ problems, label = "", onReset }) {
+export default function ExamPanel({ problems, label = "", seed = null, onReset }) {
   const mono = { fontFamily: UI.mono };
   const [phase, setPhase] = useState("idle"); // idle | running | graded
   const [attemptId, setAttemptId] = useState(null);
@@ -38,7 +38,7 @@ export default function ExamPanel({ problems, label = "", onReset }) {
 
   // 최신 값 참조(이탈 저장·틱 클로저용)
   const ref = useRef({});
-  ref.current = { attemptId, elapsedMs, flags, phase, problems, label };
+  ref.current = { attemptId, elapsedMs, flags, phase, problems, label, seed };
 
   const persist = useCallback((over = {}) => {
     const c = ref.current;
@@ -48,6 +48,7 @@ export default function ExamPanel({ problems, label = "", onReset }) {
       attemptId: id,
       phase: over.phase ?? c.phase,
       label: c.label,
+      seed: c.seed,
       problemIds: c.problems.map((p) => p.id),
       problem_set: c.problems, // ExamView 가 마운트 시 응시 세트를 복원할 수 있게 스냅샷
       elapsedMs: over.elapsedMs ?? c.elapsedMs,
@@ -142,7 +143,7 @@ export default function ExamPanel({ problems, label = "", onReset }) {
       }
     }
     return {
-      seed: ps.map((p) => p.id).join(","),
+      seed: c.seed || ps.map((p) => p.id).join(","), // 기본2 조립 시드(있으면), 없으면 문제 id 목록
       config: { sections: [...new Set(ps.map((p) => p.section))] },
       problem_set: ps,
       items,
@@ -153,11 +154,9 @@ export default function ExamPanel({ problems, label = "", onReset }) {
       result: res, // 결과 화면 복원용
     };
   }
-  function newAttempt() {
-    try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); } catch { /* 무시 */ }
-    setPhase("idle"); setAttemptId(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false);
-    if (onReset) onReset();
-  }
+  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); } catch { /* 무시 */ } setPhase("idle"); setAttemptId(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
+  function newAttempt() { clearAttempt(); if (onReset) onReset(); } // 새 응시: 세트도 초기화(새 시드)
+  function replayAttempt() { clearAttempt(); } // 같은 문제 다시 풀기: 같은 세트·시드 유지, 새 attempt
 
   // ── 타이머 표시 ──
   const remaining = EXAM_MS - elapsedMs;
@@ -317,9 +316,10 @@ export default function ExamPanel({ problems, label = "", onReset }) {
         </div>
       )}
       {phase === "graded" && (
-        <button style={{ ...btn(UI.surface, UI.ink), width: "100%", border: `1px solid ${UI.line}` }} onClick={newAttempt}>
-          새 응시
-        </button>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={replayAttempt}>같은 문제 다시 풀기</button>
+          <button style={{ ...btn(UI.surface, UI.ink), width: "100%", border: `1px solid ${UI.line}` }} onClick={newAttempt}>새 응시</button>
+        </div>
       )}
 
       {/* 업로드 확인 대화상자 */}

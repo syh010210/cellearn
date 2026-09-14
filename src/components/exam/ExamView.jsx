@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Target, CheckCircle2, Lock } from "lucide-react";
-import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection, pickBasic2 } from "../../data/examBank";
+import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
+import { assembleBasic2 } from "../../utils/basic2Assembler";
 import { UI } from "../../theme";
 import ExamPanel from "./ExamPanel";
 
@@ -24,6 +25,7 @@ export default function ExamView() {
   const toggleAna = (k) => setAnaSel((s) => (s.includes(k) ? s.filter((x) => x !== k) : s.length >= 2 ? s : [...s, k]));
   const [problems, setProblems] = useState(null); // 확정된 문제 세트(응시 화면 진입)
   const [label, setLabel] = useState("");
+  const [seed, setSeed] = useState(null); // 기본2 조립 시드
 
   // 진행/채점 중이던 응시가 있으면 마운트 시 세트를 복원해 ExamPanel 로 바로 들어간다.
   useEffect(() => {
@@ -31,21 +33,23 @@ export default function ExamView() {
       const cur = localStorage.getItem("exam:current");
       if (!cur) return;
       const a = JSON.parse(localStorage.getItem(`exam:attempt:${cur}`) || "null");
-      if (a?.problem_set?.length) { setProblems(a.problem_set); setLabel(a.label || ""); }
+      if (a?.problem_set?.length) { setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); }
     } catch { /* 무시 */ }
   }, []);
 
   const toggle = (k) => setSelected((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]));
 
   function compose() {
+    const s = (crypto?.randomUUID?.() || String(Date.now())).slice(0, 8); // 기본2 조립 시드
     const set = [];
-    if (inc2 && basic2Ready) { const b2 = pickBasic2(); if (b2) set.push(b2); }
+    if (inc2 && basic2Ready) set.push(assembleBasic2(s)); // 시드 고정 조립 출제
     if (inc3) { const b3 = pickBasic3(sub3); if (b3) set.push(b3); }
     set.push(...pickCalc(selected, count));
     if (anaSel.length) set.push(...pickAnalysis(anaSel));
     if (incMacro && macroReady) { const m = pickSection("매크로", "매크로작업"); if (m) set.push(m); }
     if (incChart && chartReady) { const c = pickSection("차트", "차트작업"); if (c) set.push(c); }
     if (set.length === 0) return;
+    setSeed(s);
     setLabel(new Date().toISOString().slice(0, 10));
     setProblems(set);
   }
@@ -66,7 +70,7 @@ export default function ExamView() {
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, color: UI.ink }}>실전 모의고사</h2>
 
       {problems ? (
-        <ExamPanel problems={problems} label={label} onReset={() => setProblems(null)} />
+        <ExamPanel problems={problems} label={label} seed={seed} onReset={() => { setProblems(null); setSeed(null); }} />
       ) : (
         <>
           <p style={{ color: UI.mut, fontSize: 14, marginBottom: 20, lineHeight: 1.7 }}>

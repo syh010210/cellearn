@@ -1,0 +1,271 @@
+{
+  "id": "basic2-fixture-01",
+  "section": "기본2",
+  "subtype": "format",
+  "difficulty": "중",
+  "grade": "2급",
+  "sheetName": "기본작업-2",
+  "title": "그린라이프 멤버십 회원 관리 현황",
+  "table": {
+    "titleCell": "A1",
+    "title": "그린라이프 멤버십 회원 관리 현황",
+    "headerRow": 3,
+    "headers": [
+      "회원코드",
+      "회원명",
+      "등급",
+      "가입일",
+      "포인트",
+      "방문횟수",
+      "담당자"
+    ],
+    "rows": [
+      [
+        "M-3001",
+        "한도윤",
+        "VIP",
+        "2026-01-05",
+        1240000,
+        42,
+        "박지훈"
+      ],
+      [
+        "M-3055",
+        "서예린",
+        "VIP",
+        "2026-01-07",
+        1085000,
+        33,
+        "문가은"
+      ],
+      [
+        "M-3120",
+        "오하준",
+        "VIP",
+        "2026-01-13",
+        980000,
+        51,
+        "배준서"
+      ],
+      [
+        "M-3168",
+        "류지완",
+        "VIP",
+        "2026-01-16",
+        1310000,
+        29,
+        "박지훈"
+      ],
+      [
+        "M-2011",
+        "김서아",
+        "골드",
+        "2026-01-19",
+        620000,
+        18,
+        "문가은"
+      ],
+      [
+        "M-2044",
+        "이도현",
+        "골드",
+        "2026-01-21",
+        540000,
+        25,
+        "배준서"
+      ],
+      [
+        "M-2087",
+        "정하율",
+        "골드",
+        "2026-01-23",
+        710000,
+        0,
+        "박지훈"
+      ],
+      [
+        "M-2130",
+        "최민서",
+        "골드",
+        "2026-01-27",
+        480000,
+        12,
+        "문가은"
+      ],
+      [
+        "M-1002",
+        "윤지우",
+        "실버",
+        "2026-01-29",
+        95000,
+        7,
+        "배준서"
+      ],
+      [
+        "M-1039",
+        "장예준",
+        "실버",
+        "2026-02-02",
+        120000,
+        15,
+        "박지훈"
+      ]
+    ],
+    "columns": [
+      {
+        "key": "회원코드",
+        "type": "code"
+      },
+      {
+        "key": "회원명",
+        "type": "text",
+        "nameable": true
+      },
+      {
+        "key": "등급",
+        "type": "text",
+        "groupable": true
+      },
+      {
+        "key": "가입일",
+        "type": "date",
+        "baseFormat": "yyyy-mm-dd"
+      },
+      {
+        "key": "포인트",
+        "type": "money"
+      },
+      {
+        "key": "방문횟수",
+        "type": "count"
+      },
+      {
+        "key": "담당자",
+        "type": "text"
+      }
+    ],
+    "colWidths": [
+      10,
+      12,
+      8,
+      14,
+      12,
+      10,
+      10
+    ]
+  },
+  "intro": "'기본작업-2' 시트에 대하여 다음의 지시사항을 처리하시오. (각 2점)",
+  "items": [
+    {
+      "no": 1,
+      "points": 2,
+      "text": "[A1:G1] 영역은 '선택 영역의 가운데로', 글꼴 '굴림체', 크기 '14', 밑줄 '이중 실선'으로 지정하시오.",
+      "checks": [
+        {
+          "kind": "alignment",
+          "range": "A1:G1",
+          "horizontal": "centerContinuous"
+        },
+        {
+          "kind": "font",
+          "range": "A1",
+          "name": "굴림체",
+          "size": 14,
+          "underline": "double"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "points": 2,
+      "text": "[C4:C7], [C8:C11], [C12:C13] 영역은 '병합하고 가운데 맞춤'을 지정하시오.",
+      "checks": [
+        {
+          "kind": "merge",
+          "range": "C4:C7"
+        },
+        {
+          "kind": "alignment",
+          "range": "C4:C7",
+          "horizontal": "center",
+          "merge": true
+        },
+        {
+          "kind": "merge",
+          "range": "C8:C11"
+        },
+        {
+          "kind": "alignment",
+          "range": "C8:C11",
+          "horizontal": "center",
+          "merge": true
+        },
+        {
+          "kind": "merge",
+          "range": "C12:C13"
+        },
+        {
+          "kind": "alignment",
+          "range": "C12:C13",
+          "horizontal": "center",
+          "merge": true
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "points": 2,
+      "text": "[E4:E13] 영역은 사용자 지정 표시 형식을 이용하여 천 단위를 절삭하고 숫자 뒤에 '천원'을 표시하시오. [표시 예 : 1240000 → 1,240천원]",
+      "checks": [
+        {
+          "kind": "numFmt",
+          "range": "E4:E13",
+          "codes": [
+            "#,##0,\"천원\""
+          ],
+          "samples": []
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "points": 2,
+      "text": "[G4:G13] 영역은 '균등 분할 (들여쓰기)'를 지정하시오. [E5] 셀에 '판매1위'라는 메모를 삽입한 후 '자동 크기'로 지정하고 항상 표시되도록 하시오.",
+      "checks": [
+        {
+          "kind": "alignment",
+          "range": "G4:G13",
+          "horizontal": "distributed",
+          "indent": 1
+        },
+        {
+          "kind": "comment",
+          "cell": "E5",
+          "text": "판매1위",
+          "visible": true,
+          "autoSize": true
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "points": 2,
+      "text": "[A3:G13] 영역에 '모든 테두리(⊞)'를 적용한 후 '굵은 바깥쪽 테두리(⊡)'를 적용하고, [A3:G3] 영역은 '아래쪽 이중 테두리(⊟)'를 적용하여 표시하시오.",
+      "checks": [
+        {
+          "kind": "border",
+          "range": "A3:G13",
+          "inner": "thin",
+          "outer": "medium",
+          "edges": [
+            {
+              "range": "A3:G3",
+              "side": "bottom",
+              "style": "double"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

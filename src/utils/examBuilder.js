@@ -43,7 +43,7 @@ export function buildBasic2Sheet(problem) {
       }
       const val = row[dp++];
       if (val === "" || val == null) return;
-      if (spec?.type === "date") ws[addr] = { t: "d", v: toDate(val), z: "yyyy-mm-dd" };
+      if (spec?.type === "date") ws[addr] = { t: "d", v: toDate(val), z: spec.baseFormat || "yyyy-mm-dd" };
       else if (spec?.type === "int" || typeof val === "number") ws[addr] = { t: "n", v: Number(val) };
       else ws[addr] = { t: "s", v: String(val) };
     });
@@ -52,6 +52,15 @@ export function buildBasic2Sheet(problem) {
   const lastRow = hr + t.rows.length; // 1-based
   ws["!ref"] = `A1:${XLSX.utils.encode_cell({ r: lastRow - 1, c: t.headers.length - 1 })}`;
   ws["!cols"] = (t.colWidths || []).map((w) => ({ wch: w }));
+
+  // 표 영역(제목~데이터 마지막 행, 머리글 포함) 기본 서식: 글꼴 '맑은 고딕' 11 + 세로 가운데.
+  // 값이 없는 셀은 t:"z"(스텁)로 둔다 — v를 넣으면 엑셀이 빈 셀이 아니라고 봐서 '선택 영역의 가운데로'가 펼쳐지지 않는다.
+  for (let R = 0; R < lastRow; R++) for (let C = 0; C < t.headers.length; C++) {
+    const addr = XLSX.utils.encode_cell({ r: R, c: C });
+    if (!ws[addr]) ws[addr] = { t: "z" };
+    const s = ws[addr].s || {};
+    ws[addr].s = { ...s, font: { name: "맑은 고딕", sz: 11, ...(s.font || {}) }, alignment: { vertical: "center", ...(s.alignment || {}) } };
+  }
   return ws;
 }
 

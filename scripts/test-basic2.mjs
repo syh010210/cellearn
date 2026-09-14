@@ -231,12 +231,25 @@ const gsh = genStyles.sheets[SHEET];
 let genClean = true, genDetail = "";
 for (const addr of Object.keys(gsh.cells)) {
   const c = gsh.cells[addr];
-  const applied = c.alignment !== null || !!c.fill?.fgColor || c.border?.top || c.border?.bottom || c.border?.left || c.border?.right || c.font?.bold || c.font?.underline != null;
+  const al = c.alignment;
+  const badAlign = al && (al.horizontal || al.wrapText != null || al.indent != null || (al.vertical && al.vertical !== "center"));
+  const applied = badAlign || !!c.fill?.fgColor || c.border?.top || c.border?.bottom || c.border?.left || c.border?.right || c.font?.bold || c.font?.underline != null;
   if (applied) { genClean = false; genDetail = `${addr}=${JSON.stringify({ al: c.alignment, fill: c.fill?.fgColor, b: c.border, bold: c.font?.bold, u: c.font?.underline })}`; break; }
 }
-check("생성 시트: 적용 서식(글꼴/맞춤/채우기/테두리) 없음", genClean, genDetail);
+check("생성 시트: 세로 가운데 외 서식 없음", genClean, genDetail);
+check("생성 시트: A3 세로 가운데 기본", gsh.cells["A3"]?.alignment?.vertical === "center", `A3.align=${JSON.stringify(gsh.cells["A3"]?.alignment)}`);
+check("생성 시트: A3 기본 글꼴 맑은 고딕 11", gsh.cells["A3"]?.font?.name === "맑은 고딕" && Number(gsh.cells["A3"]?.font?.size) === 11, `A3.font=${JSON.stringify(gsh.cells["A3"]?.font)}`);
+// 빈 셀은 스텁(<c r=".." s=".."/> — 자식 <v> 없음)이어야 '선택 영역의 가운데로'가 펼쳐진다.
+const genZip = await (await import("jszip")).default.loadAsync(genBuf);
+const sheetXml = await genZip.file("xl/worksheets/sheet1.xml").async("string");
+const cellXml = (r) => { const m = sheetXml.match(new RegExp(`<c r="${r}"[\\s\\S]*?(?:/>|</c>)`)); return m ? m[0] : null; };
+const b1 = cellXml("B1"), c2 = cellXml("C2");
+// xlsx-js-style 은 값 없는 셀을 스타일이 있어도 드롭한다 → B1/C2 는 부재(진짜 빈 셀). 어느 쪽이든 <v> 가 없어야 한다.
+check("생성 B1 값 없음(스텁/부재)", !b1 || !/<v>/.test(b1), `B1=${b1}`);
+check("생성 2행(C2) 값 없음(스텁/부재)", !c2 || !/<v>/.test(c2), `C2=${c2}`);
 check("생성 시트: 행 customHeight 없음", Object.values(gsh.rows).every((r) => !r.customHeight), JSON.stringify(gsh.rows));
-check("생성 시트: E4 날짜값 + numFmt yyyy-mm-dd", typeof gsh.cells["E4"]?.value === "number" && gsh.cells["E4"]?.numFmt?.code === "yyyy-mm-dd", `E4=${JSON.stringify(gsh.cells["E4"]?.numFmt)} val=${gsh.cells["E4"]?.value}`);
+const e4Base = (PROBLEM.table.columns.find((c) => c.key === "입고일")?.baseFormat) || "yyyy-mm-dd";
+check(`생성 시트: E4 날짜값 + numFmt ${e4Base}`, typeof gsh.cells["E4"]?.value === "number" && gsh.cells["E4"]?.numFmt?.code === e4Base, `E4=${JSON.stringify(gsh.cells["E4"]?.numFmt)} val=${gsh.cells["E4"]?.value}`);
 check("생성 시트: G4 수식(D4*F4)", /D4\*F4/i.test(gsh.cells["G4"]?.formula || ""), `G4.formula=${gsh.cells["G4"]?.formula}`);
 check("생성 워크북: _meta 숨김 시트 존재", genWb.SheetNames.includes("_meta") && genWb.Workbook.Sheets.find((s) => s.name === "_meta")?.Hidden === 1);
 
