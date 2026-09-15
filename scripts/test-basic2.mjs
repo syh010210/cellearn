@@ -11,6 +11,7 @@ import JSZip from "jszip";
 import XLSX from "xlsx-js-style";
 import { parseWorkbookStyles } from "../src/utils/xlsxStyles.js";
 import { gradeBasic2 } from "../src/utils/basic2Grader.js";
+import { renderEqual } from "../src/utils/numFmtRender.js";
 import { buildExamWorkbook, buildBasic2Sheet } from "../src/utils/examBuilder.js";
 import { gradeExamBuffer } from "../src/utils/examGrader.js";
 
@@ -263,6 +264,135 @@ let calcOk = true, calcErr = "";
 try { const cw = buildExamWorkbook([calc]); calcOk = cw.SheetNames.includes(calc.sheetName) && cw.SheetNames.includes("_meta"); }
 catch (e) { calcOk = false; calcErr = String(e); }
 check("계산작업 문제로 워크북 생성 무에러", calcOk, calcErr);
+
+// ─────────────────── 5단계: 새 check kind mutation ───────────────────
+console.log("\n=== 5단계: 새 kind mutation (특수문자·채우기색·글꼴색·곱하기·대각선) ===");
+async function gradeItem(setup, checks) {
+  const ws = XLSX.utils.aoa_to_sheet([[""]]); ws["!ref"] = "A1:J12"; setup(ws);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, SHEET);
+  const styles = await parseWorkbookStyles(XLSX.write(wb, { type: "buffer", bookType: "xlsx" }));
+  return gradeBasic2(styles, { sheetName: SHEET, items: [{ no: 1, points: 2, checks }] }).items[0];
+}
+const rsn = (it) => it.reasons.join(" | ");
+const VAL = { kind: "value", cell: "A1", equals: "♠ 상공물산 ♠", normalize: "spaces", label: "특수문자" };
+let it;
+it = await gradeItem((w) => { w.A1 = { t: "s", v: "♠ 상공물산 ♠" }; }, [VAL]);
+check("value 특수문자 정답", it.ok, rsn(it));
+it = await gradeItem((w) => { w.A1 = { t: "s", v: "상공물산" }; }, [VAL]);
+check("value 특수문자 없음 오답", !it.ok && rsn(it).includes("특수문자"), rsn(it));
+it = await gradeItem((w) => { w.A1 = { t: "s", v: "♣ 상공물산 ♣" }; }, [VAL]);
+check("value 기호만 다름 오답", !it.ok, rsn(it));
+it = await gradeItem((w) => { w.A3 = { t: "s", v: "h", s: { fill: { patternType: "solid", fgColor: { rgb: "FFFF00" } } } }; }, [{ kind: "fill", range: "A3", rgb: "FFFF00" }]);
+check("fill 채우기색 정답", it.ok, rsn(it));
+it = await gradeItem((w) => { w.A3 = { t: "s", v: "h", s: { fill: { patternType: "solid", fgColor: { rgb: "FF0000" } } } }; }, [{ kind: "fill", range: "A3", rgb: "FFFF00" }]);
+check("fill 다른 색 오답", !it.ok && rsn(it).includes("채우기 색"), rsn(it));
+it = await gradeItem((w) => { w.A1 = { t: "s", v: "t", s: { font: { color: { rgb: "0070C0" } } } }; }, [{ kind: "fontColor", range: "A1", rgb: "0070C0" }]);
+check("fontColor 정답", it.ok, rsn(it));
+it = await gradeItem((w) => { w.A1 = { t: "s", v: "t" }; }, [{ kind: "fontColor", range: "A1", rgb: "0070C0" }]);
+check("fontColor 없음 오답", !it.ok && rsn(it).includes("글꼴 색"), rsn(it));
+const setVals = (vals) => (w) => { ["F4", "F5", "F6"].forEach((a, i) => { w[a] = { t: "n", v: vals[i] }; }); };
+it = await gradeItem(setVals([20, 40, 60]), [{ kind: "values", range: "F4:F6", expected: [20, 40, 60] }]);
+check("values 곱하기 정답", it.ok, rsn(it));
+it = await gradeItem(setVals([10, 20, 30]), [{ kind: "values", range: "F4:F6", expected: [20, 40, 60] }]);
+check("values 배수 틀림 오답", !it.ok && rsn(it).includes("값"), rsn(it));
+it = await gradeItem((w) => { w.A3 = { t: "s", v: "h", s: { border: { diagonal: { style: "thin" } } } }; }, [{ kind: "border", range: "A3", diagonal: "thin" }]);
+check("border 대각선 정답(style)", it.ok, rsn(it));
+it = await gradeItem((w) => { w.A3 = { t: "s", v: "h" }; }, [{ kind: "border", range: "A3", diagonal: "thin" }]);
+check("border 대각선 없음 오답", !it.ok && rsn(it).includes("대각선"), rsn(it));
+// 대각선 X(양방향) 방향 판정 — xlsx-js-style 은 방향을 못 쓰므로 파싱 객체를 직접 만들어 채점.
+const fakeStyles = (diag) => ({ sheets: { [SHEET]: { cells: { H7: { border: { diagonal: diag } } }, rows: {}, cols: [], merges: [], comments: {} } }, definedNames: [], fonts: [{}] });
+const diagChk = [{ kind: "border", range: "H7", diagonal: "thin", diagonalUp: true, diagonalDown: true }];
+const gd = (diag) => gradeBasic2(fakeStyles(diag), { sheetName: SHEET, items: [{ no: 1, points: 2, checks: diagChk }] }).items[0];
+check("대각선 X 양방향 정답", gd({ style: "thin", up: true, down: true }).ok);
+{ const x = gd({ style: "thin", up: true, down: false }); check("대각선 한 방향 오답(X 아님)", !x.ok && rsn(x).includes("X 모양"), rsn(x)); }
+{ const x = gd(null); check("대각선 없음 오답(직접)", !x.ok && rsn(x).includes("지정되지"), rsn(x)); }
+// 쉼표 스타일: builtinId 3(쉼표)·6(쉼표 [0]) 둘 다 정답(accept:[3,6]).
+const commaFake = (bid) => ({ sheets: { [SHEET]: { cells: Object.fromEntries(["E4", "E5", "E6"].map((a) => [a, { cellStyle: { builtinId: bid } }])), rows: {}, cols: [], merges: [], comments: {} } }, definedNames: [], fonts: [{}] });
+const commaChk = [{ kind: "cellStyle", range: "E4:E6", builtinId: 3, accept: [3, 6] }];
+const gc = (bid) => gradeBasic2(commaFake(bid), { sheetName: SHEET, items: [{ no: 1, points: 2, checks: commaChk }] }).items[0];
+check("쉼표 스타일 builtinId 3 정답", gc(3).ok, rsn(gc(3)));
+check("쉼표 [0] builtinId 6 정답", gc(6).ok, rsn(gc(6)));
+{ const x = gc(41); check("다른 셀 스타일(강조색4) 오답", !x.ok && rsn(x).includes("셀 스타일"), rsn(x)); }
+
+// 두 범위 이름 정의: XML 원문(시트 접두사 2개·콤마) → 파서 → 채점기 전체 경로
+{
+  const ws2 = XLSX.utils.aoa_to_sheet([["t"]]); const wb2 = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb2, ws2, SHEET);
+  wb2.Workbook = { Names: [{ Name: "도서정보", Ref: "'기본작업-2'!$B$4:$B$12,'기본작업-2'!$C$4:$C$12" }] };
+  const st = await parseWorkbookStyles(XLSX.write(wb2, { type: "buffer", bookType: "xlsx" }));
+  check("두범위 파서 원문 보존", /\$B\$4:\$B\$12/.test(st.definedNames[0]?.ref) && /\$C\$4:\$C\$12/.test(st.definedNames[0]?.ref), st.definedNames[0]?.ref);
+  const gdn = (ref) => gradeBasic2(st, { sheetName: SHEET, items: [{ no: 1, points: 2, checks: [{ kind: "definedName", name: "도서정보", ref }] }] }).items[0];
+  check("두범위 이름 정의 정답(전체 경로)", gdn("$B$4:$B$12,$C$4:$C$12").ok, rsn(gdn("$B$4:$B$12,$C$4:$C$12")));
+  check("두범위 순서 무관 정답", gdn("$C$4:$C$12,$B$4:$B$12").ok);
+  { const x = gdn("$C$4:$C$12"); check("두범위 vs 한범위 오답", !x.ok && rsn(x).includes("참조"), rsn(x)); }
+}
+
+// ─────────────────── 6단계: 표시 형식 결과 채점 (동치/비동치) ───────────────────
+console.log("\n=== 6단계: 표시 형식 결과 동치/비동치 ===");
+const sN = [0, 6, 15, 1000, 128000, 1240000, 1850000]; // 숫자 샘플
+const serial = (y, m, d) => Math.round(Date.UTC(y, m - 1, d) / 86400000) + 25569;
+const sD = [serial(2026, 7, 5), serial(2026, 1, 7)]; // 날짜 샘플
+// 동치 쌍(정답 처리) — renderEqual === true
+const EQ = [
+  ['0"명"', '#0"명"', sN], ['0"명"', '##0"명"', sN], ['0"개"', "0\\개", sN], ['"*"0"개"', '\\*0"개"', sN],
+  ['#,##0"원"', "#,##0\\원", sN], ['0"%"', "0\\%", sN], ['#,##0,"천원"', '#,##0,"천원"', sN],
+  ['0,"천원"', '#,##0,"천원"', [90000, 270000, 0]],
+  ['mm"월" dd"일"(aaa)', 'mm"월"\\ dd"일"(aaa)', sD], ['mm"월" dd"일"(aaa)', 'mm"월"\\ dd"일"\\(aaa\\)', sD],
+  ["m/d(aaa)", 'm"/"d(aaa)', sD], ["yy/mm(aaa)", 'yy"/"mm(aaa)', sD],
+];
+// 비동치 쌍(오답) — renderEqual === false
+const NE = [
+  ['#,##0"원"', '#,###"원"', sN], ['0"명"', '0"개"', sN], ["m/d(aaa)", "mm/dd(aaa)", sD],
+  ['mm"월" dd"일"(aaa)', 'mm"월" dd"일"', sD], ['0"%"', "0%", sN], ['#,##0,"천원"', '#,##0"천원"', sN],
+  ['0.00,,"백만"', '0.0,,"백만"', sN], ['"GP-"000', '"GP-"00', sN], ['#,##0"원"', '#,##0.0"원"', sN],
+  ["yy/mm(aaa)", "yyyy/mm(aaa)", sD], ['0"명"', '#,##0"명"', [1000]],
+  ['0,"천원"', '#,##0,"천원"', [90000, 1200000]],
+];
+EQ.forEach(([a, b, s], i) => check(`동치 ${i + 1}: ${a} ≡ ${b}`, renderEqual(a, b, s) === true, `= ${renderEqual(a, b, s)}`));
+NE.forEach(([a, b, s], i) => check(`비동치 ${i + 1}: ${a} ≢ ${b}`, renderEqual(a, b, s) === false, `= ${renderEqual(a, b, s)}`));
+
+// 요일 토큰 4종(aaa/aaaa/ddd/dddd) 각각 동치·비동치
+const WEQ = [
+  ['yyyy-mm-dd(aaa)', "yyyy-mm-dd\\(aaa\\)", sD],       // aaa: 괄호 리터럴 이스케이프 동치
+  ['m"월" d"일"(aaaa)', 'm"월"\\ d"일"(aaaa)', sD],       // aaaa: 공백 이스케이프 동치
+  ["m/d(ddd)", 'm"/"d(ddd)', sD],                        // ddd: 슬래시 리터럴 동치
+  ["m/d(dddd)", 'm"/"d(dddd)', sD],                      // dddd: 슬래시 리터럴 동치
+];
+const WNE = [
+  ["m/d(aaa)", "m/d(aaaa)", sD],   // 월 ≠ 월요일
+  ["m/d(aaaa)", "m/d(ddd)", sD],   // 월요일 ≠ Mon
+  ["m/d(ddd)", "m/d(dddd)", sD],   // Mon ≠ Monday
+  ["m/d(dddd)", "m/d(aaa)", sD],   // Monday ≠ 월
+];
+WEQ.forEach(([a, b, s], i) => check(`요일 동치 ${i + 1}: ${a} ≡ ${b}`, renderEqual(a, b, s) === true, `= ${renderEqual(a, b, s)}`));
+WNE.forEach(([a, b, s], i) => check(`요일 비동치 ${i + 1}: ${a} ≢ ${b}`, renderEqual(a, b, s) === false, `= ${renderEqual(a, b, s)}`));
+
+// @ 텍스트 서식 동치·비동치 각 3쌍
+const sT = ["김도현", "이순신", "90~100"];
+const AEQ = [['@"점"', "@\\점", sT], ['@"%"', "@\\%", sT], ['@"점장"', '@"점""장"', sT]];
+const ANE = [['@"점장"', '@"팀장"', sT], ['@"%"', '@"점"', sT], ['@"님"', "@", sT]];
+AEQ.forEach(([a, b, s], i) => check(`@동치 ${i + 1}: ${a} ≡ ${b}`, renderEqual(a, b, s) === true, `= ${renderEqual(a, b, s)}`));
+ANE.forEach(([a, b, s], i) => check(`@비동치 ${i + 1}: ${a} ≢ ${b}`, renderEqual(a, b, s) === false, `= ${renderEqual(a, b, s)}`));
+
+// ─────────────────── 7단계: '간단한 날짜'(내장 번호 14) ───────────────────
+console.log("\n=== 7단계: 간단한 날짜(내장 14) ===");
+{
+  // (a) 파싱 객체 직접 채점: id 14 또는 변환 코드 인정, 사용자 지정 yyyy-mm-dd·미지정 오답
+  const shortFake = (numFmt) => ({ sheets: { [SHEET]: { cells: Object.fromEntries(["D4", "D5", "D6"].map((a) => [a, { numFmt }])), rows: {}, cols: [], merges: [], comments: {} } }, definedNames: [], fonts: [{}] });
+  const shortChk = [{ kind: "shortDate", range: "D4:D6" }];
+  const gs = (numFmt) => gradeBasic2(shortFake(numFmt), { sheetName: SHEET, items: [{ no: 1, points: 2, checks: shortChk }] }).items[0];
+  check("간단한 날짜: 내장 14 정답", gs({ id: 14, code: "mm-dd-yy" }).ok, rsn(gs({ id: 14, code: "mm-dd-yy" })));
+  check("간단한 날짜: 코드 m/d/yy 인정", gs({ id: 0, code: "m/d/yy" }).ok, rsn(gs({ id: 0, code: "m/d/yy" })));
+  { const x = gs({ id: 176, code: "yyyy-mm-dd" }); check("간단한 날짜: 사용자 지정 yyyy-mm-dd 오답", !x.ok && rsn(x).includes("간단한 날짜"), rsn(x)); }
+  { const x = gs(null); check("간단한 날짜: 미지정 오답", !x.ok && rsn(x).includes("간단한 날짜"), rsn(x)); }
+
+  // (b) 실제 파일 왕복: z:14 로 쓴 셀은 파서에서 내장 14로 복원되어 정답, z:"yyyy-mm-dd" 는 오답
+  const serial14 = serial(2026, 5, 6);
+  const it14 = await gradeItem((w) => { ["D4", "D5", "D6"].forEach((a) => { w[a] = { t: "n", v: serial14, z: 14 }; }); }, [{ kind: "shortDate", range: "D4:D6" }]);
+  check("간단한 날짜: 실제 z:14 파일 정답", it14.ok, rsn(it14));
+  const itCustom = await gradeItem((w) => { ["D4", "D5", "D6"].forEach((a) => { w[a] = { t: "n", v: serial14, z: "yyyy-mm-dd" }; }); }, [{ kind: "shortDate", range: "D4:D6" }]);
+  check("간단한 날짜: 실제 yyyy-mm-dd 파일 오답", !itCustom.ok && rsn(itCustom).includes("간단한 날짜"), rsn(itCustom));
+}
 
 console.log("\n" + results.join("\n"));
 console.log(`\n결과: ${pass} 통과 / ${fail} 실패`);

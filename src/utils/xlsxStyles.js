@@ -104,9 +104,14 @@ function parseFill(inner) {
     fgColor: fg ? { rgb: fg.attrs.rgb ?? null, theme: fg.attrs.theme != null ? Number(fg.attrs.theme) : null, tint: fg.attrs.tint != null ? Number(fg.attrs.tint) : null, indexed: fg.attrs.indexed ?? null } : null,
   };
 }
-function parseBorder(inner) {
+function parseBorder(inner, attrs = {}) {
   const side = (s) => { const b = getBlocks(inner, s)[0]; if (!b) return null; if (!b.attrs.style) return null; const c = getBlocks(b.inner, "color")[0]; return { style: b.attrs.style, color: c ? c.attrs : null }; };
-  return { top: side("top"), bottom: side("bottom"), left: side("left"), right: side("right"), diagonal: side("diagonal") };
+  const diag = side("diagonal");
+  return {
+    top: side("top"), bottom: side("bottom"), left: side("left"), right: side("right"),
+    // <border diagonalUp diagonalDown> 속성은 border 요소에 있고, 선 스타일은 <diagonal> 자식에 있다.
+    diagonal: diag ? { ...diag, up: attrs.diagonalUp === "1", down: attrs.diagonalDown === "1" } : null,
+  };
 }
 function parseXf(b) {
   return {
@@ -128,7 +133,7 @@ function parseStyles(xml) {
   for (const b of getBlocks(xml, "numFmt")) numFmts[Number(b.attrs.numFmtId)] = b.attrs.formatCode;
   const fonts = getBlocks(firstRegion(xml, "fonts"), "font").map((b) => parseFont(b.inner));
   const fills = getBlocks(firstRegion(xml, "fills"), "fill").map((b) => parseFill(b.inner));
-  const borders = getBlocks(firstRegion(xml, "borders"), "border").map((b) => parseBorder(b.inner));
+  const borders = getBlocks(firstRegion(xml, "borders"), "border").map((b) => parseBorder(b.inner, b.attrs));
   const cellXfs = getBlocks(firstRegion(xml, "cellXfs"), "xf").map(parseXf);
   const cellStyleXfs = getBlocks(firstRegion(xml, "cellStyleXfs"), "xf").map(parseXf);
   const cellStyles = getBlocks(firstRegion(xml, "cellStyles"), "cellStyle").map((b) => ({

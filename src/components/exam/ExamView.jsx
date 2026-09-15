@@ -30,11 +30,9 @@ export default function ExamView() {
   const [seed, setSeed] = useState(null); // 기본2 조립 시드
   const rootRef = useRef(null);
 
-  // 진행/채점 중이던 응시가 있으면 마운트 시 세트를 복원해 ExamPanel 로 바로 들어간다.
-  // 단, 진행 중(running) 응시는 "같은 탭 새로고침"일 때만 이어간다. 새 탭·창을 닫았다 연 경우
-  // (sessionStorage 의 exam:tab 이 응시 id 와 다름)에는 응시를 버리고 구성 화면으로 돌아간다.
-  // 채점 완료(graded)는 종료 규칙에 걸리지 않으므로 탭과 무관하게 결과를 되살린다.
-  // 실전 모드 진입 시 항상 맨 위에서 시작한다.
+  // 채점 완료(graded) 응시만 마운트 시 복원해 결과를 되살린다. 진행 중(running) 응시는 복원하지
+  // 않는다 — 새로고침·재접속 = 종료. localStorage 에 running attempt 가 남아 있으면 삭제하고
+  // 구성 화면에서 시작한다. 실전 모드 진입 시 항상 맨 위에서 시작한다.
   useEffect(() => {
     let prev;
     try { if ("scrollRestoration" in window.history) { prev = window.history.scrollRestoration; window.history.scrollRestoration = "manual"; } } catch { /* 무시 */ }
@@ -42,15 +40,11 @@ export default function ExamView() {
     try {
       const cur = localStorage.getItem("exam:current");
       const a = cur ? JSON.parse(localStorage.getItem(`exam:attempt:${cur}`) || "null") : null;
-      if (a?.problem_set?.length) {
-        const graded = a.phase === "graded";
-        const sameTab = sessionStorage.getItem("exam:tab") === a.attemptId;
-        if (!graded && !sameTab) {
-          // 새 탭·창 닫았다 열기 → 진행 중 응시 폐기
-          try { localStorage.removeItem(`exam:attempt:${cur}`); localStorage.removeItem("exam:current"); } catch { /* 무시 */ }
-        } else {
-          setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); setDifficulty(a.difficulty || a.config?.difficulty || "basic");
-        }
+      if (a?.phase === "graded" && a?.problem_set?.length) {
+        setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); setDifficulty(a.difficulty || a.config?.difficulty || "basic");
+      } else if (a) {
+        // 진행 중(또는 불완전) 응시 폐기
+        try { localStorage.removeItem(`exam:attempt:${cur}`); localStorage.removeItem("exam:current"); } catch { /* 무시 */ }
       }
     } catch { /* 무시 */ }
     const container = toTop();

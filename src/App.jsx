@@ -33,8 +33,27 @@ const STEP_TABS = [
 // 수강권(결제) 필수. true면 로그인 후 활성 수강권이 없으면 결제 화면으로 보낸다.
 const REQUIRE_ENROLLMENT = true;
 
+// 모바일 안내 게이트 판정 — 뷰포트 폭이 아니라 "기기 특성"으로 본다.
+// 터치 전용(pointer:coarse && hover:none, iPad OS13+ 데스크톱 UA 포함) 또는 모바일 UA 일 때만 true.
+// → PC에서 창을 좁혀도(마우스가 있으면) 뜨지 않는다.
+function isMobileDevice() {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const uaMobile = /Android|iPhone|iPad|iPod|Windows Phone|BlackBerry|Opera Mini|IEMobile|Mobile/i.test(ua);
+  let touchOnly = false;
+  try { touchOnly = window.matchMedia("(pointer: coarse) and (hover: none)").matches; } catch { /* 무시 */ }
+  return uaMobile || touchOnly;
+}
+
+// 사이드바를 접는 최소 폭. 이보다 좁으면(주로 PC에서 창을 크게 줄인 경우) 사이드바를 숨겨
+// 본문이 전체 폭을 쓰게 하고, 타이머는 상단 고정(ExamPanel 의 상단 배너 전환)으로 넘어간다.
+const SIDEBAR_COLLAPSE_W = 480;
+
 export default function App() {
-  const isMobile = window.innerWidth < 768;
+  const [isMobile] = useState(isMobileDevice); // 기기 특성 기반, 세션 내 고정
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
+  useEffect(() => { const on = () => setVw(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+  const collapseSidebar = vw < SIDEBAR_COLLAPSE_W;
   const { loading, dataReady, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
   const [page, setPage] = useState("landing");
   const [legalTab, setLegalTab] = useState("terms");
@@ -153,8 +172,9 @@ export default function App() {
     return <CheckoutView onBack={() => setPage("landing")} presetGrade={selectedGrade} onNeedLogin={() => { setAuthMode("login"); setPage("auth"); }} />;
   }
 
-  // 실제 학습(개념/실습/퀴즈)은 PC 전용 — 모바일은 안내 후 홈으로
-  if (isMobile) return (
+  // 실제 학습(개념/실습/퀴즈)은 PC 전용 — 모바일 기기는 안내 후 홈으로.
+  // 단, 실전 응시 중(running)에는 어떤 경우에도 게이트를 띄우지 않는다(진행 중 응시 보호).
+  if (isMobile && !isExamGuarded()) return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.ink, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, fontFamily: UI.font }}>
       <div style={{ maxWidth: 380, textAlign: "center", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32 }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>🖥️</div>
@@ -170,7 +190,8 @@ export default function App() {
 
   return (
     <div style={{ display: "flex", background: UI.bg, color: UI.ink, height: "100vh", overflow: "hidden", fontFamily: UI.font }}>
-      <Sidebar
+      {/* 480px 미만이면 사이드바를 접어 본문이 전체 폭을 쓰게 한다(타이머는 ExamPanel 이 상단 고정). */}
+      {!collapseSidebar && <Sidebar
         lessons={LESSONS}
         current={view}
         onSelect={guardNav(selectLesson)}
@@ -185,7 +206,7 @@ export default function App() {
         onOT={guardNav(() => setView("ot"))}
         otDone={isOTDone(dayClears)}
         onHome={guardNav(() => setPage("landing"))}
-      />
+      />}
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 저장 실패 누적 시 안내 배너 — 진도/오답이 서버에 저장되지 않고 있을 때 */}
         {saveError && (
@@ -265,17 +286,17 @@ export default function App() {
       {/* 실전 응시 중 앱 내 이동 종료 확인 */}
       {examExitAsk && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(18,33,29,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60 }}>
-          <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 22, maxWidth: 340, margin: 16, boxShadow: UI.shadow, fontFamily: UI.font }}>
+          <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 22, minWidth: 360, maxWidth: 400, margin: 16, boxShadow: UI.shadow, fontFamily: UI.font }}>
             <div style={{ fontWeight: 700, color: UI.ink, fontSize: 15, marginBottom: 6 }}>시험을 종료할까요?</div>
-            <div style={{ color: UI.mut, fontSize: 13.5, marginBottom: 16, lineHeight: 1.6 }}>종료하면 이 응시는 채점되지 않고 사라집니다.</div>
+            <div style={{ color: UI.mut, fontSize: 13.5, marginBottom: 16, lineHeight: 1.6 }}>시험은 이 화면에서만 진행됩니다. 다른 화면으로 이동하면 시험이 종료되고 이 응시는 채점 없이 사라집니다.</div>
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => { const go = examExitAsk; setExamExitAsk(null); endExamAttempt(); go(); }}
-                style={{ flex: 1, background: UI.red, color: "#fff", border: "none", borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
+                style={{ flex: 1, whiteSpace: "nowrap", background: UI.red, color: "#fff", border: "none", borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
               >종료</button>
               <button
                 onClick={() => setExamExitAsk(null)}
-                style={{ flex: 1, background: UI.surface, color: UI.ink, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
+                style={{ flex: 1, whiteSpace: "nowrap", background: UI.surface, color: UI.ink, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
               >계속 풀기</button>
             </div>
           </div>

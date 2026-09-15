@@ -12,6 +12,8 @@
 // 만들고, 문장 조립은 항목 단위 formatItem() 에서 한다(같은 범위의 '미지정'을 한 문장으로 합치기 위함).
 
 import { expandRange, parseRef, idxToCol } from "./xlsxStyles.js";
+import { colorEq, colorLabel } from "../data/exam/basic2/colors.js";
+import { renderEqual, firstDiff, isDateCode } from "./numFmtRender.js";
 
 // ─────────────────────── 값 → 한글 라벨 ───────────────────────
 const L_HORIZONTAL = { centerContinuous: "선택 영역의 가운데로", center: "가운데 맞춤", left: "왼쪽 맞춤", right: "오른쪽 맞춤", fill: "채우기", justify: "양쪽 맞춤", distributed: "균등 분할" };
@@ -75,9 +77,12 @@ export function normNumFmt(code) {
 }
 
 const normName = (s) => String(s ?? "").replace(/\s/g, "");
-const normRef = (r) => String(r ?? "").replace(/^.*!/, "").replace(/[$'"\s]/g, "").toUpperCase();
+// 콤마로 나눈 각 부분에서 시트 접두사(따옴표 포함)를 떼고 정규화한 뒤, 순서 무관하게 비교.
+// (다중 범위 '시트'!$B$4:$B$12,'시트'!$C$4:$C$12 에서 greedy 매칭으로 앞 범위가 잘리던 버그 수정)
+const stripPart = (p) => String(p).replace(/^.*!/, "");
+const normRef = (r) => String(r ?? "").split(",").map((p) => stripPart(p).replace(/[$'"\s]/g, "").toUpperCase()).sort().join(",");
 const normText = (s) => String(s ?? "").replace(/\s/g, "");
-const stripSheet = (r) => String(r ?? "").replace(/^.*!/, "");
+const stripSheet = (r) => String(r ?? "").split(",").map(stripPart).join(",");
 
 // ─────────────────────── 범위 유틸 ───────────────────────
 function rangeBox(range) {
@@ -199,7 +204,9 @@ function checkCellStyle(sheet, chk) {
     const cell = sheet.cells[addr];
     const cs = cell?.cellStyle;
     themeSeen = cell?.fill?.fgColor?.theme ?? themeSeen;
-    const ok = chk.builtinId != null ? cs?.builtinId === chk.builtinId : normName(cs?.name) === normName(chk.name);
+    // accept: 여러 builtinId 를 정답으로 인정 (쉼표 스타일은 3'쉼표'·6'쉼표 [0]' 둘 다 정답).
+    const accept = chk.accept || (chk.builtinId != null ? [chk.builtinId] : null);
+    const ok = accept ? accept.includes(cs?.builtinId) : normName(cs?.name) === normName(chk.name);
     if (!ok) { bad = { cs }; break; }
   }
   const issues = [];
@@ -212,22 +219,55 @@ function checkCellStyle(sheet, chk) {
   return { ok: issues.length === 0, issues, detail: { kind: "cellStyle", range: chk.range, expected: wantLabel, fillTheme: themeSeen } };
 }
 
+// 표시 형식은 결과(렌더)로 채점한다: 학생 코드와 기대 코드를 샘플 값들로 렌더해 전부 같으면 정답.
+// 렌더 미지원 문법이면 코드 문자열 비교로 폴백.
 function checkNumFmt(sheet, chk) {
-  const wants = (chk.codes || []).map(normNumFmt);
-  const wantLabel = (chk.codes || []).join(" 또는 ");
+  const codes = chk.codes || [];
+  const wantLabel = codes.join(" 또는 ");
+  const cells = expandRange(chk.range);
+  const dateFmt = isDateCode(codes[0] || "");
+  const vals = cells.map((a) => sheet.cells[a]?.value).filter((v) => typeof v === "number");
+  const samples = [...new Set([...vals, ...(dateFmt ? [] : [0])])]; // 숫자면 0 포함
+
   let bad = null;
-  for (const addr of expandRange(chk.range)) {
+  for (const addr of cells) {
     const code = sheet.cells[addr]?.numFmt?.code ?? null;
     const norm = normNumFmt(code);
-    const isGeneral = norm === "general" || code == null;
-    if (isGeneral || !wants.includes(norm)) { bad = { addr, code, isGeneral }; break; }
+    if (norm === "general" || code == null) { bad = { addr, kind: "missing" }; break; }
+    // 결과 비교(+미지원 시 코드 비교 폴백)
+    let matched = false, fallback = false, diff = null;
+    for (const w of codes) {
+      const eq = renderEqual(code, w, samples);
+      if (eq === true) { matched = true; break; }
+      if (eq === null) fallback = true; else if (!diff) diff = firstDiff(code, w, samples);
+    }
+    if (matched) continue;
+    if (fallback) { if (codes.map(normNumFmt).includes(norm)) continue; bad = { addr, kind: "code", code }; break; }
+    bad = { addr, kind: "result", code, diff }; break;
   }
+
   const issues = [];
   if (bad) {
-    if (bad.isGeneral) issues.push(miss(chk.range, "표시 형식", wantLabel, bad.addr));
-    else issues.push(mism(chk.range, "표시 형식", wantLabel, bad.code, bad.addr));
+    if (bad.kind === "missing") issues.push(miss(chk.range, "표시 형식", wantLabel, bad.addr));
+    else if (bad.kind === "code") issues.push(mism(chk.range, "표시 형식", wantLabel, bad.code, bad.addr));
+    else { const d = bad.diff; issues.push(raw(`[${chk.range}] 표시 형식 결과가 다릅니다. ${d.value}${josa(String(d.value), "이/가")} '${d.expected}'${josa(d.expected, "이/가")} 아니라 '${d.student}'으로 표시됩니다.`)); }
   }
   return { ok: issues.length === 0, issues, detail: { kind: "numFmt", range: chk.range, expected: wantLabel, samples: chk.samples ?? [] } };
+}
+
+// '간단한 날짜'(내장 번호 14). 사용자 지정 형식(yyyy-mm-dd 등, id>=164)은 오답.
+// 파서가 내장 14를 변환한 코드("mm-dd-yy"·"m/d/yy")도 인정한다(로케일에 따라 id 없이 코드만 올 수 있음).
+const SHORT_DATE_CODES = new Set(["mm-dd-yy", "m/d/yy"]);
+function checkShortDate(sheet, chk) {
+  const cells = expandRange(chk.range);
+  let bad = false;
+  for (const addr of cells) {
+    const nf = sheet.cells[addr]?.numFmt;
+    const ok = nf?.id === 14 || (nf?.code != null && SHORT_DATE_CODES.has(normNumFmt(nf.code)));
+    if (!ok) { bad = true; break; }
+  }
+  const issues = bad ? [raw(`[${chk.range}] 표시 형식이 '간단한 날짜'가 아닙니다.`)] : [];
+  return { ok: !bad, issues, detail: { kind: "shortDate", range: chk.range } };
 }
 
 function checkDefinedName(workbookStyles, chk) {
@@ -296,6 +336,16 @@ function borderCheck(sheet, chk) {
       issues.push(raw(`[${e.range}] ${L_SIDE[e.side] ?? ""} ${L_BORDER_STYLE[e.style] ?? e.style} 테두리가 빠진 곳이 있습니다. (${loc})`));
     }
   }
+  if (chk.diagonal) {
+    let bad = null; // { addr, shape } — shape=true 면 선은 있으나 X 모양(방향) 아님
+    for (const addr of expandRange(chk.range)) {
+      const d = sheet.cells[addr]?.border?.diagonal;
+      if (d?.style !== chk.diagonal) { bad = { addr, shape: false }; break; }
+      const dirOk = (!chk.diagonalDown || d.down) && (!chk.diagonalUp || d.up);
+      if (!dirOk) { bad = { addr, shape: true }; break; }
+    }
+    if (bad) issues.push(raw(bad.shape ? `[${chk.range}] 대각선이 X 모양이 아닙니다.` : `[${chk.range}] 대각선 테두리가 지정되지 않았습니다.`));
+  }
   return { ok: issues.length === 0, issues, detail: { kind: "border", range: chk.range } };
 }
 
@@ -305,15 +355,60 @@ function checkMerge(sheet, chk) {
 }
 
 function checkFill(sheet, chk) {
+  const wantLabel = chk.rgb != null ? colorLabel(chk.rgb) : "채우기 색";
   const issues = [];
   for (const addr of expandRange(chk.range)) {
-    const fg = sheet.cells[addr]?.fill?.fgColor;
-    let ok = !!fg && fg.patternType !== "none";
+    const fill = sheet.cells[addr]?.fill; const fg = fill?.fgColor;
+    let ok = !!fg && !!fill.patternType && fill.patternType !== "none";
     if (chk.theme != null) ok = fg?.theme === chk.theme;
-    if (chk.rgb != null) ok = ok && String(fg?.rgb).toUpperCase().endsWith(String(chk.rgb).toUpperCase());
-    if (!ok) { issues.push(raw(`[${chk.range}] ${addr} 채우기 색이 지정되지 않았거나 다릅니다.`)); break; }
+    if (chk.rgb != null) ok = ok && colorEq(fg?.rgb, chk.rgb);
+    if (!ok) {
+      if (!fg || !fill.patternType || fill.patternType === "none") issues.push(miss(chk.range, "채우기 색", wantLabel));
+      else issues.push(mism(chk.range, "채우기 색", wantLabel, fg?.rgb ? colorLabel(fg.rgb) : "다른 색"));
+      break;
+    }
   }
-  return { ok: issues.length === 0, issues, detail: { kind: "fill", range: chk.range } };
+  return { ok: issues.length === 0, issues, detail: { kind: "fill", range: chk.range, expected: wantLabel } };
+}
+
+// 글꼴 색 (표준색 rgb 비교; 대소문자·알파 무시)
+function checkFontColor(sheet, chk) {
+  const wantLabel = colorLabel(chk.rgb);
+  const issues = [];
+  for (const addr of expandRange(chk.range)) {
+    const rgb = sheet.cells[addr]?.font?.color?.rgb;
+    if (!colorEq(rgb, chk.rgb)) {
+      if (rgb == null) issues.push(miss(chk.range, "글꼴 색", wantLabel));
+      else issues.push(mism(chk.range, "글꼴 색", wantLabel, colorLabel(rgb)));
+      break;
+    }
+  }
+  return { ok: issues.length === 0, issues, detail: { kind: "fontColor", range: chk.range, expected: wantLabel } };
+}
+
+// 값(문자열) — 특수문자 등. normalize:"spaces" 면 공백 제거 후 비교.
+function checkValue(sheet, chk) {
+  const label = chk.label || "값";
+  const nrm = chk.normalize === "spaces" ? (s) => String(s ?? "").replace(/\s/g, "") : (s) => String(s ?? "");
+  const actual = sheet.cells[chk.cell]?.value;
+  const issues = [];
+  if (actual == null || actual === "") issues.push(miss(chk.cell, label, chk.equals));
+  else if (nrm(actual) !== nrm(chk.equals)) issues.push(mism(chk.cell, label, chk.equals, actual));
+  return { ok: issues.length === 0, issues, detail: { kind: "value", cell: chk.cell, expected: chk.equals } };
+}
+
+// 값 범위(숫자) — 선택하여 붙여넣기 결과 등. 수식이면 계산 결과(v)를 쓴다.
+function checkValues(sheet, chk) {
+  const cells = expandRange(chk.range); const exp = chk.expected || [];
+  const issues = [];
+  for (let i = 0; i < cells.length; i++) {
+    if (exp[i] === undefined) continue;
+    const v = sheet.cells[cells[i]]?.value;
+    const want = exp[i];
+    const eq = typeof want === "number" ? Number(v) === Number(want) : String(v ?? "") === String(want);
+    if (!eq) { issues.push(mism(chk.range, "값", String(want), v == null ? null : String(v), cells[i])); break; }
+  }
+  return { ok: issues.length === 0, issues, detail: { kind: "values", range: chk.range } };
 }
 
 // ─────────────────────── 항목 단위 사유 조립 ───────────────────────
@@ -361,11 +456,15 @@ function runCheck(workbookStyles, sheet, chk) {
     case "colWidth": return checkColWidth(sheet, chk);
     case "cellStyle": return checkCellStyle(sheet, chk);
     case "numFmt": return checkNumFmt(sheet, chk);
+    case "shortDate": return checkShortDate(sheet, chk);
     case "definedName": return checkDefinedName(workbookStyles, chk);
     case "comment": return checkComment(sheet, chk);
     case "border": return borderCheck(sheet, chk);
     case "merge": return checkMerge(sheet, chk);
     case "fill": return checkFill(sheet, chk);
+    case "fontColor": return checkFontColor(sheet, chk);
+    case "value": return checkValue(sheet, chk);
+    case "values": return checkValues(sheet, chk);
     default: return { ok: false, issues: [raw(`알 수 없는 검사 종류: ${chk.kind}`)], detail: { kind: chk.kind, ok: false } };
   }
 }

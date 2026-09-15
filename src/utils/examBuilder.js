@@ -50,7 +50,14 @@ export function buildBasic2Sheet(problem) {
   });
 
   const lastRow = hr + t.rows.length; // 1-based
-  ws["!ref"] = `A1:${XLSX.utils.encode_cell({ r: lastRow - 1, c: t.headers.length - 1 })}`;
+  let maxColIdx = t.headers.length - 1, maxRowIdx = lastRow - 1;
+  // 표 밖 부가 셀(선택하여 붙여넣기용 배수 등). 서식 없이 값만.
+  for (const ec of t.extraCells || []) {
+    const { r, c } = XLSX.utils.decode_cell(ec.cell);
+    ws[ec.cell] = typeof ec.value === "number" ? { t: "n", v: ec.value } : { t: "s", v: String(ec.value) };
+    maxColIdx = Math.max(maxColIdx, c); maxRowIdx = Math.max(maxRowIdx, r);
+  }
+  ws["!ref"] = `A1:${XLSX.utils.encode_cell({ r: maxRowIdx, c: maxColIdx })}`;
   ws["!cols"] = (t.colWidths || []).map((w) => ({ wch: w }));
 
   // 표 영역(제목~데이터 마지막 행, 머리글 포함) 기본 서식: 글꼴 '맑은 고딕' 11 + 세로 가운데.
@@ -83,8 +90,11 @@ export function buildExamWorkbook(problems, attemptId = "") {
   return wb;
 }
 
+// 시험지 파일명 (화면 표시·다운로드 동일).
+export const examFileName = (label = "") => `컴활2급_실전_${label || "모의고사"}.xlsx`;
+
 // 브라우저 다운로드.
 export function buildExamFile(problems, label = "", attemptId = "") {
   const wb = buildExamWorkbook(problems, attemptId);
-  XLSX.writeFile(wb, `컴활2급_실전_${label || "모의고사"}.xlsx`);
+  XLSX.writeFile(wb, examFileName(label));
 }

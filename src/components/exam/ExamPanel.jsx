@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { Download, Upload, CheckCircle2, XCircle } from "lucide-react";
 import { buildExamFile, examFileName } from "../../utils/examBuilder";
 import { gradeExamFile } from "../../utils/examGrader";
@@ -13,7 +13,7 @@ import { UI } from "../../theme";
 const EXAM_MS = 40 * 60 * 1000; // 40분
 const CURRENT_KEY = "exam:current";
 const ATT_KEY = (id) => `exam:attempt:${id}`;
-const TAB_KEY = "exam:tab"; // sessionStorage — 같은 탭 새로고침 판별용(응시 id)
+const BANNER_MIN_GAP = 220; // 문제 카드 오른쪽 여백이 이보다 좁으면 배너를 상단 가로로
 const mmss = (ms) => {
   const s = Math.floor(Math.abs(ms) / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -41,8 +41,34 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
   const [saved, setSaved] = useState(false); // 서버 저장 성공 여부(결과 화면 표시용)
   const fileRef = useRef();
   const { saveExamAttempt } = useExamAttempts();
-  const [narrow, setNarrow] = useState(typeof window !== "undefined" && window.innerWidth < 900);
-  useEffect(() => { const on = () => setNarrow(window.innerWidth < 900); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+
+  // 타이머 배너 위치: 문제 카드 열의 오른쪽 끝과 뷰포트 오른쪽 끝 사이 여백의 정중앙에 배너 중심을 둔다.
+  // 여백이 배너 폭(대략)보다 좁으면(<220px) 상단 가로 배너로 전환한다.
+  const bannerRef = useRef(null);
+  const [topBanner, setTopBanner] = useState(false); // true면 상단 가로 배너
+  const [bannerLeft, setBannerLeft] = useState(null); // px, 세로(우측) 배너의 left. null이면 미측정(우측 16 fallback)
+  const measureBanner = useCallback(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const right = el.getBoundingClientRect().right; // 문제 카드 열의 오른쪽 끝
+    const vw = window.innerWidth;
+    const gap = vw - right;
+    if (gap < BANNER_MIN_GAP) { setTopBanner(true); return; }
+    const bw = bannerRef.current?.offsetWidth || 150;
+    setTopBanner(false);
+    setBannerLeft(right + gap / 2 - bw / 2); // 여백 정중앙 - 배너 절반
+  }, []);
+  useLayoutEffect(() => {
+    measureBanner();
+    let ro;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(measureBanner);
+      if (rootRef.current) ro.observe(rootRef.current);
+      if (bannerRef.current) ro.observe(bannerRef.current); // 시간 글자 폭 변화(초과 표시 등) 반영
+    }
+    window.addEventListener("resize", measureBanner);
+    return () => { ro?.disconnect(); window.removeEventListener("resize", measureBanner); };
+  }, [measureBanner]);
 
   // 최신 값 참조(틱·정리 클로저용)
   const ref = useRef({});
@@ -70,20 +96,19 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     } catch { /* 저장 실패 무시 */ }
   }, []);
 
-  // 마운트 시 저장된 응시 복원. ExamView 가 탭 판별(같은 탭 새로고침만 이어감)을 이미 끝낸 뒤라
-  // 여기 도달한 응시는 이어가도 되는 것. 진행 중이면 시작 시각(startedAt)만 복원하고 경과는
-  // 벽시계로 다시 계산한다. 채점 완료면 결과 화면과 고정된 경과를 되살린다.
+  // 마운트 시 저장된 응시 복원. 채점 완료(graded)만 복원한다. 진행 중(running)은 복원하지 않는다
+  // — 새로고침·재접속 = 종료. (ExamView 가 마운트 시 running attempt 를 이미 삭제하므로 보통 여기
+  // 남는 건 graded 뿐이지만, 방어적으로 running 은 무시한다.)
   useEffect(() => {
     try {
       const cur = localStorage.getItem(CURRENT_KEY);
       if (!cur) return;
       const a = JSON.parse(localStorage.getItem(ATT_KEY(cur)) || "null");
-      if (!a) return;
+      if (!a || a.phase !== "graded") return;
       setAttemptId(a.attemptId);
       setStartedAt(a.startedAt || null);
       setFlags(a.flags || {});
-      if (a.phase === "graded") { setElapsedMs(a.elapsed_ms || 0); setResult(a.result || null); setSaved(!!a.saved); setPhase("graded"); }
-      else { setElapsedMs(a.startedAt ? Date.now() - a.startedAt : 0); setPhase("running"); }
+      setElapsedMs(a.elapsed_ms || 0); setResult(a.result || null); setSaved(!!a.saved); setPhase("graded");
     } catch { /* 무시 */ }
   }, []);
 
@@ -97,13 +122,21 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     return () => clearInterval(iv);
   }, [phase, startedAt]);
 
-  // 창·탭 닫기(또는 새로고침) 시 브라우저 기본 확인창. 실제로 닫히면 sessionStorage 의 exam:tab 이
-  // 사라져 다음 접속에서 응시가 폐기된다(ExamView 의 탭 판별). 여기선 별도 저장을 하지 않는다.
+  // 창·탭 닫기·새로고침 = 종료. beforeunload 로 기본 확인창을 띄우고, 실제로 벗어나면(pagehide)
+  // 진행 중 응시 스냅샷을 즉시 삭제한다. (다음 접속에서 ExamView 도 방어적으로 running 을 지운다.)
   useEffect(() => {
     if (phase !== "running") return;
     const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ""; return ""; };
+    const onPageHide = () => {
+      try {
+        const id = ref.current.attemptId;
+        if (id) localStorage.removeItem(ATT_KEY(id));
+        localStorage.removeItem(CURRENT_KEY);
+      } catch { /* 무시 */ }
+    };
     window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener("pagehide", onPageHide);
+    return () => { window.removeEventListener("beforeunload", onBeforeUnload); window.removeEventListener("pagehide", onPageHide); };
   }, [phase]);
 
   // 앱 내 이동 종료 확인용 가드 — 응시 중일 때만 무장. [종료] 시 실행할 정리(스냅샷 삭제)를 등록한다.
@@ -114,7 +147,6 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
         const id = ref.current.attemptId;
         if (id) localStorage.removeItem(ATT_KEY(id));
         localStorage.removeItem(CURRENT_KEY);
-        sessionStorage.removeItem(TAB_KEY);
       } catch { /* 무시 */ }
     });
     return () => disarmExamGuard();
@@ -130,10 +162,9 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     const id = (crypto?.randomUUID?.() || String(Date.now()));
     const now = Date.now();
     setAttemptId(id); setStartedAt(now); setElapsedMs(0); setFlags({}); setResult(null); setPhase("running");
-    try { sessionStorage.setItem(TAB_KEY, id); } catch { /* 무시 */ } // 같은 탭 새로고침 판별
     persist({ attemptId: id, startedAt: now, flags: {}, phase: "running" });
     buildExamFile(problems, label, id);
-    scrollExamTop(rootRef.current);
+    // 시험 시작(다운로드) 시에는 스크롤을 건드리지 않는다 — 사용자가 보던 위치 유지.
   }
   function redownload() { buildExamFile(problems, label, attemptId || ""); }
   function toggleFlag(key) { setFlags((f) => { const n = { ...f, [key]: !f[key] }; persist({ flags: n }); return n; }); }
@@ -182,9 +213,9 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
       result: res, // 결과 화면 복원용
     };
   }
-  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); sessionStorage.removeItem(TAB_KEY); } catch { /* 무시 */ } disarmExamGuard(); setPhase("idle"); setAttemptId(null); setStartedAt(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
-  function newAttempt() { clearAttempt(); if (onReset) onReset(); } // 새 응시: 세트도 초기화(새 시드)
-  function replayAttempt() { clearAttempt(); } // 같은 문제 다시 풀기: 같은 세트·시드 유지, 새 attempt
+  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); } catch { /* 무시 */ } disarmExamGuard(); setPhase("idle"); setAttemptId(null); setStartedAt(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
+  function newAttempt() { clearAttempt(); scrollExamTop(rootRef.current); if (onReset) onReset(); } // 새 응시: 세트도 초기화(새 시드) + 최상단
+  function replayAttempt() { clearAttempt(); scrollExamTop(rootRef.current); } // 같은 문제 다시 풀기: 같은 세트·시드 유지, 새 attempt + 최상단
 
   // ── 타이머 표시 ──
   const remaining = EXAM_MS - elapsedMs;
@@ -194,7 +225,7 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
   const timerNum = phase === "idle" ? "40:00" : over ? `+${mmss(remaining)}` : mmss(remaining);
 
   // ── 스타일 ──
-  const wrap = { fontFamily: UI.font, paddingTop: narrow ? 44 : 0 }; // 좁은 화면: 상단 고정 배너 높이만큼 여백
+  const wrap = { fontFamily: UI.font, paddingTop: topBanner ? 44 : 0 }; // 상단 가로 배너일 때 그 높이만큼 여백
   const card = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 16, marginBottom: 12 };
   // 범위 표기: 글꼴은 본문 그대로, 연한 배경 + 좌우 여백만 (모노·자간 없음)
   // fontFamily:"inherit" 를 명시해 <code>/<span> 의 브라우저 기본 monospace 를 덮는다.
@@ -286,16 +317,16 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
 
   const totalFlags = flagCountFor(null);
   const fileName = examFileName(label);
-  // 타이머 고정 배너: 넓은 화면=우측·뷰포트 40% 높이, 좁은 화면=상단 가로
-  const banner = narrow
+  // 타이머 고정 배너: 여백이 충분하면 문제 카드 오른쪽 여백 정중앙(top 30vh)에, 좁으면 상단 가로.
+  const banner = topBanner
     ? { position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "8px 12px", background: UI.surface, borderBottom: `1px solid ${UI.line}`, boxShadow: UI.shadow }
-    : { position: "fixed", top: "40vh", right: 16, zIndex: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "16px 20px", width: 200, background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow };
+    : { position: "fixed", top: "30vh", left: bannerLeft != null ? bannerLeft : undefined, right: bannerLeft != null ? undefined : 16, zIndex: 40, display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "16px 16px", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow };
 
   return (
     <div ref={rootRef} style={wrap}>
       {/* 타이머 고정 배너 (스크롤해도 보임) */}
-      <div style={banner}>
-        <div style={{ fontSize: narrow ? 18 : 34, fontWeight: 700, color: phase === "idle" ? UI.faint : timerColor }}>
+      <div ref={bannerRef} style={banner}>
+        <div style={{ fontSize: topBanner ? 18 : 34, fontWeight: 700, color: phase === "idle" ? UI.faint : timerColor }}>
           <span style={mono}>{timerNum}</span>{over && phase !== "idle" ? " 초과" : ""}
         </div>
         <div style={{ fontSize: 12, color: UI.mut }}>표시 {totalFlags}</div>
@@ -308,9 +339,12 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
           {problems.some((p) => p.section === "기본2") && <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, color: UI.teal }}>기본작업-2 {DIFF_LABEL[difficulty] || "기본"}</span>}
         </div>
         {phase === "idle" ? (
-          <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={startExam}>
-            <Download size={16} /> 시험 시작 (파일 다운로드)
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12.5, color: UI.faint }}>시험 시작을 누르면 파일이 내려받아집니다</span>
+            <button style={{ ...btn(UI.teal, "#fff"), padding: "8px 12px", fontSize: 13, marginLeft: "auto" }} onClick={startExam}>
+              <Download size={14} /> 시험 시작 (파일 다운로드)
+            </button>
+          </div>
         ) : (
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <span style={{ fontSize: 13, color: UI.ink, fontWeight: 600, wordBreak: "break-all" }}>{fileName}</span>
@@ -372,12 +406,12 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
       {/* 업로드 확인 대화상자 */}
       {confirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(18,33,29,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 50 }}>
-          <div style={{ ...card, maxWidth: 320, margin: 16, boxShadow: UI.shadow }}>
+          <div style={{ ...card, minWidth: 360, maxWidth: 400, margin: 16, boxShadow: UI.shadow }}>
             <div style={{ fontWeight: 700, color: UI.ink, fontSize: 15, marginBottom: 6 }}>시간을 멈추고 채점할까요?</div>
             <div style={{ color: UI.mut, fontSize: 13, marginBottom: 14 }}>채점하면 타이머가 종료됩니다.</div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={{ ...btn(UI.teal, "#fff"), flex: 1 }} onClick={doGrade}>채점</button>
-              <button style={{ ...btn(UI.surface, UI.mut), flex: 1, border: `1px solid ${UI.line}` }} onClick={() => setConfirm(null)}>계속 풀기</button>
+              <button style={{ ...btn(UI.teal, "#fff"), flex: 1, whiteSpace: "nowrap" }} onClick={doGrade}>채점</button>
+              <button style={{ ...btn(UI.surface, UI.mut), flex: 1, border: `1px solid ${UI.line}`, whiteSpace: "nowrap" }} onClick={() => setConfirm(null)}>계속 풀기</button>
             </div>
           </div>
         </div>
