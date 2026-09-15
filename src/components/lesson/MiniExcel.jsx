@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
 import { toAddr, shiftFormula, findRefAtCursor, RANGE_TOKEN_RE, parseA1, parseRangeA1 } from "../../utils/formulaUtils";
 import { getFunctionHint } from "../../utils/functionHints";
 import { Sheet, isErrorValue } from "../../excel-engine/index.js";
@@ -7,6 +7,8 @@ import { EXAM_FUNCTIONS } from "../../excel-engine/functions/index.js";
 import { gradePractice } from "./miniexcel/gradePractice.js";
 import { useSelection } from "./miniexcel/useSelection.js";
 import { useKeyboard } from "./miniexcel/useKeyboard.js";
+import MiniExcelTutorial from "./MiniExcelTutorial";
+import { userKey } from "../../lib/userScope";
 
 // 자동완성 목록 = 엔진에 등록된 함수(컴활 출제 범위)만
 // 자동완성 목록 = 컴활 2급 실기 출제 함수만 (엔진에 등록된 그 외 함수는 노출하지 않음)
@@ -94,7 +96,7 @@ function computeInitialColWidths(practice) {
   return widths;
 }
 
-export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve }) {
+export default function MiniExcel({ practice, autoplay = false, onPracticeWrong, onPracticeResolve, onGraded, onRevealConfirm, onEvent, tutorial, onTutorialActive }) {
   // 데이터 범위 뒤로 빈 열/행을 2개씩만 붙인다(엑셀 시트 여백처럼).
   // 빈 셀은 editable:false(선택·이동은 되지만 편집 불가, Sheet에 등록하지 않음).
   const totalColCount = practice.cols.length + FILLER_COLS;
@@ -120,6 +122,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const [gradeResults, setGradeResults] = useState([]);
   const [attempts, setAttempts] = useState(0);
   const [revealed, setRevealed] = useState({}); // { addr: true } 정답 수식 보기
+  const [revealConfirmed, setRevealConfirmed] = useState(false); // '확인하고 넘어가기'로 통과 처리
   const [cursorPos, setCursorPos] = useState(0);
   const [inputFocused, setInputFocused] = useState(false);
   const [formulaError, setFormulaError] = useState(null); // 잘못된 수식 커밋 시도 시 안내문
@@ -136,6 +139,29 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
   const [nameBoxVal, setNameBoxVal] = useState("");
   // 함수 자동완성
   const [acIndex, setAcIndex] = useState(0);
+
+  // ── 이벤트 계측 + 따라 하기 튜토리얼 ──
+  const onEventRef = useRef(onEvent); onEventRef.current = onEvent;
+  const seqRef = useRef(0);
+  const [tutEvent, setTutEvent] = useState(null);
+  const emit = useCallback((e) => { onEventRef.current?.(e); setTutEvent({ e, seq: (seqRef.current += 1) }); }, []);
+  const gradeBtnRef = useRef(null);
+  const wrapRef = useRef(null);
+  const doneKeyOf = (kind) => userKey(kind === "f4" ? "tutorial:miniexcel:f4:done" : "tutorial:miniexcel:done");
+  const isTutDone = (kind) => { const k = doneKeyOf(kind); try { return !!k && localStorage.getItem(k) === "true"; } catch { return false; } };
+  const [activeKind, setActiveKind] = useState(null); // 진행 중 튜토리얼 종류: 'full' | 'f4' | null
+  const [tutActive, setTutActive] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  function startTutorial(kind) { setActiveKind(kind); setShowGuide(false); setTutActive(true); }
+  // 첫 진입 자동 실행(1차시만 tutorial prop 전달): full = 안내 상자 먼저(B-3), f4 = 바로. 이미 완료했으면 안 뜸.
+  useEffect(() => {
+    if (!tutorial || isTutDone(tutorial.kind)) return;
+    if (tutorial.kind === "full") { setActiveKind("full"); setShowGuide(true); }
+    else startTutorial("f4");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tutorial, practice]);
+  useEffect(() => { onTutorialActive?.(tutActive); }, [tutActive]); // eslint-disable-line react-hooks/exhaustive-deps
+  function finishTutorial() { const k = activeKind && doneKeyOf(activeKind); if (k) { try { localStorage.setItem(k, "true"); } catch { /* 무시 */ } } setTutActive(false); setShowGuide(false); setActiveKind(null); }
 
   const sheetRef = useRef(null);
   const autoCancelRef = useRef(false); // 오토플레이(히어로 데모) 취소 플래그
@@ -200,6 +226,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     setGradeResults([]);
     setAttempts(0);
     setRevealed({});
+    setRevealConfirmed(false);
     setRangeSelecting(false);
     setRangeStart(null);
     setHoverCell(null);
@@ -291,6 +318,8 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
         isSelDraggingRef.current = false;
         setSelDragging(false);
         hoverCellRef.current = null;
+        const b = selBounds();
+        if (b && (b.r1 !== b.r2 || b.c1 !== b.c2)) emit({ type: "selectRange", range: `${toAddr(b.r1, b.c1)}:${toAddr(b.r2, b.c2)}` });
         return;
       }
       // 수식 참조 드래그 완료 — 치환은 pointerdown·hover에서 applyPointRefRange로 이미 반영됨
@@ -409,6 +438,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       setRangeStart(clickCell);
       setHoverCell(clickCell);
       applyPointRefRange(clickCell, clickCell); // 단일 셀로 즉시 치환
+      emit({ type: "pointRef", ref: toAddr(ri, ci) });
       inputRef.current?.focus();
       return;
     }
@@ -417,6 +447,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       setFocusCell(ri, ci);
     } else {
       selectSingle(ri, ci);
+      emit({ type: "select", cell: toAddr(ri, ci) });
       isSelDraggingRef.current = true;
       setSelDragging(true);
       hoverCellRef.current = { ri, ci };
@@ -459,6 +490,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       )
     );
     setGraded(false);
+    emit({ type: "commit", cell: getAddr(ri, ci), input: trimmed });
     return true;
   }
 
@@ -524,6 +556,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
       return next;
     });
     setGraded(false);
+    emit({ type: "fill", from: toAddr(b.r1, b.c1), to: toAddr(tgt.ri, tgt.ci) });
   }
 
   // 핸들 더블클릭: 왼쪽(없으면 오른쪽) 인접 열 데이터 마지막 행까지 아래로 채움
@@ -640,6 +673,10 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
         onPracticeResolve?.({ cell: res.addr });
       }
     });
+    // 개념 잠금 해제 신호: 정답 셀 전부 correct 면 통과.
+    const passed = results.length > 0 && results.every((res) => res.status === "correct");
+    onGraded?.(passed);
+    emit({ type: "grade", passed });
   }
 
   // ── 파생 값 ──
@@ -839,12 +876,65 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
     clamp, selectSingle, setFocusCell, moveSelection, deleteSelection, enterEditMode, commitInput,
     undo, redo, copySelection, pasteClipboard,
     nameBoxVal, setNameBoxEditing, parseRangeA1, parseA1,
+    onEvent: emit,
   });
 
+  const hasAnswerCell = practice.rows.some((row) => row.some((cell) => cell.editable && cell.answer));
+  // 따라 하기 단계 — 정답 셀 = 첫 editable+answer 셀, 참조 셀 = 그 정답 수식의 첫 셀 참조
+  const tutorialSteps = (() => {
+    if (!activeKind) return [];
+    if (activeKind === "f4") return [{ target: { type: "input" }, text: "수식 입력 중 F4를 누르면 $가 붙습니다. 지금 눌러보세요.", match: (e) => e.type === "f4" }];
+    let answerCell = null, refCell = null;
+    for (let r = 0; r < practice.rows.length && !answerCell; r++) {
+      for (let ci = 0; ci < practice.rows[r].length; ci++) {
+        const cell = practice.rows[r][ci];
+        if (cell.editable && cell.answer) { answerCell = `${practice.cols[ci]}${r + 1}`; const m = String(cell.answer).toUpperCase().match(/[A-Z]+\d+/); refCell = m ? m[0] : null; break; }
+      }
+    }
+    return [
+      { target: { type: "cell", addr: answerCell }, text: "정답을 넣을 셀을 클릭하세요.", match: (e) => e.type === "select" && e.cell === answerCell },
+      { target: { type: "input" }, text: "=를 입력하세요.", match: (e) => e.type === "typing" && String(e.value).startsWith("=") },
+      { target: { type: "cell", addr: refCell }, text: "참조할 셀을 클릭하세요. 주소가 자동으로 들어갑니다.", match: (e) => e.type === "pointRef" },
+      { target: { type: "input" }, text: "Enter로 확정하세요.", match: (e) => e.type === "commit" },
+      { target: { type: "gradeButton" }, text: "채점하기를 눌러 확인하세요.", match: (e) => e.type === "grade" },
+    ];
+  })();
+  function resolveTarget(t) {
+    const wrap = wrapRef.current;
+    if (!wrap || !t) return null;
+    if (t.type === "input") return inputRef.current;
+    if (t.type === "gradeButton") return gradeBtnRef.current;
+    if (t.type === "fillHandle") return wrap.querySelector('[title^="드래그하여 자동 채우기"]');
+    if (t.type === "cell" && t.addr) {
+      const m = /^([A-Za-z]+)(\d+)$/.exec(t.addr); if (!m) return null;
+      const ci = practice.cols.indexOf(m[1]); const ri = Number(m[2]) - 1;
+      if (ci < 0) return null;
+      return wrap.querySelector(`td[data-ri="${ri}"][data-ci="${ci}"]`);
+    }
+    return null;
+  }
+
   return (
-    <div style={{ marginTop: 20, userSelect: "none", fontFamily: FONT }}>
+    <div ref={wrapRef} style={{ marginTop: 20, userSelect: "none", fontFamily: FONT, position: "relative" }}>
+      {/* 첫 진입 안내 (B-3) */}
+      {showGuide && (
+        <div style={{ background: "#f3f9f5", border: "1px solid #a8d5b5", borderRadius: 10, padding: "14px 18px", marginBottom: 12 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#1f2937", marginBottom: 8 }}>미니 엑셀 사용법</div>
+          <ol style={{ margin: 0, paddingLeft: 18, color: "#374151", fontSize: 13.5, lineHeight: 1.7 }}>
+            <li>설명을 끝까지 읽습니다.</li>
+            <li>아래 미니 엑셀에서 문제를 풀고 채점합니다.</li>
+            <li>통과하면 다음 개념이 열립니다.</li>
+          </ol>
+          <button onClick={() => startTutorial("full")} style={{ marginTop: 10, background: "#217346", color: "#fff", border: "none", borderRadius: 6, padding: "7px 16px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>시작</button>
+        </div>
+      )}
+
       {/* 문제 카드 */}
-      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 20px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "16px 20px", marginBottom: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.06)", position: "relative" }}>
+        {hasAnswerCell && (
+          <button onClick={() => startTutorial("full")} title="따라 하기"
+            style={{ position: "absolute", top: 12, right: 14, width: 24, height: 24, borderRadius: "50%", border: "1px solid #d0d0d0", background: "#fff", color: "#666", fontSize: 13, fontWeight: 800, cursor: "pointer", lineHeight: 1 }}>?</button>
+        )}
         <span style={{ display: "inline-block", background: "#1f2937", color: "#fff", fontSize: 11.5, fontWeight: 800, letterSpacing: 1, padding: "3px 11px", borderRadius: 999, marginBottom: 10 }}>문제</span>
         <p style={{ color: "#1f2937", fontSize: 18.5, fontWeight: 600, margin: 0, lineHeight: 1.6, whiteSpace: "pre-line" }}>{practice.instruction}</p>
       </div>
@@ -907,6 +997,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                 setAcIndex(0);
                 setInputVal(e.target.value);
                 setCursorPos(e.target.selectionStart ?? e.target.value.length);
+                emit({ type: "typing", value: e.target.value });
                 if (overlayRef.current) overlayRef.current.scrollLeft = e.target.scrollLeft;
               }}
               onKeyDown={handleInputKeyDown}
@@ -1125,6 +1216,7 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
 
         {/* 채점하기 버튼 */}
         <button
+          ref={gradeBtnRef}
           onClick={grade}
           style={{ width: "100%", padding: "10px 0", borderRadius: 6, border: "none", background: XL, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
         >
@@ -1157,9 +1249,23 @@ export default function MiniExcel({ practice, autoplay = false, onPracticeWrong,
                 </div>
               );
             })}
+            {/* 2회 실패 후 정답을 본 뒤 넘어가기 — 개념 잠금 해제(오답노트 신호로 revealed 기록) */}
+            {onRevealConfirm && attempts >= 2 && Object.keys(revealed).length > 0 && !gradeResults.every((r) => r.status === "correct") && (
+              revealConfirmed
+                ? <div style={{ fontSize: 12.5, color: "#1e6b3d", fontWeight: 700 }}>확인하고 넘어갔습니다.</div>
+                : <button
+                    onClick={() => { setRevealConfirmed(true); onRevealConfirm(); }}
+                    style={{ alignSelf: "flex-start", background: XL, color: "#fff", border: "none", borderRadius: 6, padding: "8px 14px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}
+                  >확인하고 넘어가기</button>
+            )}
           </div>
         )}
       </div>
+
+      {/* 따라 하기 오버레이 */}
+      {tutActive && tutorialSteps.length > 0 && (
+        <MiniExcelTutorial steps={tutorialSteps} resolveTarget={resolveTarget} wrapperRef={wrapRef} event={tutEvent} onSkip={finishTutorial} onComplete={finishTutorial} />
+      )}
     </div>
   );
 }

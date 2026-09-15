@@ -3,6 +3,7 @@ import { Target, CheckCircle2, Lock } from "lucide-react";
 import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
 import { assembleBasic2 } from "../../utils/basic2Assembler";
 import { scrollExamTop } from "../../utils/examScroll";
+import { userKey } from "../../lib/userScope";
 import { UI } from "../../theme";
 import ExamPanel from "./ExamPanel";
 
@@ -38,13 +39,15 @@ export default function ExamView() {
     try { if ("scrollRestoration" in window.history) { prev = window.history.scrollRestoration; window.history.scrollRestoration = "manual"; } } catch { /* 무시 */ }
     const toTop = () => scrollExamTop(rootRef.current);
     try {
-      const cur = localStorage.getItem("exam:current");
-      const a = cur ? JSON.parse(localStorage.getItem(`exam:attempt:${cur}`) || "null") : null;
+      const ck = userKey("exam:current");
+      const cur = ck ? localStorage.getItem(ck) : null;
+      const ak = cur ? userKey(`exam:attempt:${cur}`) : null;
+      const a = ak ? JSON.parse(localStorage.getItem(ak) || "null") : null;
       if (a?.phase === "graded" && a?.problem_set?.length) {
         setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); setDifficulty(a.difficulty || a.config?.difficulty || "basic");
       } else if (a) {
         // 진행 중(또는 불완전) 응시 폐기
-        try { localStorage.removeItem(`exam:attempt:${cur}`); localStorage.removeItem("exam:current"); } catch { /* 무시 */ }
+        try { if (ak) localStorage.removeItem(ak); if (ck) localStorage.removeItem(ck); } catch { /* 무시 */ }
       }
     } catch { /* 무시 */ }
     const container = toTop();

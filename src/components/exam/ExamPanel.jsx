@@ -5,14 +5,16 @@ import { gradeExamFile } from "../../utils/examGrader";
 import { useExamAttempts } from "../../hooks/useExamAttempts";
 import { scrollExamTop } from "../../utils/examScroll";
 import { armExamGuard, disarmExamGuard } from "../../utils/examGuard";
+import { userKey } from "../../lib/userScope";
 import { UI } from "../../theme";
 
 // 실전 응시 화면 — 문제 세트가 정해진 뒤: 시작(다운로드+타이머) → 풀이 → 업로드 → 채점 → 결과.
 // 폭은 상위 컨테이너를 따르고, 지문은 파일이 아니라 이 패널에 표시(채택한 결정 6·7).
 
 const EXAM_MS = 40 * 60 * 1000; // 40분
-const CURRENT_KEY = "exam:current";
-const ATT_KEY = (id) => `exam:attempt:${id}`;
+// 실전 응시 로컬 키는 사용자별 스코프(cellearn:{uid}:exam:*). 로그인 전(uid 없음)이면 null → 건너뜀.
+const curKey = () => userKey("exam:current");
+const attKey = (id) => userKey(`exam:attempt:${id}`);
 const BANNER_MIN_GAP = 220; // 문제 카드 오른쪽 여백이 이보다 좁으면 배너를 상단 가로로
 const mmss = (ms) => {
   const s = Math.floor(Math.abs(ms) / 1000);
@@ -91,8 +93,8 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     };
     if (over.graded) Object.assign(data, over.graded); // 채점 스냅샷(서버 saveExamAttempt 와 동일 데이터 + elapsed_ms)
     try {
-      localStorage.setItem(ATT_KEY(id), JSON.stringify(data));
-      localStorage.setItem(CURRENT_KEY, id);
+      const ak = attKey(id), ck = curKey();
+      if (ak && ck) { localStorage.setItem(ak, JSON.stringify(data)); localStorage.setItem(ck, id); }
     } catch { /* 저장 실패 무시 */ }
   }, []);
 
@@ -101,9 +103,11 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
   // 남는 건 graded 뿐이지만, 방어적으로 running 은 무시한다.)
   useEffect(() => {
     try {
-      const cur = localStorage.getItem(CURRENT_KEY);
+      const ck = curKey();
+      const cur = ck ? localStorage.getItem(ck) : null;
       if (!cur) return;
-      const a = JSON.parse(localStorage.getItem(ATT_KEY(cur)) || "null");
+      const ak = attKey(cur);
+      const a = ak ? JSON.parse(localStorage.getItem(ak) || "null") : null;
       if (!a || a.phase !== "graded") return;
       setAttemptId(a.attemptId);
       setStartedAt(a.startedAt || null);
@@ -130,8 +134,9 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     const onPageHide = () => {
       try {
         const id = ref.current.attemptId;
-        if (id) localStorage.removeItem(ATT_KEY(id));
-        localStorage.removeItem(CURRENT_KEY);
+        const ak = id ? attKey(id) : null, ck = curKey();
+        if (ak) localStorage.removeItem(ak);
+        if (ck) localStorage.removeItem(ck);
       } catch { /* 무시 */ }
     };
     window.addEventListener("beforeunload", onBeforeUnload);
@@ -145,8 +150,9 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
     armExamGuard(() => {
       try {
         const id = ref.current.attemptId;
-        if (id) localStorage.removeItem(ATT_KEY(id));
-        localStorage.removeItem(CURRENT_KEY);
+        const ak = id ? attKey(id) : null, ck = curKey();
+        if (ak) localStorage.removeItem(ak);
+        if (ck) localStorage.removeItem(ck);
       } catch { /* 무시 */ }
     });
     return () => disarmExamGuard();
@@ -213,7 +219,7 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
       result: res, // 결과 화면 복원용
     };
   }
-  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); } catch { /* 무시 */ } disarmExamGuard(); setPhase("idle"); setAttemptId(null); setStartedAt(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
+  function clearAttempt() { try { const ak = attemptId ? attKey(attemptId) : null, ck = curKey(); if (ak) localStorage.removeItem(ak); if (ck) localStorage.removeItem(ck); } catch { /* 무시 */ } disarmExamGuard(); setPhase("idle"); setAttemptId(null); setStartedAt(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
   function newAttempt() { clearAttempt(); scrollExamTop(rootRef.current); if (onReset) onReset(); } // 새 응시: 세트도 초기화(새 시드) + 최상단
   function replayAttempt() { clearAttempt(); scrollExamTop(rootRef.current); } // 같은 문제 다시 풀기: 같은 세트·시드 유지, 새 attempt + 최상단
 

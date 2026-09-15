@@ -3,6 +3,7 @@ import { LESSONS } from "./data/lessons";
 import { trackVisit } from "./lib/trackVisit";
 import { useAuth } from "./context/AuthContext";
 import { useLearningData } from "./hooks/useLearningData";
+import { useLessonFlow, allConceptsPassed } from "./hooks/useLessonFlow";
 import Sidebar from "./components/layout/Sidebar";
 import LandingPage from "./components/landing/LandingPage";
 import Dashboard from "./components/dashboard/Dashboard";
@@ -66,6 +67,10 @@ export default function App() {
   const [examExitAsk, setExamExitAsk] = useState(null);
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
   const { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
+  // 차시 내 순서 강제(개념→실습→퀴즈) 흐름 상태 — 현재 차시 기준, localStorage 만 사용
+  const [conceptIdx, setConceptIdx] = useState(0);
+  const [tabNotice, setTabNotice] = useState(null);
+  const { flow, setConceptPassed, setPracticeDone } = useLessonFlow(typeof view === "number" ? view : null, user?.id);
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;
@@ -123,8 +128,13 @@ export default function App() {
   function selectLesson(id) {
     setView(id);
     setStep("concept");
+    setConceptIdx(0);
+    setTabNotice(null);
     document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
   }
+  // 단계 이동(개념/실습/퀴즈) — 진행 표시줄·완료 버튼 공용
+  function goStep(s) { setStep(s); setTabNotice(null); document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" }); }
+  function jumpTo(t) { if (t.step === "concept") setConceptIdx(t.idx); goStep(t.step); }
   function completeLesson(lid, score) { persistComplete(lid, score); setView("dash"); }
 
   function openGate(day) { setView(`gate-${day}`); document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" }); }
@@ -135,6 +145,9 @@ export default function App() {
   const gateDay = typeof view === "string" && view.startsWith("gate-") ? Number(view.slice(5)) : null;
   // 관리자 계정은 차시 잠금 없이 전체 접근
   const lessonLocked = currentLesson && !isAdmin && !isLessonUnlocked(currentLesson.id, dayClears);
+  // 순서 게이팅 우회: 관리자 또는 이미 완료한 차시(재방문 자유 이동)
+  const freeNav = isAdmin || (typeof view === "number" && !!progress[view]?.done);
+  const conceptsPassed = currentLesson ? allConceptsPassed(currentLesson, flow) : false;
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: UI.bg, color: UI.mut, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: UI.font }}>불러오는 중…</div>
@@ -218,17 +231,22 @@ export default function App() {
         <div style={{ position: "sticky", top: 0, zIndex: 20, background: UI.bg, borderBottom: `1px solid ${UI.line}`, padding: "12px 32px 0", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "flex-end" }}>
           {currentLesson && !lessonLocked && STEP_TABS.map(({ key, label, Icon }) => {
             const active = step === key;
+            // 실습 탭 = 개념 전부 통과 후, 퀴즈 탭 = 실습 채점 후 활성 (관리자·완료 차시는 항상)
+            const enabled = freeNav || key === "concept" || (key === "practice" && conceptsPassed) || (key === "quiz" && flow.practiceDone);
             return (
               <button
                 key={key}
-                onClick={() => { setStep(key); document.getElementById("main-content").scrollTo({ top: 0, behavior: "smooth" }); }}
+                onClick={() => {
+                  if (!enabled) { setTabNotice(key === "practice" ? "개념 학습을 먼저 끝내세요" : "실습 파일을 올려 채점하세요"); return; }
+                  goStep(key);
+                }}
                 style={{
                   background: active ? UI.surface : "transparent",
                   border: `1px solid ${active ? UI.line : "transparent"}`,
                   borderBottom: active ? `1px solid ${UI.surface}` : "1px solid transparent",
                   color: active ? UI.ink : UI.mut,
-                  padding: "9px 18px", borderRadius: "10px 10px 0 0", cursor: "pointer",
-                  fontSize: 13.5, fontWeight: active ? 700 : 500, marginBottom: -1,
+                  padding: "9px 18px", borderRadius: "10px 10px 0 0", cursor: enabled ? "pointer" : "not-allowed",
+                  fontSize: 13.5, fontWeight: active ? 700 : 500, marginBottom: -1, opacity: enabled ? 1 : 0.45,
                   display: "inline-flex", alignItems: "center", gap: 7, fontFamily: UI.font,
                 }}
               >
@@ -236,6 +254,9 @@ export default function App() {
               </button>
             );
           })}
+          {currentLesson && !lessonLocked && tabNotice && (
+            <span style={{ alignSelf: "center", marginBottom: 10, fontSize: 12.5, color: UI.warn, fontWeight: 600 }}>{tabNotice}</span>
+          )}
           <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
             {isAdmin && (
               <button onClick={guardNav(() => setPage("admin"))} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>관리자</button>
@@ -277,9 +298,9 @@ export default function App() {
             />
           )}
           {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} />}
-          {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} onNext={() => setStep("quiz")} addPracticeWrong={addPracticeWrong} resolvePracticeWrong={resolvePracticeWrong} />}
-          {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onNext={() => setStep("quiz")} onWrong={savePracticeWrong} />}
-          {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
+          {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} idx={conceptIdx} setIdx={setConceptIdx} onGoStep={goStep} addPracticeWrong={addPracticeWrong} resolvePracticeWrong={resolvePracticeWrong} flow={flow} setConceptPassed={setConceptPassed} unlockAll={freeNav} showAdminBadge={isAdmin} />}
+          {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onGoStep={goStep} onJump={jumpTo} onWrong={savePracticeWrong} flow={flow} setPracticeDone={setPracticeDone} unlockAll={freeNav} showAdminBadge={isAdmin} />}
+          {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onJump={jumpTo} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} flow={flow} unlockAll={freeNav} showAdminBadge={isAdmin} />}
         </div>
       </div>
 

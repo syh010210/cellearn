@@ -20,6 +20,13 @@ export default function AdminView({ onBack }) {
   const [visits, setVisits] = useState([]);
   const [visitDate, setVisitDate] = useState(() => kstDateStr());
   const [visitsLoading, setVisitsLoading] = useState(false);
+  // 수강(테스트) 계정 관리 (Edge Function admin-student)
+  const [students, setStudents] = useState([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [newUsername, setNewUsername] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [createMsg, setCreateMsg] = useState(null); // { ok, text }
+  const [createBusy, setCreateBusy] = useState(false);
 
   const totalLessons = LESSONS.length;
 
@@ -53,6 +60,53 @@ export default function AdminView({ onBack }) {
     setVisitsLoading(false);
   }
   useEffect(() => { if (tab === "visits") loadVisits(visitDate); /* eslint-disable-next-line */ }, [tab, visitDate, isAdmin]);
+
+  // ── 수강 계정 (Edge Function) ──────────────────────────────
+  // functions.invoke 가 세션 복원 직후엔 anon 키를 Authorization 으로 보내는 경우가 있어(→ 함수에서 401),
+  // 호출 직전에 현재 세션 access_token 을 직접 받아 Authorization 헤더로 명시한다.
+  // 비-2xx 시 error 본문은 error.context(Response)에 담기므로 서버 한글 메시지를 꺼낸다.
+  async function invokeAdminStudent(body) {
+    const { data: sess } = await supabase.auth.getSession();
+    const token = sess?.session?.access_token;
+    if (!token) return { error: "로그인 세션이 없습니다. 다시 로그인해 주세요." };
+    const { data, error: err } = await supabase.functions.invoke("admin-student", {
+      body,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (err) {
+      let msg = err.message || "요청 실패";
+      try { const j = await err.context.json(); if (j?.error) msg = j.error + (j.reason ? ` (${j.reason})` : ""); } catch { /* 무시 */ }
+      return { error: msg };
+    }
+    return { data };
+  }
+  async function loadStudents() {
+    if (!supabase || !isAdmin) return;
+    setStudentsLoading(true);
+    const { data, error: err } = await invokeAdminStudent({ action: "list" });
+    if (!err) setStudents(data?.students ?? []);
+    setStudentsLoading(false);
+  }
+  useEffect(() => { if (tab === "students") loadStudents(); /* eslint-disable-next-line */ }, [tab, isAdmin]);
+
+  async function createStudent(e) {
+    e?.preventDefault?.();
+    setCreateBusy(true); setCreateMsg(null);
+    const { error: err } = await invokeAdminStudent({ action: "create", username: newUsername.trim().toLowerCase(), password: newPassword });
+    setCreateBusy(false);
+    if (err) { setCreateMsg({ ok: false, text: err }); return; }
+    setCreateMsg({ ok: true, text: `${newUsername.trim().toLowerCase()} 생성됨, 2급 1년` });
+    setNewUsername(""); setNewPassword("");
+    loadStudents();
+  }
+  async function resetStudent(username) {
+    if (!window.confirm(`${username} 계정의 학습 기록(진도·일차·오답·응시)을 모두 지웁니다. 계속할까요?`)) return;
+    const { data, error: err } = await invokeAdminStudent({ action: "reset", username });
+    if (err) { alert(err); return; }
+    const d = data?.deleted || {};
+    alert(`${username} 초기화 완료 — 진도 ${d.progress ?? 0} · 일차 ${d.day_clears ?? 0} · 오답 ${d.wrong_notes ?? 0} · 응시 ${d.exam_attempts ?? 0}`);
+    loadStudents();
+  }
 
   // ── 파생 데이터 ─────────────────────────────────────────────
   const profById = useMemo(() => {
@@ -212,6 +266,7 @@ export default function AdminView({ onBack }) {
         {tabBtn("payments", "결제")}
         {tabBtn("progress", "진도")}
         {tabBtn("visits", "접속 현황")}
+        {tabBtn("students", "수강 계정")}
       </div>
 
       {error && <div style={{ color: UI.red, background: UI.redSoft, border: `1px solid ${UI.redLine}`, borderRadius: UI.rMd, padding: "12px 14px", marginBottom: 16, fontSize: 13 }}>데이터 조회 오류: {error}</div>}
@@ -427,6 +482,54 @@ export default function AdminView({ onBack }) {
                   </div>
                 </>
               )}
+            </div>
+          )}
+
+          {/* ── 수강 계정 ─────────────────────────── */}
+          {tab === "students" && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              {/* 수강 계정 만들기 */}
+              <div style={{ background: UI.panel, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: "18px 20px" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 12px" }}>수강 계정 만들기</h2>
+                <form onSubmit={createStudent} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <input value={newUsername} onChange={(e) => setNewUsername(e.target.value)} placeholder="아이디 (영문소문자·숫자·_ 3~20)"
+                    style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "9px 12px", fontSize: 13, fontFamily: UI.font, minWidth: 240 }} />
+                  <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="text" placeholder="비밀번호 (8자 이상)"
+                    style={{ border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "9px 12px", fontSize: 13, fontFamily: UI.font, minWidth: 200 }} />
+                  <button type="submit" disabled={createBusy} style={{ background: UI.teal, color: "#fff", border: "none", borderRadius: UI.rMd, padding: "9px 18px", fontSize: 13.5, fontWeight: 700, cursor: createBusy ? "default" : "pointer" }}>{createBusy ? "만드는 중…" : "만들기"}</button>
+                  <span style={{ fontSize: 12, color: UI.faint }}>도메인 @student.cellearn.kr · 로그인은 아이디만 입력</span>
+                </form>
+                {createMsg && <div style={{ marginTop: 10, fontSize: 13, fontWeight: 600, color: createMsg.ok ? UI.green : UI.red }}>{createMsg.text}</div>}
+              </div>
+
+              {/* 테스트 계정 목록 */}
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "6px 0 10px" }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>테스트 계정 목록</h2>
+                  <button onClick={loadStudents} style={{ background: UI.panel, border: `1px solid ${UI.line}`, color: UI.mut, padding: "6px 12px", borderRadius: 999, cursor: "pointer", fontSize: 12.5, fontWeight: 600 }}>↻ 새로고침</button>
+                </div>
+                {studentsLoading ? <div style={{ color: UI.mut }}>불러오는 중…</div> : (
+                  <div style={tableWrap}>
+                    <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                      <thead><tr>
+                        <th style={th}>아이디</th><th style={th}>생성일</th><th style={th}>수강권 만료</th><th style={th}>완료 차시</th><th style={th}>학습 초기화</th>
+                      </tr></thead>
+                      <tbody>
+                        {students.map((s) => (
+                          <tr key={s.user_id}>
+                            <td style={td}>{s.username}</td>
+                            <td style={tdNum}>{fmtDay(s.created_at)}</td>
+                            <td style={td}>{s.valid_to ? <span style={{ color: new Date(s.valid_to) > new Date() ? UI.green : UI.faint, fontWeight: 700 }}>~{fmtDay(s.valid_to)}</span> : <span style={{ color: UI.faint }}>없음</span>}</td>
+                            <td style={tdNum}>{s.done_count} / {totalLessons}</td>
+                            <td style={td}><button onClick={() => resetStudent(s.username)} style={{ background: UI.redSoft, color: UI.red, border: `1px solid ${UI.redLine}`, borderRadius: UI.rMd, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}>학습 초기화</button></td>
+                          </tr>
+                        ))}
+                        {students.length === 0 && <tr><td style={td} colSpan={5}>수강 계정이 없습니다.</td></tr>}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </>

@@ -154,6 +154,7 @@ computil-platform/
 - 스타일은 인라인 스타일 사용 (Tailwind 클래스 혼용 금지)
 - 현재 상태 관리는 React useState (Supabase 연동 전)
 - 모바일에서는 랜딩/커리큘럼/가격만 표시, 학습 기능 전체 차단
+- dev 서버는 Claude Code가 띄우지 않는다. 사용자가 `npm run dev`를 직접 실행한다. (포트 5173 고정 · strictPort)
 
 ---
 

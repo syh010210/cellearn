@@ -16,7 +16,10 @@ export default function LoginView({ onNeedAccount }) {
   async function submit(e) {
     e.preventDefault();
     setErr(""); setBusy(true);
-    const { error } = await signIn({ email, password });
+    // 수강(테스트) 계정은 아이디만 입력 — '@'가 없으면 학생 도메인을 붙여 로그인한다. (일반 이메일은 그대로)
+    const id = email.trim();
+    const loginEmail = id.includes("@") ? id : `${id}@student.cellearn.kr`;
+    const { error } = await signIn({ email: loginEmail, password });
     setBusy(false);
     if (error) setErr(krAuthError(error, "로그인에 실패했습니다."));
   }
@@ -27,7 +30,7 @@ export default function LoginView({ onNeedAccount }) {
       <div style={S.sub}>수강생 계정으로 로그인하면 실습이 열립니다.</div>
 
       <label style={S.label}>이메일</label>
-      <input style={S.input} type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input style={S.input} type="text" required value={email} onChange={(e) => setEmail(e.target.value)} />
 
       <label style={S.label}>비밀번호</label>
       <PasswordInput style={S.input} required value={password} onChange={(e) => setPassword(e.target.value)} />

@@ -1,8 +1,9 @@
 import { useState, useLayoutEffect } from "react";
 import { PenLine } from "lucide-react";
+import LessonProgress from "./LessonProgress";
 import { UI } from "../../theme";
 
-export default function QuizView({ lesson, onDone, onSaveWrong }) {
+export default function QuizView({ lesson, onDone, onSaveWrong, onJump, flow, unlockAll = false, showAdminBadge = false }) {
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [show, setShow] = useState(null);
@@ -27,6 +28,7 @@ export default function QuizView({ lesson, onDone, onSaveWrong }) {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      {flow && <LessonProgress lesson={lesson} flow={flow} step="quiz" unlockAll={unlockAll} showAdminBadge={showAdminBadge} onJump={onJump} />}
       <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
         <PenLine size={15} strokeWidth={2} /> 복습 퀴즈
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import MiniExcel from "./MiniExcel";
+import LessonProgress from "./LessonProgress";
 import { DIAGRAM_REGISTRY } from "../diagrams/registry.js";
 import { generateExcel } from "../../utils/excelGenerator";
 import { FUNCTION_SYNTAX } from "../../data/functionSyntax.js";
@@ -100,19 +101,73 @@ function renderBlock(block, i, lesson) {
   return null;
 }
 
-export default function ConceptView({ lesson, onNext, addPracticeWrong, resolvePracticeWrong }) {
-  const [idx, setIdx] = useState(0);
+export default function ConceptView({ lesson, idx: idxProp, setIdx: setIdxProp, onGoStep, onNext, addPracticeWrong, resolvePracticeWrong, flow, setConceptPassed, unlockAll = false, showAdminBadge = false, finalLabel }) {
+  // flow 가 없으면(무료 체험 등) 게이팅·진행 표시줄 없이 자유 이동 — 기존 동작 유지.
+  const gated = !!flow;
+  const flowSafe = flow || { concepts: {}, practiceDone: false };
+  const passConcept = setConceptPassed || (() => {});
+  const [localIdx, setLocalIdx] = useState(0);
+  const idx = idxProp ?? localIdx;
+  const setIdx = setIdxProp ?? setLocalIdx;
+
   const c = lesson.concepts[idx];
+  const practiceCount = c.practices ? c.practices.length : (c.practice ? 1 : 0);
+  // 이번 세션의 문제 통과 신호. 게이팅은 저장된 flow.concepts[idx].passed 로 판단하므로,
+  // 새로고침 후에도 통과 상태는 유지된다(이 맵은 통과를 flow 에 '올리는' 용도).
+  const [passMap, setPassMap] = useState({}); // { "idx-pi": 'graded' | 'revealed' }
+  const [tutorialActive, setTutorialActive] = useState(false); // 따라 하기 진행 중이면 잠금 안내 대신 말풍선만
+  // 따라 하기: 1차시 개념1(전체) · 개념3 첫 문제(F4 한 단계)에서만
+  const tutorialFor = (pi) => {
+    if (lesson.id !== 1 || pi !== 0) return undefined;
+    if (idx === 0) return { kind: "full" };
+    if (idx === 2) return { kind: "f4" };
+    return undefined;
+  };
 
   useEffect(() => {
     document.getElementById("main-content")?.scrollTo({ top: 0, behavior: "smooth" });
   }, [idx]);
 
+  // 미니 엑셀 문제가 없는 개념은 읽기만으로 통과
+  useEffect(() => {
+    if (gated && practiceCount === 0 && !flowSafe.concepts?.[idx]?.passed) passConcept(idx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, practiceCount, gated]);
+
+  const conceptPassed = !gated || unlockAll || !!flowSafe.concepts?.[idx]?.passed || practiceCount === 0;
+  const canGo = (i) => !gated || unlockAll || i === idx || !!flowSafe.concepts?.[i]?.passed;
+  const isLast = idx >= lesson.concepts.length - 1;
+  const lastLabel = finalLabel ?? (onGoStep ? "개념 완료 → 실습" : "개념 완료 → 퀴즈 풀기");
+  const goFinal = () => { if (onGoStep) onGoStep("practice"); else onNext?.(); };
+
+  // 현재 개념의 모든 문제가 통과되면 개념 통과로 기록. graded 는 revealed 로 덮지 않는다.
+  function markPractice(pi, via) {
+    setPassMap((m) => {
+      if (m[`${idx}-${pi}`] === "graded") return m;
+      const nm = { ...m, [`${idx}-${pi}`]: via };
+      const keys = Array.from({ length: practiceCount }, (_, k) => `${idx}-${k}`);
+      if (keys.every((k) => nm[k])) passConcept(idx, { revealed: keys.some((k) => nm[k] === "revealed") });
+      return nm;
+    });
+  }
+
+  const navBtn = (enabled, primary) => ({
+    flex: primary ? 2 : 1, padding: 13, borderRadius: UI.rMd,
+    border: primary ? "none" : `1px solid ${UI.line}`,
+    background: primary ? (enabled ? UI.teal : "#cfd6d2") : UI.surface,
+    color: primary ? "#fff" : (enabled ? UI.mut : "#c2cac6"),
+    cursor: enabled ? "pointer" : "not-allowed", fontWeight: primary ? 700 : 600,
+  });
+
   return (
     <div style={{ maxWidth: 1040, margin: "0 auto" }}>
-      <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 16 }}>
-        개념 학습 · {idx + 1}/{lesson.concepts.length}
-      </div>
+      {gated && (
+        <LessonProgress
+          lesson={lesson} flow={flow} step="concept" conceptIdx={idx}
+          unlockAll={unlockAll} showAdminBadge={showAdminBadge}
+          onJump={(t) => { if (t.step === "concept") { if (canGo(t.idx)) setIdx(t.idx); } else onGoStep?.(t.step); }}
+        />
+      )}
 
       <div key={idx} className="cl-fade-up" style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 28, marginBottom: 16 }}>
         <h3 style={{ color: UI.ink, fontSize: 20, fontWeight: 800, marginBottom: 16 }}>{c.heading}</h3>
@@ -124,44 +179,47 @@ export default function ConceptView({ lesson, onNext, addPracticeWrong, resolveP
           const sheetLabel = `${lesson.id}차시 개념${idx + 1} 실습`;
           const wrongCb = (pi) => (w) => addPracticeWrong?.(lesson.id, { source: "mini", conceptIdx: idx, practiceIdx: pi, cell: w.cell, sheet: sheetLabel, studentFormula: w.studentInput, formula: w.answer, reason: w.reason });
           const resolveCb = (pi) => (w) => resolvePracticeWrong?.(lesson.id, { source: "mini", conceptIdx: idx, practiceIdx: pi, cell: w.cell, sheet: sheetLabel });
+          const gradedCb = (pi) => (passed) => { if (passed) markPractice(pi, "graded"); };
+          const revealCb = (pi) => () => markPractice(pi, "revealed");
           return c.practices
-            ? c.practices.map((p, pi) => <MiniExcel key={`${idx}-p${pi}`} practice={p} onPracticeWrong={wrongCb(pi)} onPracticeResolve={resolveCb(pi)} />)
-            : c.practice && <MiniExcel key={idx} practice={c.practice} onPracticeWrong={wrongCb(0)} onPracticeResolve={resolveCb(0)} />;
+            ? c.practices.map((p, pi) => <MiniExcel key={`${idx}-p${pi}`} practice={p} onPracticeWrong={wrongCb(pi)} onPracticeResolve={resolveCb(pi)} onGraded={gradedCb(pi)} onRevealConfirm={revealCb(pi)} tutorial={tutorialFor(pi)} onTutorialActive={setTutorialActive} />)
+            : c.practice && <MiniExcel key={idx} practice={c.practice} onPracticeWrong={wrongCb(0)} onPracticeResolve={resolveCb(0)} onGraded={gradedCb(0)} onRevealConfirm={revealCb(0)} tutorial={tutorialFor(0)} onTutorialActive={setTutorialActive} />;
         })()}
       </div>
 
-      {/* 진행 점 */}
-      <div style={{ display: "flex", gap: 6, marginBottom: 20, justifyContent: "center" }}>
+      {/* 진행 점 (통과·현재 개념만 이동) */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 12, justifyContent: "center" }}>
         {lesson.concepts.map((_, i) => (
           <div
             key={i}
-            onClick={() => setIdx(i)}
-            style={{ width: 10, height: 10, borderRadius: "50%", background: i === idx ? UI.teal : i < idx ? UI.green : "#d3dad6", cursor: "pointer" }}
+            onClick={() => { if (canGo(i)) setIdx(i); }}
+            style={{ width: 10, height: 10, borderRadius: "50%", background: i === idx ? UI.teal : flowSafe.concepts?.[i]?.passed ? UI.green : "#d3dad6", cursor: canGo(i) ? "pointer" : "default", opacity: canGo(i) ? 1 : 0.4 }}
           />
         ))}
       </div>
 
+      {/* 잠금 안내 (따라 하기 중에는 말풍선만 보이게 숨김) */}
+      {!conceptPassed && !tutorialActive && (
+        <div style={{ textAlign: "center", color: UI.mut, fontSize: 13, marginBottom: 12 }}>
+          아래 문제를 풀고 채점을 통과하면 다음 개념이 열립니다.
+        </div>
+      )}
+
       <div style={{ display: "flex", gap: 12 }}>
         <button
           disabled={idx === 0}
-          onClick={() => setIdx((i) => i - 1)}
-          style={{ flex: 1, padding: 13, borderRadius: UI.rMd, border: `1px solid ${UI.line}`, background: UI.surface, color: idx === 0 ? "#c2cac6" : UI.mut, cursor: idx === 0 ? "not-allowed" : "pointer", fontWeight: 600 }}
+          onClick={() => setIdx(idx - 1)}
+          style={navBtn(idx !== 0, false)}
         >
           ← 이전
         </button>
-        {idx < lesson.concepts.length - 1 ? (
-          <button
-            onClick={() => setIdx((i) => i + 1)}
-            style={{ flex: 2, padding: 13, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", cursor: "pointer", fontWeight: 700 }}
-          >
+        {!isLast ? (
+          <button disabled={!conceptPassed} onClick={() => { if (conceptPassed) setIdx(idx + 1); }} style={navBtn(conceptPassed, true)}>
             다음 개념 →
           </button>
         ) : (
-          <button
-            onClick={onNext}
-            style={{ flex: 2, padding: 13, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", cursor: "pointer", fontWeight: 700 }}
-          >
-            개념 완료 → 퀴즈 풀기
+          <button disabled={!conceptPassed} onClick={() => { if (conceptPassed) goFinal(); }} style={navBtn(conceptPassed, true)}>
+            {lastLabel}
           </button>
         )}
       </div>

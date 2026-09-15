@@ -59,7 +59,7 @@ export function useKeyboard(ctx) {
     const {
       selection, cells, inputRef, undo, redo, copySelection, pasteClipboard,
       moveSelection, selectSingle, deleteSelection, enterEditMode,
-      editModeRef, lastEditWasTypeRef, nextCursorPos, setInputVal,
+      editModeRef, lastEditWasTypeRef, nextCursorPos, setInputVal, onEvent,
     } = ctx;
     if (!selection) return;
     // 입력창이 포커스면 컨테이너 핸들러는 무시 (input onKeyDown이 처리)
@@ -95,6 +95,7 @@ export function useKeyboard(ctx) {
       lastEditWasTypeRef.current = true;
       nextCursorPos.current = null;
       setInputVal(key);
+      onEvent?.({ type: "typing", value: key });
       // 입력 모드 진입: nextCursorPos에 의존하지 않고 포커스 직후 같은 콜백에서 커서를 끝으로.
       setTimeout(() => {
         const el = inputRef.current;
@@ -108,7 +109,7 @@ export function useKeyboard(ctx) {
     const {
       selected, pointRef, ac, setAcIndex, acIndex, insertFunction, acClosedRef,
       inputVal, inputRef, nextSelRef, nextCursorPos, lastEditWasTypeRef, setInputVal,
-      commitInput, clamp, selectSingle, containerRef, cells, editModeRef, parseA1,
+      commitInput, clamp, selectSingle, containerRef, cells, editModeRef, parseA1, onEvent,
     } = ctx;
     if (!selected) return;
     const { ri, ci } = selected;
@@ -138,6 +139,7 @@ export function useKeyboard(ctx) {
       const selection = selE > selS ? { start: selS, end: selE } : null;
       const r = cycleReference(inputVal, selS, selection, pointSpan);
       setInputVal(r.text);
+      onEvent?.({ type: "f4", value: r.text });
       if (r.selection) nextSelRef.current = { start: r.selection.start, end: r.selection.end };
       else nextCursorPos.current = r.cursor;
       // 규칙1이면 연속 F4를 위해 pointRef의 끝/$플래그 갱신 (정규식 없이 span.dollar 사용)

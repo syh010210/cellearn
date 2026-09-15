@@ -4,10 +4,11 @@ import {
   ArrowRight, Repeat, CheckCircle2, AlertTriangle, Lightbulb, GraduationCap, ChevronRight,
   Lock, CheckSquare, Square,
 } from "lucide-react";
+import { userKey } from "../../lib/userScope";
 import { UI } from "../../theme";
 
 const STEP_COUNT = 4;
-const LS_KEY = "cellearn_ot_checked";
+const otKey = () => userKey("ot:checked"); // cellearn:{uid}:ot:checked · 로그인 전(uid 없음)이면 null
 
 // 오리엔테이션(OT) — 학습 흐름과 매일의 루틴을 실제 첫 수업처럼 안내한다.
 // 사이드바에서 "실전 모드"와 "1일차" 사이에 위치한다.
@@ -17,14 +18,16 @@ export default function OTView({ onStart, onComplete, otDone = false }) {
   const [checked, setChecked] = useState(() => {
     if (otDone) return Array(STEP_COUNT).fill(true);
     try {
-      const v = JSON.parse(localStorage.getItem(LS_KEY));
+      const k = otKey();
+      const v = k ? JSON.parse(localStorage.getItem(k)) : null;
       if (Array.isArray(v) && v.length === STEP_COUNT) return v.map(Boolean);
     } catch { /* noop */ }
     return Array(STEP_COUNT).fill(false);
   });
 
   useEffect(() => {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(checked)); } catch { /* noop */ }
+    const k = otKey();
+    if (k) { try { localStorage.setItem(k, JSON.stringify(checked)); } catch { /* noop */ } }
   }, [checked]);
 
   const allDone = checked.every(Boolean);

@@ -2,9 +2,10 @@ import { useState, useRef } from "react";
 import { FolderOpen, Download, Upload, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { generateExcel } from "../../utils/excelGenerator";
 import { gradeExcel } from "../../utils/excelGrader";
+import LessonProgress from "./LessonProgress";
 import { UI } from "../../theme";
 
-export default function PracticeView({ lesson, onNext, onWrong }) {
+export default function PracticeView({ lesson, onGoStep, onJump, onWrong, flow, setPracticeDone, unlockAll = false, showAdminBadge = false }) {
   const [gradeResult, setGradeResult] = useState(null);
   const [checking, setChecking] = useState(false);
   const [uploaded, setUploaded] = useState(false);
@@ -20,6 +21,7 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
       onWrong(lesson.id, wrongItems);
       setGradeResult(results);
       setUploaded(true);
+      setPracticeDone?.(); // 업로드 채점 1회 이상 = 실습 완료(전부 정답 요구 안 함)
     } catch {
       alert("파일을 읽는 중 오류가 발생했어요.");
     }
@@ -33,6 +35,7 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto" }}>
+      {flow && <LessonProgress lesson={lesson} flow={flow} step="practice" unlockAll={unlockAll} showAdminBadge={showAdminBadge} onJump={onJump} />}
       <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
         <FolderOpen size={15} strokeWidth={2} /> 엑셀 실습
       </div>
@@ -108,12 +111,12 @@ export default function PracticeView({ lesson, onNext, onWrong }) {
         </div>
       )}
 
-      {uploaded && (
+      {(uploaded || flow?.practiceDone) && (
         <button
-          onClick={onNext}
+          onClick={() => onGoStep("quiz")}
           style={{ width: "100%", padding: 14, borderRadius: UI.rMd, border: "none", background: UI.teal, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer" }}
         >
-          복습 퀴즈 풀기 →
+          실습 완료 → 퀴즈
         </button>
       )}
     </div>

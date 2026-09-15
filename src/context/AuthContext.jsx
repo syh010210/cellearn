@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { setUserScope } from "../lib/userScope";
 
 const AuthContext = createContext(null);
 
@@ -142,6 +143,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const user = session?.user ?? null;
+  // 사용자별 localStorage 스코프를 렌더 중 갱신 → 자식(App·MiniExcel·Exam*)이 같은 렌더에서 올바른 uid 를 본다.
+  setUserScope(user?.id ?? null);
   const isAuthed = !!user;
   const isAdmin = profile?.role === "admin";
   const hasActiveEnrollment = (enrollments?.length ?? 0) > 0;
