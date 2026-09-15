@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Download, Upload, CheckCircle2, XCircle } from "lucide-react";
-import { buildExamFile } from "../../utils/examBuilder";
+import { buildExamFile, examFileName } from "../../utils/examBuilder";
 import { gradeExamFile } from "../../utils/examGrader";
 import { useExamAttempts } from "../../hooks/useExamAttempts";
+import { scrollExamTop } from "../../utils/examScroll";
+import { armExamGuard, disarmExamGuard } from "../../utils/examGuard";
 import { UI } from "../../theme";
 
 // 실전 응시 화면 — 문제 세트가 정해진 뒤: 시작(다운로드+타이머) → 풀이 → 업로드 → 채점 → 결과.
@@ -11,6 +13,7 @@ import { UI } from "../../theme";
 const EXAM_MS = 40 * 60 * 1000; // 40분
 const CURRENT_KEY = "exam:current";
 const ATT_KEY = (id) => `exam:attempt:${id}`;
+const TAB_KEY = "exam:tab"; // sessionStorage — 같은 탭 새로고침 판별용(응시 id)
 const mmss = (ms) => {
   const s = Math.floor(Math.abs(ms) / 1000);
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -22,12 +25,15 @@ const itemKey = (pid, no) => `${pid}:${no ?? 0}`;
 // 시트 칩은 작업(section) 단위로 묶는다. (계산작업 5문제 → "계산작업" 칩 하나)
 const SECTION_LABEL = { "기본2": "기본작업-2", "기본3": "기본작업-3", "계산": "계산작업", "분석": "분석작업", "매크로": "매크로작업", "차트": "차트작업" };
 
-export default function ExamPanel({ problems, label = "", seed = null, onReset }) {
+const DIFF_LABEL = { basic: "기본", hard: "어려움" };
+export default function ExamPanel({ problems, label = "", seed = null, difficulty = "basic", onReset }) {
   const mono = { fontFamily: UI.mono };
   const [phase, setPhase] = useState("idle"); // idle | running | graded
   const [attemptId, setAttemptId] = useState(null);
-  const [elapsedMs, setElapsedMs] = useState(0);
+  const [startedAt, setStartedAt] = useState(null); // 응시 시작 벽시계(Date.now). 저장하는 시간은 이것뿐.
+  const [elapsedMs, setElapsedMs] = useState(0); // 표시용 파생값(= now - startedAt). running 중 1초마다 갱신, graded 시 고정.
   const [flags, setFlags] = useState({});
+  const rootRef = useRef(null);
   const [result, setResult] = useState(null);
   const [checking, setChecking] = useState(false);
   const [activeSection, setActiveSection] = useState(null);
@@ -35,10 +41,12 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
   const [saved, setSaved] = useState(false); // 서버 저장 성공 여부(결과 화면 표시용)
   const fileRef = useRef();
   const { saveExamAttempt } = useExamAttempts();
+  const [narrow, setNarrow] = useState(typeof window !== "undefined" && window.innerWidth < 900);
+  useEffect(() => { const on = () => setNarrow(window.innerWidth < 900); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
 
-  // 최신 값 참조(이탈 저장·틱 클로저용)
+  // 최신 값 참조(틱·정리 클로저용)
   const ref = useRef({});
-  ref.current = { attemptId, elapsedMs, flags, phase, problems, label, seed };
+  ref.current = { attemptId, startedAt, elapsedMs, flags, phase, problems, label, seed, difficulty };
 
   const persist = useCallback((over = {}) => {
     const c = ref.current;
@@ -49,19 +57,22 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
       phase: over.phase ?? c.phase,
       label: c.label,
       seed: c.seed,
+      difficulty: c.difficulty,
       problemIds: c.problems.map((p) => p.id),
       problem_set: c.problems, // ExamView 가 마운트 시 응시 세트를 복원할 수 있게 스냅샷
-      elapsedMs: over.elapsedMs ?? c.elapsedMs,
+      startedAt: over.startedAt ?? c.startedAt, // 경과는 저장하지 않는다 — 시작 시각만. 경과는 벽시계로 계산.
       flags: over.flags ?? c.flags,
     };
-    if (over.graded) Object.assign(data, over.graded); // 채점 스냅샷(서버 saveExamAttempt 와 동일 데이터)
+    if (over.graded) Object.assign(data, over.graded); // 채점 스냅샷(서버 saveExamAttempt 와 동일 데이터 + elapsed_ms)
     try {
       localStorage.setItem(ATT_KEY(id), JSON.stringify(data));
       localStorage.setItem(CURRENT_KEY, id);
     } catch { /* 저장 실패 무시 */ }
   }, []);
 
-  // 마운트 시 저장된 응시 복원: 진행 중이면 이어 세고, 채점 완료면 결과 화면을 되살린다.
+  // 마운트 시 저장된 응시 복원. ExamView 가 탭 판별(같은 탭 새로고침만 이어감)을 이미 끝낸 뒤라
+  // 여기 도달한 응시는 이어가도 되는 것. 진행 중이면 시작 시각(startedAt)만 복원하고 경과는
+  // 벽시계로 다시 계산한다. 채점 완료면 결과 화면과 고정된 경과를 되살린다.
   useEffect(() => {
     try {
       const cur = localStorage.getItem(CURRENT_KEY);
@@ -69,35 +80,45 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
       const a = JSON.parse(localStorage.getItem(ATT_KEY(cur)) || "null");
       if (!a) return;
       setAttemptId(a.attemptId);
-      setElapsedMs(a.elapsedMs || 0);
+      setStartedAt(a.startedAt || null);
       setFlags(a.flags || {});
-      if (a.phase === "graded") { setResult(a.result || null); setSaved(!!a.saved); setPhase("graded"); }
-      else setPhase("running");
+      if (a.phase === "graded") { setElapsedMs(a.elapsed_ms || 0); setResult(a.result || null); setSaved(!!a.saved); setPhase("graded"); }
+      else { setElapsedMs(a.startedAt ? Date.now() - a.startedAt : 0); setPhase("running"); }
     } catch { /* 무시 */ }
   }, []);
 
-  // 1초 틱 — 화면이 보일 때만 흐른다(벽시계로 따라잡지 않음).
+  // 1초 틱 — 경과는 벽시계(now - startedAt). 화면이 가려져도, 새로고침·탭 전환·최소화 중에도
+  // 시간은 계속 흐른다. 탭이 백그라운드로 스로틀되어도 다시 활성화되면 벽시계라 자동으로 맞는다.
+  useEffect(() => {
+    if (phase !== "running" || !startedAt) return;
+    const update = () => setElapsedMs(Date.now() - startedAt);
+    update();
+    const iv = setInterval(update, 1000);
+    return () => clearInterval(iv);
+  }, [phase, startedAt]);
+
+  // 창·탭 닫기(또는 새로고침) 시 브라우저 기본 확인창. 실제로 닫히면 sessionStorage 의 exam:tab 이
+  // 사라져 다음 접속에서 응시가 폐기된다(ExamView 의 탭 판별). 여기선 별도 저장을 하지 않는다.
   useEffect(() => {
     if (phase !== "running") return;
-    const iv = setInterval(() => {
-      if (document.visibilityState !== "visible") return;
-      setElapsedMs((ms) => { const n = ms + 1000; persist({ elapsedMs: n }); return n; });
-    }, 1000);
-    return () => clearInterval(iv);
-  }, [phase, persist]);
+    const onBeforeUnload = (e) => { e.preventDefault(); e.returnValue = ""; return ""; };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [phase]);
 
-  // 페이지 이탈 시 경과 저장.
+  // 앱 내 이동 종료 확인용 가드 — 응시 중일 때만 무장. [종료] 시 실행할 정리(스냅샷 삭제)를 등록한다.
   useEffect(() => {
-    const save = () => persist();
-    document.addEventListener("visibilitychange", save);
-    window.addEventListener("pagehide", save);
-    window.addEventListener("beforeunload", save);
-    return () => {
-      document.removeEventListener("visibilitychange", save);
-      window.removeEventListener("pagehide", save);
-      window.removeEventListener("beforeunload", save);
-    };
-  }, [persist]);
+    if (phase !== "running") { disarmExamGuard(); return; }
+    armExamGuard(() => {
+      try {
+        const id = ref.current.attemptId;
+        if (id) localStorage.removeItem(ATT_KEY(id));
+        localStorage.removeItem(CURRENT_KEY);
+        sessionStorage.removeItem(TAB_KEY);
+      } catch { /* 무시 */ }
+    });
+    return () => disarmExamGuard();
+  }, [phase]);
 
   const sections = [...new Set(problems.map((p) => p.section).filter(Boolean))];
   const shown = activeSection ? problems.filter((p) => p.section === activeSection) : problems;
@@ -107,16 +128,22 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
 
   function startExam() {
     const id = (crypto?.randomUUID?.() || String(Date.now()));
-    setAttemptId(id); setElapsedMs(0); setFlags({}); setResult(null); setPhase("running");
-    persist({ attemptId: id, elapsedMs: 0, flags: {}, phase: "running" });
+    const now = Date.now();
+    setAttemptId(id); setStartedAt(now); setElapsedMs(0); setFlags({}); setResult(null); setPhase("running");
+    try { sessionStorage.setItem(TAB_KEY, id); } catch { /* 무시 */ } // 같은 탭 새로고침 판별
+    persist({ attemptId: id, startedAt: now, flags: {}, phase: "running" });
     buildExamFile(problems, label, id);
+    scrollExamTop(rootRef.current);
   }
   function redownload() { buildExamFile(problems, label, attemptId || ""); }
   function toggleFlag(key) { setFlags((f) => { const n = { ...f, [key]: !f[key] }; persist({ flags: n }); return n; }); }
   function onPick(e) { const f = e.target.files[0]; if (f) setConfirm(f); e.target.value = ""; }
   async function doGrade() {
     const f = confirm; setConfirm(null); if (!f) return;
+    // 채점 시각 기준으로 경과를 확정(벽시계). 이후 틱은 phase!=="running" 이라 멈춘다.
+    if (ref.current.startedAt) setElapsedMs(Date.now() - ref.current.startedAt);
     setChecking(true); setPhase("graded");
+    scrollExamTop(rootRef.current);
     try {
       const res = await gradeExamFile(f, problems);
       setResult(res);
@@ -133,6 +160,7 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
   function buildAttemptSnapshot(res) {
     const c = ref.current;
     const ps = c.problems;
+    const elapsed = c.startedAt ? Date.now() - c.startedAt : 0; // 채점 시각 - 시작 시각(벽시계)
     const items = [];
     for (const p of ps) {
       const r = res.find((x) => x.id === p.id);
@@ -144,17 +172,17 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
     }
     return {
       seed: c.seed || ps.map((p) => p.id).join(","), // 기본2 조립 시드(있으면), 없으면 문제 id 목록
-      config: { sections: [...new Set(ps.map((p) => p.section))] },
+      config: { sections: [...new Set(ps.map((p) => p.section))], difficulty: c.difficulty },
       problem_set: ps,
       items,
       correct: items.filter((i) => i.ok).length,
       total: items.length,
-      elapsed_ms: c.elapsedMs,
-      overtime: c.elapsedMs > EXAM_MS,
+      elapsed_ms: elapsed,
+      overtime: elapsed > EXAM_MS,
       result: res, // 결과 화면 복원용
     };
   }
-  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); } catch { /* 무시 */ } setPhase("idle"); setAttemptId(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
+  function clearAttempt() { try { if (attemptId) localStorage.removeItem(ATT_KEY(attemptId)); localStorage.removeItem(CURRENT_KEY); sessionStorage.removeItem(TAB_KEY); } catch { /* 무시 */ } disarmExamGuard(); setPhase("idle"); setAttemptId(null); setStartedAt(null); setElapsedMs(0); setFlags({}); setResult(null); setSaved(false); }
   function newAttempt() { clearAttempt(); if (onReset) onReset(); } // 새 응시: 세트도 초기화(새 시드)
   function replayAttempt() { clearAttempt(); } // 같은 문제 다시 풀기: 같은 세트·시드 유지, 새 attempt
 
@@ -166,7 +194,7 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
   const timerNum = phase === "idle" ? "40:00" : over ? `+${mmss(remaining)}` : mmss(remaining);
 
   // ── 스타일 ──
-  const wrap = { fontFamily: UI.font }; // 폭은 상위 ExamView 컨테이너(760)를 그대로 사용
+  const wrap = { fontFamily: UI.font, paddingTop: narrow ? 44 : 0 }; // 좁은 화면: 상단 고정 배너 높이만큼 여백
   const card = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 16, marginBottom: 12 };
   // 범위 표기: 글꼴은 본문 그대로, 연한 배경 + 좌우 여백만 (모노·자간 없음)
   // fontFamily:"inherit" 를 명시해 <code>/<span> 의 브라우저 기본 monospace 를 덮는다.
@@ -256,14 +284,41 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
   const totalEarned = result ? result.reduce((s, r) => s + (r.earned ?? r.correct ?? 0), 0) : 0;
   const totalMax = result ? result.reduce((s, r) => s + (r.totalPoints ?? r.total ?? 0), 0) : 0;
 
+  const totalFlags = flagCountFor(null);
+  const fileName = examFileName(label);
+  // 타이머 고정 배너: 넓은 화면=우측·뷰포트 40% 높이, 좁은 화면=상단 가로
+  const banner = narrow
+    ? { position: "fixed", top: 0, left: 0, right: 0, zIndex: 40, display: "flex", alignItems: "center", justifyContent: "center", gap: 14, padding: "8px 12px", background: UI.surface, borderBottom: `1px solid ${UI.line}`, boxShadow: UI.shadow }
+    : { position: "fixed", top: "40vh", right: 16, zIndex: 40, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "16px 20px", width: 200, background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, boxShadow: UI.shadow };
+
   return (
-    <div style={wrap}>
-      {/* 헤더: 회차 라벨 + 타이머 */}
-      <div style={{ ...card, display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-        <div style={{ fontWeight: 700, color: UI.ink, fontSize: 14 }}>실전 모의고사{label ? ` · ${label}` : ""}</div>
-        <div style={{ fontSize: 20, fontWeight: 700, color: phase === "idle" ? UI.faint : timerColor }}>
+    <div ref={rootRef} style={wrap}>
+      {/* 타이머 고정 배너 (스크롤해도 보임) */}
+      <div style={banner}>
+        <div style={{ fontSize: narrow ? 18 : 34, fontWeight: 700, color: phase === "idle" ? UI.faint : timerColor }}>
           <span style={mono}>{timerNum}</span>{over && phase !== "idle" ? " 초과" : ""}
         </div>
+        <div style={{ fontSize: 12, color: UI.mut }}>표시 {totalFlags}</div>
+      </div>
+
+      {/* 헤더: 회차 라벨 + 다운로드 영역(시작 전 시작 버튼 / 시작 후 파일명+다시받기) */}
+      <div style={{ ...card, marginBottom: 12 }}>
+        <div style={{ fontWeight: 700, color: UI.ink, fontSize: 14, marginBottom: 10 }}>
+          실전 모의고사{label ? ` · ${label}` : ""}
+          {problems.some((p) => p.section === "기본2") && <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 700, color: UI.teal }}>기본작업-2 {DIFF_LABEL[difficulty] || "기본"}</span>}
+        </div>
+        {phase === "idle" ? (
+          <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={startExam}>
+            <Download size={16} /> 시험 시작 (파일 다운로드)
+          </button>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, color: UI.ink, fontWeight: 600, wordBreak: "break-all" }}>{fileName}</span>
+            <button style={{ ...btn(UI.surface, UI.teal), border: `1px solid ${UI.line}`, padding: "8px 12px", fontSize: 13, marginLeft: "auto" }} onClick={redownload}>
+              <Download size={14} /> 파일 다시 받기
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 시트 칩 (작업 단위) */}
@@ -298,20 +353,12 @@ export default function ExamPanel({ problems, label = "", seed = null, onReset }
       {/* 지문 영역 */}
       {shown.map(renderProblem)}
 
-      {/* 하단 버튼 */}
-      {phase === "idle" && (
-        <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={startExam}>
-          <Download size={16} /> 시험 시작 (파일 다운로드)
-        </button>
-      )}
+      {/* 하단 버튼 (시작 버튼·파일 다시 받기는 상단 헤더로 이동) */}
       {phase === "running" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <input ref={fileRef} type="file" accept=".xlsx,.xlsm" onChange={onPick} style={{ display: "none" }} />
           <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={() => fileRef.current.click()} disabled={checking}>
             <Upload size={16} /> {checking ? "채점 중..." : "완성 파일 업로드"}
-          </button>
-          <button style={{ ...btn(UI.surface, UI.teal), width: "100%", border: `1px solid ${UI.line}` }} onClick={redownload}>
-            파일 다시 받기
           </button>
         </div>
       )}

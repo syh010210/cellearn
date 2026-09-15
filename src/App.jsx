@@ -20,6 +20,7 @@ import TrialView from "./components/lesson/TrialView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
 import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
+import { isExamGuarded, endExamAttempt } from "./utils/examGuard";
 import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
 import { UI } from "./theme";
 
@@ -42,6 +43,8 @@ export default function App() {
   // 제품 CTA로 선택한 학습 과정(급수)과, 인증 화면 초기 모드
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [authMode, setAuthMode] = useState("login");
+  // 실전 응시(phase=running) 중 앱 내 다른 화면으로 이동하려 하면 종료 확인. 확정 이동 함수를 담아둔다.
+  const [examExitAsk, setExamExitAsk] = useState(null);
   // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
   const { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
 
@@ -70,6 +73,12 @@ export default function App() {
     if (page === "auth" && isAuthed) setPage("learn");
     if (page === "checkout" && hasActiveEnrollment) setPage("learn");
   }, [page, isAuthed, hasActiveEnrollment]);
+
+  // 응시 중이면 이동을 붙잡고 종료 확인 모달을 띄운다. 아니면 즉시 이동.
+  const guardNav = (fn) => (...args) => {
+    if (isExamGuarded()) setExamExitAsk(() => () => fn(...args));
+    else fn(...args);
+  };
 
   function openLegal(section) {
     setLegalTab(section || "terms");
@@ -164,18 +173,18 @@ export default function App() {
       <Sidebar
         lessons={LESSONS}
         current={view}
-        onSelect={selectLesson}
+        onSelect={guardNav(selectLesson)}
         progress={progress}
         dayClears={dayClears}
         unlockAll={isAdmin}
-        onDash={() => setView("dash")}
-        onWrong={() => setView("wrong")}
+        onDash={guardNav(() => setView("dash"))}
+        onWrong={guardNav(() => setView("wrong"))}
         wrongCount={totalWrong}
-        onGate={openGate}
+        onGate={guardNav(openGate)}
         onExam={() => setView("exam")}
-        onOT={() => setView("ot")}
+        onOT={guardNav(() => setView("ot"))}
         otDone={isOTDone(dayClears)}
-        onHome={() => setPage("landing")}
+        onHome={guardNav(() => setPage("landing"))}
       />
       <div id="main-content" style={{ flex: 1, overflowY: "auto" }}>
         {/* 저장 실패 누적 시 안내 배너 — 진도/오답이 서버에 저장되지 않고 있을 때 */}
@@ -208,11 +217,11 @@ export default function App() {
           })}
           <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center", marginBottom: 10 }}>
             {isAdmin && (
-              <button onClick={() => setPage("admin")} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>관리자</button>
+              <button onClick={guardNav(() => setPage("admin"))} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>관리자</button>
             )}
             {user && <span style={{ fontSize: 12.5, color: UI.faint, fontFamily: UI.mono }}>{user.email}</span>}
             {isAuthed && (
-              <button onClick={signOut} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>로그아웃</button>
+              <button onClick={guardNav(signOut)} style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "7px 14px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font }}>로그아웃</button>
             )}
           </div>
         </div>
@@ -252,6 +261,26 @@ export default function App() {
           {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} />}
         </div>
       </div>
+
+      {/* 실전 응시 중 앱 내 이동 종료 확인 */}
+      {examExitAsk && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(18,33,29,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 60 }}>
+          <div style={{ background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 22, maxWidth: 340, margin: 16, boxShadow: UI.shadow, fontFamily: UI.font }}>
+            <div style={{ fontWeight: 700, color: UI.ink, fontSize: 15, marginBottom: 6 }}>시험을 종료할까요?</div>
+            <div style={{ color: UI.mut, fontSize: 13.5, marginBottom: 16, lineHeight: 1.6 }}>종료하면 이 응시는 채점되지 않고 사라집니다.</div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => { const go = examExitAsk; setExamExitAsk(null); endExamAttempt(); go(); }}
+                style={{ flex: 1, background: UI.red, color: "#fff", border: "none", borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
+              >종료</button>
+              <button
+                onClick={() => setExamExitAsk(null)}
+                style={{ flex: 1, background: UI.surface, color: UI.ink, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "11px 16px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: UI.font }}
+              >계속 풀기</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Target, CheckCircle2, Lock } from "lucide-react";
 import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
 import { assembleBasic2 } from "../../utils/basic2Assembler";
+import { scrollExamTop } from "../../utils/examScroll";
 import { UI } from "../../theme";
 import ExamPanel from "./ExamPanel";
 
@@ -11,6 +12,7 @@ export default function ExamView() {
   const basic3Subs = basic3AvailableSubtypes();
   const basic2Ready = sectionReady("기본2");
   const [inc2, setInc2] = useState(basic2Ready); // 기본작업-2 포함
+  const [difficulty, setDifficulty] = useState("basic"); // 기본작업-2 난이도: basic | hard
   const [selected, setSelected] = useState([]); // 계산 유형(빈 배열=전체)
   const [count, setCount] = useState(5);
   const [inc3, setInc3] = useState(true); // 기본작업-3 포함
@@ -26,15 +28,35 @@ export default function ExamView() {
   const [problems, setProblems] = useState(null); // 확정된 문제 세트(응시 화면 진입)
   const [label, setLabel] = useState("");
   const [seed, setSeed] = useState(null); // 기본2 조립 시드
+  const rootRef = useRef(null);
 
   // 진행/채점 중이던 응시가 있으면 마운트 시 세트를 복원해 ExamPanel 로 바로 들어간다.
+  // 단, 진행 중(running) 응시는 "같은 탭 새로고침"일 때만 이어간다. 새 탭·창을 닫았다 연 경우
+  // (sessionStorage 의 exam:tab 이 응시 id 와 다름)에는 응시를 버리고 구성 화면으로 돌아간다.
+  // 채점 완료(graded)는 종료 규칙에 걸리지 않으므로 탭과 무관하게 결과를 되살린다.
+  // 실전 모드 진입 시 항상 맨 위에서 시작한다.
   useEffect(() => {
+    let prev;
+    try { if ("scrollRestoration" in window.history) { prev = window.history.scrollRestoration; window.history.scrollRestoration = "manual"; } } catch { /* 무시 */ }
+    const toTop = () => scrollExamTop(rootRef.current);
     try {
       const cur = localStorage.getItem("exam:current");
-      if (!cur) return;
-      const a = JSON.parse(localStorage.getItem(`exam:attempt:${cur}`) || "null");
-      if (a?.problem_set?.length) { setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); }
+      const a = cur ? JSON.parse(localStorage.getItem(`exam:attempt:${cur}`) || "null") : null;
+      if (a?.problem_set?.length) {
+        const graded = a.phase === "graded";
+        const sameTab = sessionStorage.getItem("exam:tab") === a.attemptId;
+        if (!graded && !sameTab) {
+          // 새 탭·창 닫았다 열기 → 진행 중 응시 폐기
+          try { localStorage.removeItem(`exam:attempt:${cur}`); localStorage.removeItem("exam:current"); } catch { /* 무시 */ }
+        } else {
+          setProblems(a.problem_set); setLabel(a.label || ""); setSeed(a.seed || null); setDifficulty(a.difficulty || a.config?.difficulty || "basic");
+        }
+      }
     } catch { /* 무시 */ }
+    const container = toTop();
+    if (import.meta?.env?.DEV) console.debug("[exam] 스크롤 컨테이너:", container ? (container.id ? `#${container.id}` : container.tagName) : "(없음 → window)");
+    const raf = requestAnimationFrame(toTop); // 복원 렌더(긴 응시 화면) 후 한 번 더
+    return () => { cancelAnimationFrame(raf); try { if ("scrollRestoration" in window.history && prev) window.history.scrollRestoration = prev; } catch { /* 무시 */ } };
   }, []);
 
   const toggle = (k) => setSelected((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]));
@@ -42,7 +64,7 @@ export default function ExamView() {
   function compose() {
     const s = (crypto?.randomUUID?.() || String(Date.now())).slice(0, 8); // 기본2 조립 시드
     const set = [];
-    if (inc2 && basic2Ready) set.push(assembleBasic2(s)); // 시드 고정 조립 출제
+    if (inc2 && basic2Ready) set.push(assembleBasic2(s, { difficulty })); // 시드 고정 조립 출제(난이도별 풀)
     if (inc3) { const b3 = pickBasic3(sub3); if (b3) set.push(b3); }
     set.push(...pickCalc(selected, count));
     if (anaSel.length) set.push(...pickAnalysis(anaSel));
@@ -52,6 +74,7 @@ export default function ExamView() {
     setSeed(s);
     setLabel(new Date().toISOString().slice(0, 10));
     setProblems(set);
+    scrollExamTop(rootRef.current);
   }
 
   const chip = (active) => ({
@@ -63,14 +86,14 @@ export default function ExamView() {
   const card = { background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 22, marginBottom: 16 };
 
   return (
-    <div style={{ maxWidth: 760, margin: "0 auto" }}>
+    <div ref={rootRef} style={{ maxWidth: 760, margin: "0 auto" }}>
       <div style={{ color: UI.teal, fontSize: 13, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
         <Target size={15} strokeWidth={2} /> 실전 모드
       </div>
       <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8, color: UI.ink }}>실전 모의고사</h2>
 
       {problems ? (
-        <ExamPanel problems={problems} label={label} seed={seed} onReset={() => { setProblems(null); setSeed(null); }} />
+        <ExamPanel problems={problems} label={label} seed={seed} difficulty={difficulty} onReset={() => { setProblems(null); setSeed(null); }} />
       ) : (
         <>
           <p style={{ color: UI.mut, fontSize: 14, marginBottom: 20, lineHeight: 1.7 }}>
@@ -84,6 +107,15 @@ export default function ExamView() {
               <span style={{ fontWeight: 700, color: UI.ink }}>기본작업-2 포함</span>
               <span style={{ fontSize: 12, color: UI.mut }}>(셀 서식 · 항목별 실채점)</span>
             </label>
+            {inc2 && basic2Ready && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: UI.ink }}>난이도</span>
+                {[["basic", "기본"], ["hard", "어려움"]].map(([k, lab]) => (
+                  <button key={k} onClick={() => setDifficulty(k)} style={chip(difficulty === k)}>{lab}</button>
+                ))}
+                <span style={{ fontSize: 12, color: UI.mut }}>{difficulty === "hard" ? "절삭·요일·접두 등 어려운 서식 포함" : "기본 서식만"}</span>
+              </div>
+            )}
           </div>
 
           {/* 기본작업-3 구성 */}
