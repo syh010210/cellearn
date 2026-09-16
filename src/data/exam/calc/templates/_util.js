@@ -84,6 +84,8 @@ export function dateWithWeekday(rng, want, mode, y1, y2, used) {
 // ── 단일 셀 결과의 범위 mutation 자체 검증(다중 범위 함수 정렬 어긋남 생존 방지) ──
 import { Sheet } from "../../../../excel-engine/index.js";
 import { classifySurvivor } from "../../../../utils/calc/survivorRules.js";
+import { shiftFormula } from "../../../../utils/formulaUtils.js";
+import { buildInstance } from "../../../../utils/calc/buildInstance.js";
 
 const lettersColU = (L) => { let n = 0; for (const ch of L.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; };
 // 본표(+조건/참조 셀)를 미니 시트에 놓고 formula 를 평가
@@ -118,4 +120,32 @@ export function assertRangesClean(headers, rows, colZ, answer, extra = {}) {
   for (const mut of rangeMutants(answer)) {
     if (sameVal(evalTable(headers, rows, colZ, mut, extra), base) && !classifySurvivor(answer, mut, { result: { kind: "single" } })) throw new Error("범위 mutant 생존: " + mut);
   }
+}
+
+// ── 열 채우기 결과: 페이지 조합(본표 + 필러 2개)까지 재현해 특정 mutant 가 결과 벡터를 바꾸는지 검증 ──
+// removeDollar 처럼 채울 때 범위가 블록 밖(이웃 문항)으로 밀리는 변형은 조합에 따라 값이 달라지므로,
+// 테스트와 동일한 레이아웃([spec, 필러, 필러])에서 평가해야 신뢰할 수 있다. 필러는 calcAssembler.FILLER 와 동일.
+const _dateFmt = (z) => !z ? undefined : (/h/i.test(z) ? (/y/i.test(z) ? "datetime" : "time") : (/y/i.test(z) ? "date" : undefined));
+const _parseA1 = (a) => { const m = /^([A-Za-z]{1,3})(\d+)$/.exec(String(a).trim()); return { c: lettersColU(m[1]), r: +m[2] - 1 }; };
+function _expand1D(range) { const [a, b] = range.split(":"); const pa = _parseA1(a), pb = b ? _parseA1(b) : pa; const o = []; for (let r = Math.min(pa.r, pb.r); r <= Math.max(pa.r, pb.r); r++) for (let c = Math.min(pa.c, pb.c); c <= Math.max(pa.c, pb.c); c++) o.push(COL(c) + (r + 1)); return o; }
+function _expand2D(range) { const [a, b] = range.split(":"); const pa = _parseA1(a), pb = b ? _parseA1(b) : pa; const rows = []; for (let r = Math.min(pa.r, pb.r); r <= Math.max(pa.r, pb.r); r++) { const row = []; for (let c = Math.min(pa.c, pb.c); c <= Math.max(pa.c, pb.c); c++) row.push(COL(c) + (r + 1)); rows.push(row); } return rows; }
+const _FILLER = { subtype: "A-2", colWidths: [6, 6, 6], headers: ["항목", "값1", "값2"], rows: [[1, 2, null], [3, 5, null], [7, 4, null], [6, 9, null], [8, 11, null], [10, 13, null]], result: { kind: "fillCol", col: "값2" }, answer: "=A3+B3", functions: { required: [], candidates: null }, text: "[{표}]에서 값1[{col:값1}]로 값2[{R}]를 계산하시오. (8점)", notes: ["+ 연산자 사용"], accept: [] };
+// item0 의 결과 범위에 formula 를 채워 결과 벡터를 얻는다(submit 과 동일 절차: 모든 문항 답 채우고 조건 셀 세팅).
+function _fillColVec(inst, item, formula) {
+  const sheet = new Sheet();
+  for (const [addr, cell] of Object.entries(inst.cells)) { if (cell.f !== undefined) sheet.setCellInput(addr, cell.f.startsWith("=") ? cell.f : "=" + cell.f); else sheet.setCellValue(addr, cell.v, _dateFmt(cell.z)); }
+  for (const it of inst.items) {
+    const f = it === item ? formula : it.answer.formula;
+    const { r: ar, c: ac } = _parseA1(it.result.anchor);
+    for (const a of _expand1D(it.result.range)) { const { r, c } = _parseA1(a); sheet.setCellInput(a, String(f).startsWith("=") ? shiftFormula(f, r - ar, c - ac) : String(f)); }
+    if (it.criteria) _expand2D(it.criteria.range).forEach((row, ri) => row.forEach((a, ci) => { const v = it.criteria.table[ri + 1]?.[ci]; if (v !== undefined && v !== null && v !== "") sheet.setCellValue(a, v, undefined); }));
+  }
+  return _expand1D(item.result.range).map((a) => { const v = sheet.getCellValue(a); return (v && typeof v === "object") ? "E:" + v.error : v; });
+}
+// mutants 목록의 각 수식이 결과 벡터를 바꿔야 한다(안 바꾸면 재시도). 생존 규칙 대상은 목록에서 뺀다.
+export function assertFillColClean(spec, mutants) {
+  const inst = buildInstance({ id: "_chk", blocks: [spec, _FILLER, _FILLER] });
+  const item = inst.items[0];
+  const base = JSON.stringify(_fillColVec(inst, item, item.answer.formula));
+  for (const m of mutants) if (JSON.stringify(_fillColVec(inst, item, m)) === base) throw new Error("fillCol mutant 무영향: " + m);
 }

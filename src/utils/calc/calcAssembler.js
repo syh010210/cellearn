@@ -14,12 +14,14 @@ import { TEMPLATE_A6 } from "../../data/exam/calc/templates/A-6.js";
 import { TEMPLATE_B1 } from "../../data/exam/calc/templates/B-1.js";
 import { TEMPLATE_B2 } from "../../data/exam/calc/templates/B-2.js";
 import { TEMPLATE_B3 } from "../../data/exam/calc/templates/B-3.js";
+import { TEMPLATE_B4 } from "../../data/exam/calc/templates/B-4.js";
+import { TEMPLATE_B5 } from "../../data/exam/calc/templates/B-5.js";
 import { TEMPLATE_C1 } from "../../data/exam/calc/templates/C-1.js";
 import { TEMPLATE_C2 } from "../../data/exam/calc/templates/C-2.js";
 import { TEMPLATE_D1 } from "../../data/exam/calc/templates/D-1.js";
 import { TEMPLATE_D5 } from "../../data/exam/calc/templates/D-5.js";
 
-export const TEMPLATES = { "A-1": TEMPLATE_A1, "A-2": TEMPLATE_A2, "A-3": TEMPLATE_A3, "A-4": TEMPLATE_A4, "A-5": TEMPLATE_A5, "A-6": TEMPLATE_A6, "B-1": TEMPLATE_B1, "B-2": TEMPLATE_B2, "B-3": TEMPLATE_B3, "C-1": TEMPLATE_C1, "C-2": TEMPLATE_C2, "D-1": TEMPLATE_D1, "D-5": TEMPLATE_D5 };
+export const TEMPLATES = { "A-1": TEMPLATE_A1, "A-2": TEMPLATE_A2, "A-3": TEMPLATE_A3, "A-4": TEMPLATE_A4, "A-5": TEMPLATE_A5, "A-6": TEMPLATE_A6, "B-1": TEMPLATE_B1, "B-2": TEMPLATE_B2, "B-3": TEMPLATE_B3, "B-4": TEMPLATE_B4, "B-5": TEMPLATE_B5, "C-1": TEMPLATE_C1, "C-2": TEMPLATE_C2, "D-1": TEMPLATE_D1, "D-5": TEMPLATE_D5 };
 
 // 문자열 시드 → 결정적 난수 (basic2Assembler 와 동일 방식)
 export function makeRng(seedStr) {

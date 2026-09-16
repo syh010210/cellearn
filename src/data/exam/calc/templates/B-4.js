@@ -1,0 +1,86 @@
+// src/data/exam/calc/templates/B-4.js
+// IF 판정 — COUNTIF 조건 (행 내 개수 / 열 중복 개수). 변형 2개. 모두 열 채우기.
+import { NAMES } from "../pools.js";
+import { geom } from "./_util.js";
+
+const ri = (rng, lo, hi) => rng.range(lo, hi);
+
+// 1) b4-count-subject [기본] — IF(COUNTIF(행범위,"<80")>=2,"","합격")
+function b4CountSubject(rng) {
+  const N = 8 + rng.int(3);
+  const headers = ["이름", "국어", "영어", "수학", "합격여부"];
+  // 각 행의 80 미만 과목 수 c. 필수: c=2(수학<80) 1행, c=1 1행, c=0 1행, c=3 1행 → 나머지 랜덤
+  const specs = [{ c: 2, dLow: true }, { c: 1, dLow: false }, { c: 0, dLow: false }, { c: 3, dLow: true }];
+  while (specs.length < N) specs.push({ c: rng.int(4), dLow: rng.chance(0.5) });
+  const makeRow = (sp) => {
+    // 어느 과목이 80 미만인지: dLow 면 수학(idx2) 포함해서 c개
+    const idxs = [0, 1, 2];
+    let low;
+    if (sp.dLow && sp.c >= 1) { const rest = rng.shuffle([0, 1]).slice(0, sp.c - 1); low = new Set([2, ...rest]); }
+    else { low = new Set(rng.shuffle(idxs).slice(0, sp.c)); }
+    return [0, 1, 2].map((k) => (low.has(k) ? ri(rng, 40, 79) : ri(rng, 80, 99)));
+  };
+  const scoreRows = rng.shuffle(specs).map(makeRow);
+  const below = (r) => r.filter((v) => v < 80).length;
+  const res = scoreRows.map((r) => (below(r) >= 2 ? "" : "합격"));
+  if (new Set(res).size < 2) throw new Error("결과 단일");
+  // rangeShrink(수학 열 제거)로 결과가 바뀌는 행: 수학<80 이면서 정확히 2개 미만인 행
+  if (!scoreRows.some((r) => r[2] < 80 && below(r) === 2)) throw new Error("열축소 무영향");
+  if (!scoreRows.some((r) => below(r) === 1)) throw new Error("count 1 없음");   // litPM1 2→1 판별
+  const names = rng.sample(NAMES, N);
+  const rows = scoreRows.map((r, i) => [names[i], r[0], r[1], r[2], null]);
+  const g = geom(headers, N);
+  const rowRange = `${g.dataCell("국어", 0)}:${g.dataCell("수학", 0)}`;
+  return {
+    subtype: "B-4", colWidths: [8, 6, 6, 6, 8], headers, rows,
+    result: { kind: "fillCol", col: "합격여부" },
+    answer: `=IF(COUNTIF(${rowRange},"<80")>=2,"","합격")`,
+    functions: { required: ["IF", "COUNTIF"], candidates: null },
+    text: '[{표}]에서 국어[{col:국어}], 영어[{col:영어}], 수학[{col:수학}] 점수 중 2과목 이상이 80점 미만이면 공백, 그 외에는 "합격"으로 합격여부[{R}]에 표시하시오. (8점)',
+    notes: ["IF, COUNTIF 함수 사용"],
+    accept: [`=IF(COUNTIF(${rowRange},"<80")>=2,"","합격")`],
+  };
+}
+
+// 2) b4-id-dup [기본] — IF(COUNTIF($id범위,id)>=2,"우수","일반")
+function b4IdDup(rng) {
+  const N = 8 + rng.int(3);
+  const headers = ["회원ID", "이름", "회원구분"];
+  // 그룹별 등장 횟수(1 또는 2). 최소 2그룹, count2 최소 1·count1 최소 1. 마지막 행은 count2 그룹.
+  const counts = [2, 1];
+  while (counts.reduce((a, b) => a + b, 0) < N) counts.push(rng.chance(0.45) ? 2 : 1);
+  let total = counts.reduce((a, b) => a + b, 0);
+  while (total > N) { const i = counts.findIndex((c) => c === 1); if (i < 0) { counts[counts.length - 1]--; total--; } else { counts.splice(i, 1); total--; } }
+  if (!counts.includes(2) || !counts.includes(1)) throw new Error("그룹 분포 부족");
+  const ids = []; { const s = new Set(); while (s.size < counts.length) s.add("M" + String(101 + rng.int(899))); ids.push(...s); }
+  // count2 그룹 하나를 마지막 행 전용으로 예약
+  const g2idx = counts.findIndex((c) => c === 2);
+  const seqAll = [];
+  counts.forEach((c, gi) => { for (let k = 0; k < c; k++) seqAll.push({ id: ids[gi], gi }); });
+  const lastOne = seqAll.filter((e) => e.gi === g2idx).pop();          // 이 그룹의 한 항목을 끝으로
+  const rest = rng.shuffle(seqAll.filter((e) => e !== lastOne));
+  const seq = [...rest, lastOne].map((e) => e.id);
+  const freq = {}; seq.forEach((id) => (freq[id] = (freq[id] || 0) + 1));
+  const names = rng.sample(NAMES, N);
+  const rows = seq.map((id, i) => [id, names[i], null]);
+  const res = seq.map((id) => (freq[id] >= 2 ? "우수" : "일반"));
+  if (new Set(res).size < 2) throw new Error("결과 단일");
+  const g = geom(headers, N), rA = g.colAbs("회원ID"), x = g.dataCell("회원ID", 0);
+  return {
+    subtype: "B-4", colWidths: [8, 8, 8], headers, rows, codeColumns: ["회원ID"],
+    result: { kind: "fillCol", col: "회원구분" },
+    answer: `=IF(COUNTIF(${rA},${x})>=2,"우수","일반")`,
+    functions: { required: ["IF", "COUNTIF"], candidates: null },
+    text: '[{표}]에서 회원ID[{col:회원ID}]에 동일한 ID가 2개 이상이면 "우수", 그렇지 않으면 "일반"을 회원구분[{R}]에 표시하시오. (8점)',
+    notes: ["IF, COUNTIF 함수 사용"],
+    accept: [`=IF(COUNTIF(${g.colRowFixed("회원ID")},${x})>=2,"우수","일반")`],
+  };
+}
+
+export const TEMPLATE_B4 = {
+  subtype: "B-4",
+  variants: [
+    { id: "b4-count-subject", difficulty: "기본", plan: b4CountSubject },
+    { id: "b4-id-dup", difficulty: "기본", plan: b4IdDup },
+  ],
+};
