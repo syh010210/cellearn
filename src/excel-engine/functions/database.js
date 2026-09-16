@@ -22,7 +22,8 @@ function matchesCriteria(record, headers, criteriaTable) {
       if (critVal === '' || critVal === undefined) return true;
       const fieldIdx = headers.findIndex((hh) => String(hh).toUpperCase() === String(h).toUpperCase());
       if (fieldIdx === -1) return true;
-      return matchCriteria(record[fieldIdx], critVal);
+      // D함수 조건: 연산자 없는 텍스트는 앞부분 일치(엑셀 규칙). COUNTIF 계열과 달리 prefix=true.
+      return matchCriteria(record[fieldIdx], critVal, { prefix: true });
     })
   );
 }

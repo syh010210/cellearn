@@ -139,6 +139,32 @@ export class Sheet {
     this.recalculate([address]);
   }
 
+  // 자료형을 보존해 값을 넣는다 (문자열은 숫자·날짜로 변환하지 않는다).
+  //   number  → 숫자
+  //   string  → 텍스트 그대로 ("03" 은 "03", "2026-03-05" 도 문자열)
+  //   날짜/시간 → serial 숫자 + dateFormat('date'|'datetime'|'time') 로 표시 형식 지정
+  // rawInput·computedValues·dateCells 갱신과 의존 셀 재계산은 setCellInput 과 같은 경로(recalculate).
+  setCellValue(address, value, dateFormat) {
+    address = address.toUpperCase();
+    this.rawInput.set(address, value);
+    this.formulas.delete(address);
+    this.graph.clearCell(address);
+    this.dateCells.delete(address);
+    this.dateFormatCells.delete(address);
+
+    let v;
+    if (value === '' || value === undefined || value === null) v = undefined;
+    else if (typeof value === 'number') v = value;
+    else v = String(value); // 문자열은 그대로 (숫자·날짜 자동 변환 없음)
+
+    if (dateFormat && typeof v === 'number') {
+      if (dateFormat === 'date') this.dateCells.add(address);
+      else this.dateFormatCells.set(address, dateFormat); // 'datetime' | 'time'
+    }
+    this.computedValues.set(address, v);
+    this.recalculate([address]);
+  }
+
   recalculate(changedAddresses) {
     const { sorted, circular } = this.graph.getAffectedCellsSorted(changedAddresses);
 

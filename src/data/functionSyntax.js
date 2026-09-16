@@ -31,6 +31,7 @@ export const FUNCTION_ARGS = {
   // ── 수학/변환 ──
   ABS:       ["숫자"],
   INT:       ["숫자"],
+  TRUNC:     ["숫자", "[자릿수]"],
   MOD:       ["숫자", "나누는 수"],
   POWER:     ["숫자", "지수"],
   VALUE:     ["텍스트"],

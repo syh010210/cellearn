@@ -56,13 +56,25 @@ export function parseFormula(formula) {
   }
 
   function parseMultiplicative() {
-    let left = parseUnary();
+    let left = parsePower();
     while (peek().type === 'OP' && (peek().value === '*' || peek().value === '/')) {
       const op = next().value;
-      const right = parseUnary();
+      const right = parsePower();
       left = { type: 'BinaryOp', op, left, right };
     }
     return left;
+  }
+
+  // 엑셀 우선순위: 단항 - (와 %) 가 ^ 보다 강하게 결합한다 → -2^2 = (-2)^2 = 4.
+  // 따라서 ^ 의 밑/지수를 parseUnary 로 파싱하고, ^ 는 좌결합.
+  function parsePower() {
+    let base = parseUnary();
+    while (peek().type === 'OP' && peek().value === '^') {
+      next();
+      const exponent = parseUnary();
+      base = { type: 'BinaryOp', op: '^', left: base, right: exponent };
+    }
+    return base;
   }
 
   function parseUnary() {
@@ -75,17 +87,7 @@ export function parseFormula(formula) {
       next();
       return parseUnary();
     }
-    return parsePower();
-  }
-
-  function parsePower() {
-    let base = parsePrimary();
-    if (peek().type === 'OP' && peek().value === '^') {
-      next();
-      const exponent = parseUnary(); // 우결합
-      base = { type: 'BinaryOp', op: '^', left: base, right: exponent };
-    }
-    return base;
+    return parsePrimary();
   }
 
   function parsePrimary() {
@@ -126,12 +128,16 @@ export function parseFormula(formula) {
       next();
       const name = t.value.toUpperCase();
       expect('LPAREN');
+      // 빈 인수(생략) 지원: TIME(,2,) · IF(a,"x",) · VLOOKUP(a,b,2,) 등 → MissingArg 노드
+      const parseArg = () => (peek().type === 'COMMA' || peek().type === 'RPAREN')
+        ? { type: 'MissingArg' }
+        : parseExpr();
       const args = [];
       if (peek().type !== 'RPAREN') {
-        args.push(parseExpr());
+        args.push(parseArg());
         while (peek().type === 'COMMA') {
           next();
-          args.push(parseExpr());
+          args.push(parseArg());
         }
       }
       expect('RPAREN');

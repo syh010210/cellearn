@@ -47,9 +47,9 @@ export const CHOOSE = (args, context, evaluate) => {
   if (isErrorValue(idxVal)) return idxVal;
   const idx = toNumber(idxVal);
   if (isErrorValue(idx)) return idx;
-  const rounded = Math.round(idx);
-  if (rounded < 1 || rounded >= args.length) return makeError(ERRORS.VALUE);
-  return evaluate(args[rounded], context);
+  const t = Math.trunc(idx); // 엑셀: 소수점 이하 버림
+  if (t < 1 || t >= args.length) return makeError(ERRORS.VALUE);
+  return evaluate(args[t], context);
 };
 
 // SWITCH(식, 값1, 결과1, 값2, 결과2, ..., [기본값])

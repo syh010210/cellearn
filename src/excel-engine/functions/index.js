@@ -43,6 +43,10 @@ export const FUNCTIONS = {
   'MODE.SNGL': math.MODE_SNGL,
   'STDEV.S': math.STDEV_S,
   'VAR.S': math.VAR_S,
+  // 별칭: 계산작업 채점/평가에서 비점 표기(STDEV·MODE)도 같은 구현을 가리키게 한다.
+  // (자동완성 EXAM_FUNCTIONS·functionSyntax 에는 추가하지 않는다 — 표시용은 점 표기만.)
+  STDEV: math.STDEV_S,
+  MODE: math.MODE_SNGL,
   'RANK.EQ': math.RANK_EQ,
   'RANK.AVG': math.RANK_AVG,
   SUMPRODUCT: math.SUMPRODUCT,

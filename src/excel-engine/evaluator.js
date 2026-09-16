@@ -23,6 +23,8 @@ export function evaluate(node, context) {
       return node.value;
     case 'ErrorLiteral':
       return makeError(node.value);
+    case 'MissingArg':
+      return 0; // 생략된 인수 = 0 (VLOOKUP 4번째 빈 인수는 0=정확일치가 된다)
 
     case 'CellRef': {
       const v = context.getCellValue(node.ref);
@@ -73,11 +75,16 @@ function evalBinary(node, context) {
   }
 
   if (['=', '<>', '<', '<=', '>', '>='].includes(op)) {
-    const l = evaluate(node.left, context);
+    // 빈 셀 비교: 상대 자료형에 맞춰 ""/0/FALSE 로 본다(엑셀 규칙). 빈 셀끼리는 같다.
+    const l = evalCompareOperand(node.left, context);
     if (isErrorValue(l)) return l;
-    const r = evaluate(node.right, context);
+    const r = evalCompareOperand(node.right, context);
     if (isErrorValue(r)) return r;
-    return compare(l, r, op);
+    const lB = l === BLANK, rB = r === BLANK;
+    if (lB && rB) return op === '=' || op === '<=' || op === '>=';
+    const lv = lB ? coerceBlankLike(r) : l;
+    const rv = rB ? coerceBlankLike(l) : r;
+    return compare(lv, rv, op);
   }
 
   const l = evaluate(node.left, context);
@@ -97,6 +104,22 @@ function evalBinary(node, context) {
     case '^': return Math.pow(ln, rn);
     default: return makeError(ERRORS.VALUE);
   }
+}
+
+// 비교 연산의 피연산자 평가: 빈 셀 참조는 BLANK 로 표시(산술 경로의 undefined→0 과 분리).
+const BLANK = Symbol('blank');
+function evalCompareOperand(node, context) {
+  if (node.type === 'CellRef') {
+    const v = context.getCellValue(node.ref);
+    return v === undefined ? BLANK : v;
+  }
+  return evaluate(node, context);
+}
+// 빈 셀을 상대 자료형에 맞춰 변환: 숫자면 0, 논리면 FALSE, 그 외(문자열 등)는 "".
+function coerceBlankLike(other) {
+  if (typeof other === 'number') return 0;
+  if (typeof other === 'boolean') return false;
+  return '';
 }
 
 function compare(l, r, op) {

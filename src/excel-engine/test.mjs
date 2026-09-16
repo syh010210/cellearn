@@ -404,5 +404,105 @@ function check(label, actual, expected) {
   check('STDEV.S 에러(1개)', s.getDisplayValue('H4'), ERRORS.DIV0);
 }
 
+// ---- setCellValue: 자료형 보존(텍스트 숫자·날짜) ----
+{
+  const s = new Sheet();
+  s.setCellValue('A1', '03');            // 텍스트 그대로 (숫자 변환 X)
+  s.setCellInput('B1', '=LEN(A1)');
+  check('setCellValue 텍스트 길이 LEN("03")=2', s.getDisplayValue('B1'), 2);
+  s.setCellInput('B2', '=A1=3');
+  check('setCellValue "03"=3 은 FALSE', s.getDisplayValue('B2'), false);
+  s.setCellInput('B3', '=A1*1');
+  check('setCellValue "03"*1 = 3', s.getDisplayValue('B3'), 3);
+
+  // 텍스트 셀을 참조하는 COUNTIF / VLOOKUP
+  const t = new Sheet();
+  t.setCellValue('A1', '03'); t.setCellValue('A2', '10'); t.setCellValue('A3', '03');
+  t.setCellInput('C1', '=COUNTIF(A1:A3,"03")');
+  check('COUNTIF 텍스트 "03" = 2', t.getDisplayValue('C1'), 2);
+  t.setCellInput('C2', '=COUNTIF(A1:A3,3)');
+  check('COUNTIF 숫자 3 은 텍스트"03"과 불일치 = 0', t.getDisplayValue('C2'), 0);
+  // VLOOKUP 키가 텍스트
+  t.setCellValue('E1', '03'); t.setCellValue('F1', '컴퓨터');
+  t.setCellValue('E2', '10'); t.setCellValue('F2', '전자');
+  t.setCellInput('G1', '=VLOOKUP("03",E1:F2,2,0)');
+  check('VLOOKUP 텍스트 키 "03" → 컴퓨터', t.getDisplayValue('G1'), '컴퓨터');
+  t.setCellInput('G2', '=VLOOKUP(3,E1:F2,2,0)');
+  check('VLOOKUP 숫자 3 → #N/A(텍스트 키와 불일치)', s2NA(t.getCellValue('G2')), ERRORS.NA);
+
+  // 날짜 serial + 표시 형식
+  const d = new Sheet();
+  d.setCellValue('A1', 46037, 'date'); // 2026-01-15
+  check('setCellValue 날짜 표시', d.getDisplayValue('A1'), '2026-01-15');
+  d.setCellInput('B1', '=YEAR(A1)');
+  check('setCellValue 날짜 YEAR', d.getDisplayValue('B1'), 2026);
+}
+function s2NA(v) { return isErrorValue(v) ? v.error : v; }
+
+// ---- E. 연산자 우선순위 (단항 - · % 가 ^ 보다 강함) ----
+{
+  const s = new Sheet();
+  s.setCellInput('A1', '3');
+  s.setCellInput('E1', '=-2^2');     check('-2^2 = 4', s.getDisplayValue('E1'), 4);
+  s.setCellInput('E2', '=2-3^2');    check('2-3^2 = -7', s.getDisplayValue('E2'), -7);
+  s.setCellInput('E3', '=50%^2');    check('50%^2 = 0.25', s.getDisplayValue('E3'), 0.25);
+  s.setCellInput('E4', '=2^-1');     check('2^-1 = 0.5', s.getDisplayValue('E4'), 0.5);
+  s.setCellInput('E5', '=-A1^2');    check('-A1^2 = 9 (A1=3)', s.getDisplayValue('E5'), 9);
+  s.setCellInput('E6', '=2^3^2');    check('2^3^2 = 64 (좌결합)', s.getDisplayValue('E6'), 64);
+  s.setCellInput('E7', '=50%*4');    check('50%*4 = 2 (% 우선)', s.getDisplayValue('E7'), 2);
+}
+// ---- B. CHOOSE 인덱스 절사 ----
+{
+  const s = new Sheet();
+  s.setCellInput('A1', '=CHOOSE(2.9,"a","b","c")'); check('CHOOSE(2.9) = b', s.getDisplayValue('A1'), 'b');
+  s.setCellInput('A2', '=CHOOSE(0.5,"a","b")');     check('CHOOSE(0.5) = #VALUE!', s.getDisplayValue('A2'), ERRORS.VALUE);
+  s.setCellInput('A3', '=CHOOSE(3,"a","b")');       check('CHOOSE(3,2개) = #VALUE!', s.getDisplayValue('A3'), ERRORS.VALUE);
+}
+// ---- C. 숫자→텍스트 15유효자리 (& 결합) ----
+{
+  const s = new Sheet();
+  s.setCellInput('A1', '=0.1+0.2&""'); check('0.1+0.2&"" = "0.3"', s.getDisplayValue('A1'), '0.3');
+  s.setCellInput('A2', '=1/3&""');     check('1/3&"" 15자리', s.getDisplayValue('A2'), '0.333333333333333');
+}
+// ---- D. 인수 생략 (MissingArg) ----
+{
+  const s = new Sheet();
+  s.setCellInput('A1', '=TIME(,2,)*86400'); check('TIME(,2,) = 120초', s.getDisplayValue('A1'), 120);
+  s.setCellInput('A2', '=IF(1>2,"a",)');    check('IF(1>2,"a",) = 0', s.getDisplayValue('A2'), 0);
+  // VLOOKUP 4번째: 빈 인수 = 정확(→#N/A), 3인수 = 근사(→b)
+  const t = new Sheet();
+  t.setCellInput('B1','1'); t.setCellInput('C1','a');
+  t.setCellInput('B2','3'); t.setCellInput('C2','b');
+  t.setCellInput('B3','5'); t.setCellInput('C3','c');
+  t.setCellInput('D1','=VLOOKUP(4,B1:C3,2,)'); check('VLOOKUP(4,,,) 빈4번째=정확 → #N/A', t.getDisplayValue('D1'), ERRORS.NA);
+  t.setCellInput('D2','=VLOOKUP(4,B1:C3,2)');  check('VLOOKUP(4,,) 3인수=근사 → b', t.getDisplayValue('D2'), 'b');
+}
+// ---- F. 빈 셀 비교 ----
+{
+  const s = new Sheet(); // Z1 은 비워 둔다
+  s.setCellInput('A1', '=Z1=""');    check('빈="" → TRUE', s.getDisplayValue('A1'), true);
+  s.setCellInput('A2', '=Z1=0');     check('빈=0 → TRUE', s.getDisplayValue('A2'), true);
+  s.setCellInput('A3', '=Z1<1');     check('빈<1 → TRUE', s.getDisplayValue('A3'), true);
+  s.setCellInput('A4', '=Z1>"a"');   check('빈>"a" → FALSE', s.getDisplayValue('A4'), false);
+  s.setCellInput('A5', '=Z1=FALSE'); check('빈=FALSE → TRUE', s.getDisplayValue('A5'), true);
+  s.setCellInput('A6', '=Z1<>""');   check('빈<>"" → FALSE', s.getDisplayValue('A6'), false);
+  s.setCellInput('A7', '=Z1=Z2');    check('빈=빈 → TRUE', s.getDisplayValue('A7'), true);
+}
+// ---- A. D함수 텍스트 조건 앞부분 일치 (COUNTIF 는 완전 일치 유지) ----
+{
+  const s = new Sheet();
+  s.setCellInput('A1','지역'); s.setCellInput('B1','점');
+  s.setCellInput('A2','서울'); s.setCellInput('B2','1');
+  s.setCellInput('A3','서울시'); s.setCellInput('B3','2');
+  s.setCellInput('A4','부산'); s.setCellInput('B4','3');
+  s.setCellInput('D1','지역'); s.setCellInput('D2','서울');
+  s.setCellInput('F1','=DCOUNTA(A1:B4,"지역",D1:D2)'); check('DCOUNTA 앞부분(서울→서울,서울시) = 2', s.getDisplayValue('F1'), 2);
+  s.setCellInput('F2','=COUNTIF(A2:A4,"서울")');        check('COUNTIF 완전일치 서울 = 1', s.getDisplayValue('F2'), 1);
+  // 와일드카드: D함수는 시작만 고정(앞부분), COUNTIF 는 끝까지 고정
+  s.setCellInput('G1','지역'); s.setCellInput('G2','?울');
+  s.setCellInput('F3','=DCOUNTA(A1:B4,"지역",G1:G2)'); check('DCOUNTA 와일드 ?울 앞부분 = 2', s.getDisplayValue('F3'), 2);
+  s.setCellInput('F4','=COUNTIF(A2:A4,"?울")');         check('COUNTIF 와일드 ?울 완전 = 1', s.getDisplayValue('F4'), 1);
+}
+
 console.log(`\n총 ${pass + fail}개 중 ${pass}개 통과, ${fail}개 실패`);
 process.exit(fail > 0 ? 1 : 0);
