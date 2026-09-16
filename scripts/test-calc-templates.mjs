@@ -99,7 +99,7 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
 }
 
 // ── composeCalc 조합 만점 (layoutPage 는 3·5블록만 허용 → 4개 신규 유형은 5블록 조합으로) ──
-for (const combo of [["A-2", "B-1", "C-1"], ["A-1", "A-3", "A-4", "C-2", "A-2"], ["B-2", "B-3", "D-1", "D-5", "A-1"], ["B-2", "B-3", "D-1", "C-2", "A-3"], ["A-1", "A-5", "B-4", "B-5", "D-1"], ["A-6", "A-3", "B-5", "C-2", "D-1"], ["B-6", "C-3", "A-6", "D-1", "A-3"]]) {
+for (const combo of [["A-2", "B-1", "C-1"], ["A-1", "A-3", "A-4", "C-2", "A-2"], ["B-2", "B-3", "D-1", "D-5", "A-1"], ["B-2", "B-3", "D-1", "C-2", "A-3"], ["A-1", "A-5", "B-4", "B-5", "D-1"], ["A-6", "A-3", "B-5", "C-2", "D-1"], ["B-6", "C-3", "A-6", "D-1", "A-3"], ["D-2", "D-3", "D-4", "C-3", "A-6"], ["D-2", "A-1", "B-4", "C-1", "A-2"]]) {
   console.log(`\n=== composeCalc [${combo.join(",")}] 200시드 만점 ===`);
   for (const diff of ["기본", "어려움"]) {
     if (!combo.every((st) => TEMPLATES[st].variants.some((v) => v.difficulty === diff))) { console.log(`${diff}: (일부 소유형에 해당 난이도 변형 없음 → 생략)`); continue; }
