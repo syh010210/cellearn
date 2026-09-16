@@ -72,6 +72,7 @@ function daverageRound(rng) {
   return {
     subtype: "A-2", colWidths: [12, 8, 8], headers, rows, colZ: { 2: "0.0" },
     result: { kind: "single", label: "부 동아리 평점 평균" },
+    discriminators: [{ name: "동아리 '부'끝(조건)", test: (r) => String(r[0]).endsWith("부"), min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상('부') 행을 첫·중간·마지막에 배치(DAVERAGE 범위 축소·조건 판별)" }],
     answer: `=ROUND(DAVERAGE(${dbA},"평점",${crit}),1)`,
     criteria: { headers: ["동아리"], rows: [["*부"]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "ROUND"], candidates: null },
@@ -121,6 +122,7 @@ function averageifRound(rng) {
   return {
     subtype: "A-2", colWidths: [8, 6, 6, 6, 6], headers, rows,
     result: { kind: "fillRow", cols: ["국어", "영어", "수학"], label: "1반 평균" },
+    discriminators: [{ name: "반=1반(조건)", test: (r) => r[1] === "1반", min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상(1반) 행을 첫·중간·마지막에 배치(AVERAGEIF 범위 축소·조건 판별)" }],
     answer: `=ROUNDDOWN(AVERAGEIF(${반A},"1반",${guk}),0)`,
     functions: { required: ["AVERAGEIF"], candidates: ["ROUNDDOWN", "ROUND", "ROUNDUP"] },
     text: '[{표}]에서 반[{col:반}]이 "1반"인 학생의 국어[{col:국어}], 영어[{col:영어}], 수학[{col:수학}]의 평균을 [{R}] 영역에 계산하시오. (8점)',
@@ -155,6 +157,7 @@ function daverageDiff(rng) {
   return {
     subtype: "A-2", colWidths: [8, 8, 8], headers, rows,
     result: { kind: "single", label: `${school} 국어 평균차` },
+    discriminators: [{ name: `학교=${school}(조건)`, test: (r) => r[1] === school, min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상 학교 행을 첫·중간·마지막에 배치(DAVERAGE 범위 축소·조건 판별)" }],
     answer: `=DAVERAGE(${dbA},"국어",${crit})-AVERAGE(${valRel})`,
     criteria: { headers: ["학교"], rows: [[school]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "AVERAGE"], candidates: null },
@@ -206,6 +209,7 @@ function averageifsRound(rng) {
   return {
     subtype: "A-2", colWidths: [8, 8, 8, 6], headers, rows,
     result: { kind: "single", label: `${clubA} ${posA} 점수 평균` },
+    discriminators: [{ name: `${clubA}&${posA}(두 조건)`, test: (r) => r[1] === clubA && r[2] === posA, min: 3, max: n, allowFixed: "lastRow", reason: "두 조건 모두 만족 행을 고정 배치(AVERAGEIFS 범위 축소·조건 판별)" }],
     answer: `=ROUND(AVERAGEIFS(${vR},${c1},"${clubA}",${c2},"${posA}"),1)`,
     functions: { required: ["ROUND", "AVERAGEIFS"], candidates: null },
     text: `[{표}]에서 클럽[{col:클럽}]이 "${clubA}"이고 포지션[{col:포지션}]이 "${posA}"인 선수의 점수[{col:점수}] 평균을 [{R}] 셀에 계산하시오. (8점)`,

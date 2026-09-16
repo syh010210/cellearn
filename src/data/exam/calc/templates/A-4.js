@@ -29,6 +29,7 @@ function a4SumifRatio(rng) {
     subtype: "A-4", colWidths: [8, 8, 8], headers, rows,
     result: { kind: "table" },
     resultTable: { name: "부서별비율", headers: ["부서", "비율"], labels: deptSet, rowOffset: 0 },
+    discriminators: [{ name: "부서=첫 부서", test: (r) => r[1] === deptSet[0], min: 1, max: N }],
     answer: `=SUMIF($B$3:$B$${2 + N},${firstLabel},$C$3:$C$${2 + N})/SUM($C$3:$C$${2 + N})`,
     functions: { required: ["SUMIF", "SUM"], candidates: null },
     text: "[{표}]에서 부서[{col:부서}]와 실적[{col:실적}]을 이용하여 [부서별비율]표의 부서별 비율[{R}]을 계산하시오. (8점)",
@@ -59,6 +60,7 @@ function a4AbsSumif(rng) {
   return {
     subtype: "A-4", colWidths: [8, 6, 6], headers, rows, codeColumns: ["사번"],
     result: { kind: "single", label: "남녀 점수 합계 차이" },
+    discriminators: [{ name: "성별=남", test: (r) => r[1] === "남", min: 1, max: N - 1 }],
     answer,
     functions: { required: ["ABS", "SUMIF"], candidates: null },
     text: `[{표}]에서 성별[{col:성별}]이 "남"인 점수[{col:점수}]의 합계와 "여"인 점수의 합계 차이를 절댓값으로 [{R}] 셀에 계산하시오. (8점)`,

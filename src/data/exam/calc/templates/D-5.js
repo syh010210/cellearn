@@ -21,6 +21,7 @@ function d5ChooseWeekday(rng) {
   return {
     subtype: "D-5", colWidths: [8, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "출발요일" },
+    discriminators: [{ name: "토요일", test: (r) => weekday1(r[1]) === 7, min: 1, max: N }, { name: "일요일", test: (r) => weekday1(r[1]) === 1, min: 1, max: N }],
     answer: `=CHOOSE(WEEKDAY(${x}),"일요일","월요일","화요일","수요일","목요일","금요일","토요일")`,
     functions: { required: ["CHOOSE", "WEEKDAY"], candidates: null },
     text: "[{표}]에서 출발일자[{col:출발일자}]를 이용하여 출발요일[{R}]을 표시하시오. (8점)",
@@ -42,6 +43,7 @@ function d5IfWeekday(rng) {
   return {
     subtype: "D-5", colWidths: [8, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "요일구분" },
+    discriminators: [{ name: "주말", test: (r) => weekday2(r[1]) > 5, min: 1, max: N }],
     answer: `=IF(WEEKDAY(${x},2)<=5,"평일","주말")`,
     functions: { required: ["IF", "WEEKDAY"], candidates: null },
     text: `[{표}]에서 응시일[{col:응시일}]이 월요일부터 금요일이면 "평일", 그 외에는 "주말"로 요일구분[{R}]에 표시하시오. (8점)`,

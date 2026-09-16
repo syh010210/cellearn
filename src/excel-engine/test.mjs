@@ -176,6 +176,61 @@ function check(label, actual, expected) {
   check('INDEX', s.getDisplayValue('E3'), '바나나');
 }
 
+// ---- MATCH 근사(이진 탐색): 정렬 여부 무관, parity3 사례 (M·S) ----
+{
+  // 미정렬 범위 H=95,40,60,20,80,30,70 / I=40,60,95,20,80,30,70 / J=20,60,40,80,30,70,95 / 정렬 K
+  const s = new Sheet();
+  [95, 40, 60, 20, 80, 30, 70].forEach((v, i) => s.setCellValue('H' + (i + 1), v));
+  [40, 60, 95, 20, 80, 30, 70].forEach((v, i) => s.setCellValue('I' + (i + 1), v));
+  [20, 60, 40, 80, 30, 70, 95].forEach((v, i) => s.setCellValue('J' + (i + 1), v));
+  [20, 30, 40, 60, 70, 80, 95].forEach((v, i) => s.setCellValue('K' + (i + 1), v));
+  const m = (f) => { s.setCellInput('Z1', '=' + f); const v = s.getCellValue('Z1'); return isErrorValue(v) ? v.error : v; };
+  // type 1 전부
+  check('MATCH H MAX,1', m('MATCH(MAX(H1:H7),H1:H7,1)'), 7);
+  check('MATCH H MIN,1', m('MATCH(MIN(H1:H7),H1:H7,1)'), 4);
+  check('MATCH I MAX,1', m('MATCH(MAX(I1:I7),I1:I7,1)'), 7);
+  check('MATCH I MIN,1', m('MATCH(MIN(I1:I7),I1:I7,1)'), 4);
+  check('MATCH J MAX,1', m('MATCH(MAX(J1:J7),J1:J7,1)'), 7);
+  check('MATCH J MIN,1', m('MATCH(MIN(J1:J7),J1:J7,1)'), 1);
+  check('MATCH K MAX,1', m('MATCH(MAX(K1:K7),K1:K7,1)'), 7);
+  check('MATCH K 50,1', m('MATCH(50,K1:K7,1)'), 3);
+  check('MATCH K 55,1(부재)', m('MATCH(55,K1:K7,1)'), 3);
+  check('MATCH K 15,1(<최소)', m('MATCH(15,K1:K7,1)'), ERRORS.NA);
+  // type -1 (이진 탐색으로 설명되는 것만)
+  check('MATCH H MAX,-1', m('MATCH(MAX(H1:H7),H1:H7,-1)'), 1);
+  check('MATCH H MIN,-1', m('MATCH(MIN(H1:H7),H1:H7,-1)'), 4);
+  check('MATCH I MAX,-1(#N/A)', m('MATCH(MAX(I1:I7),I1:I7,-1)'), ERRORS.NA);
+  check('MATCH I MIN,-1', m('MATCH(MIN(I1:I7),I1:I7,-1)'), 4);
+  check('MATCH J MAX,-1(#N/A)', m('MATCH(MAX(J1:J7),J1:J7,-1)'), ERRORS.NA);
+  // 정확일치 FALSE = 0
+  check('MATCH FALSE=0', m('MATCH(MAX(I1:I7),I1:I7,FALSE)'), 3);
+}
+
+// ---- COUNTIF 비교 연산자: 숫자 조건은 숫자 셀만(텍스트 머리글 제외) ----
+{
+  const s = new Sheet();
+  s.setCellValue('X1', '점수');               // 텍스트 머리글
+  [90, 80, 75, 80, 60, 95, 50].forEach((v, i) => s.setCellValue('X' + (i + 2), v));
+  const c = (f) => { s.setCellInput('Z2', '=' + f); const v = s.getCellValue('Z2'); return isErrorValue(v) ? v.error : v; };
+  check('COUNTIF >=80 머리글 포함(텍스트 제외)', c('COUNTIF(X1:X8,">=80")'), 4);
+  check('COUNTIF >=80 머리글 제외', c('COUNTIF(X2:X8,">=80")'), 4);
+  check('COUNTIF =80 정확', c('COUNTIF(X1:X8,80)'), 2);
+}
+
+// ---- COUNTIF "<>": 값과 같지 않은 모든 셀(숫자·다른 텍스트·빈 셀 포함), "<>" 는 비어있지 않은 셀 ----
+{
+  const s = new Sheet();
+  // Y1:Y7 = 서울, 부산, 80, 90, (빈), 서울, 서울
+  s.setCellValue('Y1', '서울'); s.setCellValue('Y2', '부산'); s.setCellValue('Y3', 80);
+  s.setCellValue('Y4', 90); /* Y5 빈 */ s.setCellValue('Y6', '서울'); s.setCellValue('Y7', '서울');
+  const c = (f) => { s.setCellInput('Z3', '=' + f); const v = s.getCellValue('Z3'); return isErrorValue(v) ? v.error : v; };
+  check('COUNTIF <>서울 (숫자·빈 포함)', c('COUNTIF(Y1:Y7,"<>서울")'), 4);
+  check('COUNTIF <>80 (텍스트·빈 포함)', c('COUNTIF(Y1:Y7,"<>80")'), 6);
+  check('COUNTIF <> (비어있지 않은 셀)', c('COUNTIF(Y1:Y7,"<>")'), 6);
+  check('COUNTIF >=80 (숫자만)', c('COUNTIF(Y1:Y7,">=80")'), 2);
+  check('COUNTIF =80', c('COUNTIF(Y1:Y7,80)'), 1);
+}
+
 // ---- 날짜 함수 ----
 {
   const s = new Sheet();

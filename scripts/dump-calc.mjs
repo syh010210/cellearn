@@ -6,7 +6,7 @@ import { makeRng, planItem, TEMPLATES, FILLER } from "../src/utils/calc/calcAsse
 import { buildInstance } from "../src/utils/calc/buildInstance.js";
 import { resolveBlock } from "../src/utils/calc/calcBlock.js";
 import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
-import { submit, mutate, cellsGetCell, validateText } from "./_calcTestUtil.mjs";
+import { submit, mutate, cellsGetCell, validateText, specDiscriminators } from "./_calcTestUtil.mjs";
 
 let failed = 0;
 
@@ -86,9 +86,12 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
   for (const v of t.variants) for (let s = 0; s < 2; s++) {
     const r = planItem(st, v.id, v.difficulty, makeRng(`${v.id}@${s}`));
     const it = buildInstance({ id: "d", blocks: [r.spec, FILLER, FILLER] }).items[0];
-    const mrows = (r.spec.matchDecls || []).map((d) => { const c = r.spec.headers.indexOf(d.col); return `${d.value}[${r.spec.rows.map((row, i) => String(row[c]) === String(d.value) ? i + 3 : null).filter((x) => x != null).join(",")}]`; }).join(" ");
+    const discs = specDiscriminators(r.spec);
+    const dcell = discs.length
+      ? discs.map((d) => { const pos = r.spec.rows.map((row, i) => d.test(row) ? i + 3 : null).filter((x) => x != null).join(","); return d.allowFixed ? `${d.name}[${pos}] 마지막행고정(${d.reason || d.allowFixed})` : `${d.name}[${pos}]`; }).join(" · ")
+      : "미선언";
     const ex = ((it.notes || []).join(" ").match(/표시 예[^\]]*/) || ["-"])[0];
-    out.push(`| ${v.id} | ${s} | ${it.text.slice(0, 60)} | ${mrows || "-"} | ${ex} |`);
+    out.push(`| ${v.id} | ${s} | ${it.text.slice(0, 55)} | ${dcell} | ${ex} |`);
   }
 }
 

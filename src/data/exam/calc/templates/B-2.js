@@ -29,6 +29,7 @@ function b2IfRight(rng) {
   return {
     subtype: "B-2", colWidths: [12, 8, 8], headers, rows, codeColumns: ["수험번호"],
     result: { kind: "fillCol", col: "부서" },
+    discriminators: [{ name: "끝1=1", test: (r) => String(r[0]).slice(-1) === "1", min: 1, max: N }, { name: "끝1=2", test: (r) => String(r[0]).slice(-1) === "2", min: 1, max: N }],
     answer: `=IF(RIGHT(${x},1)="1","재무부",IF(RIGHT(${x},1)="2","경리부","회계부"))`,
     functions: { required: ["IF", "RIGHT"], candidates: null },
     text: `[{표}]에서 수험번호[{col:수험번호}]의 오른쪽 한 글자가 "1"이면 "재무부", "2"이면 "경리부", 그 외에는 "회계부"로 부서[{R}]에 표시하시오. (8점)`,
@@ -51,6 +52,7 @@ function b2IfLeft(rng) {
   return {
     subtype: "B-2", colWidths: [10, 8, 6], headers, rows, codeColumns: ["제품코드", "제품명"],
     result: { kind: "fillCol", col: "등급" },
+    discriminators: [{ name: "앞1=A", test: (r) => String(r[0])[0] === "A", min: 1, max: N }, { name: "앞1=B", test: (r) => String(r[0])[0] === "B", min: 1, max: N }],
     answer: `=IF(LEFT(${x},1)="A","우수",IF(LEFT(${x},1)="B","양호","보통"))`,
     functions: { required: ["IF", "LEFT"], candidates: null },
     text: `[{표}]에서 제품코드[{col:제품코드}]의 왼쪽 한 글자가 "A"이면 "우수", "B"이면 "양호", 그 외에는 "보통"으로 등급[{R}]에 표시하시오. (8점)`,
@@ -71,9 +73,10 @@ function b2ChooseMidRepeat(rng) {
   return {
     subtype: "B-2", colWidths: [10, 8, 8], headers, rows, codeColumns: ["회원코드"],
     result: { kind: "fillCol", col: "관심분야" },
+    discriminators: [{ name: "4번째=1", test: (r) => String(r[0])[3] === "1", min: 1, max: N }, { name: "4번째=4|5", test: (r) => ["4", "5"].includes(String(r[0])[3]), min: 1, max: N }],
     answer: `=CHOOSE(MID(${x},4,1),"가구","도서","요리","손글씨","손글씨")`,
     functions: { required: ["CHOOSE", "MID"], candidates: null },
-    text: `[{표}]에서 회원코드[{col:회원코드}]의 네 번째 문자가 "1"이면 "가구", "2"이면 "도서", "3"이면 "요리", 그 외에는 "손글씨"로 관심분야[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 회원코드[{col:회원코드}]의 네 번째 문자가 "1"이면 "가구", "2"이면 "도서", "3"이면 "요리", "4"나 "5"이면 "손글씨"로 관심분야[{R}]에 표시하시오. (8점)`,
     notes: ["CHOOSE, MID 함수 사용"],
     accept: [`=CHOOSE(MID(${x},4,1),"가구","도서","요리","손글씨","손글씨")`],
   };
@@ -82,7 +85,7 @@ function b2ChooseMidRepeat(rng) {
 // 4) b2-iferror-choose-mid [어려움] — 범위 밖은 공백
 function b2IferrorChooseMid(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["관리코드", "성명", "성별"];
+  const headers = ["관리코드", "성명", "구분"];
   const oob = (r) => r.chance(0.5) ? 0 : 5 + r.int(5);
   const js = judgesReq(rng, N, [1, 2, 3, 4, oob(rng), oob(rng)], (r) => [1, 2, 3, 4, oob(r)][r.int(5)]); // 인덱스 1~4 + 범위밖 2개
   const codes = distinctCodes(rng, js, midCode);
@@ -91,12 +94,13 @@ function b2IferrorChooseMid(rng) {
   const g = geom(headers, N), x = g.dataCell("관리코드", 0);
   return {
     subtype: "B-2", colWidths: [10, 8, 6], headers, rows, codeColumns: ["관리코드"],
-    result: { kind: "fillCol", col: "성별" },
-    answer: `=IFERROR(CHOOSE(MID(${x},4,1),"남","여","남","여"),"")`,
+    result: { kind: "fillCol", col: "구분" },
+    discriminators: [{ name: "4번째=1|3", test: (r) => ["1", "3"].includes(String(r[0])[3]), min: 1, max: N }, { name: "4번째=범위밖", test: (r) => { const d = +String(r[0])[3]; return !(d >= 1 && d <= 4); }, min: 1, max: N }],
+    answer: `=IFERROR(CHOOSE(MID(${x},4,1),"A조","B조","A조","B조"),"")`,
     functions: { required: ["IFERROR", "CHOOSE", "MID"], candidates: null },
-    text: `[{표}]에서 관리코드[{col:관리코드}]의 네 번째 문자가 "1"이나 "3"이면 "남", "2"나 "4"이면 "여", 그 외에는 공백을 성별[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 관리코드[{col:관리코드}]의 네 번째 문자가 "1"이나 "3"이면 "A조", "2"나 "4"이면 "B조", 그 외에는 공백을 구분[{R}]에 표시하시오. (8점)`,
     notes: ["CHOOSE, IFERROR, MID 함수 사용"],
-    accept: [`=IFERROR(CHOOSE(MID(${x},4,1),"남","여","남","여"),"")`],
+    accept: [`=IFERROR(CHOOSE(MID(${x},4,1),"A조","B조","A조","B조"),"")`],
   };
 }
 
@@ -113,6 +117,7 @@ function b2ModMid(rng) {
   return {
     subtype: "B-2", colWidths: [10, 8, 6], headers, rows, codeColumns: ["사원코드"],
     result: { kind: "fillCol", col: "구분" },
+    discriminators: [{ name: "4번째=홀수", test: (r) => +String(r[0])[3] % 2 === 1, min: 1, max: N }, { name: "4번째=짝수", test: (r) => +String(r[0])[3] % 2 === 0, min: 1, max: N }],
     answer: `=IF(MOD(MID(${x},4,1),2)=1,"홀수조","짝수조")`,
     functions: { required: ["IF", "MID", "MOD"], candidates: null },
     text: `[{표}]에서 사원코드[{col:사원코드}]의 네 번째 문자가 홀수이면 "홀수조", 짝수이면 "짝수조"로 구분[{R}]에 표시하시오. (8점)`,

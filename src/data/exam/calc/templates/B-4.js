@@ -27,6 +27,9 @@ function b4CountSubject(rng) {
   // rangeShrink(수학 열 제거)로 결과가 바뀌는 행: 수학<80 이면서 정확히 2개 미만인 행
   if (!scoreRows.some((r) => r[2] < 80 && below(r) === 2)) throw new Error("열축소 무영향");
   if (!scoreRows.some((r) => below(r) === 1)) throw new Error("count 1 없음");   // litPM1 2→1 판별
+  // "<80" 경계: 정확히 80 인 과목 셀 1개 이상(80 은 미만 아님 → below 불변). 위치 편중 방지 위해 무작위 대상 행 선택.
+  const ord = rng.shuffle(scoreRows.map((_, i) => i));
+  outer: for (const i of ord) for (let k = 0; k < 3; k++) if (scoreRows[i][k] >= 80) { scoreRows[i][k] = 80; break outer; }
   const names = rng.sample(NAMES, N);
   const rows = scoreRows.map((r, i) => [names[i], r[0], r[1], r[2], null]);
   const g = geom(headers, N);
@@ -34,6 +37,10 @@ function b4CountSubject(rng) {
   return {
     subtype: "B-4", colWidths: [8, 6, 6, 6, 8], headers, rows,
     result: { kind: "fillCol", col: "합격여부" },
+    discriminators: [
+      { name: "80미만 2과목↑(공백)", test: (r) => [r[1], r[2], r[3]].filter((v) => v < 80).length >= 2, min: 1, max: N },
+      { name: "정확히 80 포함", test: (r) => [r[1], r[2], r[3]].includes(80), min: 1, max: N },
+    ],
     answer: `=IF(COUNTIF(${rowRange},"<80")>=2,"","합격")`,
     functions: { required: ["IF", "COUNTIF"], candidates: null },
     text: '[{표}]에서 국어[{col:국어}], 영어[{col:영어}], 수학[{col:수학}] 점수 중 2과목 이상이 80점 미만이면 공백, 그 외에는 "합격"으로 합격여부[{R}]에 표시하시오. (8점)',
@@ -69,6 +76,7 @@ function b4IdDup(rng) {
   return {
     subtype: "B-4", colWidths: [8, 8, 8], headers, rows, codeColumns: ["회원ID"],
     result: { kind: "fillCol", col: "회원구분" },
+    discriminators: [{ name: "중복ID(우수)", test: (r) => freq[r[0]] >= 2, min: 2, max: N, allowFixed: "lastRow", reason: "마지막 행을 중복 그룹으로 고정(COUNTIF 범위 끝-1 축소 판별)" }],
     answer: `=IF(COUNTIF(${rA},${x})>=2,"우수","일반")`,
     functions: { required: ["IF", "COUNTIF"], candidates: null },
     text: '[{표}]에서 회원ID[{col:회원ID}]에 동일한 ID가 2개 이상이면 "우수", 그렇지 않으면 "일반"을 회원구분[{R}]에 표시하시오. (8점)',

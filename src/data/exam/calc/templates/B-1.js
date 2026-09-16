@@ -59,6 +59,7 @@ function largeSmall(rng) {
   return {
     subtype: "B-1", colWidths: [10, 8, 8], headers, rows,
     result: { kind: "fillCol", col: "비고" },
+    discriminators: [{ name: `승점 상위${n}위(★)`, test: (r) => r[1] >= largeN, min: n, max: n, allowFixed: "lastRow", reason: "상·하위 경계 행을 첫·마지막에 배치(LARGE/SMALL 범위 축소 판별)" }],
     answer: `=IF(${x}>=LARGE(${rgA},${n}),"★",IF(${x}<=SMALL(${rgA},${n}),"☆",""))`,
     functions: { required: ["IF", "LARGE", "SMALL"], candidates: null },
     text: `[{표}]에서 승점[{col:승점}]이 상위 ${n}위 이내이면 "★", 하위 ${n}위 이내이면 "☆", 나머지는 공백으로 비고[{R}]에 표시하시오. (8점)`,
@@ -78,6 +79,7 @@ function rankIf(rng) {
   return {
     subtype: "B-1", colWidths: [10, 8, 8], headers, rows,
     result: { kind: "fillCol", col: "결과" },
+    discriminators: [{ name: `총점 ${n}위 이내(진출)`, test: (r) => ([...vals].sort((a, b) => b - a).indexOf(r[1]) + 1) <= n, min: n, max: n, allowFixed: "lastRow", reason: "상위 n위 행을 첫·마지막에 배치(RANK.EQ 범위 축소 판별)" }],
     answer: `=IF(RANK.EQ(${g.dataCell("총점", 0)},${g.colAbs("총점")})<=${n},"진출","")`,
     functions: { required: ["IF", "RANK.EQ"], candidates: null },
     text: `[{표}]에서 총점[{col:총점}]에 대한 순위가 ${n}위 이내이면 "진출", 그 외에는 공백을 결과[{R}]에 표시하시오. (8점)`,
@@ -101,6 +103,7 @@ function iferrorChoose(rng) {
   return {
     subtype: "B-1", colWidths: [8, 10, 10], headers, rows,
     result: { kind: "fillCol", col: "순위판정" },
+    discriminators: [{ name: "실기점수 3위 이내", test: (r) => ([...arr].sort((a, b) => b - a).indexOf(r[1]) + 1) <= 3, min: 3, max: 3, allowFixed: "lastRow", reason: "1~3위 행을 첫·중간·마지막에 배치(RANK.EQ 범위 축소 판별)" }],
     answer: `=IFERROR(CHOOSE(RANK.EQ(${g.dataCell("실기점수", 0)},${g.colAbs("실기점수")}),"금","은","동"),"")`,
     functions: { required: ["IFERROR", "CHOOSE", "RANK.EQ"], candidates: null },
     text: '[{표}]에서 실기점수[{col:실기점수}]에 대한 순위를 구하여 1위는 "금", 2위는 "은", 3위는 "동", 그 외에는 공백을 순위판정[{R}]에 표시하시오. (8점)',
@@ -141,6 +144,7 @@ function orRank(rng) {
   return {
     subtype: "B-1", colWidths: [8, 6, 6, 8], headers, rows, codeColumns: ["사번"],
     result: { kind: "fillCol", col: "결과" },
+    discriminators: [{ name: `1차·2차 ${n}위 이내(통과)`, test: (r) => (descRank(r[1], c1) <= n || descRank(r[2], c2) <= n), min: 1, max: N }],
     answer: `=IF(OR(RANK.EQ(${x1},${R1})<=${n},RANK.EQ(${x2},${R2})<=${n}),"통과","")`,
     functions: { required: ["IF", "OR", "RANK.EQ"], candidates: null },
     text: `[{표}]에서 1차[{col:1차}]의 순위가 ${n}위 이내이거나 2차[{col:2차}]의 순위가 ${n}위 이내이면 "통과", 그 외에는 공백을 결과[{R}]에 표시하시오. (8점)`,
@@ -167,6 +171,7 @@ function iferrorRankAsc(rng) {
   return {
     subtype: "B-1", colWidths: [10, 10, 8], headers, rows, colZ: { 1: "0.00" }, verbException: "표시",
     result: { kind: "fillCol", col: "순위" },
+    discriminators: [{ name: "빈 기록(실격)", test: (r) => r[1] === "" || r[1] == null, min: 1, max: 1 }],
     answer: `=IFERROR(RANK.EQ(${g.dataCell(KREC, 0)},${g.colAbs(KREC)},1),"실격")`,
     functions: { required: ["IFERROR", "RANK.EQ"], candidates: null },
     text: `[{표}]에서 기록[{col:${KREC}}]에 대한 순위를 구하여 순위[{R}]에 표시하시오. (8점)`,

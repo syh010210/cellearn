@@ -73,6 +73,9 @@ export function randDate(rng, y1, y2, opt = {}) {
   const d = opt.day || (1 + rng.int(DIM(y, m)));
   return { y, m, d, s: serial(y, m, d) };
 }
+export const serialYear = (s) => new Date(Date.UTC(1899, 11, 30) + s * 86400000).getUTCFullYear();
+export const serialMonth = (s) => new Date(Date.UTC(1899, 11, 30) + s * 86400000).getUTCMonth() + 1;
+export const serialDay = (s) => new Date(Date.UTC(1899, 11, 30) + s * 86400000).getUTCDate();
 export const weekday1 = (s) => new Date(Date.UTC(1899, 11, 30) + s * 86400000).getUTCDay() + 1; // 일=1..토=7
 export const weekday2 = (s) => { const d = weekday1(s); return d === 1 ? 7 : d - 1; };            // 월=1..일=7
 // 지정 요일(mode 1/2)이 되는 날짜를 뽑는다

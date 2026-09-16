@@ -45,21 +45,27 @@ function b5Build(rng, { op, headers, xCol, yCol, resCol, kBase, kStep, kSpan, tr
   const res = y.map((v, i) => ((op === "AND") ? (x[i] >= k && c2[i]) : (x[i] >= k || c2[i])) ? trueLabel : falseLabel);
   if (new Set(res).size < 2) throw new Error("결과 단일");
   const names = rng.sample(NAMES, N);
-  const rows = y.map((v, i) => [names[i], x[i], v, null]);
+  // 경계 행이 앞쪽에 몰리지 않도록 행 순서를 섞는다(경계 판별은 값 기준이라 순서 무관, 채우기-민감 mutant 는 아래서 재검증)
+  const rows = rng.shuffle(y.map((v, i) => [names[i], x[i], v, null]));
   const g = geom(headers, N), xc = g.dataCell(xCol, 0), yc = g.dataCell(yCol, 0), yA = g.colAbs(yCol);
   const answer = `=IF(${op}(${xc}>=${k},${yc}>AVERAGE(${yA})),"${trueLabel}","${falseLabel}")`;
   const spec = {
     subtype: "B-5", colWidths, headers, rows, colZ: { 2: colZy },
     result: { kind: "fillCol", col: resCol },
+    discriminators: [
+      { name: `${xCol}=${k}(경계)`, test: (r) => r[1] === k, min: 1, max: N },
+      { name: `${yCol}>평균(cond2)`, test: (r) => r[2] > avg, min: 1, max: N },
+    ],
     answer,
     functions: { required: ["IF", op, "AVERAGE"], candidates: null },
     text: note(xCol, yCol, k, trueLabel, falseLabel, resCol),
     notes: [`IF, ${op}, AVERAGE 함수 사용`],
     accept: [`=IF(${op}(${xc}>=${k},${yc}>AVERAGE(${g.colRowFixed(yCol)})),"${trueLabel}","${falseLabel}")`],
   };
-  // 평균 범위의 $ 제거(removeDollar)·시작$ 제거(partialDollar)는 채울 때 범위가 밀린다 → 조합 레이아웃에서 결과를 바꿔야
+  // 채우기-민감 mutant 는 조합 레이아웃(행 순서 포함)에서 결과를 바꿔야: 평균범위 $전부제거·시작$제거·끝-1축소
   const partRange = `${g.colLetter(yCol)}${g.dr1}:$${g.colLetter(yCol)}$${g.dr2}`;
-  assertFillColClean(spec, [answer.replace(/\$/g, ""), answer.replace(yA, partRange)]);
+  const shrRange = `$${g.colLetter(yCol)}$${g.dr1}:$${g.colLetter(yCol)}$${g.dr2 - 1}`;
+  assertFillColClean(spec, [answer.replace(/\$/g, ""), answer.replace(yA, partRange), answer.replace(yA, shrRange)]);
   return spec;
 }
 

@@ -1,7 +1,7 @@
 // src/data/exam/calc/templates/B-3.js
 // 날짜 판정 (YEAR/MONTH/DAY/MOD). 변형 4개. 기준일은 baseCell(TODAY 금지).
 import { NAMES, EXAM_NAMES, EVENTS } from "../pools.js";
-import { geom, COL, randDate } from "./_util.js";
+import { geom, COL, randDate, serialYear, serialMonth, serialDay } from "./_util.js";
 
 const shuffleRows = (rng, arr) => rng.shuffle(arr);
 
@@ -22,6 +22,7 @@ function b3YearDiff(rng) {
     subtype: "B-3", colWidths: [8, 12, 6], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     baseCell: { label: "기준일", value: base.s, z: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "등급" },
+    discriminators: [{ name: `기간>=${n}(★)`, test: (r) => baseY - serialYear(r[1]) >= n, min: 1, max: N }, { name: `${m}<=기간<${n}(☆)`, test: (r) => { const g = baseY - serialYear(r[1]); return g >= m && g < n; }, min: 1, max: N }],
     answer: `=IF(YEAR(${bA})-YEAR(${x})>=${n},"★",IF(YEAR(${bA})-YEAR(${x})>=${m},"☆",""))`,
     functions: { required: ["IF", "YEAR"], candidates: null },
     text: `[{표}]에서 기준일[{base}]을 기준으로 가입일[{col:가입일}]의 가입기간이 ${n}년 이상이면 "★", ${m}년 이상이면 "☆", 그 외에는 공백을 등급[{R}]에 표시하시오. (8점)`,
@@ -36,7 +37,7 @@ function b3AgePlus1(rng) {
   const headers = ["성명", "생년월일", "세대구분"];
   const baseY = 2024 + rng.int(3);
   const base = randDate(rng, 0, 0, { year: baseY, month: 12, day: 31 });
-  const a = 19 + rng.int(3), b = 29 + rng.int(3);     // 청소년<a, ~b→중간, else
+  const a = 17 + rng.int(4), b = 27 + rng.int(9);     // 청소년<a(상한17~20), ~b(상한27~35)→청년, else 장년
   // 나이 = (baseY - 생년)+1 → 생년 = baseY - 나이 + 1. 경계 나이 포함
   const ages = [a - 1, a, b, b + 1];
   while (ages.length < N) ages.push(15 + rng.int(b - 10));
@@ -48,6 +49,7 @@ function b3AgePlus1(rng) {
     subtype: "B-3", colWidths: [8, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     baseCell: { label: "기준일", value: base.s, z: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "세대구분" },
+    discriminators: [{ name: `나이<${a}(청소년)`, test: (r) => (baseY - serialYear(r[1])) + 1 < a, min: 1, max: N }, { name: `나이>${b}(장년)`, test: (r) => (baseY - serialYear(r[1])) + 1 > b, min: 1, max: N }],
     answer: `=IF((YEAR(${bA})-YEAR(${x}))+1<${a},"청소년",IF((YEAR(${bA})-YEAR(${x}))+1<=${b},"청년","장년"))`,
     functions: { required: ["IF", "YEAR"], candidates: null },
     text: `[{표}]에서 기준일[{base}]과 생년월일[{col:생년월일}]을 이용한 나이가 ${a}세 미만이면 "청소년", ${b}세 이하이면 "청년", 그 외에는 "장년"으로 세대구분[{R}]에 표시하시오. (8점)`,
@@ -70,6 +72,7 @@ function b3ModDay(rng) {
   return {
     subtype: "B-3", colWidths: [10, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "구분" },
+    discriminators: [{ name: "일=5배수(정기)", test: (r) => serialDay(r[1]) % 5 === 0, min: 1, max: N }],
     answer: `=IF(MOD(DAY(${x}),5)=0,"정기시험","상시시험")`,
     functions: { required: ["IF", "MOD", "DAY"], candidates: null },
     text: `[{표}]에서 시험일자[{col:시험일자}]의 일이 5의 배수이면 "정기시험", 그 외에는 "상시시험"으로 구분[{R}]에 표시하시오. (8점)`,
@@ -92,6 +95,7 @@ function b3OrMonth(rng) {
   return {
     subtype: "B-3", colWidths: [10, 12, 6], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "발송여부" },
+    discriminators: [{ name: `월=${m1}|${m2}(발송)`, test: (r) => [m1, m2].includes(serialMonth(r[1])), min: 1, max: N }],
     answer: `=IF(OR(MONTH(${x})=${m1},MONTH(${x})=${m2}),"발송","")`,
     functions: { required: ["IF", "OR", "MONTH"], candidates: null },
     text: `[{표}]에서 홍보예정일[{col:홍보예정일}]의 월이 ${m1} 또는 ${m2}이면 "발송", 그 외에는 공백을 발송여부[{R}]에 표시하시오. (8점)`,

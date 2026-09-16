@@ -99,13 +99,21 @@ export function validateText(item, spec) {
   });
   // 본문에 "에서" 2회 이상이면 실패
   if ((item.text.match(/에서/g) || []).length >= 2) errs.push("본문에 '에서' 2회 이상");
-  // 조건 대상 값 개수가 선언 범위(min~max) 안인지
-  for (const d of spec.matchDecls || []) {
-    const c = spec.headers.indexOf(d.col);
-    const cnt = spec.rows.filter((r) => String(r[c]) === String(d.value)).length;
-    if (cnt < d.min || cnt > d.max) errs.push(`조건 '${d.value}' 행 수 ${cnt} (${d.min}~${d.max} 밖)`);
+  // 판별 행 개수가 선언 범위(min~max) 안인지 (discriminators = matchDecls 흡수)
+  for (const d of specDiscriminators(spec)) {
+    const cnt = spec.rows.filter((r) => d.test(r)).length;
+    if (cnt < d.min || cnt > d.max) errs.push(`판별 '${d.name}' 행 수 ${cnt} (${d.min}~${d.max} 밖)`);
   }
   return errs;
+}
+
+// 판별 행 선언 통합: spec.discriminators([{name,test,min,max,allowFixed?,reason?}]) + spec.matchDecls 흡수.
+// test(row) 는 한 데이터 행(셀 값 배열)으로 판별 대상 여부를 판정. allowFixed 있으면 위치 분산 검사 면제.
+export function specDiscriminators(spec) {
+  const out = [];
+  for (const d of spec.discriminators || []) out.push({ name: d.name, test: d.test, min: d.min, max: d.max, allowFixed: d.allowFixed || null, reason: d.reason || "" });
+  for (const m of spec.matchDecls || []) { const c = spec.headers.indexOf(m.col); out.push({ name: `${m.col}=${m.value}`, test: (row) => String(row[c]) === String(m.value), min: m.min, max: m.max, allowFixed: null, reason: "" }); }
+  return out;
 }
 
 // 이름 열 자동 감지(값이 모두 이름 풀) — 고정 패턴 검사에서 제외

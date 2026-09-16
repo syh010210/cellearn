@@ -20,6 +20,7 @@ function a3LargeSmall(rng) {
   return {
     subtype: "A-3", colWidths: [8, 8, 6], headers, rows,
     result: { kind: "single", label: `${k1}번째 큰 값과 ${k2}번째 작은 값의 차이` },
+    discriminators: [{ name: "기록 최댓값 행", test: (r) => r[2] === Math.max(...vals), min: 1, max: 1 }],
     answer: `=LARGE(${rA},${k1})-SMALL(${rA},${k2})`,
     functions: { required: ["LARGE", "SMALL"], candidates: null },
     text: `[{표}]의 기록[{col:기록}] 중 ${k1}번째로 큰 값과 ${k2}번째로 작은 값의 차이를 [{R}] 셀에 계산하시오. (8점)`,
@@ -50,6 +51,7 @@ function a3DmaxDmin(rng) {
     result: { kind: "single", label: "광역시 증감률 최대값과 최소값의 차이" },
     answer: `=DMAX(${g.dbAllAbs()},${fld},${crit})-DMIN(${g.dbAllAbs()},${fld},${crit})`,
     criteria: { headers: ["시도"], rows: [["*광역시"]], rowOffset: 0 },
+    discriminators: [{ name: "시도 '광역시'끝(조건)", test: (r) => String(r[0]).endsWith("광역시"), min: 3, max: N }],
     functions: { required: ["DMAX", "DMIN"], candidates: null },
     text: `[{표}]에서 시도[{col:시도}]가 "광역시"로 끝나는 시도의 증감률[{col:증감률}] 최대값과 최소값의 차이를 [{R}] 셀에 계산하시오. (8점)`,
     notes: ["조건은 [{C}] 영역에 알맞게 입력", "DMAX, DMIN 함수 사용"],

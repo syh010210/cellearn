@@ -32,6 +32,7 @@ function c2HlookupAvg(rng) {
   return {
     subtype: "C-2", colWidths: [8, 8, 8, 6], headers, rows,
     result: { kind: "fillCol", col: "학점" },
+    discriminators: [{ name: "평균 정수(기준 근처)", test: (r) => (r[1] + r[2]) % 2 === 0, min: 1, max: N }],
     refTable: { name: "학점기준표", rowLabels: ["점수", "학점"], headers: keys, rows: [HAKJEOM], rowOffset: 0 },
     answer: `=HLOOKUP(AVERAGE(${g.dataCell("중간고사", 0)},${g.dataCell("기말고사", 0)}),${T},2)`,
     functions: { required: ["AVERAGE", "HLOOKUP"], candidates: null },
@@ -49,16 +50,17 @@ function c2Discount(rng) {
   const keys = [0, k1, k2, k3];                       // 판매량 하한 오름차순, 시드화
   const disc = [0, 0.05, 0.1, 0.15];                 // 0% 구간 포함
   const prods = rng.sample(PRODUCTS, N > PRODUCTS.length ? PRODUCTS.length : N);
-  const 판매량 = [k1, k2 - 1];                         // 기준값과 정확히 같은 값·바로 아래 값
-  const used = new Set(판매량);
-  while (판매량.length < N) { const q = 5 + rng.int(k3 + 20); if (!used.has(q)) { used.add(q); 판매량.push(q); } }
-  rng.shuffle(판매량);
+  const q0 = [k1, k2 - 1];                             // 기준값과 정확히 같은 값·바로 아래 값
+  const used = new Set(q0);
+  while (q0.length < N) { const q = 5 + rng.int(k3 + 20); if (!used.has(q)) { used.add(q); q0.push(q); } }
+  const 판매량 = rng.shuffle(q0);                       // 기준값 행 위치 분산
   if (!판매량.some((q) => !keys.includes(q))) throw new Error("정확일치만"); // 근사 판별(정확일치 실패 행)
   const rows = 판매량.map((q, i) => [prods[i % prods.length], q, round1k(PRODUCT_PRICE[prods[i % prods.length]][0] + rng.int(20000)), null]);
   const g = geom(headers, N), T = g.refRangeAbs(true, 1, keys.length, true);
   return {
     subtype: "C-2", colWidths: [8, 6, 8, 10], headers, rows, colZ: { 2: "#,##0" },
     result: { kind: "fillCol", col: "판매액", z: "#,##0" },
+    discriminators: [{ name: "판매량=구간 기준값", test: (r) => r[1] === k1, min: 1, max: N }],
     refTable: { name: "할인율표", rowLabels: ["판매량", "할인율"], z: "0%", headers: keys, rows: [disc], rowOffset: 0 },
     answer: `=${g.dataCell("판매량", 0)}*${g.dataCell("가격", 0)}*(1-HLOOKUP(${g.dataCell("판매량", 0)},${T},2,1))`,
     functions: { required: ["HLOOKUP"], candidates: null },
@@ -80,6 +82,7 @@ function c2RankBand(rng) {
   return {
     subtype: "C-2", colWidths: [8, 10, 8], headers, rows, colZ: { 1: "#,##0" },
     result: { kind: "fillCol", col: "등급" },
+    discriminators: [{ name: "구입총액 1위", test: (r) => r[1] === Math.max(...total), min: 1, max: 1 }],
     refTable: { name: "등급표", rowLabels: ["순위", "등급"], headers: keys, rows: [BAND_GRADES], rowOffset: 0 },
     answer: `=HLOOKUP(RANK.EQ(${g.dataCell("구입총액", 0)},${rA}),${T},2)`,
     functions: { required: [], candidates: ["VLOOKUP", "HLOOKUP", "RANK.EQ", "LARGE"] },

@@ -157,22 +157,17 @@ export const MATCH = ([lookupValue, lookupArray, matchType]) => {
     return makeError(ERRORS.NA);
   }
 
-  if (type === 1) {
-    let result = -1;
-    for (let i = 0; i < arr.length; i++) {
-      if (compareForLookup(arr[i], lookupValue) <= 0) result = i;
-      else break;
-    }
-    if (result === -1) return makeError(ERRORS.NA);
-    return result + 1;
+  // type 1(오름차순 가정)·-1(내림차순 가정) 모두 엑셀식 이진 탐색.
+  // 정렬 여부와 무관하게 동일 알고리즘: 각 중앙에서 정확 일치면 즉시 반환,
+  //  type 1 은 값<찾는값이면 오른쪽·아니면 왼쪽 / type -1 은 값>찾는값이면 오른쪽·아니면 왼쪽,
+  //  끝난 뒤 hi 위치(없으면 #N/A). (미정렬 근사 시 엑셀과 동일한 결과가 나온다.)
+  let lo = 0, hi = arr.length - 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    const c = compareForLookup(arr[mid], lookupValue);
+    if (c === 0) return mid + 1;
+    if (type === 1 ? c < 0 : c > 0) lo = mid + 1;
+    else hi = mid - 1;
   }
-
-  // type === -1: 내림차순 배열, lookupValue 이상인 것 중 마지막
-  let result = -1;
-  for (let i = 0; i < arr.length; i++) {
-    if (compareForLookup(arr[i], lookupValue) >= 0) result = i;
-    else break;
-  }
-  if (result === -1) return makeError(ERRORS.NA);
-  return result + 1;
+  return hi < 0 ? makeError(ERRORS.NA) : hi + 1;
 };

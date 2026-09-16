@@ -30,15 +30,20 @@ function a6DsumRoundup(rng) {
   if (applyRound("ROUNDUP", all, -3) === up) throw new Error("조건축소 무영향");
   const names = rng.sample(NAMES, N);
   const rows = jijeom.map((j, i) => [j, names[i], 매출[i]]);
+  // 표시 예: 결과 크기 근처, 백의 자리가 드러나는 값 → 천의 자리 올림 (시드마다 다름)
+  const exIn = Math.floor(dsum / 1000) * 1000 + (100 + rng.int(899));
+  const exOut = Math.ceil(exIn / 1000) * 1000;
+  const exNote = `백의 자리에서 올림하여 천의 자리까지 표시 [표시 예 : ${exIn.toLocaleString("en-US")} → ${exOut.toLocaleString("en-US")}]`;
   const g = geom(headers, N), dbA = g.dbAllAbs(), db = g.dbAll(), crit = g.critRange(1);
   return {
     subtype: "A-6", colWidths: [8, 8, 10], headers, rows, colZ: { 2: "#,##0" },
     result: { kind: "single", label: `${region} 매출액 합계` },
+    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "lastRow", reason: "조건 지점을 첫·중간·마지막에 배치(DSUM 범위 축소·조건 판별)" }],
     answer: `=ROUNDUP(DSUM(${dbA},"매출액",${crit}),-3)`,
     criteria: { headers: ["지점"], rows: [[region]], rowOffset: 0 },
     functions: { required: ["DSUM"], candidates: ["ROUND", "ROUNDUP", "ROUNDDOWN"] },
     text: `[{표}]에서 지점[{col:지점}]이 "${region}"인 매출액[{col:매출액}]의 합계를 [{R}] 셀에 계산하시오. (8점)`,
-    notes: ["백의 자리에서 올림하여 천의 자리까지 표시", "조건은 [{C}] 영역에 알맞게 입력", "DSUM, ROUND, ROUNDUP, ROUNDDOWN 함수 중 알맞은 함수들을 선택하여 사용"],
+    notes: [exNote, "조건은 [{C}] 영역에 알맞게 입력", "DSUM, ROUND, ROUNDUP, ROUNDDOWN 함수 중 알맞은 함수들을 선택하여 사용"],
     accept: [
       `=ROUNDUP(DSUM(${dbA},${g.header("매출액")},${crit}),-3)`,   // 필드=머리글 셀
       `=ROUNDUP(DSUM(${dbA},3,${crit}),-3)`,                       // 필드=열 번호

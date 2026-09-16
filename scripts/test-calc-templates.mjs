@@ -4,10 +4,37 @@
 import { makeRng, planItem, composeCalc, TEMPLATES, FILLER } from "../src/utils/calc/calcAssembler.js";
 import { buildInstance } from "../src/utils/calc/buildInstance.js";
 import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
-import { submit, mutate, cellsGetCell, validateText, significantCols } from "./_calcTestUtil.mjs";
+import { submit, mutate, cellsGetCell, validateText, significantCols, specDiscriminators } from "./_calcTestUtil.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; console.log(`✗ ${name}  ${extra}`); } };
+
+// ── 단위: headerInAggregate 의 COUNTIF 조건 좁히기 (숫자비교 허용 / <>텍스트·와일드카드 비허용) ──
+{
+  const S = { result: { kind: "fillCol" } };
+  const expand = (cond) => classifySurvivor(`=COUNTIF($A$3:$A$10,${cond})`, `=COUNTIF($A$2:$A$10,${cond})`, S);
+  check("단위 COUNTIF 숫자비교(>=80) headerInAggregate 허용", expand('">=80"')?.name === "headerInAggregate", JSON.stringify(expand('">=80"')));
+  check("단위 COUNTIF <>서울 규칙 비적용", expand('"<>서울"') === null, JSON.stringify(expand('"<>서울"')));
+  check("단위 COUNTIF 와일드카드(*) 규칙 비적용", expand('"*"') === null, JSON.stringify(expand('"*"')));
+}
+
+// ── 단위: mutation 생성기가 MATCH 3번째 인수로 -1 을 만들지 않는다(엑셀 미정의 동작 회피) ──
+{
+  const has = (base) => mutate(base, ["INDEX", "MATCH", "MAX"]).some((m) => /MATCH\([^()]*\([^()]*\)[^()]*,\s*-1\s*\)/.test(m.formula) || /MATCH\([^()]*,\s*-1\s*\)/.test(m.formula));
+  check("단위 mutate MATCH ,0 → -1 미생성", !has("=INDEX($A$3:$A$9,MATCH(MAX($C$3:$C$9),$C$3:$C$9,0))"));
+  check("단위 mutate MATCH ,FALSE → -1 미생성", !has("=INDEX($A$3:$A$9,MATCH(MAX($C$3:$C$9),$C$3:$C$9,FALSE))"));
+}
+
+// ── 단위: extremeLookupShrink (최대 행 마지막 아님 → 허용 / 마지막 → 비허용 / 다른 함수 → 비허용) ──
+{
+  const S = { result: { kind: "single" } };
+  const gc = (vals) => (addr) => { const m = /^C(\d+)$/.exec(addr); if (!m) return null; const v = vals[+m[1] - 3]; return v === undefined ? null : { v }; };
+  const base = "=INDEX($A$3:$A$10,MATCH(MAX($C$3:$C$10),$C$3:$C$10,0))";
+  const mutSh = "=INDEX($A$3:$A$9,MATCH(MAX($C$3:$C$10),$C$3:$C$10,0))";
+  check("단위 extremeLookupShrink 최대 중간 → 허용", classifySurvivor(base, mutSh, S, gc([50, 60, 95, 40, 80, 30, 70, 20]))?.name === "extremeLookupShrink", JSON.stringify(classifySurvivor(base, mutSh, S, gc([50, 60, 95, 40, 80, 30, 70, 20]))));
+  check("단위 extremeLookupShrink 최대 마지막 → 비허용", classifySurvivor(base, mutSh, S, gc([50, 60, 40, 80, 30, 70, 20, 95])) === null);
+  check("단위 extremeLookupShrink 다른 함수 → 비허용", classifySurvivor("=SUM($C$3:$C$10)", "=SUM($C$3:$C$9)", S, gc([50, 60, 95, 40, 80, 30, 70, 20])) === null);
+}
 
 const VARIANTS = [];
 for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) VARIANTS.push({ st, id: v.id, difficulty: v.difficulty });
@@ -32,9 +59,10 @@ for (const V of VARIANTS) {
   let shrinkCaught = 0, sawPaired = false, validated = 0;
   const badCandidate = [];
   const rowPos = {};                                   // 행 위치별(유의미 열만) 반복 횟수
-  const matchPos = {}, matchTot = {};                  // matchDecl 별 조건행 위치 분포·총 조건행 수
+  const discPos = {}, discTot = {}, discMeta = {};     // discriminator 별 위치 분포·총 판별행 수·메타(name/allowFixed)
   let nSum = 0;                                         // 전체 데이터 행 수 합(기대 확률용)
-  const exNs = new Set();                              // 표시 예 "N명" 다양성
+  const exSet = new Set();                             // 표시 예 다양성(모든 표시 예)
+  const ansPos = {};                                  // single 텍스트 답이 위치한 표 행(편중 검사)
   for (let s = 0; s < SEEDS; s++) {
     const seed = `${V.id}#${s}`;
     const r = planItem(V.st, V.id, V.difficulty, makeRng(seed));
@@ -47,8 +75,9 @@ for (const V of VARIANTS) {
     const sc = significantCols(r.spec);
     nSum += r.spec.rows.length;
     r.spec.rows.forEach((row, i) => { const k = JSON.stringify(sc.map((c) => row[c])); (rowPos[i] = rowPos[i] || new Map()).set(k, (rowPos[i].get(k) || 0) + 1); });
-    (r.spec.matchDecls || []).forEach((d, di) => { const c = r.spec.headers.indexOf(d.col); let mc = 0; r.spec.rows.forEach((row, i) => { if (String(row[c]) === String(d.value)) { (matchPos[di] = matchPos[di] || new Map()).set(i, (matchPos[di].get(i) || 0) + 1); mc++; } }); matchTot[di] = (matchTot[di] || 0) + mc; });
-    const exm = /표시\s*예\s*[:：]\s*([0-9]+)명/.exec((it.notes || []).join(" ")); if (exm) exNs.add(exm[1]);
+    specDiscriminators(r.spec).forEach((d, di) => { discMeta[di] = { name: d.name, allowFixed: d.allowFixed }; let mc = 0; r.spec.rows.forEach((row, i) => { if (d.test(row)) { (discPos[di] = discPos[di] || new Map()).set(i, (discPos[di].get(i) || 0) + 1); mc++; } }); discTot[di] = (discTot[di] || 0) + mc; });
+    const exm = /표시\s*예\s*[:：]\s*([^\]]+?)(?:\]|$)/.exec((it.notes || []).join(" ")); if (exm) exSet.add(exm[1].trim());
+    if (r.spec.result.kind === "single") { const val = Object.values(it.expected)[0]; if (typeof val === "string" && val !== "") { const ri = r.spec.rows.findIndex((row) => row.some((c) => c === val)); if (ri >= 0) ansPos[ri] = (ansPos[ri] || 0) + 1; } }
     { const e = validateText(it, r.spec); validated++; if (e.length) check(`${V.id} 지시문 좌표 무결성`, false, `${seed} :: ${e.join(" / ")}`); }
     const gc = cellsGetCell(inst.cells);
     const cand = it.functions?.candidates || null;
@@ -77,10 +106,15 @@ for (const V of VARIANTS) {
   if (sawPaired) check(`${V.id} pairedRangeShrink: 같은 범위 축소 중 값으로 잡힌 것 있음`, shrinkCaught >= 1, `shrinkCaught=${shrinkCaught}`);
   // 고정 패턴: 한 위치에 같은 유의미-열 조합이 시드의 50% 이상 반복 = 사실상 고정(값 편중과 구분).
   if (Object.keys(rowPos).length && [...Object.values(rowPos)[0].keys()][0] !== "[]") { let maxRep = 0, at = ""; for (const [i, m] of Object.entries(rowPos)) for (const [k, c] of m) if (c > maxRep) { maxRep = c; at = `행${i} ${k}`; } check(`${V.id} 데이터 고정 패턴(유의미 열)`, maxRep < SEEDS * 0.5, `최대 ${maxRep}/${SEEDS} (${at})`); }
-  // 조건행 위치: 기대 확률(조건행/전체행) 대비 1.6배 넘고 절대 50% 넘으면 고정 배치로 판정.
+  // 판별행 위치: 기대 확률(판별행/전체행) 대비 1.6배 넘고 절대 50% 넘으면 고정 배치로 판정. allowFixed 는 면제.
   const nAvg = nSum / SEEDS;
-  for (const [di, m] of Object.entries(matchPos)) { const exp = (matchTot[di] / SEEDS) / nAvg; let mx = 0, pos = -1; for (const [p, c] of m) if (c > mx) { mx = c; pos = p; } const rate = mx / SEEDS; check(`${V.id} 조건행 위치 분산`, !(rate > exp * 1.6 && rate > 0.5), `위치${pos} ${(rate * 100).toFixed(0)}% (기대 ${(exp * 100).toFixed(0)}%)`); }
-  if (exNs.size > 0) check(`${V.id} 표시 예 N 다양성 ≥3`, exNs.size >= 3, `${exNs.size}종`);
+  for (const [di, m] of Object.entries(discPos)) {
+    if (discMeta[di]?.allowFixed) continue;             // 고정 허용(D함수 단일 조건 등) → 분산 검사 면제
+    const exp = (discTot[di] / SEEDS) / nAvg; let mx = 0, pos = -1; for (const [p, c] of m) if (c > mx) { mx = c; pos = p; } const rate = mx / SEEDS;
+    check(`${V.id} 판별행 위치 분산 (${discMeta[di]?.name})`, !(rate > exp * 1.6 && rate > 0.5), `위치${pos} ${(rate * 100).toFixed(0)}% (기대 ${(exp * 100).toFixed(0)}%)`);
+  }
+  if (exSet.size > 0) check(`${V.id} 표시 예 다양성 ≥3`, exSet.size >= 3, `${exSet.size}종: ${[...exSet].slice(0, 3).join(" | ")}`);
+  { let mx = 0, pos = -1; for (const [p, c] of Object.entries(ansPos)) if (c > mx) { mx = c; pos = p; } if (mx > 0) check(`${V.id} 답 행 위치 편중 <30%`, mx < SEEDS * 0.3, `위치${pos} ${(mx / SEEDS * 100).toFixed(0)}%`); }
   check(`${V.id} 후보 교체는 값으로 잡힘`, badCandidate.length === 0, badCandidate.slice(0, 3).join(" "));
   console.log(`${V.id} | ${V.difficulty} | 검증${validated} | 재${(retry / SEEDS).toFixed(2)} | ${accOk}/${accN} | ${mutN}/${caught}/${survivedBad} | ${catCnt.value}/${catCnt.function}/${catCnt.criteria} | ${Object.entries(ruleCnt).map(([k, v]) => k + ":" + v).join(",")}`);
   catRows.push({ id: V.id, cat: catCnt, rule: ruleCnt });

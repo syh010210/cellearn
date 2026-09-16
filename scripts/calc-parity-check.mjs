@@ -15,6 +15,12 @@ import { stripXlfn } from "../src/data/exam/calc/functions.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIR = join(__dirname, "..", "trial_test", "calc-parity");
 
+// 엑셀 자체가 이진 탐색으로 설명되지 않는(미정의) 동작 → 대조에서 제외.
+export const EXCEL_UNDEFINED = new Map([
+  ["p3-M-18", "정렬되지 않은 범위의 MATCH(MIN,,-1): 엑셀이 이진 탐색으로 설명되지 않는 위치 반환"],
+  ["p3-S-02", "역방향(오름차순) 범위의 MATCH(MIN,,-1): 엑셀이 이진 탐색으로 설명되지 않는 위치 반환"],
+]);
+
 const excelVal = (c) => {
   if (!c) return { kind: "blank" };
   if (c.t === "e") return { kind: "error", v: String(c.w || c.v) };
@@ -66,7 +72,7 @@ function checkFile(path, label) {
 
   const SCRATCH = "ZZ1";
   let n = 0, okN = 0;
-  const mism = [], emptyRows = [];
+  const mism = [], emptyRows = [], excluded = [];
   for (let R = range.s.r + 1; R <= range.e.r; R++) {
     const id = ws[XLSX.utils.encode_cell({ r: R, c: 0 })]?.v;
     const bcell = ws[XLSX.utils.encode_cell({ r: R, c: 1 })];
@@ -78,6 +84,7 @@ function checkFile(path, label) {
     const ex = excelVal(bcell), en = engVal(sheet.getCellValue(SCRATCH));
     if (ex.kind === "str" && ex.v === "") emptyRows.push({ id, t: bcell.t, v: bcell.v, w: bcell.w, eng: show(en) });
     if (eq(ex, en)) okN++;
+    else if (EXCEL_UNDEFINED.has(id)) excluded.push({ id, f: bcell.f, excel: show(ex), engine: show(en), reason: EXCEL_UNDEFINED.get(id) });
     else mism.push({ id, cat, f: bcell.f, desc, excel: show(ex), engine: show(en) });
   }
 
@@ -85,6 +92,10 @@ function checkFile(path, label) {
   if (emptyRows.length) {
     console.log("  빈 문자열 결과 셀 (t/v/w | 엔진):");
     for (const e of emptyRows) console.log(`    ${String(e.id).padEnd(8)} t=${e.t} v=${JSON.stringify(e.v)} w=${JSON.stringify(e.w)} | ${e.eng}`);
+  }
+  if (excluded.length) {
+    console.log(`  제외 ${excluded.length}건(엑셀 미정의 동작):`);
+    for (const e of excluded) console.log(`    [${e.id}] ${e.f}  엑셀=${e.excel} 엔진=${e.engine}  — ${e.reason}`);
   }
   if (mism.length) {
     console.log(`  불일치 ${mism.length}건:`);
@@ -94,7 +105,7 @@ function checkFile(path, label) {
 }
 
 let totalMism = 0, ran = 0;
-for (const [file, label] of [["parity.answer.xlsx", "1차"], ["parity2.answer.xlsx", "2차"]]) {
+for (const [file, label] of [["parity.answer.xlsx", "1차"], ["parity2.answer.xlsx", "2차"], ["parity3.answer.xlsx", "3차"], ["parity4.answer.xlsx", "4차"]]) {
   const p = join(DIR, file);
   if (existsSync(p)) { totalMism += checkFile(p, label); ran++; }
   else console.log(`\n(${label} ${file} 없음 → 건너뜀)`);

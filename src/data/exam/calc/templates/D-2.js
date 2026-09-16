@@ -24,7 +24,7 @@ function d2Days(rng) {
     answer: `=DAYS(${x},${bA})&"일"`,
     functions: { required: ["DAYS"], candidates: null },
     text: "[{표}]에서 기준일[{base}]부터 휴가출발일[{col:휴가출발일}]까지 남은일수[{R}]를 계산하시오. (8점)",
-    notes: ['남은일수 뒤에 "일"을 포함하여 표시 [표시 예 : 5일]', "DAYS 함수와 & 연산자 사용"],
+    notes: [(() => { let e; do { e = 3 + rng.int(300); } while (out.includes(e)); return `남은일수 뒤에 "일"을 포함하여 표시 [표시 예 : ${e}일]`; })(), "DAYS 함수와 & 연산자 사용"],
     accept: [`=DAYS(${x},${bA})&"일"`],
   };
   assertFillColClean(spec, [spec.answer.replace(/\$/g, "")]);   // 기준일 $ 제거 시 채우기가 밀려 값이 달라져야
@@ -52,7 +52,7 @@ function d2DateBuild(rng) {
     answer: `=DATE(LEFT(${x},4),MID(${x},5,2),MID(${x},7,2))`,
     functions: { required: ["DATE", "LEFT", "MID"], candidates: null },
     text: "[{표}]에서 관리번호[{col:관리번호}]의 왼쪽 4글자(연도), 5~6번째(월), 7~8번째(일)를 이용하여 입사일[{R}]을 표시하시오. (8점)",
-    notes: ["표시 예 : 관리번호가 2023041537이면 → 2023-04-15", "DATE, LEFT, MID 함수 사용"],
+    notes: [(() => { const d = randDate(rng, 2018, 2025); return `표시 예 : 관리번호가 ${d.y}${pad2(d.m)}${pad2(d.d)}${pad2(10 + rng.int(90))}이면 → ${d.y}-${pad2(d.m)}-${pad2(d.d)}`; })(), "DATE, LEFT, MID 함수 사용"],
     accept: [`=DATE(LEFT(${x},4),MID(${x},5,2),MID(${x},7,2))`],
   };
 }

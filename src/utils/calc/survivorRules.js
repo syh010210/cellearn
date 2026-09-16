@@ -13,6 +13,17 @@ const norm = (s) => stripDollar(s).replace(/\s+/g, "").toUpperCase();
 const AGG = new Set(["SUM", "AVERAGE", "COUNT", "COUNTA", "RANK.EQ", "LARGE", "SMALL", "MAX", "MIN", "STDEV", "STDEV.S", "MODE.SNGL", "MEDIAN", "COUNTIF"]);
 const DFUNC = new Set(["DAVERAGE", "DSUM", "DCOUNT", "DCOUNTA", "DMAX", "DMIN"]);
 
+// COUNTIF 범위 앞에 텍스트 머리글 1행이 붙어도 개수가 그대로인가(=조건이 그 텍스트 셀을 세지 않는가).
+// 안전: 숫자 비교(">=80")·숫자 리터럴·정확일치(셀 참조·함수·값). 불안전: 와일드카드(*·?)·"<>값"(머리글도 셈).
+function countifHeaderSafe(base) {
+  const args = callArgs(base, "COUNTIF");
+  if (!args || args.length < 2) return false;
+  const cond = args[1].trim();
+  if (/[*?]/.test(cond.replace(/"/g, ""))) return false;      // 와일드카드
+  if (cond.replace(/^"/, "").startsWith("<>")) return false;  // <>값 → 텍스트 머리글도 카운트
+  return true;
+}
+
 // pos(범위 시작 문자 인덱스)를 감싸는 가장 가까운 함수 이름
 function enclosingFunc(s, pos) {
   let depth = 0;
@@ -58,10 +69,12 @@ export const SURVIVOR_RULES = [
   },
   {
     name: "headerInAggregate",
-    why: "SUM·AVERAGE·COUNT·RANK.EQ·LARGE·SMALL·MAX·MIN 범위에 텍스트 머리글 1행만 더 포함돼도 집계에서 무시되어 동치",
+    why: "SUM·AVERAGE·COUNT·RANK.EQ·LARGE·SMALL·MAX·MIN·STDEV·MODE.SNGL·MEDIAN 범위에 텍스트 머리글 1행만 더 포함돼도 집계에서 무시되어 동치. COUNTIF 는 조건이 텍스트 머리글을 세지 않을 때만(숫자 비교·정확일치 등, 와일드카드·<> 제외).",
     test: (base, mut) => {
       const f = rangeEditMatches(base, mut, (R) => R.row1 > 1 ? `${R.c1d}${R.col1}${R.r1d}${R.row1 - 1}:${R.c2d}${R.col2}${R.r2d}${R.row2}` : null);
-      return !!f && AGG.has(f);
+      if (!f || !AGG.has(f)) return false;
+      if (f === "COUNTIF") return countifHeaderSafe(base);
+      return true;
     },
   },
   {
@@ -80,16 +93,6 @@ export const SURVIVOR_RULES = [
     why: "RANK.EQ 정렬 인수는 0이 아니면 모두 오름차순으로 동일 취급 → 양수↔양수 변경은 엔진상 동치",
     test: (base, mut) => {
       const mask = (s) => s.replace(/(RANK\.EQ\([^()]*,[^()]*,)([1-9]\d*)(\))/gi, "$1#$3");
-      return norm(mask(base)) === norm(mask(mut)) && norm(base) !== norm(mut);
-    },
-  },
-  {
-    // MATCH 의 조회값이 그 범위의 MAX/MIN 이면, 일치 옵션(0/1/-1)이 달라도 최댓/최솟값의 위치는 같다.
-    // (엔진에서 MATCH 근사 옵션이 극단값에 대해 정확일치와 같은 위치를 준다 → 데이터로 못 잡는 동치.)
-    name: "matchExtremeType",
-    why: "MATCH 조회값이 범위의 MAX/MIN 이면 일치 옵션(0↔1↔-1) 변경이 위치를 바꾸지 않아 엔진상 동치",
-    test: (base, mut) => {
-      const mask = (s) => s.replace(/MATCH\(\s*(MAX|MIN)\(([^()]*)\)\s*,([^,()]*),\s*-?\d+\s*\)/gi, "MATCH($1($2),$3,#)");
       return norm(mask(base)) === norm(mask(mut)) && norm(base) !== norm(mut);
     },
   },
@@ -182,7 +185,54 @@ function dcountaFieldInvariant(base, mut, getCell) {
   return true;
 }
 
+// ── extremeLookupShrink: 최댓/최솟값 행을 찾는 INDEX/MATCH·VLOOKUP/DMAX 형태에서, 범위 끝 1칸 축소가
+//    답을 안 바꾸는 경우(= 최대/최소 행이 마지막 데이터 행이 아니라 잘린 행이 답과 무관) → 동치. ──
+const colRangeM = (s) => { const m = /^\$?([A-Za-z]{1,3})\$?(\d+):\$?([A-Za-z]{1,3})\$?(\d+)$/.exec(s.trim()); return m ? { c1: colNum(m[1]), r1: +m[2], c2: colNum(m[3]), r2: +m[4] } : null; };
+// 값 범위(단일 열)에서 최대/최소값의 행. 없으면 null.
+function extremeRow(rangeStr, isMax, getCell) {
+  const r = colRangeM(rangeStr); if (!r) return null;
+  let best = null, bestRow = -1;
+  for (let row = r.r1; row <= r.r2; row++) { const cell = getCell(colStr(r.c1) + row); const v = cell ? cell.v : undefined; if (typeof v !== "number") continue; if (best === null || (isMax ? v > best : v < best)) { best = v; bestRow = row; } }
+  return bestRow < 0 ? null : { row: bestRow, last: r.r2 };
+}
+// DMAX/DMIN(db, field, crit) 의 극값 행. 조건값은 item.criteria(문제 파일엔 조건 셀이 비어 있으므로)에서 읽는다.
+// 정확 일치 조건만 판정(연산자·와일드카드는 null → 미적용).
+function dExtremeRow(db, field, item, isMax, getCell) {
+  const d = colRangeM(db); if (!d) return null;
+  const table = item?.criteria?.table; if (!table || table.length < 2) return null;
+  const critHdr = String(table[0][0]), cvRaw = String(table[1][0]);
+  if (/[<>=*?]/.test(cvRaw) || table[0].length !== 1) return null;   // 단일 정확 일치 조건만
+  // field → 열 인덱스
+  let fcol = null; const fm = /^\$?([A-Za-z]{1,3})\$?(\d+)$/.exec(field.trim());
+  if (fm) fcol = colNum(fm[1]);
+  else if (/^\d+$/.test(field.trim())) fcol = d.c1 + (+field.trim() - 1);
+  else { const name = field.trim().replace(/^"|"$/g, ""); for (let c = d.c1; c <= d.c2; c++) { const h = getCell(colStr(c) + d.r1); if (h && String(h.v) === name) { fcol = c; break; } } }
+  if (fcol === null) return null;
+  let ccol = null; for (let c = d.c1; c <= d.c2; c++) { const h = getCell(colStr(c) + d.r1); if (h && String(h.v) === critHdr) { ccol = c; break; } }
+  if (ccol === null) return null;
+  let best = null, bestRow = -1;
+  for (let row = d.r1 + 1; row <= d.r2; row++) {
+    const cc = getCell(colStr(ccol) + row); if (!cc || String(cc.v) !== cvRaw) continue;
+    const fv = getCell(colStr(fcol) + row); const v = fv ? fv.v : undefined; if (typeof v !== "number") continue;
+    if (best === null || (isMax ? v > best : v < best)) { best = v; bestRow = row; }
+  }
+  return bestRow < 0 ? null : { row: bestRow, last: d.r2 };
+}
+export function extremeLookupShrink(base, mut, item, getCell) {
+  if (!getCell) return false;
+  // mut 이 base 의 어느 한 범위를 끝 1행 축소한 것이어야 한다.
+  const shrunk = rangeEditMatches(base, mut, (R) => R.row2 > R.row1 ? `${R.c1d}${R.col1}${R.r1d}${R.row1}:${R.c2d}${R.col2}${R.r2d}${R.row2 - 1}` : null);
+  if (shrunk === null) return false;
+  const im = /INDEX\(\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*MATCH\(\s*(MAX|MIN)\(\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*\)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*(?:0|FALSE)\s*\)/i.exec(base);
+  if (im) { const e = extremeRow(im[2], im[1].toUpperCase() === "MAX", getCell); return !!(e && e.row !== e.last); }
+  const vm = /VLOOKUP\(\s*(DMAX|DMIN)\(\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*,\s*("[^"]*"|\$?[A-Za-z]+\$?\d+|\d+)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*\)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*\d+\s*,\s*(?:0|FALSE)\s*\)/i.exec(base);
+  if (vm) { const e = dExtremeRow(vm[2], vm[3], item, vm[1].toUpperCase() === "DMAX", getCell); return !!(e && e.row !== e.last); }
+  return false;
+}
+
 export function classifySurvivor(base, mut, item, getCell = null) {
+  // extremeLookupShrink 를 먼저(범위 축소가 최대/최소와 무관한 행을 자르는 경우 → 동치). pairedRangeShrink 보다 우선.
+  if (extremeLookupShrink(base, mut, item, getCell)) return { name: "extremeLookupShrink", why: "최대/최소 행이 마지막 데이터 행이 아니어서, 범위 끝 1칸 축소가 잘라내는 행이 답과 무관 → 동치" };
   for (const r of SURVIVOR_RULES) if (r.test(base, mut, item)) return { name: r.name, why: r.why };
   if (lookupLeadingText(base, mut, getCell)) return { name: "lookupLeadingText", why: "정확 일치 VLOOKUP/HLOOKUP 범위 앞에 텍스트 셀(표 이름/머리글) 1행·1열만 더 포함돼도 검색 결과 동일 → 동치" };
   if (dcountaFieldInvariant(base, mut, getCell)) return { name: "dcountaFieldInvariant", why: "DCOUNTA 필드를 표 안 다른 열로 바꿔도 조건 레코드의 두 열이 모두 비어있지 않으면 개수 동일 → 동치" };

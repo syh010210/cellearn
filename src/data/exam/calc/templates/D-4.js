@@ -11,10 +11,9 @@ function d4HourMinute(rng) {
   const N = 8 + rng.int(3);
   const headers = ["회원", "입실시간", "퇴실시간", "이용시간"];
   // 분 필수: 정확히 30(경계) 1행, 29(litPM1 30→29) 1행, 그 외 다양. 시(H)도 다양하게.
-  const durs = [{ H: 1 + rng.int(6), M: 30 }, { H: 1 + rng.int(6), M: 29 }];
-  const usedM = new Set([30, 29]);
-  while (durs.length < N) { const M = rng.int(60); durs.push({ H: 1 + rng.int(8), M }); usedM.add(M); }
-  rng.shuffle(durs);
+  const base = [{ H: 1 + rng.int(6), M: 30 }, { H: 1 + rng.int(6), M: 29 }];
+  while (base.length < N) base.push({ H: 1 + rng.int(8), M: rng.int(60) });
+  const durs = rng.shuffle(base);                          // 경계(30·29) 행 위치 분산
   const rows = [], results = [];
   for (const d of durs) {
     const inMin = (8 + rng.int(3)) * 60 + rng.int(60);   // 입실 08:00~10:59
@@ -29,6 +28,10 @@ function d4HourMinute(rng) {
   return {
     subtype: "D-4", colWidths: [8, 10, 10, 8], headers, rows, colZ: { 1: "h:mm", 2: "h:mm" },
     result: { kind: "fillCol", col: "이용시간" },
+    discriminators: [
+      { name: "분>=30(올림)", test: (r) => Math.round((r[2] - r[1]) * 1440) % 60 >= 30, min: 1, max: N },
+      { name: "분=30(경계)", test: (r) => Math.round((r[2] - r[1]) * 1440) % 60 === 30, min: 1, max: N },
+    ],
     answer: `=IF(MINUTE(${diff})>=30,HOUR(${diff})+1,HOUR(${diff}))`,
     functions: { required: ["IF", "MINUTE", "HOUR"], candidates: null },
     text: "[{표}]에서 퇴실시간[{col:퇴실시간}]과 입실시간[{col:입실시간}]의 차이 중 시(時)를 이용시간[{R}]에 계산하시오. (8점)",

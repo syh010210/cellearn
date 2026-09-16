@@ -97,11 +97,14 @@ export function matchCriteria(cellValue, criteria, opts = {}) {
   const restIsNum = rest.trim() !== '' && !isNaN(restNum);
 
   if (op !== '=' && op !== '<>') {
+    // 엑셀: 비교 연산자 + 숫자 조건은 숫자 셀만, 비교 연산자 + 텍스트 조건은 텍스트 셀만 비교(교차 타입은 미포함).
     let a, b;
-    if (cellIsNum && restIsNum) {
+    if (restIsNum) {
+      if (!cellIsNum) return false;
       a = cellValue;
       b = restNum;
     } else {
+      if (cellIsNum) return false;
       a = String(cellValue ?? '').toUpperCase();
       b = rest.toUpperCase();
     }

@@ -2,7 +2,7 @@
 // 통계량 (STDEV / MODE.SNGL). 변형 2개. 모두 단일 셀.
 //  · STDEV·MODE.SNGL 는 범위 앞 텍스트 머리글을 무시하므로 rangeExpand 생존은 survivorRules 의 AGG 규칙이 처리.
 import { NAMES, PRODUCTS } from "../pools.js";
-import { geom } from "./_util.js";
+import { geom, roundPhrase, roundExample } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi) => { const s = new Set(); const out = []; let g = 0; while (out.length < n && g++ < 800) { const v = rng.range(lo, hi); if (!s.has(v)) { s.add(v); out.push(v); } } if (out.length < n) throw new Error("distinctInts 부족"); return out; };
 const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
@@ -23,25 +23,26 @@ function a5StdevRound(rng) {
   const names = rng.sample(NAMES, N);
   const rows = scores.map((v, i) => ["A" + String(101 + i), names[i], v]);
   const g = geom(headers, N), rA = g.colAbs("점수"), rM = g.colRowFixed("점수");
+  const ex = roundExample("ROUND", 2, rng, sd, [r2]);   // 결과(표준편차) 크기 기준 표시 예
   return {
-    subtype: "A-5", colWidths: [8, 8, 6], headers, rows, codeColumns: ["학번"], verbException: "표시",
+    subtype: "A-5", colWidths: [8, 8, 6], headers, rows, codeColumns: ["학번"],
     result: { kind: "single", label: "점수 표준편차" },
     answer: `=ROUND(STDEV(${rA}),2)`,
     functions: { required: ["STDEV.S", "ROUND"], candidates: null },
-    text: "[{표}]에서 점수[{col:점수}]의 표준편차를 반올림하여 소수점 이하 둘째 자리까지 [{R}] 셀에 표시하시오. (8점)",
-    notes: ["ROUND, STDEV 함수 사용"],
+    text: "[{표}]에서 점수[{col:점수}]의 표준편차를 [{R}] 셀에 계산하시오. (8점)",
+    notes: [`${roundPhrase("ROUND", 2)} ${ex.text}`, "ROUND, STDEV 함수 사용"],
     accept: [`=ROUND(STDEV.S(${rA}),2)`, `=ROUND(STDEV(${rM}),2)`],
   };
 }
 
 // 2) a5-mode-count [어려움] — COUNTIF(범위,MODE.SNGL(범위))&"개"
 function a5ModeCount(rng) {
-  const N = 8 + rng.int(3);
+  const N = 8 + rng.int(2);                              // 8~9
   const headers = ["관리코드", "품목", "구분코드"];
-  const K = 4 + rng.int(2);                              // 서로 다른 코드 4~5
-  const codes = Array.from({ length: K }, (_, i) => i + 1);
-  const modeVal = rng.pick(codes);
-  const f = 4 + rng.int(2);                              // 최빈 빈도 4~5
+  const K = 6 + rng.int(3);                              // 서로 다른 코드 6~8 (1~9 중)
+  const codes = rng.sample([1, 2, 3, 4, 5, 6, 7, 8, 9], K);
+  const modeVal = rng.pick(codes);                       // 최빈값 1~9 (시드마다 다름)
+  const f = 3 + rng.int(3);                              // 최빈 개수 3~5
   const others = rng.shuffle(codes.filter((c) => c !== modeVal));
   const cnt = {}; others.forEach((o) => (cnt[o] = 0));
   const arr = Array(f).fill(modeVal);                    // 나머지는 f-2 이하로 채워 최빈 유일·여유 ≥2
@@ -63,6 +64,7 @@ function a5ModeCount(rng) {
   return {
     subtype: "A-5", colWidths: [8, 8, 8], headers, rows, codeColumns: ["관리코드"], verbException: "계산",
     result: { kind: "single", label: "최빈 구분코드의 개수" },
+    discriminators: [{ name: "최빈값 행", test: (r) => r[2] === modeVal, min: 3, max: N, allowFixed: "lastRow", reason: "최빈값 1개를 마지막 행에 고정(COUNTIF 범위 끝-1 축소 판별)" }],
     answer: `=COUNTIF(${rA},MODE.SNGL(${rA}))&"개"`,
     functions: { required: ["COUNTIF", "MODE.SNGL"], candidates: null },
     text: "[{표}]에서 구분코드[{col:구분코드}]의 빈도가 가장 높은 코드의 개수를 [{R}] 셀에 계산하시오. (8점)",
