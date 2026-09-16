@@ -38,8 +38,14 @@ export const SIDO_GW = ["부산광역시", "대구광역시", "인천광역시",
 export const SIDO_ETC = ["서울특별시", "경기도", "강원특별자치도", "전북특별자치도", "경상남도", "충청북도", "수원시", "창원시"];
 // 근사 일치 구간표용
 export const BAND_GRADES = ["골드", "실버", "브론즈", "일반"];   // 순위 구간
+// D-1 문자열 결합용 영문 풀
+export const ENG_DEPT = ["healthcare", "business", "computer", "chemistry", "biology", "tourism", "logistics", "marketing", "medicine", "architecture", "economics", "statistics"]; // 소문자·7자↑
+export const CATEGORY = ["food", "tech", "home", "auto", "game", "book", "sport", "beauty", "office", "travel", "music", "green"]; // 소문자
+export const COUNTRIES = [["Korea", "Seoul"], ["Japan", "Tokyo"], ["France", "Paris"], ["Canada", "Ottawa"], ["Brazil", "Brasilia"], ["Egypt", "Cairo"], ["Chile", "Santiago"], ["Norway", "Oslo"], ["Kenya", "Nairobi"], ["Spain", "Madrid"], ["India", "Delhi"], ["Italy", "Rome"]]; // 혼합대소문자
 export const HAKJEOM = ["F", "D", "C", "B", "A"];              // 점수 오름차순 학점
 export const PRODUCTS = ["노트북", "키보드", "마우스", "모니터", "태블릿", "프린터", "스피커", "이어폰", "충전기", "허브"];
+export const EXAM_NAMES = ["정보처리기사", "워드프로세서", "컴퓨터활용", "전산회계", "전산세무", "사무자동화", "네트워크관리사", "리눅스마스터", "정보보안기사", "빅데이터분석", "정보처리산업기사", "전자상거래"];
+export const EVENTS = ["신제품발표회", "고객감사전", "봄맞이대전", "여름특가전", "가을축제", "연말결산전", "창립기념전", "브랜드데이", "멤버십데이", "얼리버드전", "감사대잔치", "한정판출시"];
 // 상품별 현실적 가격 범위 [최소, 최대] (원). 천 원 단위로 반올림해 사용.
 export const PRODUCT_PRICE = {
   노트북: [890000, 1890000], 태블릿: [390000, 990000], 모니터: [159000, 490000], 프린터: [149000, 390000],

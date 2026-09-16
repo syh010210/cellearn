@@ -13,11 +13,14 @@ let failed = 0;
 const COL = (i) => { let s = "", n = i + 1; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
 const expDisp = (v) => (v && typeof v === "object" && v.error) ? v.error : typeof v === "string" ? `"${v}"` : String(v);
 // 표시 형식 적용(콤마·소수 자릿수)
+const pad2 = (n) => String(n).padStart(2, "0");
 function fmt(x, z) {
   if (typeof x !== "number") return String(x);
   if (z === "0.0") return x.toFixed(1);
   if (z === "0.00") return x.toFixed(2);
   if (z === "0%") return Math.round(x * 100) + "%";
+  if (z === "yyyy-mm-dd") { const d = new Date(Date.UTC(1899, 11, 30) + x * 86400000); return `${d.getUTCFullYear()}-${pad2(d.getUTCMonth() + 1)}-${pad2(d.getUTCDate())}`; }
+  if (z === "h:mm") { const t = Math.round((x % 1) * 1440); return `${Math.floor(t / 60)}:${pad2(t % 60)}`; }
   if (z === "#,##0" || Math.abs(x) >= 1000) return x.toLocaleString("en-US");
   return String(x);
 }

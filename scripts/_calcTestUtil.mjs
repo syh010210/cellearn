@@ -78,6 +78,7 @@ export function validateText(item, spec) {
     const mm = /표시\s*예\s*[:：]?\s*([^\]]+)/.exec(note); if (!mm) continue;
     const parts = mm[1].split("→").map((s) => s.trim());
     const outTok = (parts.length > 1 ? parts[1] : parts[0]).replace(/[.\s]+$/, "");
+    if (!/\d/.test(outTok)) continue;                // 숫자·"N명" 형태만 검사(범주형 예시는 제외)
     for (const c of [outTok, outTok.replace(/명$/, "")]) if (expStrs.has(c)) errs.push(`표시 예 출력 '${outTok}'이 기대값과 같음`);
   }
   // 동사: 결과 전부 텍스트 → "표시하시오", 숫자 있으면 "계산하시오"(verbException 예외)

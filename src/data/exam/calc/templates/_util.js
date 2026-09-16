@@ -64,6 +64,23 @@ export function roundExample(mode, d, rng, ref, avoid = []) {
 // D-표: 조건 범위/참조표 셀에 들어갈 조건값을 그대로. 와일드카드 "*부"
 export const endsWith = (v, suf) => String(v).endsWith(suf);
 
+// 날짜 serial (1899-12-30 기준) + 실제 존재하는 날짜만 뽑기
+export const serial = (y, m, d) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000);
+const DIM = (y, m) => [31, (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];
+export function randDate(rng, y1, y2, opt = {}) {
+  const y = opt.year || rng.range(y1, y2);
+  const m = opt.month || (1 + rng.int(12));
+  const d = opt.day || (1 + rng.int(DIM(y, m)));
+  return { y, m, d, s: serial(y, m, d) };
+}
+export const weekday1 = (s) => new Date(Date.UTC(1899, 11, 30) + s * 86400000).getUTCDay() + 1; // 일=1..토=7
+export const weekday2 = (s) => { const d = weekday1(s); return d === 1 ? 7 : d - 1; };            // 월=1..일=7
+// 지정 요일(mode 1/2)이 되는 날짜를 뽑는다
+export function dateWithWeekday(rng, want, mode, y1, y2, used) {
+  for (let t = 0; t < 200; t++) { const dt = randDate(rng, y1, y2); const wd = mode === 2 ? weekday2(dt.s) : weekday1(dt.s); if (wd === want && !used.has(dt.s)) { used.add(dt.s); return dt; } }
+  throw new Error("요일 날짜 실패");
+}
+
 // ── 단일 셀 결과의 범위 mutation 자체 검증(다중 범위 함수 정렬 어긋남 생존 방지) ──
 import { Sheet } from "../../../../excel-engine/index.js";
 import { classifySurvivor } from "../../../../utils/calc/survivorRules.js";
