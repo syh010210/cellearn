@@ -10,12 +10,12 @@ const D = (y, m, d) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30
 export const SAMPLE_A2_DAVERAGE = {
   subtype: "A-2", colWidths: [12, 8, 8],
   headers: ["동아리", "등급", "평점"],
-  rows: [
+  rows: [ // "부" 로 끝나는 행을 마지막에 둔다 → 범위 끝 1칸 축소 변형이 값을 바꿔 잡히도록
     ["연극부", "A", 4.4], ["사진반", "B", 3.8], ["방송부", "A", 4.6],
-    ["미술반", "C", 3.15], ["합창부", "B", 4.11], ["토론반", "A", 3.9],
+    ["미술반", "C", 3.15], ["토론반", "A", 3.9], ["합창부", "B", 4.11],
   ],
   result: { kind: "single", label: "동아리부 평점 평균" },
-  answer: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)',
+  answer: '=ROUND(DAVERAGE($A$2:$C$8,"평점",$E$1:$E$2),1)',
   criteria: { headers: ["동아리"], rows: [["*부"]], rowOffset: 0 },
   functions: { required: ["DAVERAGE", "ROUND"], candidates: null },
   text: '[{표}]에서 동아리[{col:동아리}]가 "부"로 끝나는 동아리의 평점[{col:평점}]에 대한 평균을 [{R}] 셀에 계산하시오. (8점)',
@@ -24,7 +24,26 @@ export const SAMPLE_A2_DAVERAGE = {
     "조건은 [{C}] 영역에 알맞게 입력",
     "DAVERAGE, ROUND 함수 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=ROUND(DAVERAGE(A2:C8,C2,E1:E2),1)',       // 필드=머리글 셀
+    '=ROUND(DAVERAGE(A2:C8,3,E1:E2),1)',        // 필드=열 번호
+    '=ROUND(DAVERAGE($A$2:$C$8,"평점",E1:E2),1)', // 표 범위 $
+  ],
+  reject: [
+    { formula: '=ROUNDUP(DAVERAGE(A2:C8,"평점",E1:E2),1)', expectReason: "functionOutside" },
+    { formula: '=ROUND(AVERAGE(C3:C8),1)', expectReason: "functionMissing" },
+    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', criteria: [["동아리"], ["부"]], expectReason: "criteria" },
+    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', criteria: [["등급"], ["*부"]], expectReason: "criteria" },
+    { formula: "4.4", expectReason: "noFormula" },
+    { formula: '=ABS(ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1))', expectReason: "functionOutside" },
+  ],
+  allowSurvive: [
+    // single 결과는 채우기가 없어 참조가 이동하지 않는다 → $ 유무가 값에 영향 없음(수학적 동치).
+    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', why: "single 결과는 채우기가 없어 $ 전부 제거해도 값 동일" },
+    { formula: '=ROUND(DAVERAGE(A2:$C$8,"평점",$E$1:$E$2),1)', why: "single 결과라 DB 범위 시작 셀 $ 만 제거해도 참조 미이동 → 동치" },
+    { formula: '=ROUND(DAVERAGE($A$2:$C$8,"평점",E1:$E$2),1)', why: "single 결과라 조건 범위 시작 셀 $ 제거도 동치" },
+    { formula: '=ROUND(DAVERAGE($A$2:$C$8,"평점",$D$1:$E$2),1)', why: "조건 범위에 빈 열(D)이 붙어도 DAVERAGE에 추가 제약이 없어 동치" },
+  ],
 };
 
 // 2) B-1 IFERROR + CHOOSE + RANK.EQ · fillCol
@@ -43,16 +62,29 @@ export const SAMPLE_B1_RANK = {
     "순위는 실기점수가 가장 높은 것이 1위",
     "IFERROR, CHOOSE, RANK.EQ 함수 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=IFERROR(CHOOSE(RANK.EQ(B3,$B$3:$B$8,0),"금","은","동"),"")', // 3번째 인수 0 명시
+    '=IFERROR(CHOOSE(RANK.EQ(B3,B$3:B$8),"금","은","동"),"")',     // 행고정 혼합참조
+  ],
+  reject: [
+    { formula: '=IFERROR(CHOOSE(RANK.EQ(B3,$B$3:$B$8,1),"금","은","동"),"")', expectReason: "value" },
+    { formula: '=IFERROR(CHOOSE(RANK.EQ(B3,B3:B8),"금","은","동"),"")', expectReason: "value" },
+    { formula: '=IF(RANK.EQ(B3,$B$3:$B$8)=1,"금",IF(RANK.EQ(B3,$B$3:$B$8)=2,"은",IF(RANK.EQ(B3,$B$3:$B$8)=3,"동","")))', expectReason: "functionOutside" },
+    { formula: "0", expectReason: "noFormula" },
+    { formula: '=UPPER(IFERROR(CHOOSE(RANK.EQ(B3,$B$3:$B$8),"금","은","동"),""))', expectReason: "functionOutside" },
+  ],
+  allowSurvive: [
+    { formula: '=IFERROR(CHOOSE(RANK.EQ(B3,$B$2:$B$8),"금","은","동"),"")', why: "RANK.EQ 범위에 텍스트 머리글(B2)이 포함돼도 순위 계산에서 무시되어 동치" },
+  ],
 };
 
-// 3) C-1 IFERROR + HLOOKUP + LEFT · refTable(right) · 참조표에 없는 키 1건(BA)
+// 3) C-1 IFERROR + HLOOKUP + LEFT · refTable(right) · 참조표에 없는 키 1건(DB: 근사매칭이 정확매칭과 달라야 함)
 export const SAMPLE_C1_HLOOKUP = {
   subtype: "C-1", colWidths: [8, 8, 10],
   headers: ["학번", "이름", "학과"],
   rows: [
     ["CS101", "한지민", null], ["EE202", "오세훈", null], ["ME303", "배수지", null],
-    ["BA404", "정우성", null], ["CS505", "김태리", null], ["EE606", "손예진", null],
+    ["DB404", "정우성", null], ["CS505", "김태리", null], ["EE606", "손예진", null],
   ],
   result: { kind: "fillCol", col: "학과" },
   answer: '=IFERROR(HLOOKUP(LEFT(A3,2),$E$2:$G$3,2,0),"확인")',
@@ -60,12 +92,21 @@ export const SAMPLE_C1_HLOOKUP = {
   functions: { required: ["IFERROR", "HLOOKUP", "LEFT"], candidates: null },
   text: "[{표}]에서 학번[{col:학번}]의 앞 두 문자와 학과기준표[{T}]를 이용하여 학과[{R}]를 표시하시오. (8점)",
   notes: [
-    "학과 = 학번의 처음 두 글자로 학과기준표에서 찾은 값",
     "학번의 처음 두 글자가 학과코드임",
     '단, 오류발생시 학과에 "확인"으로 표시',
     "IFERROR, HLOOKUP, LEFT 함수 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=IFERROR(HLOOKUP(LEFT(A3,2),$E$2:$G$3,2,FALSE),"확인")', // 4번째 FALSE
+    '=IFERROR(HLOOKUP(LEFT(A3,2),$E$2:$G$3,2,),"확인")',      // 4번째 빈 인수
+  ],
+  reject: [
+    { formula: '=IFERROR(HLOOKUP(LEFT(A3,2),$E$2:$G$3,2,1),"확인")', expectReason: "value" }, // 근사 매칭
+    { formula: '=HLOOKUP(LEFT(A3,2),$E$2:$G$3,2,0)', expectReason: "functionMissing" },        // IFERROR 없음
+    { formula: '=IFERROR(VLOOKUP(LEFT(A3,2),$E$2:$G$3,2,0),"확인")', expectReason: "functionOutside" }, // VLOOKUP
+    { formula: "확인", expectReason: "noFormula" },
+  ],
+  allowSurvive: [],
 };
 
 // 4) A-4 SUMIF + SUM · resultTable(right, 표 이름 라벨 포함) · 비율 소수 그대로
@@ -80,12 +121,24 @@ export const SAMPLE_A4_SUMIF = {
   resultTable: { name: "부서별비율", headers: ["부서", "비율"], labels: ["영업", "개발", "지원"], rowOffset: 0 },
   answer: '=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$3:$C$8)',
   functions: { required: ["SUMIF", "SUM"], candidates: null },
-  text: "[{표}]에서 부서[{col:부서}]와 실적[{col:실적}]을 이용하여 부서별비율표[{RT}]의 부서별 비율[{R}]을 계산하시오. (8점)",
+  text: "[{표}]에서 부서[{col:부서}]와 실적[{col:실적}]을 이용하여 [부서별비율]표의 부서별 비율[{R}]을 계산하시오. (8점)",
   notes: [
     "비율 = 부서별 실적 합계 / 전체 실적 합계",
     "SUMIF, SUM 함수 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=SUMIF($B$3:$B$8,E3,C$3:C$8)/SUM(C$3:C$8)',      // 실적 범위 행고정 혼합
+    '=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$3:$C$8)*1', // *1 무영향
+  ],
+  reject: [
+    { formula: "=SUMIF(B3:B8,E3,C3:C8)/SUM(C3:C8)", expectReason: "value" }, // 상대참조 후 채우기
+    { formula: "=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/500", expectReason: "functionMissing" }, // SUM 없이 상수
+    { formula: "0.3333", expectReason: "noFormula" },
+    { formula: '=ABS(SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$3:$C$8))', expectReason: "functionOutside" },
+  ],
+  allowSurvive: [
+    { formula: '=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$2:$C$8)', why: "SUM 범위에 텍스트 머리글(C2)이 포함돼도 합계에서 무시되어 동치" },
+  ],
 };
 
 // 5) D-3 WORKDAY + MONTH + DAY 와 & · fillCol · 텍스트 결과 · 금/토 시작·두 주말 걸침 포함
@@ -106,20 +159,30 @@ export const SAMPLE_D3_WORKDAY = {
   functions: { required: ["WORKDAY", "MONTH", "DAY"], candidates: null },
   text: "[{표}]에서 시작일[{col:시작일}]과 기간[{col:기간}]을 이용하여 완료일[{R}]을 표시하시오. (8점)",
   notes: [
-    "완료일 : 시작일에 주말(토요일과 일요일)은 제외하고 기간을 더한 날짜 [표시 예 : 2026-04-10 → 4/17]",
+    "완료일 : 시작일에 주말(토요일과 일요일)은 제외하고 기간을 더한 날짜 [표시 예 : 2026-04-10, 6 → 4/20]",
     "WORKDAY, MONTH, DAY 함수와 & 연산자 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=(MONTH(WORKDAY(B3,C3)))&"/"&(DAY(WORKDAY(B3,C3)))', // 같은 & 순서, 괄호 배치만 다름
+    '=""&MONTH(WORKDAY(B3,C3))&"/"&DAY(WORKDAY(B3,C3))',  // 앞에 ""& 붙임(값 동일)
+  ],
+  reject: [
+    { formula: "=B3+C3", expectReason: "functionMissing" },                  // WORKDAY 없이 단순 덧셈
+    { formula: '=TEXT(WORKDAY(B3,C3),"m/d")', expectReason: "functionOutside" }, // TEXT 사용
+    { formula: "3/10", expectReason: "noFormula" },
+    { formula: '=UPPER(MONTH(WORKDAY(B3,C3))&"/"&DAY(WORKDAY(B3,C3)))', expectReason: "functionOutside" },
+  ],
+  allowSurvive: [],
 };
 
 // 6) A-2 AVERAGEIF · ROUNDDOWN/ROUND/ROUNDUP 중 알맞은 함수 · fillRow
 export const SAMPLE_A2_AVERAGEIF = {
   subtype: "A-2", colWidths: [8, 6, 6, 6, 6],
   headers: ["이름", "반", "국어", "영어", "수학"],
-  rows: [
+  rows: [ // "1반" 행을 마지막에 둔다 → 범위 끝 1칸 축소 변형이 1반 평균을 바꿔 잡히도록
     ["김", "1반", 88, 90, 76], ["이", "2반", 70, 60, 55], ["박", "1반", 92, 84, 90],
-    ["최", "3반", 55, 48, 60], ["정", "2반", 100, 95, 88], ["강", "1반", 68, 70, 76],
-    ["윤", "3반", 45, 50, 52], ["임", "2반", 78, 81, 74],
+    ["최", "3반", 55, 48, 60], ["정", "2반", 100, 95, 88], ["윤", "3반", 45, 50, 52],
+    ["임", "2반", 78, 81, 74], ["강", "1반", 68, 70, 76],
   ],
   result: { kind: "fillRow", cols: ["국어", "영어", "수학"], label: "1반 평균" },
   answer: '=ROUNDDOWN(AVERAGEIF($B$3:$B$10,"1반",C3:C10),0)',
@@ -129,7 +192,17 @@ export const SAMPLE_A2_AVERAGEIF = {
     "소수점 이하 첫째 자리에서 내림하여 일의 자리까지 표시 [표시 예 : 82.7 → 82]",
     "AVERAGEIF, ROUNDDOWN, ROUND, ROUNDUP 중 알맞은 함수 사용",
   ],
-  accept: [], reject: [],
+  accept: [
+    '=ROUNDDOWN(AVERAGEIF($B$3:$B$10,"=1반",C3:C10),0)', // 조건 "=1반"
+    '=ROUNDDOWN(AVERAGEIF($B$3:$B$10,"1반",C3:C10),)',    // 자릿수 빈 인수
+  ],
+  reject: [
+    { formula: '=ROUND(AVERAGEIF($B$3:$B$10,"1반",C3:C10),0)', expectReason: "value" }, // ROUND(반올림)
+    { formula: '=ROUNDDOWN(AVERAGEIF(B3:B10,"1반",C3:C10),0)', expectReason: "value" }, // $ 없이 채우기
+    { formula: "=ROUNDDOWN(AVERAGE(C3:C10),0)", expectReason: "functionMissing" },        // AVERAGE 사용
+    { formula: "82", expectReason: "noFormula" },
+  ],
+  allowSurvive: [],
 };
 
 export const SAMPLES = [

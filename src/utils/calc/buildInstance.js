@@ -151,6 +151,11 @@ function selfVerify(inst, specs, origins, globalRoles) {
 
   inst.items.forEach((it, bi) => {
     const b = specs[bi];
+    // (텍스트 위생) 연속 공백 금지 · "(8점)" 앞 공백 정확히 1개
+    for (const s of [it.text, ...it.notes]) {
+      if (/\s{2,}/.test(s)) throw new Error(`[${it.no}] 연속 공백: "${s}"`);
+    }
+    if (!/[^ ] \(8점\)$/.test(it.text)) throw new Error(`[${it.no}] 배점 표기 공백 오류: "${it.text.slice(-12)}"`);
     // (0) 표 크기: 열 3~7, 데이터 행 6~11
     if (b.nCols < 3 || b.nCols > 7) throw new Error(`[${it.no}] 표 열 수 ${b.nCols} (3~7 이어야 함)`);
     if (b.nData < 6 || b.nData > 11) throw new Error(`[${it.no}] 데이터 행 수 ${b.nData} (6~11 이어야 함)`);
