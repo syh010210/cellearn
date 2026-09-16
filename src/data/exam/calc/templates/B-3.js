@@ -10,7 +10,7 @@ function b3YearDiff(rng) {
   const N = 8 + rng.int(3);
   const headers = ["성명", "가입일", "등급"];
   const baseY = 2024 + rng.int(3);
-  const base = randDate(rng, 0, 0, { year: baseY, month: 12, day: 31 });
+  const base = randDate(rng, 0, 0, { year: baseY });   // 월·일 시드화(연도만 계산 → 값 영향 없음)
   const n = 8 + rng.int(5), m = 3 + rng.int(3);      // n>m
   const diffs = [n, n - 1, m, m - 1];                 // 경계
   while (diffs.length < N) diffs.push(1 + rng.int(n + 2));
@@ -36,7 +36,7 @@ function b3AgePlus1(rng) {
   const N = 8 + rng.int(3);
   const headers = ["성명", "생년월일", "세대구분"];
   const baseY = 2024 + rng.int(3);
-  const base = randDate(rng, 0, 0, { year: baseY, month: 12, day: 31 });
+  const base = randDate(rng, 0, 0, { year: baseY });   // 월·일 시드화(연도만 계산 → 값 영향 없음)
   const a = 17 + rng.int(4), b = 27 + rng.int(9);     // 청소년<a(상한17~20), ~b(상한27~35)→청년, else 장년
   // 나이 = (baseY - 생년)+1 → 생년 = baseY - 나이 + 1. 경계 나이 포함
   const ages = [a - 1, a, b, b + 1];

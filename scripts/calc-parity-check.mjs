@@ -105,7 +105,7 @@ function checkFile(path, label) {
 }
 
 let totalMism = 0, ran = 0;
-for (const [file, label] of [["parity.answer.xlsx", "1차"], ["parity2.answer.xlsx", "2차"], ["parity3.answer.xlsx", "3차"], ["parity4.answer.xlsx", "4차"]]) {
+for (const [file, label] of [["parity.answer.xlsx", "1차"], ["parity2.answer.xlsx", "2차"], ["parity3.answer.xlsx", "3차"], ["parity4.answer.xlsx", "4차"], ["parity5.answer.xlsx", "5차(조건 빈 열)"]]) {
   const p = join(DIR, file);
   if (existsSync(p)) { totalMism += checkFile(p, label); ran++; }
   else console.log(`\n(${label} ${file} 없음 → 건너뜀)`);

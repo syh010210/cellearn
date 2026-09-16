@@ -66,7 +66,8 @@ function d1ProperYear(rng) {
   return {
     subtype: "D-1", colWidths: [12, 12, 10], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "입학코드" },
-    discriminators: [{ name: "학과 공백포함(PROPER효과)", test: (r) => String(r[0]).includes(" "), min: 1, max: N }],
+    // 판별 의미 없음(균일 변환) — 공백 포함 학과가 최소 1행 있는지 위치 분산만 확인.
+    discriminators: [{ name: "학과명 공백 포함", test: (r) => String(r[0]).includes(" "), min: 1, max: N }],
     answer: `=PROPER(LEFT(${x},3))&YEAR(${d})`,
     functions: { required: ["PROPER", "LEFT", "YEAR"], candidates: null },
     text: "[{표}]에서 학과[{col:학과}]의 앞 세 글자와 입학일자[{col:입학일자}]의 연도를 이용하여 입학코드[{R}]를 표시하시오. (8점)",
