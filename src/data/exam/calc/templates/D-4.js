@@ -34,8 +34,8 @@ function d4HourMinute(rng) {
     ],
     answer: `=IF(MINUTE(${diff})>=30,HOUR(${diff})+1,HOUR(${diff}))`,
     functions: { required: ["IF", "MINUTE", "HOUR"], candidates: null },
-    text: "[{표}]에서 퇴실시간[{col:퇴실시간}]과 입실시간[{col:입실시간}]의 차이 중 시(時)를 이용시간[{R}]에 계산하시오. (8점)",
-    notes: ["이용시간 = 퇴실시간 - 입실시간", "분이 30분 이상이면 한 시간을 더한다", "IF, HOUR, MINUTE 함수 사용"],
+    text: "[{표}]에서 입실시간[{col:입실시간}]과 퇴실시간[{col:퇴실시간}]을 이용하여 이용시간[{R}]을 계산하시오. (8점)",
+    notes: ["이용시간은 퇴실시간에서 입실시간을 뺀 시간의 시(時)로 하되, 분이 30 이상이면 시에 1을 더하여 표시", "IF, HOUR, MINUTE 함수 사용"],
     accept: [`=IF(MINUTE(${diff})>=30,HOUR(${diff})+1,HOUR(${diff}))`],
   };
 }

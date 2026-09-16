@@ -43,6 +43,16 @@ export function submit(instance, submissions = {}) {
 
 export const norm = (f) => String(f).replace(/\s+/g, "").toUpperCase();
 
+// 인스턴스 셀 + 조건 셀을 올린 뒤 result anchor 에 formula 를 넣어 값을 얻는다(공통 검증용).
+export function evalAt(instance, item, formula) {
+  const sheet = new Sheet();
+  for (const [addr, cell] of Object.entries(instance.cells)) { if (cell.f !== undefined) sheet.setCellInput(addr, cell.f.startsWith("=") ? cell.f : "=" + cell.f); else sheet.setCellValue(addr, cell.v, dateFmt(cell.z)); }
+  if (item.criteria) { const tbl = item.criteria.table; expand2D(item.criteria.range).forEach((row, ri) => row.forEach((a, ci) => { const v = tbl[ri]?.[ci]; if (v !== undefined && v !== null && v !== "") sheet.setCellValue(a, v, undefined); })); }
+  sheet.setCellInput(item.result.anchor, String(formula).startsWith("=") ? formula : "=" + formula);
+  const v = sheet.getCellValue(item.result.anchor);
+  return (v && typeof v === "object" && v.error) ? "E:" + v.error : v;
+}
+
 // instance.cells → getCell(addr) (정적 값 셀용; survivorRules lookupLeadingText 에 전달)
 export function cellsGetCell(cells) {
   return (addr) => { const c = cells[String(addr).toUpperCase()]; if (!c) return null; if (c.f !== undefined) return { f: c.f }; return { v: c.v, t: c.t || (typeof c.v === "number" ? "n" : "s") }; };
@@ -99,6 +109,13 @@ export function validateText(item, spec) {
   });
   // 본문에 "에서" 2회 이상이면 실패
   if ((item.text.match(/에서/g) || []).length >= 2) errs.push("본문에 '에서' 2회 이상");
+  // ▶ 줄이 서술체("~다"/"~한다"/"~이다")로 끝나면 실패(지시문은 명사형·"표시"·"사용" 등으로 끝냄)
+  for (const note of item.notes || []) { const t = note.replace(/\s+$/, ""); if (/다$/.test(t)) errs.push(`▶ 줄 서술체 종결: "${t}"`); }
+  // 결과가 "월/일" 같은 날짜 텍스트면 표시 예에 입력값(" → " 앞)이 있어야 함
+  const evals = Object.values(item.expected);
+  if (evals.length && evals.every((v) => typeof v === "string" && /^\d{1,2}\/\d{1,2}$/.test(v))) {
+    for (const note of item.notes || []) { const mm = /표시\s*예\s*[:：]\s*([^\]]+)/.exec(note); if (mm) { const parts = mm[1].split("→"); if (parts.length < 2 || !parts[0].trim()) errs.push("날짜 텍스트 표시 예에 입력값 없음"); } }
+  }
   // 판별 행 개수가 선언 범위(min~max) 안인지 (discriminators = matchDecls 흡수)
   for (const d of specDiscriminators(spec)) {
     const cnt = spec.rows.filter((r) => d.test(r)).length;

@@ -79,8 +79,8 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
   }
 }
 
-// 보고용 확인표: 변형 × 시드 0·1 — 본문 60자·조건행 위치·표시 예 (보고 근거)
-out.push("## 보고용 확인표", "", "| 변형 | 시드 | 본문(앞 60자) | 조건행 위치 | 표시 예 |", "|---|--|---|---|---|");
+// 보고용 확인표: 변형 × 시드 0·1 — 동사·verbException·조건행 위치·표시 예 (보고 근거)
+out.push("## 보고용 확인표", "", "| 변형 | 시드 | 동사 | verbEx | 조건행 위치 | 표시 예 |", "|---|--|--|--|---|---|");
 for (const [st, t] of Object.entries(TEMPLATES)) {
   if (subs && !subs.includes(st)) continue;
   for (const v of t.variants) for (let s = 0; s < 2; s++) {
@@ -90,8 +90,10 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
     const dcell = discs.length
       ? discs.map((d) => { const pos = r.spec.rows.map((row, i) => d.test(row) ? i + 3 : null).filter((x) => x != null).join(","); return d.allowFixed ? `${d.name}[${pos}] 마지막행고정(${d.reason || d.allowFixed})` : `${d.name}[${pos}]`; }).join(" · ")
       : "미선언";
-    const ex = ((it.notes || []).join(" ").match(/표시 예[^\]]*/) || ["-"])[0];
-    out.push(`| ${v.id} | ${s} | ${it.text.slice(0, 55)} | ${dcell} | ${ex} |`);
+    const exm = (it.notes || []).join(" ").match(/\[표시\s*예\s*[:：]\s*([^\]]+)\]/);
+    const ex = exm ? "표시 예 : " + exm[1].trim() : "-";
+    const verb = it.text.includes("계산하시오") ? "계산" : it.text.includes("표시하시오") ? "표시" : "?";
+    out.push(`| ${v.id} | ${s} | ${verb} | ${r.spec.verbException || "-"} | ${dcell} | ${ex} |`);
   }
 }
 

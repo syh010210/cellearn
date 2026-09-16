@@ -51,8 +51,8 @@ function d2DateBuild(rng) {
     result: { kind: "fillCol", col: "입사일", z: "yyyy-mm-dd" },
     answer: `=DATE(LEFT(${x},4),MID(${x},5,2),MID(${x},7,2))`,
     functions: { required: ["DATE", "LEFT", "MID"], candidates: null },
-    text: "[{표}]에서 관리번호[{col:관리번호}]의 왼쪽 4글자(연도), 5~6번째(월), 7~8번째(일)를 이용하여 입사일[{R}]을 표시하시오. (8점)",
-    notes: [(() => { const d = randDate(rng, 2018, 2025); return `표시 예 : 관리번호가 ${d.y}${pad2(d.m)}${pad2(d.d)}${pad2(10 + rng.int(90))}이면 → ${d.y}-${pad2(d.m)}-${pad2(d.d)}`; })(), "DATE, LEFT, MID 함수 사용"],
+    text: "[{표}]에서 관리번호[{col:관리번호}]를 이용하여 입사일[{R}]을 표시하시오. (8점)",
+    notes: [(() => { const d = randDate(rng, 2018, 2025); return `입사일 : 관리번호의 왼쪽 네 글자는 연도, 다섯째부터 두 글자는 월, 일곱째부터 두 글자는 일 [표시 예 : ${d.y}${pad2(d.m)}${pad2(d.d)}${pad2(10 + rng.int(90))} → ${d.y}-${pad2(d.m)}-${pad2(d.d)}]`; })(), "DATE, LEFT, MID 함수 사용"],
     accept: [`=DATE(LEFT(${x},4),MID(${x},5,2),MID(${x},7,2))`],
   };
 }

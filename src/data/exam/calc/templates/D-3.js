@@ -14,7 +14,7 @@ function weekendsSpanned(s, n) { const end = workday(s, n); let c = 0; for (let 
 // 1) d3-workday [어려움] — MONTH(WORKDAY(x,n))&"/"&DAY(WORKDAY(x,n))
 function d3Workday(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["도서", "대여일", "대여기간", "반납예정일"];
+  const headers = ["대여자", "대여일", "대여기간", "반납예정일"];
   const dateUsed = new Set(), keySet = new Set(), wdUsed = new Set(), rowsRaw = [];
   const add = (s, n) => { if (dateUsed.has(s)) return false; const key = md(workday(s, n)).m + "/" + md(workday(s, n)).d; if (keySet.has(key)) return false; dateUsed.add(s); keySet.add(key); rowsRaw.push({ s, n, key }); return true; };
   let guard = 0;
@@ -27,13 +27,16 @@ function d3Workday(rng) {
   const shuffled = rng.shuffle(rowsRaw);                  // 판별 행 위치 분산
   const names = rng.sample(NAMES, N);
   const rows = shuffled.map((o, i) => [names[i], o.s, o.n, null]);
-  const results = new Set(shuffled.map((o) => o.key));
-  let ex; for (let t = 0; t < 60; t++) { const c = `${1 + rng.int(12)}/${1 + rng.int(28)}`; if (!results.has(c)) { ex = c; break; } }
+  const results = new Set(shuffled.map((o) => o.key)), dataN = new Set(shuffled.map((o) => o.n));
+  const pad2 = (v) => String(v).padStart(2, "0");
+  // 표시 예: 입력(날짜, 기간) → 결과(월/일). 결과·기간이 데이터와 겹치지 않게.
+  let ex;
+  for (let t = 0; t < 80; t++) { const ed = randDate(rng, 2024, 2026); const en = 5 + rng.int(15); const er = workday(ed.s, en); const key = md(er).m + "/" + md(er).d; if (!results.has(key) && !dataN.has(en)) { ex = `${ed.y}-${pad2(ed.m)}-${pad2(ed.d)}, ${en} → ${md(er).m}/${md(er).d}`; break; } }
   if (!ex) throw new Error("표시 예 실패");
   const g = geom(headers, N), x = g.dataCell("대여일", 0), n = g.dataCell("대여기간", 0);
   const wf = `WORKDAY(${x},${n})`;
   return {
-    subtype: "D-3", colWidths: [8, 12, 8, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" }, verbException: "계산",
+    subtype: "D-3", colWidths: [8, 12, 8, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "반납예정일" },
     discriminators: [
       { name: "금요일 시작", test: (r) => weekday1(r[1]) === 6, min: 1, max: N },
@@ -42,8 +45,8 @@ function d3Workday(rng) {
     ],
     answer: `=MONTH(${wf})&"/"&DAY(${wf})`,
     functions: { required: ["WORKDAY", "MONTH", "DAY"], candidates: null },
-    text: "[{표}]에서 대여일[{col:대여일}]과 대여기간[{col:대여기간}]을 이용하여 반납예정일[{R}]을 계산하시오. (8점)",
-    notes: [`반납예정일 : 대여일에 주말(토·일)을 제외하고 대여기간을 더한 날짜를 "월/일"로 표시 [표시 예 : ${ex}]`, "WORKDAY, MONTH, DAY 함수와 & 연산자 사용"],
+    text: "[{표}]에서 대여일[{col:대여일}]과 대여기간[{col:대여기간}]을 이용하여 반납예정일[{R}]을 표시하시오. (8점)",
+    notes: [`반납예정일 : 대여일에 주말(토요일과 일요일)은 제외하고 대여기간을 더한 날짜 [표시 예 : ${ex}]`, "WORKDAY, MONTH, DAY 함수와 & 연산자 사용"],
     accept: [`=MONTH(${wf})&"/"&DAY(${wf})`],
   };
 }

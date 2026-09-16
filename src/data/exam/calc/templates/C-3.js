@@ -45,14 +45,23 @@ function c3VlookupDmax(rng) {
   const headers = ["분류", "브랜드", "판매실적", "제품명"];
   const catPool = ["캠핑용품", "등산용품", "낚시용품", "수영용품"];
   const target = rng.pick(catPool), others = catPool.filter((c) => c !== target);
-  const isT = new Array(N).fill(false);
   const idxs = rng.shuffle([...Array(N).keys()]);
   const nT = 3 + rng.int(2);                            // 조건 대상 3~4개, 위치 무작위
-  for (let i = 0; i < nT; i++) isT[idxs[i]] = true;
-  const vals = distinctInts(rng, N, 100, 900);          // 서로 다름 → 답 값(실적)이 열 전체에서 유일
-  const tRows = [...Array(N).keys()].filter((i) => isT[i]);
-  let maxTi = tRows[0]; for (const i of tRows) if (vals[i] > vals[maxTi]) maxTi = i;
-  if (maxTi === N - 1) throw new Error("조건 대상 최대가 마지막 행"); // 마지막 아님 보장(재시도)
+  const targetPos = idxs.slice(0, nT), nonTargetPos = idxs.slice(nT);
+  const isT = new Array(N).fill(false); targetPos.forEach((p) => (isT[p] = true));
+  // 전체 최댓값은 조건 밖(비대상) 행에, 조건 대상 최댓값(=답)은 전체 2~3위. 전부 서로 다름 → 답 값 유일.
+  const sorted = distinctInts(rng, N, 100, 900).sort((a, b) => b - a);
+  const tmr = 1 + rng.int(2);                           // 대상 최대의 전체 순위(2위 또는 3위)
+  const valByPos = new Array(N);
+  sorted.slice(0, tmr).forEach((v, i) => (valByPos[nonTargetPos[i]] = v)); // 대상 최대보다 큰 값들 → 비대상
+  const tPosNoLast = targetPos.filter((p) => p !== N - 1);
+  if (!tPosNoLast.length) throw new Error("대상 위치 부족");
+  const tmPos = rng.pick(tPosNoLast);                   // 대상 최대 행(마지막 아님 → 범위 축소 동치)
+  valByPos[tmPos] = sorted[tmr];
+  const rest = rng.shuffle(sorted.slice(tmr + 1));
+  const empty = [...Array(N).keys()].filter((p) => valByPos[p] === undefined);
+  rest.forEach((v, i) => (valByPos[empty[i]] = v));
+  const vals = valByPos;
   const catCol = isT.map((t) => (t ? target : rng.pick(others)));
   const prods = rng.sample(PRODUCTS, N), brands = rng.sample(TEAM_NAMES, N);
   const rows = catCol.map((c, i) => [c, brands[i], vals[i], prods[i]]);

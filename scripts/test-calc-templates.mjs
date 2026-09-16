@@ -4,7 +4,7 @@
 import { makeRng, planItem, composeCalc, TEMPLATES, FILLER } from "../src/utils/calc/calcAssembler.js";
 import { buildInstance } from "../src/utils/calc/buildInstance.js";
 import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
-import { submit, mutate, cellsGetCell, validateText, significantCols, specDiscriminators } from "./_calcTestUtil.mjs";
+import { submit, mutate, cellsGetCell, validateText, significantCols, specDiscriminators, evalAt, COL, lettersCol } from "./_calcTestUtil.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; console.log(`✗ ${name}  ${extra}`); } };
@@ -78,6 +78,20 @@ for (const V of VARIANTS) {
     specDiscriminators(r.spec).forEach((d, di) => { discMeta[di] = { name: d.name, allowFixed: d.allowFixed }; let mc = 0; r.spec.rows.forEach((row, i) => { if (d.test(row)) { (discPos[di] = discPos[di] || new Map()).set(i, (discPos[di].get(i) || 0) + 1); mc++; } }); discTot[di] = (discTot[di] || 0) + mc; });
     const exm = /표시\s*예\s*[:：]\s*([^\]]+?)(?:\]|$)/.exec((it.notes || []).join(" ")); if (exm) exSet.add(exm[1].trim());
     if (r.spec.result.kind === "single") { const val = Object.values(it.expected)[0]; if (typeof val === "string" && val !== "") { const ri = r.spec.rows.findIndex((row) => row.some((c) => c === val)); if (ri >= 0) ansPos[ri] = (ansPos[ri] || 0) + 1; } }
+    // D함수 single 결과: 조건 없는 같은 집계와 달라야(조건이 실제로 거른다)
+    if (r.spec.result.kind === "single") {
+      const DMAP = { DMAX: "MAX", DMIN: "MIN", DSUM: "SUM", DAVERAGE: "AVERAGE", DCOUNT: "COUNT", DCOUNTA: "COUNTA" };
+      const dreG = /D(MAX|MIN|SUM|AVERAGE|COUNT|COUNTA)\(\s*(\$?[A-Z]+\$?\d+):(\$?[A-Z]+\$?\d+)\s*,\s*("[^"]*"|\$?[A-Z]+\$?\d+|\d+)\s*,\s*\$?[A-Z]+\$?\d+:\$?[A-Z]+\$?\d+\s*\)/g;
+      let found = false;
+      const noCond = it.answer.formula.replace(dreG, (_w, fn, dbS, _dbE, fld) => {
+        found = true;
+        const c1 = lettersCol(dbS.replace(/\$/g, "").match(/[A-Z]+/)[0]);
+        const r1 = +dbS.replace(/\$/g, "").match(/\d+/)[0], r2 = +_dbE.replace(/\$/g, "").match(/\d+/)[0];
+        let fcol; if (/^"/.test(fld)) fcol = c1 + r.spec.headers.indexOf(fld.replace(/"/g, "")); else if (/^\d+$/.test(fld)) fcol = c1 + (+fld - 1); else fcol = lettersCol(fld.replace(/\$/g, "").match(/[A-Z]+/)[0]);
+        return `${DMAP[fn]}(${COL(fcol)}${r1 + 1}:${COL(fcol)}${r2})`;
+      });
+      if (found) { const nc = evalAt(inst, it, noCond), ev = Object.values(it.expected)[0]; const same = (a, b) => (typeof a === "number" && typeof b === "number") ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)) : String(a) === String(b); if (same(nc, ev)) check(`${V.id} D함수 조건 유효(무조건 집계와 다름)`, false, `${seed} 무조건=${nc} 기대=${ev}`); }
+    }
     { const e = validateText(it, r.spec); validated++; if (e.length) check(`${V.id} 지시문 좌표 무결성`, false, `${seed} :: ${e.join(" / ")}`); }
     const gc = cellsGetCell(inst.cells);
     const cand = it.functions?.candidates || null;
