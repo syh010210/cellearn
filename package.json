@@ -14,7 +14,7 @@
     "test:fixtures": "node scripts/test-basic2-fixtures.mjs",
     "test:calc-coverage": "node scripts/check-calc-coverage.mjs",
     "test:calc-parity": "node scripts/calc-parity-check.mjs",
-    "test:calc": "node scripts/test-calc.mjs && node scripts/test-calc-mutation.mjs && node scripts/test-calc-grader.mjs",
+    "test:calc": "node scripts/test-calc.mjs && node scripts/test-calc-mutation.mjs && node scripts/test-calc-grader.mjs && node scripts/test-calc-templates.mjs",
     "test": "node src/excel-engine/test.mjs && node src/utils/formulaUtils.test.mjs && node src/components/lesson/miniexcel/gradePractice.test.mjs && npm run check:syntax"
   },
   "dependencies": {

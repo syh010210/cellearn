@@ -37,13 +37,6 @@ export const SAMPLE_A2_DAVERAGE = {
     { formula: "4.4", expectReason: "noFormula" },
     { formula: '=ABS(ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1))', expectReason: "functionOutside" },
   ],
-  allowSurvive: [
-    // single 결과는 채우기가 없어 참조가 이동하지 않는다 → $ 유무가 값에 영향 없음(수학적 동치).
-    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', why: "single 결과는 채우기가 없어 $ 전부 제거해도 값 동일" },
-    { formula: '=ROUND(DAVERAGE(A2:$C$8,"평점",$E$1:$E$2),1)', why: "single 결과라 DB 범위 시작 셀 $ 만 제거해도 참조 미이동 → 동치" },
-    { formula: '=ROUND(DAVERAGE($A$2:$C$8,"평점",E1:$E$2),1)', why: "single 결과라 조건 범위 시작 셀 $ 제거도 동치" },
-    { formula: '=ROUND(DAVERAGE($A$2:$C$8,"평점",$D$1:$E$2),1)', why: "조건 범위에 빈 열(D)이 붙어도 DAVERAGE에 추가 제약이 없어 동치" },
-  ],
 };
 
 // 2) B-1 IFERROR + CHOOSE + RANK.EQ · fillCol
@@ -72,9 +65,6 @@ export const SAMPLE_B1_RANK = {
     { formula: '=IF(RANK.EQ(B3,$B$3:$B$8)=1,"금",IF(RANK.EQ(B3,$B$3:$B$8)=2,"은",IF(RANK.EQ(B3,$B$3:$B$8)=3,"동","")))', expectReason: "functionOutside" },
     { formula: "0", expectReason: "noFormula" },
     { formula: '=UPPER(IFERROR(CHOOSE(RANK.EQ(B3,$B$3:$B$8),"금","은","동"),""))', expectReason: "functionOutside" },
-  ],
-  allowSurvive: [
-    { formula: '=IFERROR(CHOOSE(RANK.EQ(B3,$B$2:$B$8),"금","은","동"),"")', why: "RANK.EQ 범위에 텍스트 머리글(B2)이 포함돼도 순위 계산에서 무시되어 동치" },
   ],
 };
 
@@ -106,7 +96,6 @@ export const SAMPLE_C1_HLOOKUP = {
     { formula: '=IFERROR(VLOOKUP(LEFT(A3,2),$E$2:$G$3,2,0),"확인")', expectReason: "functionOutside" }, // VLOOKUP
     { formula: "확인", expectReason: "noFormula" },
   ],
-  allowSurvive: [],
 };
 
 // 4) A-4 SUMIF + SUM · resultTable(right, 표 이름 라벨 포함) · 비율 소수 그대로
@@ -135,9 +124,6 @@ export const SAMPLE_A4_SUMIF = {
     { formula: "=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/500", expectReason: "functionMissing" }, // SUM 없이 상수
     { formula: "0.3333", expectReason: "noFormula" },
     { formula: '=ABS(SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$3:$C$8))', expectReason: "functionOutside" },
-  ],
-  allowSurvive: [
-    { formula: '=SUMIF($B$3:$B$8,E3,$C$3:$C$8)/SUM($C$2:$C$8)', why: "SUM 범위에 텍스트 머리글(C2)이 포함돼도 합계에서 무시되어 동치" },
   ],
 };
 
@@ -172,7 +158,6 @@ export const SAMPLE_D3_WORKDAY = {
     { formula: "3/10", expectReason: "noFormula" },
     { formula: '=UPPER(MONTH(WORKDAY(B3,C3))&"/"&DAY(WORKDAY(B3,C3)))', expectReason: "functionOutside" },
   ],
-  allowSurvive: [],
 };
 
 // 6) A-2 AVERAGEIF · ROUNDDOWN/ROUND/ROUNDUP 중 알맞은 함수 · fillRow
@@ -202,7 +187,6 @@ export const SAMPLE_A2_AVERAGEIF = {
     { formula: "=ROUNDDOWN(AVERAGE(C3:C10),0)", expectReason: "functionMissing" },        // AVERAGE 사용
     { formula: "82", expectReason: "noFormula" },
   ],
-  allowSurvive: [],
 };
 
 export const SAMPLES = [

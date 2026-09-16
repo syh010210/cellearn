@@ -3,6 +3,7 @@
 // (2) 조건 범위 비교, (3) 값·자료형·오류·함수·hint·warnings 경계.
 
 import { gradeCalcItem } from "../src/utils/calc/calcGrader.js";
+import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; console.log(`✗ ${name}  ${extra}`); } };
@@ -80,6 +81,21 @@ const grade = (over, map, cells) => gradeCalcItem(item(over), gc(map), cells);
 // STDEV 입력 + required STDEV.S → 통과, _xlfn. 붙은 f → 통과
 { const r = grade({ expected: { C1: 1 }, functions: { required: ["STDEV.S"], candidates: null } }, { C1: { f: "STDEV(A1:A9)", v: 1, t: "n" } }); check("STDEV≡STDEV.S 통과", r.ok, r.reasons.join()); }
 { const r = grade({ expected: { C1: 1 }, functions: { required: ["STDEV.S"], candidates: null } }, { C1: { f: "_xlfn.STDEV.S(A1:A9)", v: 1, t: "n" } }); check("_xlfn.STDEV.S 통과", r.ok, r.reasons.join()); }
+
+// ───────── lookupLeadingText 생존 규칙 ─────────
+console.log("=== lookupLeadingText ===");
+const it0 = { result: { kind: "fillCol" }, functions: { required: ["VLOOKUP"], candidates: null } };
+// E1=표 이름, E2..E5=키(코드/CS/EE/ME), F1 빈 셀
+const gcOk = gc({ E1: { v: "학과기준표", t: "s" }, F1: null, E2: { v: "코드", t: "s" }, E3: { v: "CS", t: "s" }, E4: { v: "EE", t: "s" }, E5: { v: "ME", t: "s" } });
+const gcKey = gc({ E1: { v: "CS", t: "s" }, F1: null, E2: { v: "코드", t: "s" }, E3: { v: "CS", t: "s" }, E4: { v: "EE", t: "s" }, E5: { v: "ME", t: "s" } });
+const rn = (b, m, g, it = it0) => { const r = classifySurvivor(b, m, it, g); return r && r.name; };
+check("정확 일치 + 표 이름 행 포함 → 허용", rn("=VLOOKUP(A3,$E$2:$F$5,2,0)", "=VLOOKUP(A3,$E$1:$F$5,2,0)", gcOk) === "lookupLeadingText");
+check("빈 인수(정확) → 허용", rn("=VLOOKUP(A3,$E$2:$F$5,2,)", "=VLOOKUP(A3,$E$1:$F$5,2,)", gcOk) === "lookupLeadingText");
+check("근사 일치 → 비허용", rn("=VLOOKUP(A3,$E$2:$F$5,2,1)", "=VLOOKUP(A3,$E$1:$F$5,2,1)", gcOk) === null);
+check("추가 셀이 키와 같은 텍스트 → 비허용", rn("=VLOOKUP(A3,$E$2:$F$5,2,0)", "=VLOOKUP(A3,$E$1:$F$5,2,0)", gcKey) === null);
+check("HLOOKUP 왼쪽 1열 텍스트 → 허용", rn("=HLOOKUP(A3,$F$2:$I$3,2,0)", "=HLOOKUP(A3,$E$2:$I$3,2,0)",
+  gc({ F1: null, F2: { v: "노트북", t: "s" }, G2: { v: "키보드", t: "s" }, H2: { v: "마우스", t: "s" }, I2: { v: "허브", t: "s" }, E2: { v: "상품", t: "s" }, E3: { v: "단가", t: "s" } }),
+  { result: { kind: "fillCol" }, functions: { required: ["HLOOKUP"] } }) === "lookupLeadingText");
 
 console.log(`\n결과: ${pass} 통과 / ${fail} 실패`);
 if (fail) process.exit(1);

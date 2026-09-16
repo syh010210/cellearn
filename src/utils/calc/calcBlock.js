@@ -109,11 +109,19 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
 
   if (spec.refTable) {
     const rt = spec.refTable; const off = rt.rowOffset || 0; let r = off;
+    // rowLabels: 가로 참조표 첫 열에 행 라벨(예: [상품, 단가]·[구분, 매입가, 판매가]). {T}·수식 범위는 라벨 열 제외.
+    const hasLabels = Array.isArray(rt.rowLabels);
+    const keyC0 = attStartCol + (hasLabels ? 1 : 0);
     if (rt.name) { push(r, attStartCol, { v: rt.name, t: "s" }, "reflabel"); r++; }
     const headR = r;
-    rt.headers.forEach((h, i) => push(headR, attStartCol + i, norm(h), "refheader")); r++;
-    rt.rows.forEach((row) => { row.forEach((v, i) => push(r, attStartCol + i, norm(v), "refdata")); r++; });
-    refTableRange = { r1: headR, c1: attStartCol, r2: r - 1, c2: attStartCol + rt.headers.length - 1 };
+    if (hasLabels) push(headR, attStartCol, { v: rt.rowLabels[0], t: "s" }, "reflabelcol"); // 키(머리글) 행 라벨
+    rt.headers.forEach((h, i) => push(headR, keyC0 + i, norm(h), "refheader")); r++;
+    rt.rows.forEach((row, ri) => {
+      if (hasLabels) push(r, attStartCol, { v: rt.rowLabels[1 + ri], t: "s" }, "reflabelcol");
+      row.forEach((v, i) => { const cell = norm(v); if (rt.z && cell.t === "n") cell.z = rt.z; push(r, keyC0 + i, cell, "refdata"); });
+      r++;
+    });
+    refTableRange = { r1: headR, c1: keyC0, r2: r - 1, c2: keyC0 + rt.headers.length - 1 }; // 라벨 열 제외
     blockW = Math.max(blockW, refTableRange.c2 + 1); blockH = Math.max(blockH, r);
     ph.T = refTableRange;
   }
