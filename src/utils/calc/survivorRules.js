@@ -8,7 +8,9 @@
 const stripDollar = (s) => String(s).replace(/\$/g, "");
 const norm = (s) => stripDollar(s).replace(/\s+/g, "").toUpperCase();
 
-const AGG = new Set(["SUM", "AVERAGE", "COUNT", "COUNTA", "RANK.EQ", "LARGE", "SMALL", "MAX", "MIN"]);
+// 범위 앞에 텍스트 머리글 1행이 더 붙어도 값이 안 변하는 함수들. 집계 함수는 텍스트를 무시하고,
+// COUNTIF 는 숫자·정확일치 조건이면 텍스트 머리글이 조건에 안 맞아 개수가 그대로다(생존자에서만 조회되므로 안전).
+const AGG = new Set(["SUM", "AVERAGE", "COUNT", "COUNTA", "RANK.EQ", "LARGE", "SMALL", "MAX", "MIN", "STDEV", "STDEV.S", "MODE.SNGL", "MEDIAN", "COUNTIF"]);
 const DFUNC = new Set(["DAVERAGE", "DSUM", "DCOUNT", "DCOUNTA", "DMAX", "DMIN"]);
 
 // pos(범위 시작 문자 인덱스)를 감싸는 가장 가까운 함수 이름
