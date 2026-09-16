@@ -84,6 +84,16 @@ export const SURVIVOR_RULES = [
     },
   },
   {
+    // MATCH 의 조회값이 그 범위의 MAX/MIN 이면, 일치 옵션(0/1/-1)이 달라도 최댓/최솟값의 위치는 같다.
+    // (엔진에서 MATCH 근사 옵션이 극단값에 대해 정확일치와 같은 위치를 준다 → 데이터로 못 잡는 동치.)
+    name: "matchExtremeType",
+    why: "MATCH 조회값이 범위의 MAX/MIN 이면 일치 옵션(0↔1↔-1) 변경이 위치를 바꾸지 않아 엔진상 동치",
+    test: (base, mut) => {
+      const mask = (s) => s.replace(/MATCH\(\s*(MAX|MIN)\(([^()]*)\)\s*,([^,()]*),\s*-?\d+\s*\)/gi, "MATCH($1($2),$3,#)");
+      return norm(mask(base)) === norm(mask(mut)) && norm(base) !== norm(mut);
+    },
+  },
+  {
     // 같은 범위가 수식에 2번 이상 나오고(예: LARGE·SMALL 이 같은 모집단 공유) 그중 한 곳만 끝 1칸 축소한 변형.
     // 잘린 원소가 한쪽 함수의 관심 구간(k-창) 밖이면 값이 안 변할 수 있다. 단, 같은 범위 축소 변형 중
     // 최소 1개는 값으로 잡혀야 하며(테스트에서 강제), 모두 생존하면 실패.
