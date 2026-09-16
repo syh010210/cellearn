@@ -45,16 +45,60 @@ export function applyRound(mode, x, d) {
 // 표시 예: 문항 결과값(반올림 전 값 ref) ±15% 안에서 뽑는다. 결과와 같은 소수 d자리 + 버리는 자리 1개.
 // 반올림 방향이 실제로 드러나게(반올림은 버리는 자리 5~9, 올림·내림은 1~9). 호출부가 데이터·기대값과
 // 겹치면 재시도(selfVerify 표시 예 검사). 기출 예시 숫자와 무관.
-export function roundExample(mode, d, rng, ref) {
+export function roundExample(mode, d, rng, ref, avoid = []) {
   const f = Math.pow(10, d), f1 = Math.pow(10, d + 1);
-  const whole = Math.abs(ref) * (0.85 + rng.next() * 0.3);
-  const base = Math.floor(whole * f) / f;                 // d 자리까지
-  const last = mode === "ROUND" ? rng.range(5, 9) : rng.range(1, 9);
-  const input = Math.round((base + last / f1) * f1) / f1;
-  const output = applyRound(mode, input, d);
+  const av = new Set(avoid.map((x) => Number(x)));
+  let input, output;
+  for (let t = 0; t < 40; t++) {
+    const whole = Math.abs(ref) * (0.85 + rng.next() * 0.3);
+    const base = Math.floor(whole * f) / f;               // d 자리까지
+    const last = mode === "ROUND" ? rng.range(5, 9) : rng.range(1, 9);
+    input = Math.round((base + last / f1) * f1) / f1;
+    output = applyRound(mode, input, d);
+    if (!av.has(output) && !av.has(input)) break;         // 결과값과 겹치면 다시
+  }
   // 출력은 결과와 같은 소수 d자리로 표기(4 → "4.0"). 데이터의 정수 문자열과도 안 겹침.
   return { input, output, text: `[표시 예 : ${input} → ${output.toFixed(d)}]` };
 }
 
 // D-표: 조건 범위/참조표 셀에 들어갈 조건값을 그대로. 와일드카드 "*부"
 export const endsWith = (v, suf) => String(v).endsWith(suf);
+
+// ── 단일 셀 결과의 범위 mutation 자체 검증(다중 범위 함수 정렬 어긋남 생존 방지) ──
+import { Sheet } from "../../../../excel-engine/index.js";
+import { classifySurvivor } from "../../../../utils/calc/survivorRules.js";
+
+const lettersColU = (L) => { let n = 0; for (const ch of L.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; };
+// 본표(+조건/참조 셀)를 미니 시트에 놓고 formula 를 평가
+function evalTable(headers, rows, colZ, formula, extra = {}) {
+  const s = new Sheet();
+  headers.forEach((h, c) => s.setCellValue(COL(c) + 2, h));
+  rows.forEach((row, ri) => row.forEach((v, c) => { if (v !== null && v !== undefined && v !== "") s.setCellValue(COL(c) + (3 + ri), v); }));
+  for (const [a, v] of Object.entries(extra)) s.setCellValue(a, v);
+  s.setCellInput("AZ1", formula.startsWith("=") ? formula : "=" + formula);
+  const val = s.getCellValue("AZ1");
+  return (val && typeof val === "object" && val.error) ? "E:" + val.error : val;
+}
+// 각 범위의 시작-1 확장·끝-1 축소 변형을 만든다(mutate 의 range 규칙과 동일)
+function rangeMutants(base) {
+  const re = /(\$?)([A-Za-z]{1,3})(\$?)(\d+):(\$?)([A-Za-z]{1,3})(\$?)(\d+)/g; const out = []; let m;
+  while ((m = re.exec(base)) !== null) {
+    const R = { c1d: m[1], col1: m[2], r1d: m[3], row1: +m[4], c2d: m[5], col2: m[6], r2d: m[7], row2: +m[8] };
+    const put = (rep) => { if (rep) out.push(base.slice(0, m.index) + rep + base.slice(m.index + m[0].length)); };
+    // 끝-1 축소
+    if (R.row2 > R.row1) put(`${R.c1d}${R.col1}${R.r1d}${R.row1}:${R.c2d}${R.col2}${R.r2d}${R.row2 - 1}`);
+    else if (lettersColU(R.col2) > lettersColU(R.col1)) put(`${R.c1d}${R.col1}${R.r1d}${R.row1}:${R.c2d}${COL(lettersColU(R.col2) - 1)}${R.r2d}${R.row2}`);
+    // 시작-1 확장
+    if (R.row1 > 1) put(`${R.c1d}${R.col1}${R.r1d}${R.row1 - 1}:${R.c2d}${R.col2}${R.r2d}${R.row2}`);
+    else if (lettersColU(R.col1) > 0) put(`${R.c1d}${COL(lettersColU(R.col1) - 1)}${R.r1d}${R.row1}:${R.c2d}${R.col2}${R.r2d}${R.row2}`);
+  }
+  return out;
+}
+const sameVal = (a, b) => (typeof a === "number" && typeof b === "number") ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)) : a === b;
+// 단일 셀 결과: 모든 범위 확장·축소 변형이 값으로 달라지거나 생존 규칙에 해당해야 한다. 아니면 throw(재시도).
+export function assertRangesClean(headers, rows, colZ, answer, extra = {}) {
+  const base = evalTable(headers, rows, colZ, answer, extra);
+  for (const mut of rangeMutants(answer)) {
+    if (sameVal(evalTable(headers, rows, colZ, mut, extra), base) && !classifySurvivor(answer, mut, { result: { kind: "single" } })) throw new Error("범위 mutant 생존: " + mut);
+  }
+}

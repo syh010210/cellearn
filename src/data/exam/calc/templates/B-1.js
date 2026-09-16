@@ -139,7 +139,7 @@ function orRank(rng) {
   const rows = sabun.map((s, i) => [s, c1[i], c2[i], null]);
   const g = geom(headers, N), x1 = g.dataCell("1차", 0), x2 = g.dataCell("2차", 0), R1 = g.colAbs("1차"), R2 = g.colAbs("2차");
   return {
-    subtype: "B-1", colWidths: [8, 6, 6, 8], headers, rows,
+    subtype: "B-1", colWidths: [8, 6, 6, 8], headers, rows, codeColumns: ["사번"],
     result: { kind: "fillCol", col: "결과" },
     answer: `=IF(OR(RANK.EQ(${x1},${R1})<=${n},RANK.EQ(${x2},${R2})<=${n}),"통과","")`,
     functions: { required: ["IF", "OR", "RANK.EQ"], candidates: null },
@@ -165,7 +165,7 @@ function iferrorRankAsc(rng) {
   for (let i = 0; i < N; i++) rows.push([names[i], i === blankAt ? "" : vals[vi++], null]);
   const g = geom(headers, N);
   return {
-    subtype: "B-1", colWidths: [10, 10, 8], headers, rows, colZ: { 1: "0.00" },
+    subtype: "B-1", colWidths: [10, 10, 8], headers, rows, colZ: { 1: "0.00" }, verbException: "표시",
     result: { kind: "fillCol", col: "순위" },
     answer: `=IFERROR(RANK.EQ(${g.dataCell(KREC, 0)},${g.colAbs(KREC)},1),"실격")`,
     functions: { required: ["IFERROR", "RANK.EQ"], candidates: null },

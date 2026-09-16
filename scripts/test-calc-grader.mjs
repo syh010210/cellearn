@@ -97,5 +97,18 @@ check("HLOOKUP 왼쪽 1열 텍스트 → 허용", rn("=HLOOKUP(A3,$F$2:$I$3,2,0)
   gc({ F1: null, F2: { v: "노트북", t: "s" }, G2: { v: "키보드", t: "s" }, H2: { v: "마우스", t: "s" }, I2: { v: "허브", t: "s" }, E2: { v: "상품", t: "s" }, E3: { v: "단가", t: "s" } }),
   { result: { kind: "fillCol" }, functions: { required: ["HLOOKUP"] } }) === "lookupLeadingText");
 
+// ───────── dcountaFieldInvariant 생존 규칙 ─────────
+console.log("=== dcountaFieldInvariant ===");
+{
+  const it = { result: { kind: "single" } };
+  const filled = {}; for (let r = 3; r <= 10; r++) { filled["A" + r] = { v: "이름" + r, t: "s" }; filled["B" + r] = { v: "남성", t: "s" }; }
+  const rn = (b, m, g) => { const x = classifySurvivor(b, m, it, g); return x && x.name; };
+  check("필드 A2→B2, 두 열 모두 채움 → 허용", rn("=DCOUNTA($A$2:$C$10,A2,E1:F3)&\"명\"", "=DCOUNTA($A$2:$C$10,B2,E1:F3)&\"명\"", gc(filled)) === "dcountaFieldInvariant");
+  check("필드 번호 1→2, 채움 → 허용", rn("=DCOUNTA($A$2:$C$10,1,E1:F3)", "=DCOUNTA($A$2:$C$10,2,E1:F3)", gc(filled)) === "dcountaFieldInvariant");
+  const blank = { ...filled, B5: null };
+  check("변형 열에 빈칸 레코드 → 비허용", rn("=DCOUNTA($A$2:$C$10,A2,E1:F3)", "=DCOUNTA($A$2:$C$10,B2,E1:F3)", gc(blank)) === null);
+  check("DCOUNT 은 비허용", rn("=DCOUNT($A$2:$C$10,A2,E1:F3)", "=DCOUNT($A$2:$C$10,B2,E1:F3)", gc(filled)) === null);
+}
+
 console.log(`\n결과: ${pass} 통과 / ${fail} 실패`);
 if (fail) process.exit(1);

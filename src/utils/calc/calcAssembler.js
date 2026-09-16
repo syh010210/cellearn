@@ -5,11 +5,15 @@
 // buildInstance/resolveBlock 는 수정하지 않는다. 같은 시드 → 같은 인스턴스.
 
 import { buildInstance } from "./buildInstance.js";
+import { TEMPLATE_A1 } from "../../data/exam/calc/templates/A-1.js";
 import { TEMPLATE_A2 } from "../../data/exam/calc/templates/A-2.js";
+import { TEMPLATE_A3 } from "../../data/exam/calc/templates/A-3.js";
+import { TEMPLATE_A4 } from "../../data/exam/calc/templates/A-4.js";
 import { TEMPLATE_B1 } from "../../data/exam/calc/templates/B-1.js";
 import { TEMPLATE_C1 } from "../../data/exam/calc/templates/C-1.js";
+import { TEMPLATE_C2 } from "../../data/exam/calc/templates/C-2.js";
 
-export const TEMPLATES = { "A-2": TEMPLATE_A2, "B-1": TEMPLATE_B1, "C-1": TEMPLATE_C1 };
+export const TEMPLATES = { "A-1": TEMPLATE_A1, "A-2": TEMPLATE_A2, "A-3": TEMPLATE_A3, "A-4": TEMPLATE_A4, "B-1": TEMPLATE_B1, "C-1": TEMPLATE_C1, "C-2": TEMPLATE_C2 };
 
 // 문자열 시드 → 결정적 난수 (basic2Assembler 와 동일 방식)
 export function makeRng(seedStr) {

@@ -28,7 +28,7 @@ function vlookupLeft(rng) {
   const g = geom(headers, N);
   const T = g.refRangeAbs(true, refRows.length, 2);            // 이름 라벨 행 + 머리글(코드/학과) 정렬
   return {
-    subtype: "C-1", colWidths: [8, 8, 12], headers, rows,
+    subtype: "C-1", colWidths: [8, 8, 12], headers, rows, codeColumns: ["학번"],
     result: { kind: "fillCol", col: "학과" },
     refTable: { name: "학과기준표", headers: ["코드", "학과"], rows: refRows, rowOffset: 0 },
     answer: `=VLOOKUP(LEFT(${g.dataCell("학번", 0)},2),${T},2,0)`,
@@ -99,7 +99,7 @@ function iferrorHlookupLeft(rng) {
   const g = geom(headers, N);
   const T = g.refRangeAbs(true, 1, present.length, true);        // 라벨 열(학과코드/학과명) 제외
   return {
-    subtype: "C-1", colWidths: [8, 8, 12], headers, rows,
+    subtype: "C-1", colWidths: [8, 8, 12], headers, rows, codeColumns: ["학번"],
     result: { kind: "fillCol", col: "학과" },
     refTable: { name: "학과기준표", rowLabels: ["학과코드", "학과명"], headers: refKeys, rows: [refKeys.map(nameOf)], rowOffset: 0 },
     answer: `=IFERROR(HLOOKUP(LEFT(${g.dataCell("학번", 0)},2),${T},2,0),"확인")`,
@@ -139,7 +139,7 @@ function hlookupConcat(rng) {
   const g = geom(headers, N);
   const T = g.refRangeAbs(true, 2, combos.length, true);        // 라벨 열(구분/매입가/판매가) 제외
   return {
-    subtype: "C-1", colWidths: [6, 8, 6, 10], headers, rows,
+    subtype: "C-1", colWidths: [6, 8, 6, 10], headers, rows, codeColumns: ["코드"],
     result: { kind: "fillCol", col: "금액", z: "#,##0" },
     refTable: { name: "제품가격표", rowLabels: ["구분", "매입가", "판매가"], z: "#,##0", headers: refKeys, rows: [refKeys.map((k) => costOf[k]), refKeys.map((k) => priceOf[k])], rowOffset: 0 },
     answer: `=${g.dataCell("수량", 0)}*HLOOKUP(${g.dataCell("지점", 0)}&RIGHT(${g.dataCell("코드", 0)},1),${T},3,FALSE)`,

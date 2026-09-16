@@ -140,8 +140,39 @@ function lookupLeadingText(base, mut, getCell) {
   return false;
 }
 
+// ── dcountaFieldInvariant: DCOUNTA 의 필드 인수가 표 안 다른 열로 바뀌어도, 조건에 맞는 레코드에서
+//    두 필드 열이 모두 비어있지 않으면 개수 동일 → 동치. DCOUNT 는 제외(숫자만 세므로 열 바뀌면 달라짐). ──
+function callArgs(s, fn) {
+  const idx = s.toUpperCase().indexOf(fn + "("); if (idx < 0) return null;
+  let i = idx + fn.length + 1, depth = 0, arg = "", args = [];
+  for (; i < s.length; i++) { const ch = s[i]; if (ch === "(") { depth++; arg += ch; } else if (ch === ")") { if (depth === 0) { args.push(arg); break; } depth--; arg += ch; } else if (ch === "," && depth === 0) { args.push(arg); arg = ""; } else arg += ch; }
+  return args.map((a) => a.trim());
+}
+function fieldCol(fieldArg, dbC1, cell0) {
+  const m = /^\$?([A-Za-z]{1,3})\$?(\d+)$/.exec(fieldArg);
+  if (m) return { col: colNum(m[1]), row: +m[2] };          // 머리글 셀
+  if (/^\d+$/.test(fieldArg)) return { col: dbC1 + (+fieldArg - 1), row: null }; // 열 번호
+  return null;                                              // 머리글 문자열 등은 판정 제외
+}
+function dcountaFieldInvariant(base, mut, getCell) {
+  if (!getCell) return false;
+  const a = callArgs(base, "DCOUNTA"), b = callArgs(mut, "DCOUNTA");
+  if (!a || !b || a.length < 3 || b.length !== a.length) return false;
+  if (a[0] !== b[0] || a[2] !== b[2] || a[1] === b[1]) return false; // db·조건 동일, 필드만 다름
+  if (a.slice(3).join() !== b.slice(3).join()) return false;
+  const dm = /^\$?([A-Za-z]{1,3})\$?(\d+):\$?([A-Za-z]{1,3})\$?(\d+)$/.exec(a[0]); if (!dm) return false;
+  const c1 = colNum(dm[1]), r1 = +dm[2], c2 = colNum(dm[3]), r2 = +dm[4];
+  const fb = fieldCol(a[1], c1), fm = fieldCol(b[1], c1);
+  if (!fb || !fm) return false;
+  if (fb.col < c1 || fb.col > c2 || fm.col < c1 || fm.col > c2) return false; // 둘 다 표 안
+  const nonblank = (c, r) => { const cell = getCell(colStr(c) + r); return !!cell && cell.v !== "" && cell.v != null; };
+  for (let r = r1 + 1; r <= r2; r++) if (!nonblank(fb.col, r) || !nonblank(fm.col, r)) return false; // 모든 데이터 행 두 열 비어있지 않음
+  return true;
+}
+
 export function classifySurvivor(base, mut, item, getCell = null) {
   for (const r of SURVIVOR_RULES) if (r.test(base, mut, item)) return { name: r.name, why: r.why };
   if (lookupLeadingText(base, mut, getCell)) return { name: "lookupLeadingText", why: "정확 일치 VLOOKUP/HLOOKUP 범위 앞에 텍스트 셀(표 이름/머리글) 1행·1열만 더 포함돼도 검색 결과 동일 → 동치" };
+  if (dcountaFieldInvariant(base, mut, getCell)) return { name: "dcountaFieldInvariant", why: "DCOUNTA 필드를 표 안 다른 열로 바꿔도 조건 레코드의 두 열이 모두 비어있지 않으면 개수 동일 → 동치" };
   return null;
 }

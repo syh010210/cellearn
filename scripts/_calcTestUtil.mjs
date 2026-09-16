@@ -7,6 +7,8 @@ import { engineGetCell } from "../src/utils/calc/cellAdapter.js";
 import { gradeCalc } from "../src/utils/calc/calcGrader.js";
 import { astToFormula } from "../src/utils/calc/astToFormula.js";
 import { resolveBlock } from "../src/utils/calc/calcBlock.js";
+import { NAMES } from "../src/data/exam/calc/pools.js";
+const NAMESET = new Set(NAMES);
 
 export const COL = (i) => { let s = "", n = i + 1; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
 export const lettersCol = (L) => { let n = 0; for (const ch of String(L).toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; };
@@ -70,7 +72,51 @@ export function validateText(item, spec) {
     if (!/[=×*]/.test(note)) continue;
     for (const h of spec.headers) if (note.includes(h) && !item.text.includes(`${h}[`)) errs.push(`산식 열 '${h}' 본문 누락`);
   }
+  // 표시 예 출력이 기대값(결과 셀)과 같으면 실패 ("N명" 포함)
+  const expStrs = new Set(Object.values(item.expected).map((v) => (v && typeof v === "object" && v.error) ? "E:" + v.error : String(v)));
+  for (const note of item.notes || []) {
+    const mm = /표시\s*예\s*[:：]?\s*([^\]]+)/.exec(note); if (!mm) continue;
+    const parts = mm[1].split("→").map((s) => s.trim());
+    const outTok = (parts.length > 1 ? parts[1] : parts[0]).replace(/[.\s]+$/, "");
+    for (const c of [outTok, outTok.replace(/명$/, "")]) if (expStrs.has(c)) errs.push(`표시 예 출력 '${outTok}'이 기대값과 같음`);
+  }
+  // 동사: 결과 전부 텍스트 → "표시하시오", 숫자 있으면 "계산하시오"(verbException 예외)
+  const vals = Object.values(item.expected);
+  const allText = vals.length > 0 && vals.every((v) => typeof v === "string");
+  const hasNum = vals.some((v) => typeof v === "number");
+  if (allText && !item.text.includes("표시하시오") && spec.verbException !== "계산") errs.push("텍스트 결과인데 '표시하시오' 없음");
+  if (hasNum && !item.text.includes("계산하시오") && spec.verbException !== "표시") errs.push("숫자 결과인데 '계산하시오' 없음");
+  // 결과 라벨: 따옴표·특수기호(− · " ')·"세째/두째" 금지
+  const label = spec.result?.label || "";
+  if (/["'−·]/.test(label) || /[세두]째/.test(label)) errs.push(`결과 라벨 부적합: "${label}"`);
+  // 텍스트 데이터 열이 전부 "이름+숫자"(종목50 등) 패턴이면 실패 (codeColumns 선언 제외)
+  const codeCols = new Set(spec.codeColumns || []);
+  spec.headers.forEach((h, c) => {
+    if (codeCols.has(h)) return;
+    const cv = spec.rows.map((r) => r[c]).filter((v) => typeof v === "string" && v !== "");
+    if (cv.length && cv.every((v) => /^[가-힣A-Za-z]+\d+$/.test(v))) errs.push(`열 '${h}' 이름+숫자 패턴(코드열 아님)`);
+  });
+  // 본문에 "에서" 2회 이상이면 실패
+  if ((item.text.match(/에서/g) || []).length >= 2) errs.push("본문에 '에서' 2회 이상");
+  // 조건 대상 값 개수가 선언 범위(min~max) 안인지
+  for (const d of spec.matchDecls || []) {
+    const c = spec.headers.indexOf(d.col);
+    const cnt = spec.rows.filter((r) => String(r[c]) === String(d.value)).length;
+    if (cnt < d.min || cnt > d.max) errs.push(`조건 '${d.value}' 행 수 ${cnt} (${d.min}~${d.max} 밖)`);
+  }
   return errs;
+}
+
+// 이름 열 자동 감지(값이 모두 이름 풀) — 고정 패턴 검사에서 제외
+export function significantCols(spec) {
+  const codeCols = new Set(spec.codeColumns || []);
+  return spec.headers.map((h, c) => ({ h, c })).filter(({ h, c }) => {
+    if (codeCols.has(h)) return false;
+    const cv = spec.rows.map((r) => r[c]);
+    if (cv.length && cv.every((v) => NAMESET.has(v))) return false; // 이름 열
+    if (cv.every((v) => v == null || v === "")) return false;       // 결과 열 등 빈 열
+    return true;
+  }).map((x) => x.c);
 }
 
 // ── 자동 변형 생성기 ──

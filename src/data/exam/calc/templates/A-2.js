@@ -68,10 +68,10 @@ function daverageRound(rng) {
 
   const g = geom(headers, n);
   const db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critRange(1);
-  const ex = roundExample("ROUND", 1, rng, avg); // 결과(부-평점 평균) ±15%
+  const ex = roundExample("ROUND", 1, rng, avg, [res1]); // 결과(부-평점 평균) ±15%, 기대값 회피
   return {
     subtype: "A-2", colWidths: [12, 8, 8], headers, rows, colZ: { 2: "0.0" },
-    result: { kind: "single", label: "'부' 동아리 평점 평균" },
+    result: { kind: "single", label: "부 동아리 평점 평균" },
     answer: `=ROUND(DAVERAGE(${dbA},"평점",${crit}),1)`,
     criteria: { headers: ["동아리"], rows: [["*부"]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "ROUND"], candidates: null },
@@ -117,7 +117,7 @@ function averageifRound(rng) {
   const baseF = `=ROUNDDOWN(AVERAGEIF(${반A},"1반",${guk}),0)`;
   const pdF = `=ROUNDDOWN(AVERAGEIF(${반A.replace(/^\$([A-Z]+)\$(\d+)/, "$1$2")},"1반",${guk}),0)`;
   if (JSON.stringify(fillRowResults(headers, rows, baseF, rIdx)) === JSON.stringify(fillRowResults(headers, rows, pdF, rIdx))) throw new Error("부분$ 무영향");
-  const ex = roundExample("ROUNDDOWN", 0, rng, avgs[0]); // 결과(1반 평균) ±15%
+  const ex = roundExample("ROUNDDOWN", 0, rng, avgs[0], downs); // 결과(1반 평균) ±15%, 기대값 회피
   return {
     subtype: "A-2", colWidths: [8, 6, 6, 6, 6], headers, rows,
     result: { kind: "fillRow", cols: ["국어", "영어", "수학"], label: "1반 평균" },
@@ -158,7 +158,7 @@ function daverageDiff(rng) {
     answer: `=DAVERAGE(${dbA},"국어",${crit})-AVERAGE(${valRel})`,
     criteria: { headers: ["학교"], rows: [[school]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "AVERAGE"], candidates: null },
-    text: `[{표}]에서 학교[{col:학교}]가 "${school}"인 학생의 국어[{col:국어}] 평균에서 전체 국어[{col:국어}] 평균을 뺀 값을 [{R}] 셀에 계산하시오. (8점)`,
+    text: `[{표}]의 학교[{col:학교}]가 "${school}"인 학생의 국어[{col:국어}] 평균에서 전체 국어[{col:국어}] 평균을 뺀 값을 [{R}] 셀에 계산하시오. (8점)`,
     notes: ["조건은 [{C}] 영역에 알맞게 입력", "DAVERAGE, AVERAGE 함수 사용"],
     accept: [
       `=DAVERAGE(${dbA},${g.header("국어")},${crit})-AVERAGE(${valRel})`, // 필드=머리글
@@ -202,7 +202,7 @@ function averageifsRound(rng) {
 
   const g = geom(headers, n);
   const vR = g.colRel("점수"), c1 = g.colRel("클럽"), c2 = g.colRel("포지션");
-  const ex = roundExample("ROUND", 1, rng, avg); // 결과(조건 평균) ±15%
+  const ex = roundExample("ROUND", 1, rng, avg, [res1]); // 결과(조건 평균) ±15%, 기대값 회피
   return {
     subtype: "A-2", colWidths: [8, 8, 8, 6], headers, rows,
     result: { kind: "single", label: `${clubA} ${posA} 점수 평균` },
