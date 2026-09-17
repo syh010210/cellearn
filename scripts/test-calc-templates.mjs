@@ -36,6 +36,23 @@ const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; con
   check("단위 extremeLookupShrink 다른 함수 → 비허용", classifySurvivor("=SUM($C$3:$C$10)", "=SUM($C$3:$C$9)", S, gc([50, 60, 95, 40, 80, 30, 70, 20])) === null);
 }
 
+// ── 변형 정적 메타(resultKind·usesD·core) 일치 (시드 20개) ──
+{
+  const DFN = new Set(["DAVERAGE", "DSUM", "DCOUNT", "DCOUNTA", "DMAX", "DMIN", "DGET", "DPRODUCT", "DVAR", "DVARP", "DSTDEV", "DSTDEVP"]);
+  const fnsOf = (f) => { const s = new Set(); for (const m of String(f).matchAll(/([A-Z][A-Z0-9.]*)\s*\(/g)) s.add(m[1]); return s; };
+  for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) {
+    check(`${v.id} 메타 필드 존재`, v.resultKind && typeof v.usesD === "boolean" && Array.isArray(v.core) && v.core.length > 0);
+    for (let s = 0; s < 20; s++) {
+      let r; try { r = planItem(st, v.id, v.difficulty, makeRng(v.id + "#meta" + s)); } catch { continue; }
+      check(`${v.id} resultKind 메타`, r.spec.result.kind === v.resultKind, `${r.spec.result.kind}≠${v.resultKind}`);
+      const req = r.spec.functions?.required || [], cand = r.spec.functions?.candidates || [];
+      check(`${v.id} usesD 메타`, [...req, ...cand].some((f) => DFN.has(f)) === v.usesD);
+      const allow = new Set([...fnsOf(r.spec.answer), ...req, ...cand]);
+      for (const c of v.core) if (!allow.has(c)) check(`${v.id} core⊆기준수식`, false, `${c} ∉ ${[...allow].join(",")}`);
+    }
+  }
+}
+
 const VARIANTS = [];
 for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) VARIANTS.push({ st, id: v.id, difficulty: v.difficulty });
 

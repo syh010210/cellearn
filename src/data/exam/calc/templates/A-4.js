@@ -72,8 +72,8 @@ function a4AbsSumif(rng) {
 export const TEMPLATE_A4 = {
   subtype: "A-4",
   variants: [
-    { id: "a4-sumif-ratio", difficulty: "기본", plan: a4SumifRatio },
-    { id: "a4-abs-sumif", difficulty: "어려움", plan: a4AbsSumif },
+    { id: "a4-sumif-ratio", difficulty: "기본", resultKind: "table", usesD: false, core: ["SUMIF"], plan: a4SumifRatio },
+    { id: "a4-abs-sumif", difficulty: "어려움", resultKind: "single", usesD: false, core: ["SUMIF"], plan: a4AbsSumif },
     // 보류: a4-sumifs-ref = SUMIFS(합계열,$조건1,$선택1,$조건2,$선택2) — 선택 셀 2개 + 결과표 머리글
     //  참조(가로·세로 채우기)가 필요. baseCell 1개·1열 resultTable 로는 불가 → calcBlock 스키마 확장 필요.
   ],

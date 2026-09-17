@@ -223,9 +223,9 @@ function averageifsRound(rng) {
 export const TEMPLATE_A2 = {
   subtype: "A-2",
   variants: [
-    { id: "a2-daverage-round", difficulty: "기본", plan: daverageRound },
-    { id: "a2-averageif-round", difficulty: "기본", plan: averageifRound },
-    { id: "a2-daverage-diff", difficulty: "어려움", plan: daverageDiff },
-    { id: "a2-averageifs-round", difficulty: "어려움", plan: averageifsRound },
+    { id: "a2-daverage-round", difficulty: "기본", resultKind: "single", usesD: true, core: ["DAVERAGE"], plan: daverageRound },
+    { id: "a2-averageif-round", difficulty: "기본", resultKind: "fillRow", usesD: false, core: ["AVERAGEIF"], plan: averageifRound },
+    { id: "a2-daverage-diff", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DAVERAGE"], plan: daverageDiff },
+    { id: "a2-averageifs-round", difficulty: "어려움", resultKind: "single", usesD: false, core: ["AVERAGEIFS"], plan: averageifsRound },
   ],
 };

@@ -55,6 +55,6 @@ function a6DsumRoundup(rng) {
 export const TEMPLATE_A6 = {
   subtype: "A-6",
   variants: [
-    { id: "a6-dsum-roundup", difficulty: "어려움", plan: a6DsumRoundup },
+    { id: "a6-dsum-roundup", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DSUM"], plan: a6DsumRoundup },
   ],
 };

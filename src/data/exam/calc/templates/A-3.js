@@ -62,7 +62,7 @@ function a3DmaxDmin(rng) {
 export const TEMPLATE_A3 = {
   subtype: "A-3",
   variants: [
-    { id: "a3-large-small", difficulty: "기본", plan: a3LargeSmall },
-    { id: "a3-dmax-dmin", difficulty: "어려움", plan: a3DmaxDmin },
+    { id: "a3-large-small", difficulty: "기본", resultKind: "single", usesD: false, core: ["LARGE", "SMALL"], plan: a3LargeSmall },
+    { id: "a3-dmax-dmin", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DMAX", "DMIN"], plan: a3DmaxDmin },
   ],
 };

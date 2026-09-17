@@ -76,7 +76,7 @@ function a5ModeCount(rng) {
 export const TEMPLATE_A5 = {
   subtype: "A-5",
   variants: [
-    { id: "a5-stdev-round", difficulty: "기본", plan: a5StdevRound },
-    { id: "a5-mode-count", difficulty: "어려움", plan: a5ModeCount },
+    { id: "a5-stdev-round", difficulty: "기본", resultKind: "single", usesD: false, core: ["STDEV.S"], plan: a5StdevRound },
+    { id: "a5-mode-count", difficulty: "어려움", resultKind: "single", usesD: false, core: ["MODE.SNGL"], plan: a5ModeCount },
   ],
 };

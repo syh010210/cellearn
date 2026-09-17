@@ -98,9 +98,9 @@ function d1UpperMonth(rng) {
 export const TEMPLATE_D1 = {
   subtype: "D-1",
   variants: [
-    { id: "d1-upper-left", difficulty: "기본", plan: d1UpperLeft },
-    { id: "d1-upper-lower", difficulty: "기본", plan: d1UpperLower },
-    { id: "d1-proper-year", difficulty: "어려움", plan: d1ProperYear },
-    { id: "d1-upper-month", difficulty: "어려움", plan: d1UpperMonth },
+    { id: "d1-upper-left", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["UPPER"], plan: d1UpperLeft },
+    { id: "d1-upper-lower", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["UPPER", "LOWER"], plan: d1UpperLower },
+    { id: "d1-proper-year", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["PROPER"], plan: d1ProperYear },
+    { id: "d1-upper-month", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["UPPER"], plan: d1UpperMonth },
   ],
 };

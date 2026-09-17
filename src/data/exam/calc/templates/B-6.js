@@ -46,6 +46,6 @@ function b6ChooseIntAvg(rng) {
 export const TEMPLATE_B6 = {
   subtype: "B-6",
   variants: [
-    { id: "b6-choose-int-avg", difficulty: "어려움", plan: b6ChooseIntAvg },
+    { id: "b6-choose-int-avg", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["CHOOSE"], plan: b6ChooseIntAvg },
   ],
 };

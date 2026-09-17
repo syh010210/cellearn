@@ -54,6 +54,6 @@ function d3Workday(rng) {
 export const TEMPLATE_D3 = {
   subtype: "D-3",
   variants: [
-    { id: "d3-workday", difficulty: "어려움", plan: d3Workday },
+    { id: "d3-workday", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["WORKDAY"], plan: d3Workday },
   ],
 };

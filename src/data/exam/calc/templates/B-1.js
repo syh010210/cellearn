@@ -183,10 +183,10 @@ function iferrorRankAsc(rng) {
 export const TEMPLATE_B1 = {
   subtype: "B-1",
   variants: [
-    { id: "b1-large-small", difficulty: "기본", plan: largeSmall },
-    { id: "b1-rank-if", difficulty: "기본", plan: rankIf },
-    { id: "b1-iferror-choose", difficulty: "어려움", plan: iferrorChoose },
-    { id: "b1-or-rank", difficulty: "어려움", plan: orRank },
-    { id: "b1-iferror-rank-asc", difficulty: "어려움", plan: iferrorRankAsc },
+    { id: "b1-large-small", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["LARGE", "SMALL"], plan: largeSmall },
+    { id: "b1-rank-if", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["RANK.EQ"], plan: rankIf },
+    { id: "b1-iferror-choose", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["RANK.EQ", "CHOOSE"], plan: iferrorChoose },
+    { id: "b1-or-rank", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["RANK.EQ"], plan: orRank },
+    { id: "b1-iferror-rank-asc", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["RANK.EQ"], plan: iferrorRankAsc },
   ],
 };

@@ -160,9 +160,9 @@ function hlookupConcat(rng) {
 export const TEMPLATE_C1 = {
   subtype: "C-1",
   variants: [
-    { id: "c1-vlookup-left", difficulty: "기본", plan: vlookupLeft },
-    { id: "c1-hlookup-mul", difficulty: "기본", plan: hlookupMul },
-    { id: "c1-iferror-hlookup-left", difficulty: "어려움", plan: iferrorHlookupLeft },
-    { id: "c1-hlookup-concat", difficulty: "어려움", plan: hlookupConcat },
+    { id: "c1-vlookup-left", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["VLOOKUP"], plan: vlookupLeft },
+    { id: "c1-hlookup-mul", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["HLOOKUP"], plan: hlookupMul },
+    { id: "c1-iferror-hlookup-left", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["HLOOKUP"], plan: iferrorHlookupLeft },
+    { id: "c1-hlookup-concat", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["HLOOKUP"], plan: hlookupConcat },
   ],
 };

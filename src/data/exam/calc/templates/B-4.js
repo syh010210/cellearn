@@ -88,7 +88,7 @@ function b4IdDup(rng) {
 export const TEMPLATE_B4 = {
   subtype: "B-4",
   variants: [
-    { id: "b4-count-subject", difficulty: "기본", plan: b4CountSubject },
-    { id: "b4-id-dup", difficulty: "기본", plan: b4IdDup },
+    { id: "b4-count-subject", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["COUNTIF"], plan: b4CountSubject },
+    { id: "b4-id-dup", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["COUNTIF"], plan: b4IdDup },
   ],
 };

@@ -147,9 +147,9 @@ function a1CountifsAvg(rng) {
 export const TEMPLATE_A1 = {
   subtype: "A-1",
   variants: [
-    { id: "a1-ratio", difficulty: "기본", plan: a1Ratio },
-    { id: "a1-countifs", difficulty: "기본", plan: a1Countifs },
-    { id: "a1-dcounta-or", difficulty: "어려움", plan: a1DcountaOr },
-    { id: "a1-countifs-avg", difficulty: "어려움", plan: a1CountifsAvg },
+    { id: "a1-ratio", difficulty: "기본", resultKind: "single", usesD: false, core: ["COUNTIF"], plan: a1Ratio },
+    { id: "a1-countifs", difficulty: "기본", resultKind: "single", usesD: false, core: ["COUNTIFS"], plan: a1Countifs },
+    { id: "a1-dcounta-or", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DCOUNTA"], plan: a1DcountaOr },
+    { id: "a1-countifs-avg", difficulty: "어려움", resultKind: "single", usesD: false, core: ["COUNTIFS"], plan: a1CountifsAvg },
   ],
 };

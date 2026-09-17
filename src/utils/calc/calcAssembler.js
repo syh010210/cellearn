@@ -78,14 +78,15 @@ export function planItem(subtype, variantId, difficulty, rng) {
   throw new Error(`planItem ${subtype}/${variant.id} ${MAX_RETRY}회 실패: ${lastErr && lastErr.message}`);
 }
 
-export function composeCalc(seed, { subtypes, difficulty = "기본" } = {}) {
+// variantIds(선택): subtypes 와 같은 길이면 해당 변형을 고정한다(구성기 composeExamCalc 용). 없으면 난이도 풀에서 무작위.
+export function composeCalc(seed, { subtypes, difficulty = "기본", variants: variantIds } = {}) {
   const rng = makeRng(seed);
   const blocks = [], variants = []; let retries = 0;
-  for (const st of subtypes) {
-    const r = planItem(st, null, difficulty, rng);
+  subtypes.forEach((st, i) => {
+    const r = planItem(st, variantIds ? variantIds[i] : null, difficulty, rng);
     if (!r) throw new Error(`${st} 난이도 '${difficulty}' 변형 없음`);
     blocks.push(r.spec); variants.push(r.variantId); retries += r.retries;
-  }
+  });
   const inst = buildInstance({ id: "calc-" + seed, blocks });
   inst._meta = { seed, subtypes, difficulty, variants, retries };
   return inst;

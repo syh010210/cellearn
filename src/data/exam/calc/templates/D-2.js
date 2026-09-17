@@ -60,7 +60,7 @@ function d2DateBuild(rng) {
 export const TEMPLATE_D2 = {
   subtype: "D-2",
   variants: [
-    { id: "d2-days", difficulty: "기본", plan: d2Days },
-    { id: "d2-date-build", difficulty: "어려움", plan: d2DateBuild },
+    { id: "d2-days", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["DAYS"], plan: d2Days },
+    { id: "d2-date-build", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["DATE"], plan: d2DateBuild },
   ],
 };

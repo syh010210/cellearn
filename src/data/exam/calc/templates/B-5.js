@@ -90,7 +90,7 @@ function b5AndAvg(rng) {
 export const TEMPLATE_B5 = {
   subtype: "B-5",
   variants: [
-    { id: "b5-or-avg", difficulty: "기본", plan: b5OrAvg },
-    { id: "b5-and-avg", difficulty: "어려움", plan: b5AndAvg },
+    { id: "b5-or-avg", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["OR"], plan: b5OrAvg },
+    { id: "b5-and-avg", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["AND"], plan: b5AndAvg },
   ],
 };

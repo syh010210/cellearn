@@ -107,9 +107,9 @@ function b3OrMonth(rng) {
 export const TEMPLATE_B3 = {
   subtype: "B-3",
   variants: [
-    { id: "b3-year-diff", difficulty: "기본", plan: b3YearDiff },
-    { id: "b3-age-plus1", difficulty: "어려움", plan: b3AgePlus1 },
-    { id: "b3-mod-day", difficulty: "어려움", plan: b3ModDay },
-    { id: "b3-or-month", difficulty: "어려움", plan: b3OrMonth },
+    { id: "b3-year-diff", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["YEAR"], plan: b3YearDiff },
+    { id: "b3-age-plus1", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["YEAR"], plan: b3AgePlus1 },
+    { id: "b3-mod-day", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["MOD", "DAY"], plan: b3ModDay },
+    { id: "b3-or-month", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["MONTH"], plan: b3OrMonth },
   ],
 };

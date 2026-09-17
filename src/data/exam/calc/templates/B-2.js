@@ -129,10 +129,10 @@ function b2ModMid(rng) {
 export const TEMPLATE_B2 = {
   subtype: "B-2",
   variants: [
-    { id: "b2-if-right", difficulty: "기본", plan: b2IfRight },
-    { id: "b2-if-left", difficulty: "기본", plan: b2IfLeft },
-    { id: "b2-choose-mid-repeat", difficulty: "어려움", plan: b2ChooseMidRepeat },
-    { id: "b2-iferror-choose-mid", difficulty: "어려움", plan: b2IferrorChooseMid },
-    { id: "b2-mod-mid", difficulty: "어려움", plan: b2ModMid },
+    { id: "b2-if-right", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["RIGHT"], plan: b2IfRight },
+    { id: "b2-if-left", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["LEFT"], plan: b2IfLeft },
+    { id: "b2-choose-mid-repeat", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["CHOOSE", "MID"], plan: b2ChooseMidRepeat },
+    { id: "b2-iferror-choose-mid", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["CHOOSE", "MID"], plan: b2IferrorChooseMid },
+    { id: "b2-mod-mid", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["MOD", "MID"], plan: b2ModMid },
   ],
 };

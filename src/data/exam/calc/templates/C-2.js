@@ -95,8 +95,8 @@ function c2RankBand(rng) {
 export const TEMPLATE_C2 = {
   subtype: "C-2",
   variants: [
-    { id: "c2-hlookup-avg", difficulty: "기본", plan: c2HlookupAvg },
-    { id: "c2-discount", difficulty: "어려움", plan: c2Discount },
-    { id: "c2-rank-band", difficulty: "어려움", plan: c2RankBand },
+    { id: "c2-hlookup-avg", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["HLOOKUP"], plan: c2HlookupAvg },
+    { id: "c2-discount", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["HLOOKUP"], plan: c2Discount },
+    { id: "c2-rank-band", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["HLOOKUP", "RANK.EQ"], plan: c2RankBand },
   ],
 };

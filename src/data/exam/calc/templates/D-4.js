@@ -43,6 +43,6 @@ function d4HourMinute(rng) {
 export const TEMPLATE_D4 = {
   subtype: "D-4",
   variants: [
-    { id: "d4-hour-minute", difficulty: "어려움", plan: d4HourMinute },
+    { id: "d4-hour-minute", difficulty: "어려움", resultKind: "fillCol", usesD: false, core: ["HOUR", "MINUTE"], plan: d4HourMinute },
   ],
 };

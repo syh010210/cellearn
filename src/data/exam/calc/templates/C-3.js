@@ -87,7 +87,7 @@ function c3VlookupDmax(rng) {
 export const TEMPLATE_C3 = {
   subtype: "C-3",
   variants: [
-    { id: "c3-index-match-max", difficulty: "어려움", plan: c3IndexMatchMax },
-    { id: "c3-vlookup-dmax", difficulty: "어려움", plan: c3VlookupDmax },
+    { id: "c3-index-match-max", difficulty: "어려움", resultKind: "single", usesD: false, core: ["INDEX", "MATCH"], plan: c3IndexMatchMax },
+    { id: "c3-vlookup-dmax", difficulty: "어려움", resultKind: "single", usesD: true, core: ["VLOOKUP", "DMAX"], plan: c3VlookupDmax },
   ],
 };

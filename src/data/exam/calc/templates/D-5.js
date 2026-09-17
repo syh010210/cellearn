@@ -55,7 +55,7 @@ function d5IfWeekday(rng) {
 export const TEMPLATE_D5 = {
   subtype: "D-5",
   variants: [
-    { id: "d5-choose-weekday", difficulty: "기본", plan: d5ChooseWeekday },
-    { id: "d5-if-weekday", difficulty: "기본", plan: d5IfWeekday },
+    { id: "d5-choose-weekday", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["CHOOSE", "WEEKDAY"], plan: d5ChooseWeekday },
+    { id: "d5-if-weekday", difficulty: "기본", resultKind: "fillCol", usesD: false, core: ["WEEKDAY"], plan: d5IfWeekday },
   ],
 };
