@@ -16,7 +16,7 @@ function a1Ratio(rng) {
   const region = Array.from({ length: N }, (_, i) => (posSet.has(i) ? v : rng.pick(others)));
   const names = rng.sample(NAMES, N), no = seq(N);
   const rows = region.map((rg, i) => [no[i], names[i], rg]);
-  const g = geom(headers, N), rA = g.colAbs("지역"), rM = g.colRowFixed("지역");
+  const g = geom(headers, N), rA = g.colRel("지역"), rM = g.colRowFixed("지역");
   return {
     subtype: "A-1", colWidths: [8, 8, 8], headers, rows, codeColumns: ["참가번호"],
     matchDecls: [{ col: "지역", value: v, min: 2, max: 4 }],
@@ -50,7 +50,7 @@ function a1Countifs(rng) {
   const only1 = sc.filter((s) => s[0] >= n && s[1] < m).length, only2 = sc.filter((s) => s[1] >= m && s[0] < n).length;
   if (cnt < 2 || only1 < 1 || only2 < 1) throw new Error("분포 부족");
   if (!sc.some((s) => s[0] === n) || !sc.some((s) => s[1] === m)) throw new Error("경계 행 없음");
-  const g = geom(headers, N), pil = g.colAbs("필기"), myn = g.colAbs("면접");
+  const g = geom(headers, N), pil = g.colRel("필기"), myn = g.colRel("면접");
   const answer = `=COUNTIFS(${pil},">=${n}",${myn},">=${m}")&"명"`;
   assertRangesClean(headers, rows, undefined, answer);   // 범위 확장·축소(정렬 어긋남) 생존 방지
   let exN; do { exN = 2 + rng.int(N - 2); } while (exN === cnt); // 표시 예 N ≠ 실제 합격자 수
@@ -91,9 +91,9 @@ function a1DcountaOr(rng) {
   const rows = arr0.map((r) => [r[2] ? males[mi++] : females[fi++], r[0], r[1]]);
   const arr = arr0.map((r) => [r[0], r[1]]);
   const g = geom(headers, N), crit = g.critRange(2, 2), att = g.attCol0;
-  const answer = `=DCOUNTA(${g.dbAllAbs()},${g.header("성명")},${crit})&"명"`;
+  const answer = `=DCOUNTA(${g.dbAll()},${g.header("성명")},${crit})&"명"`;
   // 조건 셀을 놓고 범위 mutant(표 축소·조건 축소) 자체 검증 (필드 불변 mutant 는 규칙이 처리)
-  const extra = { [COL(att) + "1"]: "성별", [COL(att + 1) + "1"]: "학과", [COL(att) + "2"]: gv, [COL(att + 1) + "3"]: mv };
+  const extra = { [COL(att) + "2"]: "성별", [COL(att + 1) + "2"]: "학과", [COL(att) + "3"]: gv, [COL(att + 1) + "4"]: mv };
   assertRangesClean(headers, rows, undefined, answer, extra);
   const cnt = arr.filter((r) => r[0] === gv || r[1] === mv).length;
   let exN; do { exN = 2 + rng.int(N - 2); } while (exN === cnt);
@@ -127,7 +127,7 @@ function a1CountifsAvg(rng) {
   if (!scores.some((s, i) => s >= C && ban[i] === "1반")) ban[scores.findIndex((s) => s >= C)] = "1반";
   const names = rng.sample(NAMES, N);
   const rows = scores.map((s, i) => [names[i], s, ban[i]]);
-  const g = geom(headers, N), jA = g.colAbs("점수"), bA = g.colAbs("반");
+  const g = geom(headers, N), jA = g.colRel("점수"), bA = g.colRel("반");
   const answer = `=COUNTIFS(${jA},">="&AVERAGE(${jA}),${bA},"1반")&"명"`;
   assertRangesClean(headers, rows, undefined, answer);
   const cnt = scores.filter((s, i) => s >= C && ban[i] === "1반").length;

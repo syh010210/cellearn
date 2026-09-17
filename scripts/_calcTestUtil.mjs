@@ -71,7 +71,7 @@ export function validateText(item, spec) {
     const word = m[1], p1 = parseA1(m[2]), p2 = parseA1(m[3] || m[2]);
     const isRef = roleAt(p1.r, p1.c) === "refheader";
     if (isRef) {                                   // 표이름[{T}]
-      if (refLabel !== undefined && word !== refLabel) errs.push(`표이름 '${word}' ≠ 라벨 '${refLabel}' [${m[2]}]`);
+      if (refLabel !== undefined && word !== String(refLabel).replace(/^<|>$/g, "")) errs.push(`표이름 '${word}' ≠ 라벨 '${refLabel}' [${m[2]}]`);
       for (let r = p1.r; r <= p2.r; r++) for (let c = p1.c; c <= p2.c; c++) { const ro = roleAt(r, c); if (ro === "reflabel" || ro === "reflabelcol") errs.push(`{T} 범위에 ${ro} 셀 [${m[2]}]`); }
     } else if (p1.c === p2.c && p1.r >= 2) {        // 열이름[범위] (본표 열)
       const h = cellAt(p1.r - 1, p1.c);

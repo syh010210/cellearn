@@ -15,7 +15,7 @@ export const SAMPLE_A2_DAVERAGE = {
     ["미술반", "C", 3.15], ["토론반", "A", 3.9], ["합창부", "B", 4.11],
   ],
   result: { kind: "single", label: "동아리부 평점 평균" },
-  answer: '=ROUND(DAVERAGE($A$2:$C$8,"평점",$E$1:$E$2),1)',
+  answer: '=ROUND(DAVERAGE($A$2:$C$8,"평점",$E$2:$E$3),1)',
   criteria: { headers: ["동아리"], rows: [["*부"]], rowOffset: 0 },
   functions: { required: ["DAVERAGE", "ROUND"], candidates: null },
   text: '[{표}]에서 동아리[{col:동아리}]가 "부"로 끝나는 동아리의 평점[{col:평점}]에 대한 평균을 [{R}] 셀에 계산하시오. (8점)',
@@ -25,17 +25,17 @@ export const SAMPLE_A2_DAVERAGE = {
     "DAVERAGE, ROUND 함수 사용",
   ],
   accept: [
-    '=ROUND(DAVERAGE(A2:C8,C2,E1:E2),1)',       // 필드=머리글 셀
-    '=ROUND(DAVERAGE(A2:C8,3,E1:E2),1)',        // 필드=열 번호
-    '=ROUND(DAVERAGE($A$2:$C$8,"평점",E1:E2),1)', // 표 범위 $
+    '=ROUND(DAVERAGE(A2:C8,C2,E2:E3),1)',       // 필드=머리글 셀
+    '=ROUND(DAVERAGE(A2:C8,3,E2:E3),1)',        // 필드=열 번호
+    '=ROUND(DAVERAGE($A$2:$C$8,"평점",E2:E3),1)', // 표 범위 $
   ],
   reject: [
-    { formula: '=ROUNDUP(DAVERAGE(A2:C8,"평점",E1:E2),1)', expectReason: "functionOutside" },
+    { formula: '=ROUNDUP(DAVERAGE(A2:C8,"평점",E2:E3),1)', expectReason: "functionOutside" },
     { formula: '=ROUND(AVERAGE(C3:C8),1)', expectReason: "functionMissing" },
-    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', criteria: [["동아리"], ["부"]], expectReason: "criteria" },
-    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1)', criteria: [["등급"], ["*부"]], expectReason: "criteria" },
+    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E2:E3),1)', criteria: [["동아리"], ["부"]], expectReason: "criteria" },
+    { formula: '=ROUND(DAVERAGE(A2:C8,"평점",E2:E3),1)', criteria: [["등급"], ["*부"]], expectReason: "criteria" },
     { formula: "4.4", expectReason: "noFormula" },
-    { formula: '=ABS(ROUND(DAVERAGE(A2:C8,"평점",E1:E2),1))', expectReason: "functionOutside" },
+    { formula: '=ABS(ROUND(DAVERAGE(A2:C8,"평점",E2:E3),1))', expectReason: "functionOutside" },
   ],
 };
 

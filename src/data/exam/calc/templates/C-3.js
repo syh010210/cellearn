@@ -26,10 +26,10 @@ function c3IndexMatchMax(rng) {
   const vals = base.slice(); vals.splice(pos, 0, maxVal);
   const prods = rng.sample(PRODUCTS, N), brands = rng.sample(TEAM_NAMES, N);
   const rows = prods.map((p, i) => [p, brands[i], vals[i]]);
-  const g = geom(headers, N), nameA = g.colAbs("제품"), valA = g.colAbs("판매량");
+  const g = geom(headers, N), nameA = g.colRel("제품"), valA = g.colRel("판매량");
   return {
     subtype: "C-3", colWidths: [8, 8, 8], headers, rows, verbException: "표시",
-    result: { kind: "single", label: "판매량이 가장 많은 제품" },
+    result: { kind: "single", label: "최다 판매 제품" },
     discriminators: [{ name: "최댓값 행", test: (r) => r[2] === maxVal, min: 1, max: 1 }],
     answer: `=INDEX(${nameA},MATCH(MAX(${valA}),${valA},0))`,
     functions: { required: ["INDEX", "MATCH", "MAX"], candidates: null },
@@ -67,11 +67,12 @@ function c3VlookupDmax(rng) {
   const rows = catCol.map((c, i) => [c, brands[i], vals[i], prods[i]]);
   const g = geom(headers, N), dbA = g.dbAllAbs(), crit = g.critRange(1);
   const lookA = `$${g.colLetter("판매실적")}$${g.dr1}:$${g.colLetter("제품명")}$${g.dr2}`;
+  const lookRel = `${g.colLetter("판매실적")}${g.dr1}:${g.colLetter("제품명")}${g.dr2}`;
   return {
     subtype: "C-3", colWidths: [8, 8, 8, 10], headers, rows, verbException: "표시",
-    result: { kind: "single", label: `${target} 중 판매실적 최고 제품명` },
+    result: { kind: "single", label: `판매실적 최고 제품` },
     discriminators: [{ name: `분류=${target}`, test: (r) => r[0] === target, min: 3, max: N }],
-    answer: `=VLOOKUP(DMAX(${dbA},"판매실적",${crit}),${lookA},2,0)`,
+    answer: `=VLOOKUP(DMAX(${g.dbAll()},"판매실적",${crit}),${lookRel},2,0)`,
     criteria: { headers: ["분류"], rows: [[target]], rowOffset: 0 },
     functions: { required: ["VLOOKUP", "DMAX"], candidates: null },
     text: `[{표}]에서 분류[{col:분류}]가 "${target}"인 제품 중 판매실적[{col:판매실적}]이 가장 높은 제품명[{col:제품명}]을 [{R}] 셀에 표시하시오. (8점)`,

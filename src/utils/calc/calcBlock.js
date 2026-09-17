@@ -30,8 +30,11 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
   const setRole = (r, c, role) => roles.set(`${r},${c}`, role);
   const push = (r, c, obj, role) => { fileCells.push({ r, c, ...obj, role }); setRole(r, c, role); };
 
-  // 표: 라벨 · 머리글 · 데이터
+  const wrapName = (n) => /^<.*>$/.test(String(n)) ? String(n) : `<${n}>`;
+
+  // 표: 라벨 · (제목 슬롯) · 머리글 · 데이터
   push(0, 0, { v: `[${tableName}]`, t: "s" }, "label");
+  if (spec.title) push(0, 1, { v: spec.title, t: "s" }, "title");   // [표N] 오른쪽 제목(옵션)
   headers.forEach((h, c) => push(1, c, { v: h, t: "s" }, "header"));
 
   const resultColIdxs = [];
@@ -39,6 +42,7 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
   else if (spec.result.kind === "fillRow") spec.result.cols.forEach((n) => resultColIdxs.push(colIdx(n)));
   // fillCol 만 그 열의 데이터를 비운다(열 전체가 결과). fillRow 의 지정 열은 실제 데이터가 있고 결과는 집계 행이다.
   const isResult = new Set(spec.result.kind === "fillCol" ? resultColIdxs : []);
+  if (spec.result.kind === "fillCol") setRole(1, resultColIdxs[0], "headerAns"); // 계산 대상 열 머리글 = 음영
 
   const dataCells = [];
   spec.rows.forEach((row, i) => {
@@ -94,8 +98,10 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
   const ph = {};
 
   if (spec.criteria) {
-    const cr = spec.criteria; const off = cr.rowOffset || 0; const cw = cr.headers.length;
+    const cr = spec.criteria; const labelRow = cr.rowOffset || 0; const off = labelRow + 1; const cw = cr.headers.length;
     const range = { r1: off, c1: attStartCol, r2: off + cr.rows.length, c2: attStartCol + cw - 1 };
+    push(labelRow, attStartCol, { v: "<조건>", t: "s" }, "critlabel");   // 조건 영역 캡션
+    if (cw > 1) merges.push({ r1: labelRow, c1: attStartCol, r2: labelRow, c2: attStartCol + cw - 1 });
     // 조건 셀은 파일에선 비움 → fileCells 에 넣지 않는다. 계산용 값·머리글은 buildInstance 가 채운다.
     const critCells = [];
     cr.headers.forEach((h, i) => critCells.push({ r: off, c: attStartCol + i, v: h, t: "s" }));
@@ -112,7 +118,7 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
     // rowLabels: 가로 참조표 첫 열에 행 라벨(예: [상품, 단가]·[구분, 매입가, 판매가]). {T}·수식 범위는 라벨 열 제외.
     const hasLabels = Array.isArray(rt.rowLabels);
     const keyC0 = attStartCol + (hasLabels ? 1 : 0);
-    if (rt.name) { push(r, attStartCol, { v: rt.name, t: "s" }, "reflabel"); r++; }
+    if (rt.name) { push(r, attStartCol, { v: wrapName(rt.name), t: "s" }, "reflabel"); r++; }
     const headR = r;
     if (hasLabels) push(headR, attStartCol, { v: rt.rowLabels[0], t: "s" }, "reflabelcol"); // 키(머리글) 행 라벨
     rt.headers.forEach((h, i) => push(headR, keyC0 + i, norm(h), "refheader")); r++;
@@ -128,9 +134,10 @@ export function resolveBlock(spec, tableName = spec.tableName || "표1") {
 
   if (spec.result.kind === "table") {
     const tb = spec.resultTable; const top = tb.rowOffset || 0; let r = top;
-    if (tb.name) { push(r, attStartCol, { v: tb.name, t: "s" }, "rtname"); r++; }
+    if (tb.name) { push(r, attStartCol, { v: wrapName(tb.name), t: "s" }, "rtname"); r++; }
     const headR = r;
     tb.headers.forEach((h, i) => push(headR, attStartCol + i, { v: h, t: "s" }, "rtheader")); r++;
+    setRole(headR, attStartCol + tb.headers.length - 1, "rtheaderAns"); // 결과표 계산 열 머리글 = 음영
     const resCol = attStartCol + tb.headers.length - 1; fill = "down";
     const labR0 = r;
     resultCells = [];

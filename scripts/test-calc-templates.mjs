@@ -77,6 +77,19 @@ for (const V of VARIANTS) {
     r.spec.rows.forEach((row, i) => { const k = JSON.stringify(sc.map((c) => row[c])); (rowPos[i] = rowPos[i] || new Map()).set(k, (rowPos[i].get(k) || 0) + 1); });
     specDiscriminators(r.spec).forEach((d, di) => { discMeta[di] = { name: d.name, allowFixed: d.allowFixed }; let mc = 0; r.spec.rows.forEach((row, i) => { if (d.test(row)) { (discPos[di] = discPos[di] || new Map()).set(i, (discPos[di].get(i) || 0) + 1); mc++; } }); discTot[di] = (discTot[di] || 0) + mc; });
     const exm = /표시\s*예\s*[:：]\s*([^\]]+?)(?:\]|$)/.exec((it.notes || []).join(" ")); if (exm) exSet.add(exm[1].trim());
+    if (r.spec.result.kind === "single" && String(r.spec.answer).includes("$") && s === 0) check(`${V.id} single 기준수식 $ 없음`, false, r.spec.answer);
+    // 결과 라벨(single·fillRow) 표시 폭 ≤ 20 (한글 1자=2). 병합 칸에 들어가므로 짧게.
+    if ((r.spec.result.kind === "single" || r.spec.result.kind === "fillRow") && r.spec.result.label) {
+      const lw = [...String(r.spec.result.label)].reduce((w, ch) => w + ((ch.codePointAt(0) >= 0x1100 && ch.codePointAt(0) <= 0x115F) || (ch.codePointAt(0) >= 0xAC00 && ch.codePointAt(0) <= 0xD7A3) ? 2 : 1), 0);
+      if (lw > 20) check(`${V.id} 결과 라벨 폭 ≤20`, false, `${lw}: ${r.spec.result.label}`);
+    }
+    // fill 계열: 기준수식의 $ 는 채우기에서 실효해야 한다 → $ 전부 제거 시 확장 값이 최소 1칸 달라져야(장식용 $ 금지). s===0 1회.
+    if (["fillCol", "fillRow", "table"].includes(r.spec.result.kind) && String(r.spec.answer).includes("$") && s === 0) {
+      let instND = null; try { instND = buildInstance({ id: "t", blocks: [{ ...r.spec, answer: String(r.spec.answer).replace(/\$/g, "") }, FILLER, FILLER] }); } catch { /* 범위 이탈 예외 = 값 변화로 간주 */ }
+      let changed = instND === null;
+      if (instND) { const e0 = it.expected, eN = instND.items[0].expected; for (const k of Object.keys(e0)) if (JSON.stringify(e0[k]) !== JSON.stringify(eN[k])) { changed = true; break; } }
+      check(`${V.id} fill 기준수식 $ 실효(제거 시 값 변화)`, changed, r.spec.answer);
+    }
     if (r.spec.result.kind === "single") { const val = Object.values(it.expected)[0]; if (typeof val === "string" && val !== "") { const ri = r.spec.rows.findIndex((row) => row.some((c) => c === val)); if (ri >= 0) ansPos[ri] = (ansPos[ri] || 0) + 1; } }
     // D함수 single 결과: 조건 없는 같은 집계와 달라야(조건이 실제로 거른다)
     if (r.spec.result.kind === "single") {

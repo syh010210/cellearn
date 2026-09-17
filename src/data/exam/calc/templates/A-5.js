@@ -22,7 +22,7 @@ function a5StdevRound(rng) {
   if (round(stdevS(scores.slice(0, -1)), 2) === r2) throw new Error("범위축소 무영향");
   const names = rng.sample(NAMES, N);
   const rows = scores.map((v, i) => ["A" + String(101 + i), names[i], v]);
-  const g = geom(headers, N), rA = g.colAbs("점수"), rM = g.colRowFixed("점수");
+  const g = geom(headers, N), rA = g.colRel("점수"), rM = g.colRowFixed("점수");
   const ex = roundExample("ROUND", 2, rng, sd, [r2]);   // 결과(표준편차) 크기 기준 표시 예
   return {
     subtype: "A-5", colWidths: [8, 8, 6], headers, rows, codeColumns: ["학번"],
@@ -60,7 +60,7 @@ function a5ModeCount(rng) {
   const rows = codeSeq.map((c, i) => [mgmt[i], items[i % items.length], c]);
   const result = f;                                      // 최빈값의 개수
   let exN; do { exN = 2 + rng.int(N - 2); } while (exN === result);
-  const g = geom(headers, N), rA = g.colAbs("구분코드"), rM = g.colRowFixed("구분코드");
+  const g = geom(headers, N), rA = g.colRel("구분코드"), rM = g.colRowFixed("구분코드");
   return {
     subtype: "A-5", colWidths: [8, 8, 8], headers, rows, codeColumns: ["관리코드"], verbException: "계산",
     result: { kind: "single", label: "최빈 구분코드의 개수" },

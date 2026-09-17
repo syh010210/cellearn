@@ -73,7 +73,7 @@ function daverageRound(rng) {
     subtype: "A-2", colWidths: [12, 8, 8], headers, rows, colZ: { 2: "0.0" },
     result: { kind: "single", label: "부 동아리 평점 평균" },
     discriminators: [{ name: "동아리 '부'끝(조건)", test: (r) => String(r[0]).endsWith("부"), min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상('부') 행을 첫·중간·마지막에 배치(DAVERAGE 범위 축소·조건 판별)" }],
-    answer: `=ROUND(DAVERAGE(${dbA},"평점",${crit}),1)`,
+    answer: `=ROUND(DAVERAGE(${db},"평점",${crit}),1)`,
     criteria: { headers: ["동아리"], rows: [["*부"]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "ROUND"], candidates: null },
     text: '[{표}]에서 동아리[{col:동아리}]가 "부"로 끝나는 동아리의 평점[{col:평점}]에 대한 평균을 [{R}] 셀에 계산하시오. (8점)',
@@ -158,7 +158,7 @@ function daverageDiff(rng) {
     subtype: "A-2", colWidths: [8, 8, 8], headers, rows,
     result: { kind: "single", label: `${school} 국어 평균차` },
     discriminators: [{ name: `학교=${school}(조건)`, test: (r) => r[1] === school, min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상 학교 행을 첫·중간·마지막에 배치(DAVERAGE 범위 축소·조건 판별)" }],
-    answer: `=DAVERAGE(${dbA},"국어",${crit})-AVERAGE(${valRel})`,
+    answer: `=DAVERAGE(${db},"국어",${crit})-AVERAGE(${valRel})`,
     criteria: { headers: ["학교"], rows: [[school]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "AVERAGE"], candidates: null },
     text: `[{표}]의 학교[{col:학교}]가 "${school}"인 학생의 국어[{col:국어}] 평균에서 전체 국어[{col:국어}] 평균을 뺀 값을 [{R}] 셀에 계산하시오. (8점)`,
@@ -208,7 +208,7 @@ function averageifsRound(rng) {
   const ex = roundExample("ROUND", 1, rng, avg, [res1]); // 결과(조건 평균) ±15%, 기대값 회피
   return {
     subtype: "A-2", colWidths: [8, 8, 8, 6], headers, rows,
-    result: { kind: "single", label: `${clubA} ${posA} 점수 평균` },
+    result: { kind: "single", label: `${clubA} ${posA} 평균` },
     discriminators: [{ name: `${clubA}&${posA}(두 조건)`, test: (r) => r[1] === clubA && r[2] === posA, min: 3, max: n, allowFixed: "lastRow", reason: "두 조건 모두 만족 행을 고정 배치(AVERAGEIFS 범위 축소·조건 판별)" }],
     answer: `=ROUND(AVERAGEIFS(${vR},${c1},"${clubA}",${c2},"${posA}"),1)`,
     functions: { required: ["ROUND", "AVERAGEIFS"], candidates: null },

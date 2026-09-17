@@ -41,16 +41,19 @@ async function toBufferNoCache(wb) {
 }
 
 // ── 시험지 3종 + .md ──
+//  v4 = v3 + 병합 셀 바깥 변 테두리(모든 칸) + a3-large-small 라벨 정리.
+//  v1~v3 는 비교용으로 유지 — 이 스크립트는 -v4 만 새로 쓴다.
+const V2 = "-v4";
 const CASES = [["calc-basic-5", "기본", 5], ["calc-hard-5", "어려움", 5], ["calc-basic-3", "기본", 3]];
 for (const [name, diff, n] of CASES) {
   const seed = `demo~${name}`;
   const inst = composeCalc(seed, { subtypes: subtypesForSeed(seed, diff, n), difficulty: diff });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, buildCalcInstanceSheet(inst), "계산작업");
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([[`demo:${name}`]]), "_meta");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([[`demo:${name}${V2}`]]), "_meta");
   wb.Workbook = { Sheets: wb.SheetNames.map((s) => ({ name: s, Hidden: s === "_meta" ? 1 : 0 })) };
-  writeFileSync(join(DIR, `${name}.xlsx`), await toBufferNoCache(wb));
-  const md = [`# ${name} (난이도 ${diff} · ${n}문항 · 시드 ${seed})`, "", "엑셀에서 결과·조건 칸을 채워 확인. 기준 수식은 참고용.", ""];
+  writeFileSync(join(DIR, `${name}${V2}.xlsx`), await toBufferNoCache(wb));
+  const md = [`# ${name}${V2} (난이도 ${diff} · ${n}문항 · 시드 ${seed})`, "", "서식·배치 반영본(v2). 엑셀에서 결과·조건 칸을 채워 확인. 기준 수식은 참고용.", ""];
   inst.items.forEach((it) => {
     md.push(`## ${it.no}. [${it.subtype}]`, `> ${it.text}`);
     for (const nt of it.notes) md.push(`> ▶ ${nt}`);
@@ -58,8 +61,8 @@ for (const [name, diff, n] of CASES) {
     if (it.criteria) md.push(`- 조건 범위: ${it.criteria.range}`);
     md.push(`- 기준 수식: \`${it.answer.formula}\``, `- 기대값: ${Object.entries(it.expected).map(([a, v]) => `${a}=${(v && typeof v === "object") ? v.error : JSON.stringify(v)}`).join(", ")}`, "");
   });
-  writeFileSync(join(DIR, `${name}.md`), md.join("\n"), "utf8");
-  console.log("생성:", name, `(${inst.items.map((i) => i.subtype).join(",")})`);
+  writeFileSync(join(DIR, `${name}${V2}.md`), md.join("\n"), "utf8");
+  console.log("생성:", `${name}${V2}`, `(${inst.items.map((i) => i.subtype).join(",")})`);
 }
 
 // ── 조건 빈 열 동치 6사례 (parity5) ──

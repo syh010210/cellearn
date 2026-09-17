@@ -16,10 +16,10 @@ function a3LargeSmall(rng) {
   if (sorted[k1 - 1] - sorted[N - k2] === 0) throw new Error("결과 0");
   const names = rng.sample(NAMES, N), teams = rng.sample(TEAM_NAMES, Math.min(TEAM_NAMES.length, 6));
   const rows = vals.map((v, i) => [names[i], teams[i % teams.length], v]);
-  const g = geom(headers, N), rA = g.colAbs("기록");
+  const g = geom(headers, N), rA = g.colRel("기록");
   return {
     subtype: "A-3", colWidths: [8, 8, 6], headers, rows,
-    result: { kind: "single", label: `${k1}번째 큰 값과 ${k2}번째 작은 값의 차이` },
+    result: { kind: "single", label: "큰 값과 작은 값 차이" },
     discriminators: [{ name: "기록 최댓값 행", test: (r) => r[2] === Math.max(...vals), min: 1, max: 1 }],
     answer: `=LARGE(${rA},${k1})-SMALL(${rA},${k2})`,
     functions: { required: ["LARGE", "SMALL"], candidates: null },
@@ -48,8 +48,8 @@ function a3DmaxDmin(rng) {
   const g = geom(headers, N), crit = g.critRange(1, 1), fld = g.header("증감률");
   return {
     subtype: "A-3", colWidths: [12, 8, 6], headers, rows, colZ: { 1: "#,##0", 2: "0.0" },
-    result: { kind: "single", label: "광역시 증감률 최대값과 최소값의 차이" },
-    answer: `=DMAX(${g.dbAllAbs()},${fld},${crit})-DMIN(${g.dbAllAbs()},${fld},${crit})`,
+    result: { kind: "single", label: "광역시 증감률 차이" },
+    answer: `=DMAX(${g.dbAll()},${fld},${crit})-DMIN(${g.dbAll()},${fld},${crit})`,
     criteria: { headers: ["시도"], rows: [["*광역시"]], rowOffset: 0 },
     discriminators: [{ name: "시도 '광역시'끝(조건)", test: (r) => String(r[0]).endsWith("광역시"), min: 3, max: N }],
     functions: { required: ["DMAX", "DMIN"], candidates: null },

@@ -54,7 +54,7 @@ function a4AbsSumif(rng) {
   } while ((sumM >= sumF || sumM === sumF) && t++ < 30);
   if (sumM >= sumF) throw new Error("남<여 실패");
   const rows = seqS.map((x, i) => ["A" + String(101 + i), x, 점수[i]]);
-  const g = geom(headers, N), sA = g.colAbs("성별"), jA = g.colAbs("점수");
+  const g = geom(headers, N), sA = g.colRel("성별"), jA = g.colRel("점수");
   const answer = `=ABS(SUMIF(${sA},"남",${jA})-SUMIF(${sA},"여",${jA}))`;
   assertRangesClean(headers, rows, undefined, answer);
   return {

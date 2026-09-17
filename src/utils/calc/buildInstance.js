@@ -13,6 +13,10 @@ const lettersCol = (L) => { let n = 0; for (const ch of String(L).toUpperCase())
 const a1 = (r, c) => colLetters(c) + (r + 1);
 const rngA1 = (rg) => (rg.r1 === rg.r2 && rg.c1 === rg.c2) ? a1(rg.r1, rg.c1) : `${a1(rg.r1, rg.c1)}:${a1(rg.r2, rg.c2)}`;
 const dateFmt = (z) => !z ? undefined : (/h/i.test(z) ? (/y/i.test(z) ? "datetime" : "time") : (/y/i.test(z) ? "date" : undefined));
+// 표시 폭(엑셀 열 단위 근사): CJK·전각 2, 그 외 1.
+const estCharW = (s) => { let w = 0; for (const ch of String(s)) { const cp = ch.codePointAt(0); w += ((cp >= 0x1100 && cp <= 0x115F) || (cp >= 0x2E80 && cp <= 0xA4CF) || (cp >= 0xAC00 && cp <= 0xD7A3) || (cp >= 0xF900 && cp <= 0xFAFF) || (cp >= 0xFF00 && cp <= 0xFF60) || (cp >= 0xFFE0 && cp <= 0xFFE6)) ? 2 : 1; } return w; };
+const decodeRangeCols = (range) => { const a = String(range).split(":")[0]; return { c1: lettersCol(/[A-Za-z]+/.exec(a)[0]) }; };
+const XLSX_decode = (range) => { const [a, b = a] = String(range).split(":"); const pa = /^([A-Za-z]+)(\d+)$/.exec(a), pb = /^([A-Za-z]+)(\d+)$/.exec(b); return { r1: +pa[2] - 1, c1: lettersCol(pa[1]), r2: +pb[2] - 1, c2: lettersCol(pb[1]) }; };
 
 // 수식의 모든 셀 참조를 (dRow,dCol) 만큼 이동($ 표시는 유지). 문자열 리터럴은 건드리지 않는다.
 function translateFormula(formula, dRow, dCol) {
@@ -140,7 +144,62 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
     });
   });
 
-  const instance = { id, section: "계산", seed, difficulty, sheetName: "계산작업", cells, merges, colWidths, usedRange: rngA1(usedRange), items };
+  // 셀 역할(addr→role): 서식(calcSheetBuilder)이 역할별로 테두리·음영·정렬을 준다.
+  const roles = {};
+  specs.forEach((b, bi) => { for (const [rc, role] of b.roles) { const [r, c] = rc.split(",").map(Number); roles[AA(bi, r, c)] = role; } });
+
+  // 자동 열 너비 — 2단계.
+  //  1단계: 병합 안 된 셀만으로 열별 최대 표시 폭(머리글·데이터·결과 기대값·조건·참조표). [표N]·제목·<캡션>은 제외.
+  //  2단계: 병합 라벨(single·fillRow 라벨, 제목)은 병합 열 합계가 모자랄 때만 부족분을 병합 열에 고르게 더한다.
+  //  최소 = 엑셀 기본(8.43), 여백 +2, 상한 20(초과 시 경고).
+  const DEFAULT_W = 8.43, PAD = 2, CAP = 20;
+  const CAPTION_ROLES = new Set(["label", "title", "critlabel", "reflabel", "rtname"]);
+  const dispV = (v, z) => {
+    if (v === null || v === undefined || v === "") return "";
+    if (typeof v === "object") return v.error ? String(v.error) : String(v.v ?? "");
+    if (typeof v === "number") {
+      if (z && /y/i.test(z)) return "0000-00-00";
+      if (z && /h/i.test(z)) return "00:00:00";
+      if (z && z.includes("#,##0")) return Math.round(Math.abs(v)).toLocaleString("en-US") + (/\.0/.test(z) ? ".0" : "") + (v < 0 ? "-" : "");
+      return String(Number(v.toPrecision(12)));            // 엑셀 General 근사: 부동소수 노이즈 제거(3.9000000000000004→3.9)
+    }
+    return String(v);
+  };
+  // 병합에 포함된 셀 집합(앵커 제외 X — 전부) + 앵커→범위
+  const mergedCells = new Set();
+  const mergeRanges = merges.map((m) => { const rg = XLSX_decode(m); for (let r = rg.r1; r <= rg.r2; r++) for (let c = rg.c1; c <= rg.c2; c++) mergedCells.add(`${r},${c}`); return rg; });
+  const key = (addr) => { const c = lettersCol(/[A-Z]+/.exec(addr)[0]), r = +/\d+/.exec(addr)[0] - 1; return `${r},${c}`; };
+
+  // 1단계
+  const colContent = {};
+  const seeW = (c, s) => { const w = estCharW(s); if (w > (colContent[c] || 0)) colContent[c] = w; };
+  for (const [addr, c] of Object.entries(cells)) {
+    if (mergedCells.has(key(addr)) || CAPTION_ROLES.has(roles[addr])) continue;
+    const ci = lettersCol(/[A-Z]+/.exec(addr)[0]);
+    seeW(ci, c.f !== undefined ? dispV(sheet.getCellValue(addr), c.z) : dispV(c.v, c.z));
+  }
+  for (const it of items) {
+    for (const [addr, v] of Object.entries(it.expected)) { if (!mergedCells.has(key(addr))) seeW(lettersCol(/[A-Z]+/.exec(addr)[0]), dispV(v, it.result?.z)); }
+    if (it.criteria) { const { c1 } = decodeRangeCols(it.criteria.range); (it.criteria.table || []).forEach((row) => row.forEach((cell, i) => seeW(c1 + i, dispV(cell)))); }
+  }
+  const maxC = usedRange.c2;
+  const overflow = [];
+  const width = {};                                        // colIdx → 확정 너비
+  for (let c = 0; c <= maxC; c++) { const raw = colContent[c] ? colContent[c] + PAD : DEFAULT_W; width[c] = Math.max(DEFAULT_W, Math.min(CAP, raw)); if (colContent[c] + PAD > CAP) overflow.push(`${colLetters(c)}(${colContent[c]})`); }
+
+  // 2단계: 병합 라벨 부족분 분배 (제외 대상 caption 은 skip — critlabel 병합 등)
+  for (const rg of mergeRanges) {
+    const anchor = colLetters(rg.c1) + (rg.r1 + 1);
+    if (CAPTION_ROLES.has(roles[anchor])) continue;        // <조건> 등 캡션 병합은 폭에 반영 안 함
+    const cell = cells[anchor]; if (!cell) continue;
+    const need = estCharW(dispV(cell.v, cell.z)) + PAD;
+    let have = 0; for (let c = rg.c1; c <= rg.c2; c++) have += width[c];
+    if (need > have) { const span = rg.c2 - rg.c1 + 1, add = (need - have) / span; for (let c = rg.c1; c <= rg.c2; c++) width[c] = Math.min(CAP, width[c] + add); }
+  }
+  for (let c = 0; c <= maxC; c++) colWidths[colLetters(c)] = Math.round(width[c] * 100) / 100;
+  if (overflow.length) console.warn(`[calc 열너비 상한 초과] ${id}: ${overflow.join(" ")}`);
+
+  const instance = { id, section: "계산", seed, difficulty, sheetName: "계산작업", cells, merges, colWidths, roles, usedRange: rngA1(usedRange), items };
   selfVerify(instance, specs, origins, globalRoles);
   return instance;
 }

@@ -39,7 +39,7 @@ function a6DsumRoundup(rng) {
     subtype: "A-6", colWidths: [8, 8, 10], headers, rows, colZ: { 2: "#,##0" },
     result: { kind: "single", label: `${region} 매출액 합계` },
     discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "lastRow", reason: "조건 지점을 첫·중간·마지막에 배치(DSUM 범위 축소·조건 판별)" }],
-    answer: `=ROUNDUP(DSUM(${dbA},"매출액",${crit}),-3)`,
+    answer: `=ROUNDUP(DSUM(${db},"매출액",${crit}),-3)`,
     criteria: { headers: ["지점"], rows: [[region]], rowOffset: 0 },
     functions: { required: ["DSUM"], candidates: ["ROUND", "ROUNDUP", "ROUNDDOWN"] },
     text: `[{표}]에서 지점[{col:지점}]이 "${region}"인 매출액[{col:매출액}]의 합계를 [{R}] 셀에 계산하시오. (8점)`,
