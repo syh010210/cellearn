@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/B-2.js
 // 문자 추출 조건 (LEFT/RIGHT/MID + IF/CHOOSE/MOD). 변형 5개. 모두 열 채우기(텍스트 결과).
 import { NAMES } from "../pools.js";
-import { geom } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, josa } from "./_util.js";
 
 const L = "ABCDEFGHJKMNPQRST".split("");
 const rl = (rng) => L[rng.int(L.length)];
@@ -20,22 +21,24 @@ const distinctCodes = (rng, js, mk) => { const seen = new Set(); return js.map((
 // 1) b2-if-right [기본] — IF(RIGHT(x,1)=...)
 function b2IfRight(rng) {
   const N = 7 + rng.int(4);
-  const headers = ["수험번호", "성명", "부서"];
+  const B = pick(rng, TOPICS.b2Dept);   // 코드 열·결과 열·결과 값이 한 주제
+  const [d1, d2, d3] = B.vals;
+  const headers = [B.code, "성명", B.res];
   const js = judgesReq(rng, N, [1, 1, 2, 2, 3 + rng.int(7), 3 + rng.int(7)], (r) => [1, 2, 3 + r.int(7)][r.int(3)]);
   const codes = distinctCodes(rng, js, (r, j) => `${2020 + r.int(7)}-${1 + r.int(8)}-${100 + r.int(900)}${j}`);
   const names = rng.sample(NAMES, N);
   const rows = codes.map((c, i) => [c, names[i], null]);
-  const g = geom(headers, N), x = g.dataCell("수험번호", 0);
+  const g = geom(headers, N), x = g.dataCell(B.code, 0);
   return {
-    subtype: "B-2", colWidths: [12, 8, 8], headers, rows, codeColumns: ["수험번호"],
-    result: { kind: "fillCol", col: "부서" },
+    subtype: "B-2", colWidths: [12, 8, 8], headers, rows, codeColumns: [B.code], _topic: { pool: "b2Dept", id: B.id },
+    result: { kind: "fillCol", col: B.res },
     discriminators: [{ name: "끝1=1", test: (r) => String(r[0]).slice(-1) === "1", min: 1, max: N }, { name: "끝1=2", test: (r) => String(r[0]).slice(-1) === "2", min: 1, max: N }],
-    answer: `=IF(RIGHT(${x},1)="1","재무부",IF(RIGHT(${x},1)="2","경리부","회계부"))`,
+    answer: `=IF(RIGHT(${x},1)="1","${d1}",IF(RIGHT(${x},1)="2","${d2}","${d3}"))`,
     functions: { required: ["IF", "RIGHT"], candidates: null },
-    text: `[{표}]에서 수험번호[{col:수험번호}]의 오른쪽 한 글자가 "1"이면 "재무부", "2"이면 "경리부", 그 외에는 "회계부"로 부서[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 ${B.code}[{col:${B.code}}]의 오른쪽 한 글자가 "1"이면 "${d1}", "2"이면 "${d2}", 그 외에는 "${d3}"${josa(d3, "으로/로")} ${B.res}[{R}]에 표시하시오. (8점)`,
     notes: ["IF, RIGHT 함수 사용"],
-    accept: [`=IF(RIGHT(${x},1)="1","재무부",IF(RIGHT(${x},1)="2","경리부","회계부"))`],
-    reject: [{ formula: `=IF(RIGHT(${x},1)=1,"재무부",IF(RIGHT(${x},1)=2,"경리부","회계부"))`, expectReason: "value" }],
+    accept: [`=IF(RIGHT(${x},1)="1","${d1}",IF(RIGHT(${x},1)="2","${d2}","${d3}"))`],
+    reject: [{ formula: `=IF(RIGHT(${x},1)=1,"${d1}",IF(RIGHT(${x},1)=2,"${d2}","${d3}"))`, expectReason: "value" }],
   };
 }
 
@@ -70,15 +73,16 @@ function b2ChooseMidRepeat(rng) {
   const names = rng.sample(NAMES, N);
   const rows = codes.map((c, i) => [c, names[i], null]);
   const g = geom(headers, N), x = g.dataCell("회원코드", 0);
+  const [h1, h2, h3, h4] = pick(rng, TOPICS.hobbySets);   // 가구/도서/요리/손글씨 대체
   return {
     subtype: "B-2", colWidths: [10, 8, 8], headers, rows, codeColumns: ["회원코드"],
     result: { kind: "fillCol", col: "관심분야" },
     discriminators: [{ name: "4번째=1", test: (r) => String(r[0])[3] === "1", min: 1, max: N }, { name: "4번째=4|5", test: (r) => ["4", "5"].includes(String(r[0])[3]), min: 1, max: N }],
-    answer: `=CHOOSE(MID(${x},4,1),"가구","도서","요리","손글씨","손글씨")`,
+    answer: `=CHOOSE(MID(${x},4,1),"${h1}","${h2}","${h3}","${h4}","${h4}")`,
     functions: { required: ["CHOOSE", "MID"], candidates: null },
-    text: `[{표}]에서 회원코드[{col:회원코드}]의 네 번째 문자가 "1"이면 "가구", "2"이면 "도서", "3"이면 "요리", "4"나 "5"이면 "손글씨"로 관심분야[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 회원코드[{col:회원코드}]의 네 번째 문자가 "1"이면 "${h1}", "2"이면 "${h2}", "3"이면 "${h3}", "4"나 "5"이면 "${h4}"${josa(h4, "으로/로")} 관심분야[{R}]에 표시하시오. (8점)`,
     notes: ["CHOOSE, MID 함수 사용"],
-    accept: [`=CHOOSE(MID(${x},4,1),"가구","도서","요리","손글씨","손글씨")`],
+    accept: [`=CHOOSE(MID(${x},4,1),"${h1}","${h2}","${h3}","${h4}","${h4}")`],
   };
 }
 

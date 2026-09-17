@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/D-5.js
 // 요일 (CHOOSE+WEEKDAY / IF+WEEKDAY). 변형 2개. 열 채우기(텍스트 결과).
 import { NAMES } from "../pools.js";
-import { geom, randDate, weekday1, weekday2, dateWithWeekday } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, randDate, weekday1, weekday2, dateWithWeekday, josa } from "./_util.js";
 
 const WD1_NAMES = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
 
@@ -33,22 +34,23 @@ function d5ChooseWeekday(rng) {
 // 2) d5-if-weekday [기본] — IF(WEEKDAY(d,2)<=5,"평일","주말")
 function d5IfWeekday(rng) {
   const N = 7 + rng.int(4);
-  const headers = ["응시자", "응시일", "요일구분"];
+  const B = pick(rng, TOPICS.d5Open);   // 대상·날짜·결과 열·영업/휴가 한 주제 (평일/주말 기출 제외)
+  const headers = [B.subj, B.date, B.res];
   const used = new Set(), dates = [];
   for (const w of [5, 6, 7, 1]) dates.push(dateWithWeekday(rng, w, 2, 2024, 2026, used)); // 금·토·일·월 보장
   while (dates.length < N) { const dt = randDate(rng, 2024, 2026); if (!used.has(dt.s)) { used.add(dt.s); dates.push(dt); } }
   const names = rng.sample(NAMES, N);
   const rows = rng.shuffle(dates).map((d, i) => [names[i], d.s, null]);
-  const g = geom(headers, N), x = g.dataCell("응시일", 0);
+  const g = geom(headers, N), x = g.dataCell(B.date, 0);
   return {
-    subtype: "D-5", colWidths: [8, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
-    result: { kind: "fillCol", col: "요일구분" },
-    discriminators: [{ name: "주말", test: (r) => weekday2(r[1]) > 5, min: 1, max: N }],
-    answer: `=IF(WEEKDAY(${x},2)<=5,"평일","주말")`,
+    subtype: "D-5", colWidths: [8, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" }, _topic: { pool: "d5Open", id: B.id },
+    result: { kind: "fillCol", col: B.res },
+    discriminators: [{ name: B.f, test: (r) => weekday2(r[1]) > 5, min: 1, max: N }],
+    answer: `=IF(WEEKDAY(${x},2)<=5,"${B.t}","${B.f}")`,
     functions: { required: ["IF", "WEEKDAY"], candidates: null },
-    text: `[{표}]에서 응시일[{col:응시일}]이 월요일부터 금요일이면 "평일", 그 외에는 "주말"로 요일구분[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 ${B.date}[{col:${B.date}}]${josa(B.date, "이/가")} 월요일부터 금요일이면 "${B.t}", 그 외에는 "${B.f}"${josa(B.f, "으로/로")} ${B.res}[{R}]에 표시하시오. (8점)`,
     notes: ["요일 계산 시 월요일이 1인 유형으로 지정", "IF, WEEKDAY 함수 사용"],
-    accept: [`=IF(WEEKDAY(${x},2)<=5,"평일","주말")`],
+    accept: [`=IF(WEEKDAY(${x},2)<=5,"${B.t}","${B.f}")`],
   };
 }
 

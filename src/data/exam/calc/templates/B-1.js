@@ -1,6 +1,7 @@
 // src/data/exam/calc/templates/B-1.js
 // IF 판정 — 순위 조건 (RANK.EQ/LARGE/SMALL/CHOOSE). 변형 5개. 모두 열 채우기.
 import { NAMES, TEAM_NAMES } from "../pools.js";
+import { TOPICS, pick } from "../topics.js";
 import { geom } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi, exclude = []) => {
@@ -48,10 +49,11 @@ function largeSmall(rng) {
   for (const val of arr) { const r = rankOf(val); if (r <= n) star++; else if (N - r + 1 <= n) circ++; else blank++; }
   if (blank < 2 || star < 1 || circ < 1) throw new Error("결과 분포 부족");
   // partialDollar(시작 $ 제거→접미 범위) 판별: SMALL·LARGE 각각 값이 달라지는 행 1+
-  const cls = arr.map((x) => x >= largeN ? "★" : x <= smallN ? "☆" : "");
+  const [hi, lo] = pick(rng, TOPICS.markerPairs);   // 상/하위 표시(★/☆·◆/◇ 제외)
+  const cls = arr.map((x) => x >= largeN ? hi : x <= smallN ? lo : "");
   const kth = (suf, k, desc) => { if (suf.length < k) return undefined; return [...suf].sort((a, b) => desc ? b - a : a - b)[k - 1]; };
-  const pSmall = arr.map((x, k) => { const sm = kth(arr.slice(k), n, false); return x >= largeN ? "★" : (sm !== undefined && x <= sm) ? "☆" : "ERR"; });
-  const pLarge = arr.map((x, k) => { const lg = kth(arr.slice(k), n, true); return (lg !== undefined && x >= lg) ? "★" : x <= smallN ? "☆" : "ERR"; });
+  const pSmall = arr.map((x, k) => { const sm = kth(arr.slice(k), n, false); return x >= largeN ? hi : (sm !== undefined && x <= sm) ? lo : "ERR"; });
+  const pLarge = arr.map((x, k) => { const lg = kth(arr.slice(k), n, true); return (lg !== undefined && x >= lg) ? hi : x <= smallN ? lo : "ERR"; });
   if (!cls.some((c, k) => c !== pSmall[k]) || !cls.some((c, k) => c !== pLarge[k])) throw new Error("부분$ 판별 행 없음");
   const names = rng.sample(TEAM_NAMES, N);   // 팀명 풀(사람 이름 아님)
   const rows = arr.map((val, i) => [names[i], val, null]);
@@ -60,11 +62,11 @@ function largeSmall(rng) {
     subtype: "B-1", colWidths: [10, 8, 8], headers, rows,
     result: { kind: "fillCol", col: "비고" },
     discriminators: [{ name: `승점 상위${n}위(★)`, test: (r) => r[1] >= largeN, min: n, max: n, allowFixed: "lastRow", reason: "상·하위 경계 행을 첫·마지막에 배치(LARGE/SMALL 범위 축소 판별)" }],
-    answer: `=IF(${x}>=LARGE(${rgA},${n}),"★",IF(${x}<=SMALL(${rgA},${n}),"☆",""))`,
+    answer: `=IF(${x}>=LARGE(${rgA},${n}),"${hi}",IF(${x}<=SMALL(${rgA},${n}),"${lo}",""))`,
     functions: { required: ["IF", "LARGE", "SMALL"], candidates: null },
-    text: `[{표}]에서 승점[{col:승점}]이 상위 ${n}위 이내이면 "★", 하위 ${n}위 이내이면 "☆", 나머지는 공백으로 비고[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 승점[{col:승점}]이 상위 ${n}위 이내이면 "${hi}", 하위 ${n}위 이내이면 "${lo}", 나머지는 공백으로 비고[{R}]에 표시하시오. (8점)`,
     notes: ["IF, LARGE, SMALL 함수 사용"],
-    accept: [`=IF(${x}>=LARGE(${g.colRowFixed("승점")},${n}),"★",IF(${x}<=SMALL(${g.colRowFixed("승점")},${n}),"☆",""))`],
+    accept: [`=IF(${x}>=LARGE(${g.colRowFixed("승점")},${n}),"${hi}",IF(${x}<=SMALL(${g.colRowFixed("승점")},${n}),"${lo}",""))`],
   };
 }
 
@@ -141,15 +143,16 @@ function orRank(rng) {
   const sabun = Array.from({ length: N }, (_, i) => "S" + String(101 + i));
   const rows = sabun.map((s, i) => [s, c1[i], c2[i], null]);
   const g = geom(headers, N), x1 = g.dataCell("1차", 0), x2 = g.dataCell("2차", 0), R1 = g.colAbs("1차"), R2 = g.colAbs("2차");
+  const passL = pick(rng, TOPICS.passLabel);        // "통과" 대체
   return {
     subtype: "B-1", colWidths: [8, 6, 6, 8], headers, rows, codeColumns: ["사번"],
     result: { kind: "fillCol", col: "결과" },
-    discriminators: [{ name: `1차·2차 ${n}위 이내(통과)`, test: (r) => (descRank(r[1], c1) <= n || descRank(r[2], c2) <= n), min: 1, max: N }],
-    answer: `=IF(OR(RANK.EQ(${x1},${R1})<=${n},RANK.EQ(${x2},${R2})<=${n}),"통과","")`,
+    discriminators: [{ name: `1차·2차 ${n}위 이내(${passL})`, test: (r) => (descRank(r[1], c1) <= n || descRank(r[2], c2) <= n), min: 1, max: N }],
+    answer: `=IF(OR(RANK.EQ(${x1},${R1})<=${n},RANK.EQ(${x2},${R2})<=${n}),"${passL}","")`,
     functions: { required: ["IF", "OR", "RANK.EQ"], candidates: null },
-    text: `[{표}]에서 1차[{col:1차}]의 순위가 ${n}위 이내이거나 2차[{col:2차}]의 순위가 ${n}위 이내이면 "통과", 그 외에는 공백을 결과[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 1차[{col:1차}]의 순위가 ${n}위 이내이거나 2차[{col:2차}]의 순위가 ${n}위 이내이면 "${passL}", 그 외에는 공백을 결과[{R}]에 표시하시오. (8점)`,
     notes: ["순위는 점수가 가장 높은 것이 1위", "IF, OR, RANK.EQ 함수 사용"],
-    accept: [`=IF(OR(RANK.EQ(${x1},${R1},0)<=${n},RANK.EQ(${x2},${R2},0)<=${n}),"통과","")`],
+    accept: [`=IF(OR(RANK.EQ(${x1},${R1},0)<=${n},RANK.EQ(${x2},${R2},0)<=${n}),"${passL}","")`],
   };
 }
 

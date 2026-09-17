@@ -3,14 +3,15 @@
 //  보류: b6-choose-counta = CHOOSE(COUNTA(출석범위),…) — 출석 빈칸(역할 없는 셀)을 여러 열 사각 범위로
 //   지시문에서 참조해야 하는데 {col} 는 단일 열만 지원 → 사각 범위 placeholder 필요(스키마 확장 대기).
 import { NAMES } from "../pools.js";
-import { geom } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, josa } from "./_util.js";
 
-const CHOOSE_GRADE = ["D", "C", "B", "A"];             // 정수부 1→D … 4→A
-
-// 1) b6-choose-int-avg [어려움] — CHOOSE(INT(AVERAGE(과목범위)),"D","C","B","A")
+// 1) b6-choose-int-avg [어려움] — CHOOSE(INT(AVERAGE(과목범위)), 4단계 등급)
 function b6ChooseIntAvg(rng) {
   const N = 8 + rng.int(3);
   const headers = ["이름", "평가1", "평가2", "평가3", "등급"];
+  const CHOOSE_GRADE = pick(rng, TOPICS.fourGrades);   // 정수부 1→[0]…4→[3] (D/C/B/A 대체)
+  const [q1, q2, q3, q4] = CHOOSE_GRADE;
   const intAvg = (r) => Math.floor((r[0] + r[1] + r[2]) / 3);
   // 각 평가 1~5점, 합계 15 제외(정수부 5 방지) → 평균 ∈ [1,5), 정수부 1~4. 네 버킷 모두 대표 행 확보.
   const gen = () => { let r; do { r = [1 + rng.int(5), 1 + rng.int(5), 1 + rng.int(5)]; } while (r[0] + r[1] + r[2] === 15); return r; };
@@ -35,11 +36,11 @@ function b6ChooseIntAvg(rng) {
       { name: "정수부=1(D)", test: (r) => Math.floor((r[1] + r[2] + r[3]) / 3) === 1, min: 1, max: N },
       { name: "정수부=4(A)", test: (r) => Math.floor((r[1] + r[2] + r[3]) / 3) === 4, min: 1, max: N },
     ],
-    answer: `=CHOOSE(INT(AVERAGE(${rowRange})),"D","C","B","A")`,
+    answer: `=CHOOSE(INT(AVERAGE(${rowRange})),"${q1}","${q2}","${q3}","${q4}")`,
     functions: { required: ["CHOOSE", "INT", "AVERAGE"], candidates: null },
-    text: '[{표}]에서 평가1[{col:평가1}], 평가2[{col:평가2}], 평가3[{col:평가3}] 점수 평균의 정수 부분이 1이면 "D", 2이면 "C", 3이면 "B", 4이면 "A"로 등급[{R}]에 표시하시오. (8점)',
+    text: `[{표}]에서 평가1[{col:평가1}], 평가2[{col:평가2}], 평가3[{col:평가3}] 점수 평균의 정수 부분이 1이면 "${q1}", 2이면 "${q2}", 3이면 "${q3}", 4이면 "${q4}"${josa(q4, "으로/로")} 등급[{R}]에 표시하시오. (8점)`,
     notes: ["CHOOSE, INT, AVERAGE 함수 사용"],
-    accept: [`=CHOOSE(INT(AVERAGE(${rowRange})),"D","C","B","A")`],
+    accept: [`=CHOOSE(INT(AVERAGE(${rowRange})),"${q1}","${q2}","${q3}","${q4}")`],
   };
 }
 

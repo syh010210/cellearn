@@ -3,6 +3,7 @@
 //  answer: =IF(op(x>=k, y>AVERAGE($y범위)), 참, 거짓)
 //  값 생성 → 평균 기준 분류 → 조건 열 x 를 역배치해서 각 mutant(경계·평균축소·조건 제거·refShift)를 값으로 잡는다.
 import { NAMES } from "../pools.js";
+import { TOPICS, pick } from "../topics.js";
 import { geom, assertFillColClean } from "./_util.js";
 
 const mean = (a) => a.reduce((s, v) => s + v, 0) / a.length;
@@ -73,7 +74,7 @@ function b5Build(rng, { op, headers, xCol, yCol, resCol, kBase, kStep, kSpan, tr
 function b5OrAvg(rng) {
   return b5Build(rng, {
     op: "OR", headers: ["고객", "구매횟수", "적립금액", "등급"], xCol: "구매횟수", yCol: "적립금액", resCol: "등급",
-    kBase: 120, kStep: 10, kSpan: 7, trueLabel: "VIP", falseLabel: "일반", colWidths: [8, 8, 10, 6], colZy: "#,##0",
+    kBase: 118, kStep: 9, kSpan: 7, trueLabel: pick(rng, TOPICS.topGrade), falseLabel: "기본", colWidths: [8, 8, 10, 6], colZy: "#,##0", // VIP/일반·기준값 150 회피
     note: (xC, yC, k, t, f, r) => `[{표}]에서 구매횟수[{col:${xC}}]가 ${k} 이상이거나 적립금액[{col:${yC}}]이 적립금액의 평균보다 크면 "${t}", 그렇지 않으면 "${f}"으로 등급[{R}]에 표시하시오. (8점)`,
   });
 }
@@ -82,7 +83,7 @@ function b5OrAvg(rng) {
 function b5AndAvg(rng) {
   return b5Build(rng, {
     op: "AND", headers: ["회원", "구매횟수", "적립금액", "등급"], xCol: "구매횟수", yCol: "적립금액", resCol: "등급",
-    kBase: 150, kStep: 10, kSpan: 6, trueLabel: "MVG", falseLabel: "", colWidths: [8, 8, 10, 6], colZy: "#,##0",
+    kBase: 130, kStep: 9, kSpan: 6, trueLabel: pick(rng, TOPICS.topGrade), falseLabel: "", colWidths: [8, 8, 10, 6], colZy: "#,##0", // MVG·기준값(150/200) 회피
     note: (xC, yC, k, t, f, r) => `[{표}]에서 구매횟수[{col:${xC}}]가 ${k} 이상이고 적립금액[{col:${yC}}]이 적립금액의 평균보다 크면 "${t}", 그렇지 않으면 공백으로 등급[{R}]에 표시하시오. (8점)`,
   });
 }

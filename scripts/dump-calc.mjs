@@ -7,6 +7,7 @@ import { buildInstance } from "../src/utils/calc/buildInstance.js";
 import { resolveBlock } from "../src/utils/calc/calcBlock.js";
 import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
 import { submit, mutate, cellsGetCell, validateText, specDiscriminators } from "./_calcTestUtil.mjs";
+import { josaViolations } from "./_josaCheck.mjs";
 
 let failed = 0;
 
@@ -74,6 +75,8 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
       out.push("", gridMd(r.spec), "", `- 기준 수식: \`${it.answer.formula}\``, `- 기대값: ${Object.entries(it.expected).map(([a, val]) => `${a}=${expDisp(val)}`).join(", ")}`, `- mutation: ${mutSummary(inst)}`);
       const verr = validateText(it, r.spec);
       if (verr.length) { failed++; out.push(`- ⚠ 검증 실패: ${verr.join(" / ")}`); }
+      const jerr = [it.text, ...(it.notes || [])].flatMap((l) => josaViolations(l));
+      if (jerr.length) { failed++; out.push(`- ⚠ 조사 위반: ${jerr.map((x) => `${x.word}+${x.josa}→${x.expect}`).join(" / ")}`); }
       out.push("");
     }
   }

@@ -1,14 +1,16 @@
 // src/data/exam/calc/templates/B-4.js
 // IF 판정 — COUNTIF 조건 (행 내 개수 / 열 중복 개수). 변형 2개. 모두 열 채우기.
 import { NAMES } from "../pools.js";
-import { geom } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, josa } from "./_util.js";
 
 const ri = (rng, lo, hi) => rng.range(lo, hi);
 
 // 1) b4-count-subject [기본] — IF(COUNTIF(행범위,"<80")>=2,"","합격")
 function b4CountSubject(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["이름", "국어", "영어", "수학", "합격여부"];
+  const [s1, s2, s3] = pick(rng, TOPICS.subjectTriples);   // 국어/영어/수학 열묶음 회피
+  const headers = ["이름", s1, s2, s3, "합격여부"];
   // 각 행의 80 미만 과목 수 c. 필수: c=2(수학<80) 1행, c=1 1행, c=0 1행, c=3 1행 → 나머지 랜덤
   const specs = [{ c: 2, dLow: true }, { c: 1, dLow: false }, { c: 0, dLow: false }, { c: 3, dLow: true }];
   while (specs.length < N) specs.push({ c: rng.int(4), dLow: rng.chance(0.5) });
@@ -33,7 +35,7 @@ function b4CountSubject(rng) {
   const names = rng.sample(NAMES, N);
   const rows = scoreRows.map((r, i) => [names[i], r[0], r[1], r[2], null]);
   const g = geom(headers, N);
-  const rowRange = `${g.dataCell("국어", 0)}:${g.dataCell("수학", 0)}`;
+  const rowRange = `${g.dataCell(s1, 0)}:${g.dataCell(s3, 0)}`;
   return {
     subtype: "B-4", colWidths: [8, 6, 6, 6, 8], headers, rows,
     result: { kind: "fillCol", col: "합격여부" },
@@ -43,7 +45,7 @@ function b4CountSubject(rng) {
     ],
     answer: `=IF(COUNTIF(${rowRange},"<80")>=2,"","합격")`,
     functions: { required: ["IF", "COUNTIF"], candidates: null },
-    text: '[{표}]에서 국어[{col:국어}], 영어[{col:영어}], 수학[{col:수학}] 점수 중 2과목 이상이 80점 미만이면 공백, 그 외에는 "합격"으로 합격여부[{R}]에 표시하시오. (8점)',
+    text: `[{표}]에서 ${s1}[{col:${s1}}], ${s2}[{col:${s2}}], ${s3}[{col:${s3}}] 점수 중 2과목 이상이 80점 미만이면 공백, 그 외에는 "합격"으로 합격여부[{R}]에 표시하시오. (8점)`,
     notes: ["IF, COUNTIF 함수 사용"],
     accept: [`=IF(COUNTIF(${rowRange},"<80")>=2,"","합격")`],
   };
@@ -52,7 +54,8 @@ function b4CountSubject(rng) {
 // 2) b4-id-dup [기본] — IF(COUNTIF($id범위,id)>=2,"우수","일반")
 function b4IdDup(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["회원ID", "이름", "회원구분"];
+  const B = pick(rng, TOPICS.b4Dup);   // ID 열·결과 열·재방문/신규가 한 주제
+  const headers = [B.idc, "이름", B.res];
   // 그룹별 등장 횟수(1 또는 2). 최소 2그룹, count2 최소 1·count1 최소 1. 마지막 행은 count2 그룹.
   const counts = [2, 1];
   while (counts.reduce((a, b) => a + b, 0) < N) counts.push(rng.chance(0.45) ? 2 : 1);
@@ -70,18 +73,18 @@ function b4IdDup(rng) {
   const freq = {}; seq.forEach((id) => (freq[id] = (freq[id] || 0) + 1));
   const names = rng.sample(NAMES, N);
   const rows = seq.map((id, i) => [id, names[i], null]);
-  const res = seq.map((id) => (freq[id] >= 2 ? "우수" : "일반"));
+  const res = seq.map((id) => (freq[id] >= 2 ? B.dup : B.one));
   if (new Set(res).size < 2) throw new Error("결과 단일");
-  const g = geom(headers, N), rA = g.colAbs("회원ID"), x = g.dataCell("회원ID", 0);
+  const g = geom(headers, N), rA = g.colAbs(B.idc), x = g.dataCell(B.idc, 0);
   return {
-    subtype: "B-4", colWidths: [8, 8, 8], headers, rows, codeColumns: ["회원ID"],
-    result: { kind: "fillCol", col: "회원구분" },
-    discriminators: [{ name: "중복ID(우수)", test: (r) => freq[r[0]] >= 2, min: 2, max: N, allowFixed: "lastRow", reason: "마지막 행을 중복 그룹으로 고정(COUNTIF 범위 끝-1 축소 판별)" }],
-    answer: `=IF(COUNTIF(${rA},${x})>=2,"우수","일반")`,
+    subtype: "B-4", colWidths: [8, 8, 8], headers, rows, codeColumns: [B.idc], _topic: { pool: "b4Dup", id: B.id },
+    result: { kind: "fillCol", col: B.res },
+    discriminators: [{ name: `중복ID(${B.dup})`, test: (r) => freq[r[0]] >= 2, min: 2, max: N, allowFixed: "lastRow", reason: "마지막 행을 중복 그룹으로 고정(COUNTIF 범위 끝-1 축소 판별)" }],
+    answer: `=IF(COUNTIF(${rA},${x})>=2,"${B.dup}","${B.one}")`,
     functions: { required: ["IF", "COUNTIF"], candidates: null },
-    text: '[{표}]에서 회원ID[{col:회원ID}]에 동일한 ID가 2개 이상이면 "우수", 그렇지 않으면 "일반"을 회원구분[{R}]에 표시하시오. (8점)',
+    text: `[{표}]에서 ${B.idc}[{col:${B.idc}}]에 같은 ${B.idc}${josa(B.idc, "이/가")} 2개 이상이면 "${B.dup}", 그렇지 않으면 "${B.one}"${josa(B.one, "을/를")} ${B.res}[{R}]에 표시하시오. (8점)`,
     notes: ["IF, COUNTIF 함수 사용"],
-    accept: [`=IF(COUNTIF(${g.colRowFixed("회원ID")},${x})>=2,"우수","일반")`],
+    accept: [`=IF(COUNTIF(${g.colRowFixed(B.idc)},${x})>=2,"${B.dup}","${B.one}")`],
   };
 }
 

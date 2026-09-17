@@ -41,7 +41,7 @@ function a4SumifRatio(rng) {
 // 2) a4-abs-sumif [어려움] — ABS(SUMIF("남")-SUMIF("여"))
 function a4AbsSumif(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["사번", "성별", "점수"];
+  const headers = ["사원번호", "성별", "실적점수"];   // 기출 열묶음(사번·성별·점수) 회피
   // 남 합 < 여 합 (ABS 누락 판별), 차이 ≠ 0
   const sexes = [];
   for (let i = 0; i < N; i++) sexes.push(i < 2 ? SEX[i] : rng.pick(SEX));
@@ -54,18 +54,18 @@ function a4AbsSumif(rng) {
   } while ((sumM >= sumF || sumM === sumF) && t++ < 30);
   if (sumM >= sumF) throw new Error("남<여 실패");
   const rows = seqS.map((x, i) => ["A" + String(101 + i), x, 점수[i]]);
-  const g = geom(headers, N), sA = g.colRel("성별"), jA = g.colRel("점수");
+  const g = geom(headers, N), sA = g.colRel("성별"), jA = g.colRel("실적점수");
   const answer = `=ABS(SUMIF(${sA},"남",${jA})-SUMIF(${sA},"여",${jA}))`;
   assertRangesClean(headers, rows, undefined, answer);
   return {
-    subtype: "A-4", colWidths: [8, 6, 6], headers, rows, codeColumns: ["사번"],
-    result: { kind: "single", label: "남녀 점수 합계 차이" },
+    subtype: "A-4", colWidths: [8, 6, 6], headers, rows, codeColumns: ["사원번호"],
+    result: { kind: "single", label: "남녀 실적점수 차이" },
     discriminators: [{ name: "성별=남", test: (r) => r[1] === "남", min: 1, max: N - 1 }],
     answer,
     functions: { required: ["ABS", "SUMIF"], candidates: null },
-    text: `[{표}]에서 성별[{col:성별}]이 "남"인 점수[{col:점수}]의 합계와 "여"인 점수의 합계 차이를 절댓값으로 [{R}] 셀에 계산하시오. (8점)`,
+    text: `[{표}]에서 성별[{col:성별}]이 "남"인 실적점수[{col:실적점수}]의 합계와 "여"인 실적점수의 합계 차이를 절댓값으로 [{R}] 셀에 계산하시오. (8점)`,
     notes: ["SUMIF, ABS 함수 사용"],
-    accept: [`=ABS(SUMIF(${g.colRowFixed("성별")},"남",${g.colRowFixed("점수")})-SUMIF(${g.colRowFixed("성별")},"여",${g.colRowFixed("점수")}))`],
+    accept: [`=ABS(SUMIF(${g.colRowFixed("성별")},"남",${g.colRowFixed("실적점수")})-SUMIF(${g.colRowFixed("성별")},"여",${g.colRowFixed("실적점수")}))`],
   };
 }
 

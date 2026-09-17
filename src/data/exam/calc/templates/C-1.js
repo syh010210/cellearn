@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/C-1.js
 // 참조표 정확 일치 찾기 (HLOOKUP/VLOOKUP + 문자 추출·결합·산식·IFERROR). 변형 4개. 열 채우기.
 import { NAMES, DEPT_CODES, PRODUCTS, PRODUCT_PRICE, REGIONS } from "../pools.js";
-import { geom } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, josa } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi) => { const s = new Set(); let g = 0; while (s.size < n && g++ < 500) s.add(rng.range(lo, hi)); return [...s]; };
 const round1k = (x) => Math.round(x / 1000) * 1000;
@@ -141,15 +142,16 @@ function hlookupConcat(rng) {
   const refKeys = notSorted(rng, combos.map((c) => c.key));
   const g = geom(headers, N);
   const T = g.refRangeAbs(true, 2, combos.length, true);        // 라벨 열(구분/매입가/판매가) 제외
+  const tName = pick(rng, TOPICS.priceTableNames), [cLab, pLab] = pick(rng, TOPICS.priceLabelPairs); // 제품가격표·매입가/판매가 대체
   return {
     subtype: "C-1", colWidths: [6, 8, 6, 10], headers, rows, codeColumns: ["코드"],
     result: { kind: "fillCol", col: "금액", z: "#,##0" },
-    refTable: { name: "제품가격표", rowLabels: ["구분", "매입가", "판매가"], z: "#,##0", headers: refKeys, rows: [refKeys.map((k) => costOf[k]), refKeys.map((k) => priceOf[k])], rowOffset: 0 },
+    refTable: { name: tName, rowLabels: ["구분", cLab, pLab], z: "#,##0", headers: refKeys, rows: [refKeys.map((k) => costOf[k]), refKeys.map((k) => priceOf[k])], rowOffset: 0 },
     discriminators: [{ name: "지점=첫 지점", test: (r) => r[0] === branches[0], min: 1, max: N }],
     answer: `=${g.dataCell("수량", 0)}*HLOOKUP(${g.dataCell("지점", 0)}&RIGHT(${g.dataCell("코드", 0)},1),${T},3,FALSE)`,
     functions: { required: ["HLOOKUP", "RIGHT"], candidates: null },
-    text: "[{표}]에서 지점[{col:지점}], 코드[{col:코드}]의 마지막 한 글자, 수량[{col:수량}]과 제품가격표[{T}]를 이용하여 금액[{R}]을 계산하시오. (8점)",
-    notes: ["금액 = 수량 * 판매가", "HLOOKUP, RIGHT 함수와 & 연산자 사용"],
+    text: `[{표}]에서 지점[{col:지점}], 코드[{col:코드}]의 마지막 한 글자, 수량[{col:수량}]과 ${tName}[{T}]${josa(tName, "을/를")} 이용하여 금액[{R}]을 계산하시오. (8점)`,
+    notes: [`금액 = 수량 * ${pLab}`, "HLOOKUP, RIGHT 함수와 & 연산자 사용"],
     accept: [
       `=HLOOKUP(${g.dataCell("지점", 0)}&RIGHT(${g.dataCell("코드", 0)},1),${T},3,FALSE)*${g.dataCell("수량", 0)}`,
       `=${g.dataCell("수량", 0)}*HLOOKUP(${g.dataCell("지점", 0)}&RIGHT(${g.dataCell("코드", 0)},1),${T},3,0)`,

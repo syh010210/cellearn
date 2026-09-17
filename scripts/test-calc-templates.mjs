@@ -5,6 +5,8 @@ import { makeRng, planItem, composeCalc, TEMPLATES, FILLER } from "../src/utils/
 import { buildInstance } from "../src/utils/calc/buildInstance.js";
 import { classifySurvivor } from "../src/utils/calc/survivorRules.js";
 import { submit, mutate, cellsGetCell, validateText, significantCols, specDiscriminators, evalAt, COL, lettersCol } from "./_calcTestUtil.mjs";
+import { TOPICS } from "../src/data/exam/calc/topics.js";
+import { josaViolations } from "./_josaCheck.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; console.log(`✗ ${name}  ${extra}`); } };
@@ -51,6 +53,29 @@ const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; con
       for (const c of v.core) if (!allow.has(c)) check(`${v.id} core⊆기준수식`, false, `${c} ∉ ${[...allow].join(",")}`);
     }
   }
+}
+
+// ── 주제 묶음 정합성(_topic): 열 이름·결과 열·결과 문자열·산식 용어가 한 묶음에서 나온다 + 변형별 묶음 ≥4 ──
+{
+  const bundleStrings = (b) => { const out = []; for (const [k, v] of Object.entries(b)) { if (k === "id") continue; if (typeof v === "string") out.push(v); else if (Array.isArray(v)) for (const x of v) if (typeof x === "string") out.push(x); } return out; };
+  const specHay = (spec) => JSON.stringify([spec.headers, spec.answer, spec.accept, spec.result, spec.notes, spec.text, spec.refTable, spec.resultTable, (spec.discriminators || []).map((d) => d.name)]);
+  const idsByVariant = {};                              // variantId → Set(묶음 id)
+  for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) {
+    for (let s = 0; s < 200; s++) {
+      let spec; try { spec = planItem(st, v.id, v.difficulty, makeRng(`${v.id}#topic${s}`)).spec; } catch { continue; }
+      const tp = spec._topic; if (!tp) continue;
+      const pool = TOPICS[tp.pool];
+      check(`${v.id} _topic 풀 존재(${tp.pool})`, Array.isArray(pool), tp.pool);
+      if (!Array.isArray(pool)) continue;
+      const B = pool.find((b) => (b.id || b.name) === tp.id);
+      check(`${v.id} _topic 묶음 존재(${tp.id})`, !!B, tp.id);
+      if (!B) continue;
+      (idsByVariant[v.id] = idsByVariant[v.id] || new Set()).add(tp.id);
+      const hay = specHay(spec);
+      for (const val of bundleStrings(B)) if (!hay.includes(val)) check(`${v.id} 묶음 용어 스펙 반영`, false, `"${val}" ∉ 스펙 (묶음 ${tp.id})`);
+    }
+  }
+  for (const [vid, ids] of Object.entries(idsByVariant)) check(`${vid} 서로 다른 주제 묶음 ≥4`, ids.size >= 4, `${ids.size}종: ${[...ids].join(",")}`);
 }
 
 const VARIANTS = [];
@@ -123,6 +148,7 @@ for (const V of VARIANTS) {
       if (found) { const nc = evalAt(inst, it, noCond), ev = Object.values(it.expected)[0]; const same = (a, b) => (typeof a === "number" && typeof b === "number") ? Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(b)) : String(a) === String(b); if (same(nc, ev)) check(`${V.id} D함수 조건 유효(무조건 집계와 다름)`, false, `${seed} 무조건=${nc} 기대=${ev}`); }
     }
     { const e = validateText(it, r.spec); validated++; if (e.length) check(`${V.id} 지시문 좌표 무결성`, false, `${seed} :: ${e.join(" / ")}`); }
+    for (const line of [it.text, ...(it.notes || [])]) { const jv = josaViolations(line); if (jv.length) check(`${V.id} 조사 정합성`, false, `${seed} :: ${jv.map((x) => `${x.word}+${x.josa}→${x.expect}(«${x.ctx}»)`).join(" / ")}`); }
     const gc = cellsGetCell(inst.cells);
     const cand = it.functions?.candidates || null;
     const gradeIt = (r0) => r0.items.find((x) => x.no === it.no);

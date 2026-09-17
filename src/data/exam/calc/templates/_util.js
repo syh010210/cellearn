@@ -64,6 +64,30 @@ export function roundExample(mode, d, rng, ref, avoid = []) {
 // D-표: 조건 범위/참조표 셀에 들어갈 조건값을 그대로. 와일드카드 "*부"
 export const endsWith = (v, suf) => String(v).endsWith(suf);
 
+// 마지막 글자의 음운: 받침 유무·ㄹ 받침 여부. 슬롯 단어가 묶음마다 달라 고정 조사 불가.
+//  - 한글: 종성코드로 판정 (0=없음, 8=ㄹ)
+//  - 숫자: 읽는 소리 (0영·1일·3삼·6육·7칠·8팔=받침 / 2·4·5·9=없음 ; ㄹ소리=1일·7칠·8팔)
+//  - 영문: L·M·N·R=받침(엘·엠·엔·알) / 그 외 대문자 단독 등은 없음 ; ㄹ소리=L·R
+const DIGIT_BATCHIM = new Set(["0", "1", "3", "6", "7", "8"]);
+const DIGIT_RIEUL = new Set(["1", "7", "8"]);
+const ENG_BATCHIM = new Set(["L", "M", "N", "R"]);
+const ENG_RIEUL = new Set(["L", "R"]);
+function lastPhon(word) {
+  const s = String(word), ch = s[s.length - 1], c = s.charCodeAt(s.length - 1);
+  if (c >= 0xAC00 && c <= 0xD7A3) { const j = (c - 0xAC00) % 28; return { batchim: j !== 0, rieul: j === 8 }; }
+  if (/[0-9]/.test(ch)) return { batchim: DIGIT_BATCHIM.has(ch), rieul: DIGIT_RIEUL.has(ch) };
+  if (/[A-Za-z]/.test(ch)) { const U = ch.toUpperCase(); return { batchim: ENG_BATCHIM.has(U), rieul: ENG_RIEUL.has(U) }; }
+  return { batchim: false, rieul: false };
+}
+// josa(단어, "받침형/비받침형"). 예: josa(x,"이/가"), josa(x,"을/를"), josa(x,"은/는"), josa(x,"과/와"), josa(x,"으로/로").
+// "으로/로" 는 ㄹ 받침이면 "로"(비받침형)을 쓴다.
+export function josa(word, pair) {
+  const [withB, without] = pair.split("/");
+  const { batchim, rieul } = lastPhon(word);
+  if (withB === "으로" && rieul) return without;
+  return batchim ? withB : without;
+}
+
 // 날짜 serial (1899-12-30 기준) + 실제 존재하는 날짜만 뽑기
 export const serial = (y, m, d) => Math.round((Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000);
 const DIM = (y, m) => [31, (y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][m - 1];

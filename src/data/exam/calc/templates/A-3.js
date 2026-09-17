@@ -10,7 +10,9 @@ const distinctInts = (rng, n, lo, hi) => { const s = new Set(); const out = []; 
 function a3LargeSmall(rng) {
   const N = 8 + rng.int(3);
   const headers = ["선수", "소속", "기록"];
-  const k1 = 2 + rng.int(2), k2 = 2 + rng.int(2);   // k 시드
+  const k1 = 2 + rng.int(3), k2 = 2 + rng.int(3);   // k 시드(2~4)
+  // 기출 LARGE-SMALL 차 조합(2,3·3,2·1,1) 회피
+  if ((k1 === 2 && k2 === 3) || (k1 === 3 && k2 === 2) || (k1 === 1 && k2 === 1)) throw new Error("기출 순위 조합 회피");
   const vals = distinctInts(rng, N, 30, 99);         // 동점 없음
   const sorted = [...vals].sort((a, b) => b - a);
   if (sorted[k1 - 1] - sorted[N - k2] === 0) throw new Error("결과 0");

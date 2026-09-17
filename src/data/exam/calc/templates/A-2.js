@@ -1,6 +1,7 @@
 // src/data/exam/calc/templates/A-2.js
 // 조건 평균 (AVERAGEIF(S)/DAVERAGE) + 반올림·차. 변형 4개.
 import { NAMES, CLUBS_BU, CLUBS_ETC, SCHOOLS, REGIONS } from "../pools.js";
+import { TOPICS, pick } from "../topics.js";
 import { geom, roundPhrase, applyRound, roundExample, COL } from "./_util.js";
 import { Sheet } from "../../../../excel-engine/index.js";
 import { shiftFormula } from "../../../../utils/formulaUtils.js";
@@ -89,7 +90,8 @@ function daverageRound(rng) {
 // 2) a2-averageif-round [기본] — AVERAGEIF + 내림, 가로 채우기(후보형)
 function averageifRound(rng) {
   const n = 8 + rng.int(3); // 8~10 (1반 3개 이상 확보)
-  const headers = ["이름", "반", "국어", "영어", "수학"];
+  const [s1, s2, s3] = pick(rng, TOPICS.subjectTriples);   // 국어/영어/수학 열묶음 회피
+  const headers = ["이름", "반", s1, s2, s3];
   const others = ["2반", "3반", "4반"];
   const labels = placeGroup(rng, n, "1반", others);
   const names = rng.sample(NAMES, n);
@@ -112,20 +114,20 @@ function averageifRound(rng) {
   const okShrink = [0, 1, 2].some((c) => applyRound("ROUNDDOWN", idx1NoLast.reduce((s, i) => s + subj[c][i], 0) / idx1NoLast.length, 0) !== downs[c]);
   if (!okShrink) throw new Error("축소 무영향");
   const g = geom(headers, n);
-  const 반A = g.colAbs("반"), guk = g.colRel("국어");
+  const 반A = g.colAbs("반"), guk = g.colRel(s1);
   // partialDollar(조건 열 시작 $ 제거 → 가로 채우기 때 열 밀림): 가로 채우기 결과가 달라져야
-  const rIdx = ["국어", "영어", "수학"].map((nm) => headers.indexOf(nm));
+  const rIdx = [s1, s2, s3].map((nm) => headers.indexOf(nm));
   const baseF = `=ROUNDDOWN(AVERAGEIF(${반A},"1반",${guk}),0)`;
   const pdF = `=ROUNDDOWN(AVERAGEIF(${반A.replace(/^\$([A-Z]+)\$(\d+)/, "$1$2")},"1반",${guk}),0)`;
   if (JSON.stringify(fillRowResults(headers, rows, baseF, rIdx)) === JSON.stringify(fillRowResults(headers, rows, pdF, rIdx))) throw new Error("부분$ 무영향");
   const ex = roundExample("ROUNDDOWN", 0, rng, avgs[0], downs); // 결과(1반 평균) ±15%, 기대값 회피
   return {
     subtype: "A-2", colWidths: [8, 6, 6, 6, 6], headers, rows,
-    result: { kind: "fillRow", cols: ["국어", "영어", "수학"], label: "1반 평균" },
+    result: { kind: "fillRow", cols: [s1, s2, s3], label: "1반 평균" },
     discriminators: [{ name: "반=1반(조건)", test: (r) => r[1] === "1반", min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상(1반) 행을 첫·중간·마지막에 배치(AVERAGEIF 범위 축소·조건 판별)" }],
     answer: `=ROUNDDOWN(AVERAGEIF(${반A},"1반",${guk}),0)`,
     functions: { required: ["AVERAGEIF"], candidates: ["ROUNDDOWN", "ROUND", "ROUNDUP"] },
-    text: '[{표}]에서 반[{col:반}]이 "1반"인 학생의 국어[{col:국어}], 영어[{col:영어}], 수학[{col:수학}]의 평균을 [{R}] 영역에 계산하시오. (8점)',
+    text: `[{표}]에서 반[{col:반}]이 "1반"인 학생의 ${s1}[{col:${s1}}], ${s2}[{col:${s2}}], ${s3}[{col:${s3}}]의 평균을 [{R}] 영역에 계산하시오. (8점)`,
     notes: [`${roundPhrase("ROUNDDOWN", 0)} ${ex.text}`, "AVERAGEIF, ROUNDDOWN, ROUND, ROUNDUP 중 알맞은 함수 사용"],
     accept: [
       `=ROUNDDOWN(AVERAGEIF(${반A},"=1반",${guk}),0)`,          // 조건 "=1반"

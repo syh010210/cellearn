@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/C-2.js
 // 근사 일치 구간표 (HLOOKUP + AVERAGE/RANK.EQ). 변형 3개. 모두 열 채우기.
-import { NAMES, PRODUCTS, PRODUCT_PRICE, BAND_GRADES, HAKJEOM } from "../pools.js";
-import { geom } from "./_util.js";
+import { NAMES, PRODUCTS, PRODUCT_PRICE } from "../pools.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, josa } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi, unit = 1) => { const s = new Set(); const out = []; let g = 0; while (out.length < n && g++ < 900) { const v = (lo + rng.int(Math.floor((hi - lo) / unit) + 1)) * unit; if (!s.has(v)) { s.add(v); out.push(v); } } if (out.length < n) throw new Error("부족"); return out; };
 const round1k = (x) => Math.round(x / 1000) * 1000;
@@ -9,8 +10,10 @@ const round1k = (x) => Math.round(x / 1000) * 1000;
 // 1) c2-hlookup-avg [기본] — HLOOKUP(AVERAGE(중간,기말),$학점기준표,2)
 function c2HlookupAvg(rng) {
   const N = 7 + rng.int(3);
-  const headers = ["학생", "중간고사", "기말고사", "학점"];
-  const keys = [0, 60, 70, 80, 90];                  // 학점 기준값 고정
+  const B = pick(rng, TOPICS.band5);                  // 주제 묶음(표 이름·5등급·열 이름)
+  const headers = [B.first, B.c1, B.c2, B.cR];
+  // 구간 하한(오름차순): 첫 구간 0, 나머지는 기출 조합(0/60/70/80/90) 과 겹치지 않게 시드로
+  const keys = [0, 50 + rng.int(6), 62 + rng.int(5), 72 + rng.int(5), 84 + rng.int(5)];
   const cl = (x) => Math.max(45, Math.min(98, x));
   const K1 = keys[1 + rng.int(4)], a1 = rng.range(-6, 6);
   const K2 = keys[1 + rng.int(4)], b1 = rng.range(-6, 6);
@@ -23,22 +26,24 @@ function c2HlookupAvg(rng) {
   const fill = Array.from({ length: N - 3 }, () => ["", 45 + rng.int(53), 45 + rng.int(53)]);
   const rows = rng.shuffle([...seed, ...fill]);       // 위치 무작위
   const avg = (r) => (r[1] + r[2]) / 2;
-  const grade = (v) => { let i = 0; for (let k = 0; k < keys.length; k++) if (v >= keys[k]) i = k; return HAKJEOM[i]; };
+  const grade = (v) => { let i = 0; for (let k = 0; k < keys.length; k++) if (v >= keys[k]) i = k; return B.grades[i]; };
   const grades = rows.map((r) => grade(avg(r)));
-  if (new Set(grades).size < 2) throw new Error("학점 단일");
+  if (new Set(grades).size < 2) throw new Error("등급 단일");
   if (!rows.some((r) => avg(r) !== Math.round(avg(r)) || !keys.includes(avg(r)))) throw new Error("근사 판별 행 없음");
+  // refShift(첫 인수 B→C=r2 단독 / 둘째 C→결과열=r1 단독) 가 값으로 잡히도록 등급이 달라지는 행 각각 보장
+  if (!rows.some((r) => grade(r[2]) !== grade(avg(r))) || !rows.some((r) => grade(r[1]) !== grade(avg(r)))) throw new Error("refShift 무영향");
   const names = rng.sample(NAMES, N); rows.forEach((r, i) => (r[0] = names[i]));
   const g = geom(headers, N), T = g.refRangeAbs(true, 1, keys.length, true);
   return {
-    subtype: "C-2", colWidths: [8, 8, 8, 6], headers, rows,
-    result: { kind: "fillCol", col: "학점" },
+    subtype: "C-2", colWidths: [8, 8, 8, 6], headers, rows, _topic: { pool: "band5", id: B.name },
+    result: { kind: "fillCol", col: B.cR },
     discriminators: [{ name: "평균 정수(기준 근처)", test: (r) => (r[1] + r[2]) % 2 === 0, min: 1, max: N }],
-    refTable: { name: "학점기준표", rowLabels: ["점수", "학점"], headers: keys, rows: [HAKJEOM], rowOffset: 0 },
-    answer: `=HLOOKUP(AVERAGE(${g.dataCell("중간고사", 0)},${g.dataCell("기말고사", 0)}),${T},2)`,
+    refTable: { name: B.name, rowLabels: ["점수", B.cR], headers: keys, rows: [B.grades], rowOffset: 0 },
+    answer: `=HLOOKUP(AVERAGE(${g.dataCell(B.c1, 0)},${g.dataCell(B.c2, 0)}),${T},2)`,
     functions: { required: ["AVERAGE", "HLOOKUP"], candidates: null },
-    text: "[{표}]에서 중간고사[{col:중간고사}], 기말고사[{col:기말고사}]와 학점기준표[{T}]를 이용하여 학점[{R}]을 표시하시오. (8점)",
-    notes: ["평균은 각 학생의 중간고사와 기말고사로 구함", "AVERAGE, HLOOKUP 함수 사용"],
-    accept: [`=HLOOKUP(AVERAGE(${g.dataCell("중간고사", 0)},${g.dataCell("기말고사", 0)}),${T},2,TRUE)`],
+    text: `[{표}]에서 ${B.c1}[{col:${B.c1}}], ${B.c2}[{col:${B.c2}}]${josa(B.c2, "과/와")} ${B.name}[{T}]${josa(B.name, "을/를")} 이용하여 ${B.cR}[{R}]${josa(B.cR, "을/를")} 표시하시오. (8점)`,
+    notes: [`평균은 각 ${B.first}의 ${B.c1}${josa(B.c1, "과/와")} ${B.c2}${josa(B.c2, "으로/로")} 구함`, "AVERAGE, HLOOKUP 함수 사용"],
+    accept: [`=HLOOKUP(AVERAGE(${g.dataCell(B.c1, 0)},${g.dataCell(B.c2, 0)}),${T},2,TRUE)`],
   };
 }
 
@@ -48,6 +53,7 @@ function c2Discount(rng) {
   const headers = ["상품", "판매량", "가격", "판매액"];
   const k1 = 30 + rng.int(15), k2 = k1 + 15 + rng.int(10), k3 = k2 + 15 + rng.int(10);
   const keys = [0, k1, k2, k3];                       // 판매량 하한 오름차순, 시드화
+  if (keys.join("/") === "0/40/60/80") throw new Error("기출 할인율 구간(0/40/60/80) 회피");
   const disc = [0, 0.05, 0.1, 0.15];                 // 0% 구간 포함
   const prods = rng.sample(PRODUCTS, N > PRODUCTS.length ? PRODUCTS.length : N);
   const q0 = [k1, k2 - 1];                             // 기준값과 정확히 같은 값·바로 아래 값
@@ -73,22 +79,25 @@ function c2Discount(rng) {
 // 3) c2-rank-band [어려움] — HLOOKUP(RANK.EQ(x,$r),$등급표,2) (후보형)
 function c2RankBand(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["고객", "구입총액", "등급"];
-  const keys = [1, 3, 5, 7];
+  const B = pick(rng, TOPICS.band4);                  // 주제 묶음(표 이름·4등급·금액 열)
+  const headers = [B.first, B.amt, B.cR];
+  // 순위 하한(오름차순): 기출 조합(1/3/5/7·1/4/6/8) 과 겹치지 않게 시드로
+  const keys = [1, 2 + rng.int(2), 5 + rng.int(2), 7 + rng.int(2)];
+  if (keys[1] === 3 && keys[2] === 5 && keys[3] === 7) keys[3] = 8; // 1/3/5/7 회피
   const total = distinctInts(rng, N, 100, 990, 1).map((x) => x * 10000); // 1,000,000~9,900,000 천원단위·동점 없음
   const names = rng.sample(NAMES, N);
   const rows = total.map((v, i) => [names[i], v, null]);
-  const g = geom(headers, N), rA = g.colAbs("구입총액"), T = g.refRangeAbs(true, 1, keys.length, true);
+  const g = geom(headers, N), rA = g.colAbs(B.amt), T = g.refRangeAbs(true, 1, keys.length, true);
   return {
-    subtype: "C-2", colWidths: [8, 10, 8], headers, rows, colZ: { 1: "#,##0" },
-    result: { kind: "fillCol", col: "등급" },
-    discriminators: [{ name: "구입총액 1위", test: (r) => r[1] === Math.max(...total), min: 1, max: 1 }],
-    refTable: { name: "등급표", rowLabels: ["순위", "등급"], headers: keys, rows: [BAND_GRADES], rowOffset: 0 },
-    answer: `=HLOOKUP(RANK.EQ(${g.dataCell("구입총액", 0)},${rA}),${T},2)`,
+    subtype: "C-2", colWidths: [8, 10, 8], headers, rows, colZ: { 1: "#,##0" }, _topic: { pool: "band4", id: B.name },
+    result: { kind: "fillCol", col: B.cR },
+    discriminators: [{ name: `${B.amt} 1위`, test: (r) => r[1] === Math.max(...total), min: 1, max: 1 }],
+    refTable: { name: B.name, rowLabels: ["순위", B.cR], headers: keys, rows: [B.grades], rowOffset: 0 },
+    answer: `=HLOOKUP(RANK.EQ(${g.dataCell(B.amt, 0)},${rA}),${T},2)`,
     functions: { required: [], candidates: ["VLOOKUP", "HLOOKUP", "RANK.EQ", "LARGE"] },
-    text: "[{표}]에서 구입총액[{col:구입총액}]과 등급표[{T}]를 이용하여 등급[{R}]을 표시하시오. (8점)",
-    notes: ["순위는 구입총액이 가장 많은 것이 1위", "VLOOKUP, HLOOKUP, RANK.EQ, LARGE 함수 중 알맞은 함수들을 선택하여 사용"],
-    accept: [`=HLOOKUP(RANK.EQ(${g.dataCell("구입총액", 0)},${rA},0),${T},2)`],
+    text: `[{표}]에서 ${B.amt}[{col:${B.amt}}]${josa(B.amt, "과/와")} ${B.name}[{T}]${josa(B.name, "을/를")} 이용하여 ${B.cR}[{R}]${josa(B.cR, "을/를")} 표시하시오. (8점)`,
+    notes: [`순위는 ${B.amt}${josa(B.amt, "이/가")} 가장 많은 것이 1위`, "VLOOKUP, HLOOKUP, RANK.EQ, LARGE 함수 중 알맞은 함수들을 선택하여 사용"],
+    accept: [`=HLOOKUP(RANK.EQ(${g.dataCell(B.amt, 0)},${rA},0),${T},2)`],
   };
 }
 

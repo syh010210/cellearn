@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/B-3.js
 // 날짜 판정 (YEAR/MONTH/DAY/MOD). 변형 4개. 기준일은 baseCell(TODAY 금지).
 import { NAMES, EXAM_NAMES, EVENTS } from "../pools.js";
-import { geom, COL, randDate, serialYear, serialMonth, serialDay } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, COL, randDate, serialYear, serialMonth, serialDay, josa } from "./_util.js";
 
 const shuffleRows = (rng, arr) => rng.shuffle(arr);
 
@@ -18,16 +19,17 @@ function b3YearDiff(rng) {
   const names = rng.sample(NAMES, N);
   const rows = dates.map((d, i) => [names[i], d.s, null]);
   const g = geom(headers, N), bA = `$${COL(headers.length - 1)}$1`, x = g.dataCell("가입일", 0);
+  const [hi, lo] = pick(rng, TOPICS.gradeSymbols);   // ★/☆ 대체(등급 기호, 방향 화살표 제외)
   return {
     subtype: "B-3", colWidths: [8, 12, 6], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     baseCell: { label: "기준일", value: base.s, z: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "등급" },
-    discriminators: [{ name: `기간>=${n}(★)`, test: (r) => baseY - serialYear(r[1]) >= n, min: 1, max: N }, { name: `${m}<=기간<${n}(☆)`, test: (r) => { const g = baseY - serialYear(r[1]); return g >= m && g < n; }, min: 1, max: N }],
-    answer: `=IF(YEAR(${bA})-YEAR(${x})>=${n},"★",IF(YEAR(${bA})-YEAR(${x})>=${m},"☆",""))`,
+    discriminators: [{ name: `기간>=${n}(${hi})`, test: (r) => baseY - serialYear(r[1]) >= n, min: 1, max: N }, { name: `${m}<=기간<${n}(${lo})`, test: (r) => { const g = baseY - serialYear(r[1]); return g >= m && g < n; }, min: 1, max: N }],
+    answer: `=IF(YEAR(${bA})-YEAR(${x})>=${n},"${hi}",IF(YEAR(${bA})-YEAR(${x})>=${m},"${lo}",""))`,
     functions: { required: ["IF", "YEAR"], candidates: null },
-    text: `[{표}]에서 기준일[{base}]을 기준으로 가입일[{col:가입일}]의 가입기간이 ${n}년 이상이면 "★", ${m}년 이상이면 "☆", 그 외에는 공백을 등급[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 기준일[{base}]을 기준으로 가입일[{col:가입일}]의 가입기간이 ${n}년 이상이면 "${hi}", ${m}년 이상이면 "${lo}", 그 외에는 공백을 등급[{R}]에 표시하시오. (8점)`,
     notes: ["가입기간은 연도만으로 계산", "IF, YEAR 함수 사용"],
-    accept: [`=IF(YEAR(${bA})-YEAR(${x})>=${n},"★",IF(YEAR(${bA})-YEAR(${x})>=${m},"☆",""))`],
+    accept: [`=IF(YEAR(${bA})-YEAR(${x})>=${n},"${hi}",IF(YEAR(${bA})-YEAR(${x})>=${m},"${lo}",""))`],
   };
 }
 
@@ -61,23 +63,24 @@ function b3AgePlus1(rng) {
 // 3) b3-mod-day [어려움] — IF(MOD(DAY(x),5)=0,...)
 function b3ModDay(rng) {
   const N = 8 + rng.int(3);
-  const headers = ["종목", "시험일자", "구분"];
+  const B = pick(rng, TOPICS.b3Sched);   // 항목·날짜·결과 열·정기/수시가 한 주제
+  const headers = [B.item, B.date, B.res];
   const mult = [5, 10, 15, 20, 25, 30], non = [1, 2, 3, 4, 6, 7, 8, 9, 11, 12, 13, 14, 16, 17, 18, 19, 21, 22, 23, 24, 26, 27, 28, 29];
   const days = [rng.pick(mult), rng.pick(mult), rng.pick(non), rng.pick(non), 31]; // 배수2·비배수2·31일1
   while (days.length < N) days.push(rng.chance(0.4) ? rng.pick(mult) : rng.pick(non));
   const dates = shuffleRows(rng, days).map((d) => randDate(rng, 2024, 2026, { day: d }));
   const events = rng.sample(EXAM_NAMES, N);
   const rows = dates.map((d, i) => [events[i], d.s, null]);
-  const g = geom(headers, N), x = g.dataCell("시험일자", 0);
+  const g = geom(headers, N), x = g.dataCell(B.date, 0);
   return {
-    subtype: "B-3", colWidths: [10, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" },
-    result: { kind: "fillCol", col: "구분" },
-    discriminators: [{ name: "일=5배수(정기)", test: (r) => serialDay(r[1]) % 5 === 0, min: 1, max: N }],
-    answer: `=IF(MOD(DAY(${x}),5)=0,"정기시험","상시시험")`,
+    subtype: "B-3", colWidths: [10, 12, 8], headers, rows, colZ: { 1: "yyyy-mm-dd" }, _topic: { pool: "b3Sched", id: B.id },
+    result: { kind: "fillCol", col: B.res },
+    discriminators: [{ name: `일=5배수(${B.t})`, test: (r) => serialDay(r[1]) % 5 === 0, min: 1, max: N }],
+    answer: `=IF(MOD(DAY(${x}),5)=0,"${B.t}","${B.f}")`,
     functions: { required: ["IF", "MOD", "DAY"], candidates: null },
-    text: `[{표}]에서 시험일자[{col:시험일자}]의 일이 5의 배수이면 "정기시험", 그 외에는 "상시시험"으로 구분[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 ${B.date}[{col:${B.date}}]의 일이 5의 배수이면 "${B.t}", 그 외에는 "${B.f}"${josa(B.f, "으로/로")} ${B.res}[{R}]에 표시하시오. (8점)`,
     notes: ["IF, MOD, DAY 함수 사용"],
-    accept: [`=IF(MOD(DAY(${x}),5)=0,"정기시험","상시시험")`],
+    accept: [`=IF(MOD(DAY(${x}),5)=0,"${B.t}","${B.f}")`],
   };
 }
 
@@ -92,15 +95,16 @@ function b3OrMonth(rng) {
   const events = rng.sample(EVENTS, N);
   const rows = dates.map((d, i) => [events[i], d.s, null]);
   const g = geom(headers, N), x = g.dataCell("홍보예정일", 0);
+  const nl = pick(rng, TOPICS.noticeLabel);   // 발송 대체
   return {
     subtype: "B-3", colWidths: [10, 12, 6], headers, rows, colZ: { 1: "yyyy-mm-dd" },
     result: { kind: "fillCol", col: "발송여부" },
-    discriminators: [{ name: `월=${m1}|${m2}(발송)`, test: (r) => [m1, m2].includes(serialMonth(r[1])), min: 1, max: N }],
-    answer: `=IF(OR(MONTH(${x})=${m1},MONTH(${x})=${m2}),"발송","")`,
+    discriminators: [{ name: `월=${m1}|${m2}(${nl})`, test: (r) => [m1, m2].includes(serialMonth(r[1])), min: 1, max: N }],
+    answer: `=IF(OR(MONTH(${x})=${m1},MONTH(${x})=${m2}),"${nl}","")`,
     functions: { required: ["IF", "OR", "MONTH"], candidates: null },
-    text: `[{표}]에서 홍보예정일[{col:홍보예정일}]의 월이 ${m1} 또는 ${m2}이면 "발송", 그 외에는 공백을 발송여부[{R}]에 표시하시오. (8점)`,
+    text: `[{표}]에서 홍보예정일[{col:홍보예정일}]의 월이 ${m1} 또는 ${m2}이면 "${nl}", 그 외에는 공백을 발송여부[{R}]에 표시하시오. (8점)`,
     notes: ["IF, OR, MONTH 함수 사용"],
-    accept: [`=IF(OR(MONTH(${x})=${m1},MONTH(${x})=${m2}),"발송","")`],
+    accept: [`=IF(OR(MONTH(${x})=${m1},MONTH(${x})=${m2}),"${nl}","")`],
   };
 }
 

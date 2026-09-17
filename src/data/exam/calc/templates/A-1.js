@@ -1,7 +1,8 @@
 // src/data/exam/calc/templates/A-1.js
 // 조건 개수·비율 (COUNTIF / COUNTIFS / DCOUNTA). 변형 4개. 모두 단일 셀.
 import { NAMES, MALE_NAMES, FEMALE_NAMES, REGIONS, MAJORS, DEPTS } from "../pools.js";
-import { geom, assertRangesClean, COL } from "./_util.js";
+import { TOPICS, pick } from "../topics.js";
+import { geom, assertRangesClean, COL, josa } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi, ex = []) => { const s = new Set(ex); const out = []; let g = 0; while (out.length < n && g++ < 800) { const v = rng.range(lo, hi); if (!s.has(v)) { s.add(v); out.push(v); } } if (out.length < n) throw new Error("distinctInts 부족"); return out; };
 const seq = (n, p = "P") => Array.from({ length: n }, (_, i) => p + String(101 + i));
@@ -32,8 +33,9 @@ function a1Ratio(rng) {
 // 2) a1-countifs [기본] — COUNTIFS(...)&"명" (후보형)
 function a1Countifs(rng) {
   const N = 9 + rng.int(2);
-  const headers = ["수험번호", "성명", "필기", "면접"];
-  const n = 60 + 5 * rng.int(6), m = 55 + 5 * rng.int(5); // 기준값 시드화(60~85 / 55~75)
+  const CB = pick(rng, TOPICS.a1Cond);   // 두 조건 점수 열이 한 주제(기출 필기·면접 등 회피)
+  const headers = ["수험번호", "성명", CB.c1, CB.c2];
+  const n = [65, 75, 85][rng.int(3)], m = [55, 65, 75][rng.int(3)]; // 기출 기준값(60/70/80) 회피
   const cl = (x) => Math.max(40, Math.min(99, x));
   // 경계·한 조건만 행을 시드값에서 만들고 나머지와 섞는다
   const key = [
@@ -50,19 +52,19 @@ function a1Countifs(rng) {
   const only1 = sc.filter((s) => s[0] >= n && s[1] < m).length, only2 = sc.filter((s) => s[1] >= m && s[0] < n).length;
   if (cnt < 2 || only1 < 1 || only2 < 1) throw new Error("분포 부족");
   if (!sc.some((s) => s[0] === n) || !sc.some((s) => s[1] === m)) throw new Error("경계 행 없음");
-  const g = geom(headers, N), pil = g.colRel("필기"), myn = g.colRel("면접");
+  const g = geom(headers, N), pil = g.colRel(CB.c1), myn = g.colRel(CB.c2);
   const answer = `=COUNTIFS(${pil},">=${n}",${myn},">=${m}")&"명"`;
   assertRangesClean(headers, rows, undefined, answer);   // 범위 확장·축소(정렬 어긋남) 생존 방지
   let exN; do { exN = 2 + rng.int(N - 2); } while (exN === cnt); // 표시 예 N ≠ 실제 합격자 수
   return {
-    subtype: "A-1", colWidths: [8, 8, 6, 6], headers, rows, codeColumns: ["수험번호"], verbException: "계산",
+    subtype: "A-1", colWidths: [8, 8, 6, 6], headers, rows, codeColumns: ["수험번호"], verbException: "계산", _topic: { pool: "a1Cond", id: CB.id },
     result: { kind: "single", label: "합격자 수" },
     answer,
-    discriminators: [{ name: `필기=${n}(경계)`, test: (r) => r[2] === n, min: 1, max: N }],
+    discriminators: [{ name: `${CB.c1}=${n}(경계)`, test: (r) => r[2] === n, min: 1, max: N }],
     functions: { required: [], candidates: ["AVERAGEIFS", "SUMIFS", "COUNTIFS"] },
-    text: `[{표}]에서 필기[{col:필기}]가 ${n} 이상이고 면접[{col:면접}]이 ${m} 이상인 합격자 수를 [{R}] 셀에 계산하시오. (8점)`,
+    text: `[{표}]에서 ${CB.c1}[{col:${CB.c1}}]${josa(CB.c1, "이/가")} ${n} 이상이고 ${CB.c2}[{col:${CB.c2}}]${josa(CB.c2, "이/가")} ${m} 이상인 합격자 수를 [{R}] 셀에 계산하시오. (8점)`,
     notes: [`계산된 합격자 수 뒤에 "명"을 포함하여 표시 [표시 예 : ${exN}명]`, "AVERAGEIFS, SUMIFS, COUNTIFS 중 알맞은 함수와 & 연산자 사용"],
-    accept: [`=COUNTIFS(${g.colRowFixed("필기")},">=${n}",${g.colRowFixed("면접")},">=${m}")&"명"`],
+    accept: [`=COUNTIFS(${g.colRowFixed(CB.c1)},">=${n}",${g.colRowFixed(CB.c2)},">=${m}")&"명"`],
   };
 }
 
