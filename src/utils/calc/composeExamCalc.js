@@ -121,9 +121,11 @@ export function composeExamCalc(seed, { count = 5, difficulty = "기본" } = {})
     try {
       inst = composeCalc(`${seed}~exam#${attempt}`, { subtypes, difficulty, variants: variantIds });
     } catch (e) { lastErr = e; continue; }   // 레이아웃(20열) 등 실패 → 다른 조합
+    // inst.items 는 표번호(위치)순으로 정렬돼 있다. 블록 인덱스(_blockIndex)로 메타를 맞춰 같은 순서로 기록.
     inst._exam = {
       seed, count, difficulty, attempt,
-      items: inst.items.map((it, i) => ({ no: it.no, subtype: metas[i].subtype, variantId: variantIds[i], resultKind: metas[i].resultKind, usesD: metas[i].usesD, core: metas[i].core })),
+      items: inst.items.map((it) => { const bi = it._blockIndex; return { no: it.no, subtype: metas[bi].subtype, variantId: variantIds[bi], resultKind: metas[bi].resultKind, usesD: metas[bi].usesD, core: metas[bi].core }; }),
+      blocks: variantIds.map((vid, bi) => ({ blockIndex: bi, subtype: subtypes[bi], variantId: vid })), // 블록(빌드) 순서 — 재현용
     };
     return inst;
   }

@@ -13,20 +13,22 @@ import { resolveBlock } from "../src/utils/calc/calcBlock.js";
 
 const colL = (c) => { let s = "", n = c + 1; while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); } return s; };
 const a1 = (r, c) => colL(c) + (r + 1);
-// 블록별 위치(표N 범위 + 부착물 범위·배치) 재현
+// 블록별 위치(표N 범위 + 부착물 범위·배치) 재현. 블록순으로 spec 을 얻고, 표번호(위치)순으로 출력.
 function blockPositions(inst) {
   const ex = inst._exam, rng = makeRng(`${ex.seed}~exam#${ex.attempt}`);
-  const specs = ex.items.map((it) => planItem(it.subtype, it.variantId, ex.difficulty, rng).spec);
-  return specs.map((s, i) => {
-    const b = resolveBlock(s, "표"), O = inst.items[i].origin;
+  const originOf = (bi) => inst.items.find((it) => it._blockIndex === bi).origin;
+  const noOf = (bi) => inst.items.find((it) => it._blockIndex === bi).no;
+  const rows = ex.blocks.map(({ blockIndex: bi, subtype, variantId }) => {
+    const b = resolveBlock(planItem(subtype, variantId, ex.difficulty, rng).spec, "표"), O = originOf(bi);
     const AR = (rg) => `${a1(O.r + rg.r1, O.c + rg.c1)}:${a1(O.r + rg.r2, O.c + rg.c2)}`;
     const table = `${a1(O.r, O.c)}:${a1(O.r + b.tableBottom, O.c + b.nCols - 1)}`;
     let att = "";
     if (b.criteria) att = ` [조건 ${AR(b.criteria.range)} right]`;
     else if (b.refTableRange) att = ` [참조표 ${AR(b.refTableRange)} right]`;
     else if (b.resultTableRange) att = ` [결과표 ${AR(b.resultTableRange)} right]`;
-    return `표${i + 1} ${table}${att}`;
+    return { no: noOf(bi), s: `표${noOf(bi)} ${table}${att}` };
   });
+  return rows.sort((x, y) => x.no - y.no).map((x) => x.s);
 }
 
 const DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "trial_test", "calc-compose");

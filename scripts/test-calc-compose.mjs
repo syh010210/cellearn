@@ -3,7 +3,7 @@
 import XLSX from "xlsx-js-style";
 import { composeExamCalc } from "../src/utils/calc/composeExamCalc.js";
 import { TEMPLATES } from "../src/utils/calc/calcAssembler.js";
-import { submit } from "./_calcTestUtil.mjs";
+import { submit, verifyTableOrder } from "./_calcTestUtil.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; if (fail <= 40) console.log(`✗ ${name}  ${extra}`); } };
@@ -22,7 +22,7 @@ for (const difficulty of ["기본", "어려움"]) {
     const shapeCnt = {}, subCnt = {}, varCnt = {}, kindCnt = { single: 0, fill: 0 };
     const usesDVar = {}; let usesDTotal = 0;
     const cols = [], retries = [], times = [];
-    let usesDA_ok = 0, usesD3A = 0;
+    let usesDA_ok = 0, usesD3A = 0, teoOk = 0;
     for (let s = 0; s < SEEDS; s++) {
       const seed = `compose~${s}`;
       let inst;
@@ -56,6 +56,9 @@ for (const difficulty of ["기본", "어려움"]) {
         const vv = C.some((m) => m.core.includes("VLOOKUP") || m.core.includes("INDEX") || m.core.includes("MATCH"));
         if (!(h && vv)) check(`${tag} C 계열`, false, seed);
       }
+      // 표 번호 = 위치 순서 = 지시문 = 라벨
+      const teo = verifyTableOrder(inst);
+      if (teo.length) check(`${tag} 표번호 위치순`, false, `${seed} :: ${teo[0]}`); else teoOk++;
       // 기준 답 만점
       const res = submit(inst);
       if (res.earned !== res.total) check(`${tag} 만점`, false, `${seed} ${res.earned}/${res.total}`);
@@ -82,6 +85,7 @@ for (const difficulty of ["기본", "어려움"]) {
     check(`${tag} resultKind 균형 합계`, count === 5 ? (kindCnt.single >= SEEDS && kindCnt.fill >= SEEDS * 2) : kindCnt.single >= SEEDS);
     if (count === 3) check(`${tag} A usesD 50%±5%`, Math.abs(usesD3A / SEEDS - 0.5) <= 0.05, `${(usesD3A / SEEDS * 100).toFixed(1)}%`);
     if (count === 5) check(`${tag} A usesD=1 전 시드`, usesDA_ok === SEEDS, `${usesDA_ok}/${SEEDS}`);
+    check(`${tag} 표번호 위치순 전 시드`, teoOk === SEEDS, `${teoOk}/${SEEDS}`);
     // 출현 0 변형(해당 난이도 풀)
     const zero = [];
     for (const t of Object.values(TEMPLATES)) for (const v of t.variants) if (v.difficulty === difficulty && !varCnt[v.id]) zero.push(v.id);

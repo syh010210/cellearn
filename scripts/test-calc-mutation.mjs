@@ -56,14 +56,15 @@ const survivors = [];
 SAMPLES.forEach((sample, si) => {
   const combo = [si, (si + 1) % 6, (si + 2) % 6];
   const inst = buildInstance({ id: "s" + si, blocks: combo.map((i) => SAMPLES[i]) });
-  const it = inst.items[0];
+  const it = inst.items.find((x) => x._blockIndex === 0);   // 테스트 블록(입력 0), items 는 표번호 정렬
+  const gradeIt = (r0) => r0.items.find((x) => x.no === it.no);
 
   for (const acc of sample.accept || []) {
-    const r = submit(inst, { 1: { formula: acc, rel: true } }).items[0];
+    const r = gradeIt(submit(inst, { [it.no]: { formula: acc, rel: true } }));
     check(`[S${si + 1}] accept 만점: ${acc.slice(0, 40)}`, r.ok, r.ok ? "" : r.reasons.join(" / "));
   }
   for (const rej of sample.reject || []) {
-    const r = submit(inst, { 1: { formula: rej.formula, criteria: rej.criteria, rel: true } }).items[0];
+    const r = gradeIt(submit(inst, { [it.no]: { formula: rej.formula, criteria: rej.criteria, rel: true } }));
     const cats = new Set(r.details.map((d) => d.cat));
     check(`[S${si + 1}] reject 불합격+사유: ${String(rej.formula).slice(0, 34)}`, !r.ok && cats.has(rej.expectReason), `ok=${r.ok} cats=${[...cats].join(",")} 기대=${rej.expectReason}`);
   }
@@ -71,7 +72,7 @@ SAMPLES.forEach((sample, si) => {
   const byOp = {}; let mut = 0, caught = 0, survived = 0;
   for (const m of mutate(it.answer.formula, sample.functions?.required || [])) {
     byOp[m.op] = (byOp[m.op] || 0) + 1; mut++;
-    const r = submit(inst, { 1: { formula: m.formula } }).items[0];
+    const r = gradeIt(submit(inst, { [it.no]: { formula: m.formula } }));
     if (r.ok) { survived++; const rule = classifySurvivor(it.answer.formula, m.formula, it); if (!rule) survivors.push({ s: si + 1, op: m.op, name: m.name, formula: m.formula }); check(`[S${si + 1}] 생존 변형 규칙 허용: ${m.op}/${m.name}`, !!rule, `생존식=${m.formula}`); }
     else caught++;
   }

@@ -69,7 +69,7 @@ function itemFor(sampleIdx) {
   const combo = sampleIdx <= 4 ? [0, 1, 2, 3, 4] : [5, 0, 1];
   const pos = combo.indexOf(sampleIdx);
   const inst = buildInstance({ id: "x", blocks: combo.map((i) => SAMPLES[i]) });
-  return inst.items[pos];
+  return inst.items.find((x) => x._blockIndex === pos);   // items 는 표번호(위치)순 — 입력 인덱스로 찾음
 }
 console.log("\n=== 지시문 · ▶ 줄 · 기대값 (6개 샘플) ===");
 for (let i = 0; i < 6; i++) {

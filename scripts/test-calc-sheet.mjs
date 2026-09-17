@@ -12,6 +12,7 @@ import { shiftFormula } from "../src/utils/formulaUtils.js";
 import { engineGetCell } from "../src/utils/calc/cellAdapter.js";
 import { gradeCalc } from "../src/utils/calc/calcGrader.js";
 import { stripXlfn, XLFN_FUNCTIONS } from "../src/data/exam/calc/functions.js";
+import { verifyTableOrder } from "./_calcTestUtil.mjs";
 
 let pass = 0, fail = 0;
 const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; console.log(`✗ ${name}  ${extra}`); } };
@@ -28,6 +29,7 @@ for (let s = 0; s < 20; s++) {
     for (const n of [5, 3]) {
       const seed = `sheet~${s}~${diff}~${n}`;
       const inst = composeCalc(seed, { subtypes: subtypesForSeed(seed, diff, n), difficulty: diff });
+      { const teo = verifyTableOrder(inst); if (teo.length) check(`${seed} 표번호 위치순`, false, teo[0]); }
       const ws = buildCalcInstanceSheet(inst);
       // 서식 검사(쓰기 측 ws 기준 — SheetJS 재읽기는 테두리를 보존하지 않음)
       {

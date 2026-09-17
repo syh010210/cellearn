@@ -88,7 +88,7 @@ for (const V of VARIANTS) {
     const inst = buildInstance({ id: "t", blocks: [r.spec, FILLER, FILLER] });
     const r2 = planItem(V.st, V.id, V.difficulty, makeRng(seed)); // 결정성
     if (JSON.stringify(r2.spec) !== JSON.stringify(r.spec)) check(`${V.id} 결정성`, false, seed);
-    const it = inst.items[0];
+    const it = inst.items.find((x) => x._blockIndex === 0);   // 테스트 블록(입력 0) — items 는 표번호(위치)순 정렬됨
     const sc = significantCols(r.spec);
     nSum += r.spec.rows.length;
     r.spec.rows.forEach((row, i) => { const k = JSON.stringify(sc.map((c) => row[c])); (rowPos[i] = rowPos[i] || new Map()).set(k, (rowPos[i].get(k) || 0) + 1); });
@@ -104,7 +104,7 @@ for (const V of VARIANTS) {
     if (["fillCol", "fillRow", "table"].includes(r.spec.result.kind) && String(r.spec.answer).includes("$") && s === 0) {
       let instND = null; try { instND = buildInstance({ id: "t", blocks: [{ ...r.spec, answer: String(r.spec.answer).replace(/\$/g, "") }, FILLER, FILLER] }); } catch { /* 범위 이탈 예외 = 값 변화로 간주 */ }
       let changed = instND === null;
-      if (instND) { const e0 = it.expected, eN = instND.items[0].expected; for (const k of Object.keys(e0)) if (JSON.stringify(e0[k]) !== JSON.stringify(eN[k])) { changed = true; break; } }
+      if (instND) { const e0 = it.expected, eN = instND.items.find((x) => x._blockIndex === 0).expected; for (const k of Object.keys(e0)) if (JSON.stringify(e0[k]) !== JSON.stringify(eN[k])) { changed = true; break; } }
       check(`${V.id} fill 기준수식 $ 실효(제거 시 값 변화)`, changed, r.spec.answer);
     }
     if (r.spec.result.kind === "single") { const val = Object.values(it.expected)[0]; if (typeof val === "string" && val !== "") { const ri = r.spec.rows.findIndex((row) => row.some((c) => c === val)); if (ri >= 0) ansPos[ri] = (ansPos[ri] || 0) + 1; } }
@@ -125,12 +125,13 @@ for (const V of VARIANTS) {
     { const e = validateText(it, r.spec); validated++; if (e.length) check(`${V.id} 지시문 좌표 무결성`, false, `${seed} :: ${e.join(" / ")}`); }
     const gc = cellsGetCell(inst.cells);
     const cand = it.functions?.candidates || null;
-    const ref = submit(inst).items[0];
+    const gradeIt = (r0) => r0.items.find((x) => x.no === it.no);
+    const ref = gradeIt(submit(inst));
     if (!ref.ok) check(`${V.id} 기준답 만점`, false, `${seed} :: ${ref.reasons.join(" / ")}`);
-    for (const a of r.spec.accept || []) { accN++; const rr = submit(inst, { 1: { formula: a, rel: true } }).items[0]; if (rr.ok) accOk++; else check(`${V.id} accept`, false, `${seed} :: ${a} :: ${rr.reasons.join("/")}`); }
+    for (const a of r.spec.accept || []) { accN++; const rr = gradeIt(submit(inst, { [it.no]: { formula: a, rel: true } })); if (rr.ok) accOk++; else check(`${V.id} accept`, false, `${seed} :: ${a} :: ${rr.reasons.join("/")}`); }
     for (const m of mutate(it.answer.formula, r.spec.functions?.required || [])) {
       mutN++;
-      const rr = submit(inst, { 1: { formula: m.formula } }).items[0];
+      const rr = gradeIt(submit(inst, { [it.no]: { formula: m.formula } }));
       if (rr.ok) {
         // withinListSurvive: 생존자는 함수 규칙으로 못 잡힌(허용 목록 안) 경우 → 반드시 생존 규칙에 해당해야
         const rule = classifySurvivor(it.answer.formula, m.formula, it, gc);

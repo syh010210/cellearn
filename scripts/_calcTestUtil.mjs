@@ -46,6 +46,24 @@ export function submit(instance, submissions = {}) {
 
 export const norm = (f) => String(f).replace(/\s+/g, "").toUpperCase();
 
+// 공통 검증: [표N] 라벨의 위치 순서(띠 오름차순 → 같은 띠 열 오름차순)가 N 순서와 일치하고
+//   item.no = 지시문 [표N] = 라벨 셀 번호. 위반 목록 반환(빈 배열이면 정상).
+export function verifyTableOrder(inst) {
+  const errs = [];
+  const labels = [];
+  for (const [addr, c] of Object.entries(inst.cells)) { const m = /^\[표(\d+)\]$/.exec(String(c && c.v != null ? c.v : "")); if (m) { const p = parseA1(addr); labels.push({ n: +m[1], r: p.r, c: p.c }); } }
+  const sorted = [...labels].sort((a, b) => a.r - b.r || a.c - b.c);
+  sorted.forEach((L, i) => { if (L.n !== i + 1) errs.push(`라벨 위치순≠번호: 위치${i}(${L.r},${L.c})=표${L.n}`); });
+  const labelNs = new Set(labels.map((L) => L.n));
+  inst.items.forEach((it, i) => {
+    if (it.no !== i + 1) errs.push(`items 정렬≠번호: items[${i}].no=${it.no}`);
+    if (!labelNs.has(it.no)) errs.push(`item.no ${it.no} 라벨 셀 없음`);
+    if (!it.text.includes(`[표${it.no}]`)) errs.push(`지시문 [표${it.no}] 없음: "${it.text.slice(0, 12)}"`);
+  });
+  if (sorted.length !== inst.items.length) errs.push(`라벨 수(${sorted.length})≠문항 수(${inst.items.length})`);
+  return errs;
+}
+
 // 인스턴스 셀 + 조건 셀을 올린 뒤 result anchor 에 formula 를 넣어 값을 얻는다(공통 검증용).
 export function evalAt(instance, item, formula) {
   const sheet = new Sheet();

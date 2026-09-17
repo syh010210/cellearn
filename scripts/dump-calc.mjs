@@ -40,12 +40,12 @@ function gridMd(spec) {
 
 // 변형별 mutation 요약: 생성/값/함수/조건/규칙 생존. 테스트와 같은 getCell·classifySurvivor 사용.
 function mutSummary(inst) {
-  const it = inst.items[0];
+  const it = inst.items.find((x) => x._blockIndex === 0);   // items 는 표번호(위치)순 정렬
   const gc = cellsGetCell(inst.cells);
   let gen = 0, v = 0, f = 0, c = 0, ruled = 0, bad = 0;
   for (const m of mutate(it.answer.formula, it.functions?.required || [])) {
     gen++;
-    const rr = submit(inst, { 1: { formula: m.formula } }).items[0];
+    const rr = submit(inst, { [it.no]: { formula: m.formula } }).items.find((x) => x.no === it.no);
     if (rr.ok) { classifySurvivor(it.answer.formula, m.formula, it, gc) ? ruled++ : bad++; continue; }
     const cats = new Set(rr.details.map((d) => d.cat));
     if (cats.has("value") || cats.has("parse")) v++;
@@ -68,7 +68,7 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
     for (let s = 0; s < 2; s++) {
       const r = planItem(st, v.id, v.difficulty, makeRng(`${v.id}@${s}`));
       const inst = buildInstance({ id: "d", blocks: [r.spec, FILLER, FILLER] });
-      const it = inst.items[0];
+      const it = inst.items.find((x) => x._blockIndex === 0);
       out.push(`**시드 ${s}** (재시도 ${r.retries})`, "", `> ${it.text}`);
       for (const n of it.notes) out.push(`> ▶ ${n}`);
       out.push("", gridMd(r.spec), "", `- 기준 수식: \`${it.answer.formula}\``, `- 기대값: ${Object.entries(it.expected).map(([a, val]) => `${a}=${expDisp(val)}`).join(", ")}`, `- mutation: ${mutSummary(inst)}`);
@@ -85,7 +85,7 @@ for (const [st, t] of Object.entries(TEMPLATES)) {
   if (subs && !subs.includes(st)) continue;
   for (const v of t.variants) for (let s = 0; s < 2; s++) {
     const r = planItem(st, v.id, v.difficulty, makeRng(`${v.id}@${s}`));
-    const it = buildInstance({ id: "d", blocks: [r.spec, FILLER, FILLER] }).items[0];
+    const it = buildInstance({ id: "d", blocks: [r.spec, FILLER, FILLER] }).items.find((x) => x._blockIndex === 0);
     const discs = specDiscriminators(r.spec);
     const dcell = discs.length
       ? discs.map((d) => { const pos = r.spec.rows.map((row, i) => d.test(row) ? i + 3 : null).filter((x) => x != null).join(","); return d.allowFixed ? `${d.name}[${pos}] 마지막행고정(${d.reason || d.allowFixed})` : `${d.name}[${pos}]`; }).join(" · ")

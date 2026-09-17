@@ -148,7 +148,7 @@ function _fillColVec(inst, item, formula) {
 // mutants 목록의 각 수식이 결과 벡터를 바꿔야 한다(안 바꾸면 재시도). 생존 규칙 대상은 목록에서 뺀다.
 export function assertFillColClean(spec, mutants) {
   const inst = buildInstance({ id: "_chk", blocks: [spec, _FILLER, _FILLER] });
-  const item = inst.items[0];
+  const item = inst.items.find((x) => x._blockIndex === 0);   // 테스트 블록(입력 0), items 는 표번호순
   const base = JSON.stringify(_fillColVec(inst, item, item.answer.formula));
   for (const m of mutants) {
     // mutant 는 블록-상대(A1 기준) → 블록 원점으로 이동해 절대 기준식과 같은 위치에서 비교.

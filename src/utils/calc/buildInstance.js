@@ -59,6 +59,10 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
   // [표N] 의 N 은 샘플 번호가 아니라 조합 안의 문항 위치(1-based).
   const specs = blocks.map((spec, bi) => resolveBlock(spec, "표" + (bi + 1)));
   const { origins, usedRange } = layoutPage(specs.map((b) => ({ w: b.width, h: b.height })));
+  // [표N] 번호는 위치 순서(띠 오름차순 → 같은 띠 왼→오른)로 매긴다. tableNum[blockIndex] = 1-based 표 번호.
+  const posOrder = specs.map((_, bi) => bi).sort((a, b) => origins[a].r - origins[b].r || origins[a].c - origins[b].c);
+  const tableNum = new Array(specs.length);
+  posOrder.forEach((bi, rank) => (tableNum[bi] = rank + 1));
 
   const sheet = new Sheet();
   const cells = {};              // 문제 파일 상태
@@ -84,7 +88,7 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
       const addr = AA(bi, p.r, p.c);
       occupy(bi, p.r, p.c, p.role);
       if (p.f) { const f = translateFormula(p.f, OR(bi).r, OR(bi).c); cells[addr] = { f }; sheet.setCellInput(addr, f); }
-      else { const cell = {}; if (p.v !== undefined) cell.v = p.v; if (p.t) cell.t = p.t; if (p.z) cell.z = p.z; cells[addr] = cell; sheet.setCellValue(addr, p.v, dateFmt(p.z)); }
+      else { const v = p.role === "label" ? `[표${tableNum[bi]}]` : p.v; const cell = {}; if (v !== undefined) cell.v = v; if (p.t) cell.t = p.t; if (p.z) cell.z = p.z; cells[addr] = cell; sheet.setCellValue(addr, v, dateFmt(p.z)); }
     }
     for (const m of b.merges) merges.push(AR(bi, m));
     (b.spec.colWidths || []).forEach((w, c) => { colWidths[colLetters(OR(bi).c + c)] = w; });
@@ -118,7 +122,7 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
 
     // placeholder 해석: {R} {anchor} {C} {T} {RT} {base} {col:이름}
     const resolve = (s) => String(s)
-      .replace(/\{표\}/g, "표" + (bi + 1))
+      .replace(/\{표\}/g, "표" + tableNum[bi])
       .replace(/\{R\}/g, rngA1({ r1: OR(bi).r + b.result.range.r1, c1: OR(bi).c + b.result.range.c1, r2: OR(bi).r + b.result.range.r2, c2: OR(bi).c + b.result.range.c2 }))
       .replace(/\{anchor\}/g, AA(bi, b.answer.r, b.answer.c))
       .replace(/\{C\}/g, b.criteria ? AR(bi, b.criteria.range) : "")
@@ -131,7 +135,7 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
     const notes = (b.spec.notes || []).map(resolve);
 
     items.push({
-      no: bi + 1, subtype: b.spec.subtype, points: 8,
+      no: tableNum[bi], _blockIndex: bi, subtype: b.spec.subtype, points: 8,
       text, notes,
       functions: b.spec.functions,
       origin: { r: OR(bi).r, c: OR(bi).c },   // 블록 원점(절대) — 하네스가 블록-상대 accept 식을 여기로 이동
@@ -201,7 +205,8 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
   if (overflow.length) console.warn(`[calc 열너비 상한 초과] ${id}: ${overflow.join(" ")}`);
 
   const instance = { id, section: "계산", seed, difficulty, sheetName: "계산작업", cells, merges, colWidths, roles, usedRange: rngA1(usedRange), items };
-  selfVerify(instance, specs, origins, globalRoles);
+  selfVerify(instance, specs, origins, globalRoles);   // items 는 이 시점까지 블록 순서(selfVerify 가 specs[bi] 로 대응)
+  items.sort((a, b) => a.no - b.no);                    // 최종 items 는 표 번호(=위치) 순서
   return instance;
 }
 
