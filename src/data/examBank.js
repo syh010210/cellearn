@@ -1,20 +1,26 @@
 // 실전 모드 문제 뱅크 — src/data/exam/*.json (포맷: docs/EXAM_MODE_SPEC.md)
-// P1: 계산작업(함수) 문제만 실동작. 기본/분석/매크로/차트는 P2~P3에서 확장.
+// 계산작업은 JSON 뱅크가 아니라 생성기(composeExamCalc)로 즉석 출제한다(3d-3).
+import { composeExamCalc } from "../utils/calc/composeExamCalc.js";
 const modules = import.meta.glob("./exam/*.json", { eager: true });
 
 export const EXAM_PROBLEMS = Object.values(modules).map((m) => m.default).filter(Boolean);
 
-// 계산작업 함수 유형(차시 1~8)
-export const CALC_SUBTYPES = [
-  { key: "ref", label: "참조" },
-  { key: "text", label: "문자열" },
-  { key: "stat", label: "통계" },
-  { key: "lookup", label: "찾기/참조" },
-  { key: "db", label: "DB 함수" },
-  { key: "math", label: "수학" },
-  { key: "date", label: "날짜/시간" },
-  { key: "logic", label: "논리" },
-];
+// 난이도(UI basic|hard) → 생성기 난이도
+const DIFF = { basic: "기본", hard: "어려움" };
+
+// 계산작업 문제 = 인스턴스 1개(시트 "계산작업"). 화면 표시는 문항별 지시문+▶ 만, 채점·파일 생성용
+//  전체 인스턴스는 problem.instance 에 보관(스냅샷 저장 대상). 기준 수식·기대값은 화면에 넣지 않는다.
+export function composeCalcProblem(seed, { count = 5, difficulty = "basic" } = {}) {
+  const inst = composeExamCalc(seed, { count, difficulty: DIFF[difficulty] || "기본" });
+  return {
+    id: `calc-${seed}`, section: "계산", sheetName: "계산작업", title: "",
+    instance: inst,
+    items: inst.items.map((it) => ({
+      no: it.no, points: 8,
+      text: it.text + (it.notes && it.notes.length ? "\n" + it.notes.map((nt) => "▶ " + nt).join("\n") : ""),
+    })),
+  };
+}
 
 // 전체 시험지 구성(로드맵 표시용). ready=false 는 아직 준비 중(P2~P3).
 export const EXAM_SECTIONS = [
@@ -28,7 +34,6 @@ export const EXAM_SECTIONS = [
   { key: "차트", label: "차트작업 · 종류 검사", ready: true },
 ];
 
-const calcProblems = () => EXAM_PROBLEMS.filter((p) => p.section === "계산");
 const bySection = (sec) => EXAM_PROBLEMS.filter((p) => p.section === sec);
 
 // 기본작업-3 유형(택1): 조건부서식/고급필터/텍스트나누기
@@ -82,24 +87,3 @@ export function pickSection(section, sheetName) {
   return pool.length ? { ...pool[Math.floor(Math.random() * pool.length)], sheetName } : null;
 }
 
-export function calcAvailableSubtypes() {
-  const have = new Set(calcProblems().map((p) => p.subtype));
-  return CALC_SUBTYPES.filter((s) => have.has(s.key));
-}
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-// 선택 유형(빈 배열=전체)으로 계산작업 문제 count개 추출
-export function pickCalc(subtypeKeys = [], count = 5) {
-  const pool = subtypeKeys.length
-    ? calcProblems().filter((p) => subtypeKeys.includes(p.subtype))
-    : calcProblems();
-  return shuffle(pool).slice(0, count).map((p, i) => ({ ...p, sheetName: `계산${i + 1}` }));
-}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Target, CheckCircle2, Lock } from "lucide-react";
-import { CALC_SUBTYPES, EXAM_SECTIONS, calcAvailableSubtypes, pickCalc, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
+import { EXAM_SECTIONS, composeCalcProblem, BASIC3_SUBTYPES, basic3AvailableSubtypes, pickBasic3, ANALYSIS_SUBTYPES, analysisAvailableSubtypes, pickAnalysis, sectionReady, pickSection } from "../../data/examBank";
 import { assembleBasic2 } from "../../utils/basic2Assembler";
 import { scrollExamTop } from "../../utils/examScroll";
 import { userKey } from "../../lib/userScope";
@@ -9,13 +9,11 @@ import ExamPanel from "./ExamPanel";
 
 // 실전 모드 — 컴활 2급 실기 모의고사. 구성 화면(유형 선택) → 응시 화면(ExamPanel).
 export default function ExamView() {
-  const calcSubs = calcAvailableSubtypes();
   const basic3Subs = basic3AvailableSubtypes();
   const basic2Ready = sectionReady("기본2");
   const [inc2, setInc2] = useState(basic2Ready); // 기본작업-2 포함
-  const [difficulty, setDifficulty] = useState("basic"); // 기본작업-2 난이도: basic | hard
-  const [selected, setSelected] = useState([]); // 계산 유형(빈 배열=전체)
-  const [count, setCount] = useState(5);
+  const [difficulty, setDifficulty] = useState("basic"); // 난이도(기본작업-2·계산작업 공통): basic | hard
+  const [incCalc, setIncCalc] = useState(true); // 계산작업 포함 (문항 수 5 고정 — 결정 3d-3)
   const [inc3, setInc3] = useState(true); // 기본작업-3 포함
   const [sub3, setSub3] = useState("condformat"); // 기본작업-3 유형
   const analysisSubs = analysisAvailableSubtypes();
@@ -56,14 +54,12 @@ export default function ExamView() {
     return () => { cancelAnimationFrame(raf); try { if ("scrollRestoration" in window.history && prev) window.history.scrollRestoration = prev; } catch { /* 무시 */ } };
   }, []);
 
-  const toggle = (k) => setSelected((s) => (s.includes(k) ? s.filter((x) => x !== k) : [...s, k]));
-
   function compose() {
-    const s = (crypto?.randomUUID?.() || String(Date.now())).slice(0, 8); // 기본2 조립 시드
+    const s = (crypto?.randomUUID?.() || String(Date.now())).slice(0, 8); // 조립·생성 시드
     const set = [];
     if (inc2 && basic2Ready) set.push(assembleBasic2(s, { difficulty })); // 시드 고정 조립 출제(난이도별 풀)
     if (inc3) { const b3 = pickBasic3(sub3); if (b3) set.push(b3); }
-    set.push(...pickCalc(selected, count));
+    if (incCalc) set.push(composeCalcProblem(s, { count: 5, difficulty })); // 계산작업 = 생성기 인스턴스 1개 (5문항 고정)
     if (anaSel.length) set.push(...pickAnalysis(anaSel));
     if (incMacro && macroReady) { const m = pickSection("매크로", "매크로작업"); if (m) set.push(m); }
     if (incChart && chartReady) { const c = pickSection("차트", "차트작업"); if (c) set.push(c); }
@@ -140,24 +136,11 @@ export default function ExamView() {
 
           {/* 계산작업 구성 */}
           <div style={card}>
-            <div style={{ fontWeight: 700, color: UI.ink, marginBottom: 4 }}>계산작업 — 함수 유형 선택</div>
-            <div style={{ fontSize: 12.5, color: UI.mut, marginBottom: 12 }}>원하는 함수 유형만 골라 출제할 수 있어요. (선택 안 하면 전체에서 무작위)</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {CALC_SUBTYPES.map((s) => {
-                const avail = calcSubs.some((a) => a.key === s.key);
-                return (
-                  <button key={s.key} onClick={() => avail && toggle(s.key)} disabled={!avail}
-                    title={avail ? "" : "문제 준비 중"}
-                    style={{ ...chip(selected.includes(s.key)), opacity: avail ? 1 : 0.45, cursor: avail ? "pointer" : "not-allowed" }}>
-                    {s.label}{!avail && " ·준비중"}
-                  </button>
-                );
-              })}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 13, fontWeight: 700, color: UI.ink }}>문항 수</span>
-              {[3, 5].map((n) => <button key={n} onClick={() => setCount(n)} style={chip(count === n)}>{n}</button>)}
-            </div>
+            <label style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
+              <input type="checkbox" checked={incCalc} onChange={(e) => setIncCalc(e.target.checked)} />
+              <span style={{ fontWeight: 700, color: UI.ink }}>계산작업 포함</span>
+              <span style={{ fontSize: 12, color: UI.mut }}>(함수 5문항 · 40점 · 결과값+함수 실채점 · 난이도는 위 설정 적용)</span>
+            </label>
           </div>
 
           {/* 분석작업 구성 (택2) */}

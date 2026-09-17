@@ -14,6 +14,7 @@ import { gradeBasic2 } from "../src/utils/basic2Grader.js";
 import { renderEqual } from "../src/utils/numFmtRender.js";
 import { buildExamWorkbook, buildBasic2Sheet } from "../src/utils/examBuilder.js";
 import { gradeExamBuffer } from "../src/utils/examGrader.js";
+import { composeExamCalc } from "../src/utils/calc/composeExamCalc.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..");
@@ -258,10 +259,10 @@ check("생성 워크북: _meta 숨김 시트 존재", genWb.SheetNames.includes(
 const examRes = await gradeExamBuffer(readFileSync(join(DIR, "정답A.xlsx")), [PROBLEM]);
 check("gradeExamBuffer: 기본2 정답A 10/10", examRes[0]?.earned === 10 && examRes[0]?.correct === 5, `earned=${examRes[0]?.earned} correct=${examRes[0]?.correct}`);
 
-// 3) 계산작업 문제로 파일 생성이 에러 없이 되는지
-const calc = JSON.parse(readFileSync(join(ROOT, "src/data/exam/calc-ref-0001.json"), "utf8"));
+// 3) 계산작업 문제(생성기 인스턴스)로 파일 생성이 에러 없이 되는지
+const calc = { section: "계산", sheetName: "계산작업", instance: composeExamCalc("basic2~calc", { count: 3, difficulty: "기본" }) };
 let calcOk = true, calcErr = "";
-try { const cw = buildExamWorkbook([calc]); calcOk = cw.SheetNames.includes(calc.sheetName) && cw.SheetNames.includes("_meta"); }
+try { const cw = buildExamWorkbook([calc]); calcOk = cw.SheetNames.includes("계산작업") && cw.SheetNames.includes("_meta"); }
 catch (e) { calcOk = false; calcErr = String(e); }
 check("계산작업 문제로 워크북 생성 무에러", calcOk, calcErr);
 

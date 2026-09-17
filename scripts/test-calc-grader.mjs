@@ -110,5 +110,37 @@ console.log("=== dcountaFieldInvariant ===");
   check("DCOUNT 은 비허용", rn("=DCOUNT($A$2:$C$10,A2,E1:F3)", "=DCOUNT($A$2:$C$10,B2,E1:F3)", gc(filled)) === null);
 }
 
+// ───────── 빈 칸 판정 (스텁 ""·t:'z'·셀없음·수식""·값 입력) ─────────
+console.log("=== 빈 칸 판정 ===");
+{
+  const fillItem = (range, expected) => ({ no: 1, result: { kind: "fillCol", range, anchor: range.split(":")[0] }, answer: { formula: "=A3" }, functions: { required: [], candidates: null }, expected });
+  const reasonsOf = (item, map) => gradeCalcItem(item, gc(map)).reasons;
+  const it = fillItem("C3:C5", { C3: 1, C4: 2, C5: 3 });
+
+  let rs = reasonsOf(it, { C3: { t: "s", v: "" }, C4: { t: "s", v: "" }, C5: { t: "s", v: "" } });
+  check("스텁 3칸 → 빈 칸 한 줄", rs.filter((r) => r.includes("비어 있습니다")).length === 1 && rs.some((r) => r.includes("C3:C5 중 3개")), rs.join(" | "));
+  check("스텁 → 값 입력 사유 없음", !rs.some((r) => r.includes("값이 입력")), rs.join(" | "));
+
+  rs = reasonsOf(it, { C3: { t: "z" }, C5: { t: "s", v: "" } }); // C4 없음(null)
+  check("t:z·셀없음·스텁 → 3개 빈 칸", rs.some((r) => r.includes("3개 셀이 비어 있습니다")), rs.join(" | "));
+
+  rs = reasonsOf(it, { C3: { t: "n", v: 1 }, C4: { t: "n", v: 9 }, C5: { t: "n", v: 3 } });
+  check("값만 입력 → 값 입력 사유(주소)", rs.some((r) => r.includes("수식이 아니라 값이 입력") && r.includes("(C3")), rs.join(" | "));
+
+  const itEmptyIf = { no: 1, result: { kind: "fillCol", range: "C3:C4", anchor: "C3" }, answer: { formula: '=IF(1=2,1,"")' }, functions: { required: ["IF"], candidates: null }, expected: { C3: "", C4: "" } };
+  rs = reasonsOf(itEmptyIf, { C3: { t: "s", v: "", f: 'IF(1=2,1,"")' }, C4: { t: "s", v: "", f: 'IF(1=2,1,"")' } });
+  check("수식 '' 반환 + 기대 '' → 통과", rs.length === 0, rs.join(" | "));
+  const itEmpty = fillItem("C3:C4", { C3: "", C4: "" });
+  rs = reasonsOf(itEmpty, { C3: { t: "s", v: "" }, C4: { t: "s", v: "" } });
+  check("기대 '' + 수식없이 빔 → 빈 칸", rs.some((r) => r.includes("비어 있습니다")), rs.join(" | "));
+
+  const single = { no: 1, result: { kind: "single", range: "C3", anchor: "C3" }, answer: { formula: "=A3" }, functions: { required: [], candidates: null }, expected: { C3: 5 } };
+  check("단일 스텁 → [C3] 셀이 비어 있습니다", reasonsOf(single, { C3: { t: "s", v: "" } }).some((r) => r === "[C3] 셀이 비어 있습니다"));
+
+  const critIt = { no: 1, result: { kind: "single", range: "C1", anchor: "C1" }, answer: { formula: "=A1" }, functions: { required: [], candidates: null }, expected: { C1: 1 }, criteria: { range: "E1:E2", table: [["지역"], ["서울"]] } };
+  rs = gradeCalcItem(critIt, gc({ C1: { f: "A1", v: 1, t: "n" } })).reasons; // E1:E2 없음
+  check("조건 모두 빔 → 한 줄·머리글 비교 안 함", rs.filter((r) => r.includes("조건 범위 [E1:E2]가 비어 있습니다")).length === 1 && !rs.some((r) => r.includes("머리글")), rs.join(" | "));
+}
+
 console.log(`\n결과: ${pass} 통과 / ${fail} 실패`);
 if (fail) process.exit(1);

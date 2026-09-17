@@ -1,4 +1,5 @@
 import XLSX from "xlsx-js-style";
+import { buildCalcInstanceSheet } from "./calc/calcSheetBuilder.js";
 
 // 실전 모드 시험지(.xlsx) 생성. 지문은 파일에 넣지 않는다(채택한 결정 6) — 표(데이터)만 그린다.
 // section 별 시트 빌더로 분리하고, 워크북 끝에 숨김 "_meta" 시트로 attemptId 를 심는다(업로드 매칭용).
@@ -8,13 +9,6 @@ function toDate(v) {
   if (v instanceof Date) return v;
   const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(v));
   return m ? new Date(+m[1], +m[2] - 1, +m[3]) : new Date(v);
-}
-
-// 계산작업 시트: 표(2차원 배열) 그대로. 지문·서식 없음, 열 너비만.
-function buildCalcSheet(p) {
-  const ws = XLSX.utils.aoa_to_sheet(p.table);
-  ws["!cols"] = (p.table[0] || []).map(() => ({ wch: 14 }));
-  return ws;
 }
 
 // 기본작업-2 시트: table 스펙대로. 서식은 열 너비만, date 는 t:"d" + numFmt "yyyy-mm-dd",
@@ -71,9 +65,13 @@ export function buildBasic2Sheet(problem) {
   return ws;
 }
 
-function buildSheet(p, i) {
+function buildSheet(p) {
   if (p.section === "기본2") return buildBasic2Sheet(p);
-  return buildCalcSheet(p, i);
+  if (p.section === "계산" && p.instance) return buildCalcInstanceSheet(p.instance); // 생성기 인스턴스(테두리·음영·열너비)
+  // 그 외(분석·매크로·차트 등 표 데이터 문제): 표(2차원 배열)만.
+  const ws = XLSX.utils.aoa_to_sheet(p.table || [[]]);
+  ws["!cols"] = ((p.table && p.table[0]) || []).map(() => ({ wch: 14 }));
+  return ws;
 }
 
 // 문제 세트로 워크북 구성 (다운로드 없이 객체 반환 — 테스트에서도 씀).

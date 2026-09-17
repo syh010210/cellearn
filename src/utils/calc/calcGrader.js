@@ -50,16 +50,26 @@ export function gradeCalcItem(item, getCell, cells) {
   const add = (cat, text) => { reasons.push(text); details.push({ cat, text }); };
   let hint;
 
+  const single = item.result.kind === "single";
+  const isBlank = (c) => !c || (c.v === undefined || c.v === "");   // 셀 없음 · v 빈문자열 · v 없음(t:'z' 등) = 빈 칸
   const addrs = expand1D(item.result.range);
   const cellOf = {};
-  const missing = [], noFormula = [];
+  const empty = [], valueOnly = [];
   for (const a of addrs) {
     const c = getCell(a); cellOf[a] = c;
-    if (!c) missing.push(a);
-    else if (c.f === undefined) noFormula.push(a);
+    if (c && c.f !== undefined) continue;        // 수식 셀 → 값 비교 단계에서 판정
+    if (isBlank(c)) empty.push(a);               // 수식 없고 비어 있음(스텁 포함) = 빈 칸
+    else valueOnly.push(a);                       // 수식 없이 값만 입력
   }
-  for (const a of missing) add("noFormula", `[${a}] 셀이 비어 있습니다`);
-  for (const a of noFormula) add("noFormula", `[${a}] 셀에 수식이 아니라 값이 입력되어 있습니다`);
+  // 사유 묶기: 채우기는 한 줄(빈 칸은 개수만, 값 입력은 주소 최대 3), 단일은 셀별.
+  if (empty.length) {
+    if (single) empty.forEach((a) => add("noFormula", `[${a}] 셀이 비어 있습니다`));
+    else add("noFormula", `${item.result.range} 중 ${empty.length}개 셀이 비어 있습니다`);
+  }
+  if (valueOnly.length) {
+    if (single) valueOnly.forEach((a) => add("noFormula", `[${a}] 셀에 수식이 아니라 값이 입력되어 있습니다`));
+    else add("noFormula", `${item.result.range} 중 ${valueOnly.length}개 셀에 수식이 아니라 값이 입력되어 있습니다 (${valueOnly.slice(0, 3).join(", ")})`);
+  }
 
   // 2) 값 비교 (수식이 있는 셀만)
   const mism = [];
@@ -89,20 +99,26 @@ export function gradeCalcItem(item, getCell, cells) {
 
   // 4) 조건 범위
   if (item.criteria) {
-    const grid = expand2D(item.criteria.range).map((row) => row.map((a) => { const c = getCell(a); return c ? c.v : ""; }));
-    const sHead = grid[0].map(normHead);
-    const eHead = item.criteria.table[0].map(normHead);
-    const setEq = (a, b) => a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
-    const rowObjs = (head, rows) => rows.map((row) => JSON.stringify(head.map((h, i) => [normHead(h), normCond(row[i])]).sort()));
-    let critMsg = null;
-    if (!setEq(sHead, eHead)) critMsg = "머리글이 다릅니다";
-    else {
-      const sRows = rowObjs(sHead, grid.slice(1));
-      const eRows = rowObjs(eHead, item.criteria.table.slice(1));
-      if (sRows.length !== eRows.length) critMsg = "조건 행 수가 다릅니다";
-      else if ([...sRows].sort().join("~") !== [...eRows].sort().join("~")) critMsg = "조건 값이 다릅니다";
+    const cAddrs = expand2D(item.criteria.range).flat();
+    const allBlank = cAddrs.every((a) => { const c = getCell(a); return !c || c.v === undefined || c.v === ""; });
+    if (allBlank) {
+      add("criteria", `조건 범위 [${item.criteria.range}]가 비어 있습니다`);   // 모두 빈 칸 → 머리글 비교 안 함
+    } else {
+      const grid = expand2D(item.criteria.range).map((row) => row.map((a) => { const c = getCell(a); return c ? c.v : ""; }));
+      const sHead = grid[0].map(normHead);
+      const eHead = item.criteria.table[0].map(normHead);
+      const setEq = (a, b) => a.length === b.length && [...a].sort().join("|") === [...b].sort().join("|");
+      const rowObjs = (head, rows) => rows.map((row) => JSON.stringify(head.map((h, i) => [normHead(h), normCond(row[i])]).sort()));
+      let critMsg = null;
+      if (!setEq(sHead, eHead)) critMsg = "머리글이 다릅니다";
+      else {
+        const sRows = rowObjs(sHead, grid.slice(1));
+        const eRows = rowObjs(eHead, item.criteria.table.slice(1));
+        if (sRows.length !== eRows.length) critMsg = "조건 행 수가 다릅니다";
+        else if ([...sRows].sort().join("~") !== [...eRows].sort().join("~")) critMsg = "조건 값이 다릅니다";
+      }
+      if (critMsg) add("criteria", `조건 범위 [${item.criteria.range}]의 조건이 다릅니다 — ${critMsg}`);
     }
-    if (critMsg) add("criteria", `조건 범위 [${item.criteria.range}]의 조건이 다릅니다 — ${critMsg}`);
   }
 
   // 5) hint (값이 틀렸을 때만; 채점 무관)

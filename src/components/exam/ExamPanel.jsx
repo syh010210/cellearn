@@ -294,6 +294,12 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
               {res && !ok && graded?.reasons?.map((rs, i) => (
                 <div key={i} style={{ fontSize: 12, color: UI.wrong, marginLeft: 20, marginTop: 2, lineHeight: 1.55 }}>{rs}</div>
               ))}
+              {res && !ok && graded?.hint && (
+                <div style={{ fontSize: 12, color: UI.mut, marginLeft: 20, marginTop: 2, lineHeight: 1.55 }}>힌트: {graded.hint}</div>
+              )}
+              {res && graded?.warnings?.map((w, i) => (
+                <div key={`w${i}`} style={{ fontSize: 11.5, color: UI.faint, marginLeft: 20, marginTop: 2, lineHeight: 1.5 }}>{w}</div>
+              ))}
             </div>
           );
         }) : (

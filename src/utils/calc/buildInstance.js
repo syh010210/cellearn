@@ -58,7 +58,8 @@ function expandA1(range) {
 export function buildInstance({ id, seed = "sample", difficulty = "상", blocks }) {
   // [표N] 의 N 은 샘플 번호가 아니라 조합 안의 문항 위치(1-based).
   const specs = blocks.map((spec, bi) => resolveBlock(spec, "표" + (bi + 1)));
-  const { origins, usedRange } = layoutPage(specs.map((b) => ({ w: b.width, h: b.height })));
+  // attach: 오른쪽 부착물(참조표·결과표·조건 범위) 있는 블록 — 레이아웃 동점 규칙(마지막 자리 우선)용 메타.
+  const { origins, usedRange } = layoutPage(specs.map((b) => ({ w: b.width, h: b.height, attach: !!(b.criteria || b.refTableRange || b.resultTableRange) })));
   // [표N] 번호는 위치 순서(띠 오름차순 → 같은 띠 왼→오른)로 매긴다. tableNum[blockIndex] = 1-based 표 번호.
   const posOrder = specs.map((_, bi) => bi).sort((a, b) => origins[a].r - origins[b].r || origins[a].c - origins[b].c);
   const tableNum = new Array(specs.length);

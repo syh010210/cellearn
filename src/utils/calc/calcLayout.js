@@ -69,11 +69,19 @@ export function layoutPage(sizes) {
   const n = sizes.length;
   if (n !== 3 && n !== 5) throw new Error(`블록 수는 3 또는 5여야 합니다 (받음: ${n})`);
   const positions = slotPositions(n);
-  let best = null;
+  const attachCount = sizes.filter((s) => s.attach).length;
+  const attachIdx = sizes.findIndex((s) => s.attach);
+  let best = null, bestAtt = null;   // bestAtt: 부착 블록이 마지막(짝 없는) 자리인 최소비용 배정
   for (const assign of permutations(sizes.map((_, i) => i))) {
     const cand = placeAssignment(sizes, positions, assign);
     if (!best || cand.cost < best.cost) best = cand;
+    // 동점 규칙 후보: 부착 블록이 1개일 때, 그 블록이 마지막 슬롯(assign[n-1])이고 짝 줄 빈 열 ≤ 2 인 배정.
+    if (attachCount === 1 && assign[n - 1] === attachIdx && (cand.gaps.length === 0 || Math.max(...cand.gaps) <= 2)) {
+      if (!bestAtt || cand.cost < bestAtt.cost) bestAtt = cand;
+    }
   }
-  if (best.maxCol > 19) throw new Error(`20열(T) 초과: 최적 배정에서도 최대 열 index ${best.maxCol}`);
-  return { origins: best.origins, usedRange: { r1: 0, c1: 0, r2: best.maxRow, c2: best.maxCol }, cols: best.maxCol + 1, rows: best.maxRow + 1, cost: best.cost, gaps: best.gaps };
+  // 부착 블록 1개: 비용 차이 ≤ 2 이면 마지막 자리 배정을 우선(결정적). 그 외/2개 이상은 현행 최소비용.
+  const chosen = (attachCount === 1 && bestAtt && bestAtt.cost <= best.cost + 2) ? bestAtt : best;
+  if (chosen.maxCol > 19) throw new Error(`20열(T) 초과: 최적 배정에서도 최대 열 index ${chosen.maxCol}`);
+  return { origins: chosen.origins, usedRange: { r1: 0, c1: 0, r2: chosen.maxRow, c2: chosen.maxCol }, cols: chosen.maxCol + 1, rows: chosen.maxRow + 1, cost: chosen.cost, gaps: chosen.gaps };
 }

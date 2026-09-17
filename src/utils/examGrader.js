@@ -2,6 +2,8 @@ import XLSX from "xlsx-js-style";
 import { loadXlsxZip, getConditionalFormats, getChartTypes, hasMacro, normFormula } from "./xlsxInspect.js";
 import { parseWorkbookStyles } from "./xlsxStyles.js";
 import { gradeBasic2 } from "./basic2Grader.js";
+import { gradeCalc } from "./calc/calcGrader.js";
+import { sheetjsGetCell } from "./calc/sheetjsGetCell.js";
 
 // 실전 모드 채점 — 작업(problem)별로 실채점 디스패치.
 //  · 계산(answers)            : 정답 셀 수식 문자열 정확 일치
@@ -17,14 +19,16 @@ const valEq = (a, b) => {
   return String(a).trim() === String(b).trim();
 };
 
-function gradeCalc(wb, p) {
+// 계산작업: 생성기 인스턴스(items) 를 워크북 시트로 실채점(결과값 + 함수 목록). 워크북은 한 번만 읽어 공유.
+function gradeCalcInstance(wb, p) {
+  const inst = p.instance;
   const ws = wb.Sheets[p.sheetName];
-  return (p.answers || []).map((ans) => {
-    if (!ws) return { ...ans, status: "시트없음", studentFormula: "-" };
-    const cell = ws[ans.cell];
-    const studentFormula = cell?.f ? `=${cell.f}` : cell?.v !== undefined ? String(cell.v) : "";
-    return { ...ans, status: norm(studentFormula) === norm(ans.formula) ? "correct" : "wrong", studentFormula };
-  });
+  if (!ws) {
+    const items = inst.items.map((it) => ({ no: it.no, points: 8, ok: false, earned: 0, reasons: ["계산작업 시트를 찾을 수 없습니다"], warnings: [] }));
+    return { items, earned: 0, total: items.length * 8, sheetFound: false };
+  }
+  const r = gradeCalc(inst, sheetjsGetCell(ws));
+  return { items: r.items, earned: r.earned, total: r.total, sheetFound: true };
 }
 
 function gradeValues(wb, p) {
@@ -90,10 +94,28 @@ export async function gradeExamBuffer(buf, problems) {
       continue;
     }
 
+    // ── 계산작업: 생성기 인스턴스면 실채점, 옛 형식(instance 없음)은 안내만(점수 미포함).
+    if (p.section === "계산") {
+      if (p.instance && p.instance.items) {
+        const g = gradeCalcInstance(wb, p);
+        results.push({
+          id: p.id, title: p.title, sheetName: p.sheetName, section: p.section,
+          items: g.items, correct: g.items.filter((it) => it.ok).length, total: g.items.length,
+          earned: g.earned, totalPoints: g.total, sheetFound: g.sheetFound,
+        });
+      } else {
+        results.push({
+          id: p.id, title: p.title, sheetName: p.sheetName, section: p.section,
+          items: [{ no: 1, points: 0, ok: false, earned: 0, reasons: ["이전 형식 문제라 채점할 수 없습니다. 새로 시험을 만들어 주세요."], warnings: [] }],
+          correct: 0, total: 1, earned: 0, totalPoints: 0, sheetFound: false,
+        });
+      }
+      continue;
+    }
+
     let items;
-    const kind = p.answers ? "formula" : p.expect?.kind;
-    if (kind === "formula") items = gradeCalc(wb, p);
-    else if (kind === "condformat") items = await gradeCondFormat(zip, p);
+    const kind = p.expect?.kind;
+    if (kind === "condformat") items = await gradeCondFormat(zip, p);
     else if (kind === "values") items = gradeValues(wb, p);
     else if (kind === "chart") items = await gradeChart(zip, p);
     else if (kind === "macro") items = gradeMacro(zip, p);
