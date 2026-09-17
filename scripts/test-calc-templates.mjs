@@ -78,6 +78,43 @@ const check = (name, cond, extra = "") => { if (cond) pass++; else { fail++; con
   for (const [vid, ids] of Object.entries(idsByVariant)) check(`${vid} 서로 다른 주제 묶음 ≥4`, ids.size >= 4, `${ids.size}종: ${[...ids].join(",")}`);
 }
 
+// ── D함수 조건 형태 규칙 (규칙1 표 칸 / 규칙2·3 밖) + DCOUNTA 빈 칸·필드 불변 ──
+{
+  const DFN_ANS = /D(?:COUNTA|COUNT|SUM|AVERAGE|MAX|MIN|GET|PRODUCT|VARP|VAR|STDEVP|STDEV)\s*\(/;
+  // D함수 3번째 인수(조건 범위) 추출: D…(db, field, crit)
+  const critRe = /D(?:COUNTA|COUNT|SUM|AVERAGE|MAX|MIN|GET|PRODUCT|VARP|VAR|STDEVP|STDEV)\(\s*[^,]+,\s*(?:"[^"]*"|\d+|\$?[A-Z]+\$?\d+)\s*,\s*(\$?[A-Z]+)(\d+):(\$?[A-Z]+)(\d+)\s*\)/;
+  // survivorRules.dExtremeRow 가 criteria null 이면 시트에서 조건값을 읽도록 확장됨(승인 완료) → 예외 없음.
+  const CRIT_RULE1_EXEMPT = new Set();
+  for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) {
+    for (let s = 0; s < 200; s++) {
+      let spec; try { spec = planItem(st, v.id, v.difficulty, makeRng(`${v.id}#dcond${s}`)).spec; } catch { continue; }
+      const dfnInAns = DFN_ANS.test(spec.answer);
+      if (spec.criteria) {
+        // (규칙1 위반) 조건이 1개 열·1개 행·값 그대로 비교(연산자·와일드카드 없음)이면 표 칸이어야 한다.
+        const cHead = spec.criteria.headers, condRows = spec.criteria.rows;
+        const val = condRows.length === 1 ? String(condRows[0][0]) : "";
+        const exact = cHead.length === 1 && condRows.length === 1 && !/[<>=*?]/.test(val);
+        if (exact && !CRIT_RULE1_EXEMPT.has(v.id)) check(`${v.id} 규칙1: 단일 정확 조건은 표 칸(밖 금지)`, false, `${v.id}#${s} criteria="${val}"`);
+      } else if (dfnInAns) {
+        // (규칙1) criteria null D함수: 조건 범위 = 머리글 행(2)+첫 데이터 행(3), 그 칸 값 = 지시문 조건 값
+        const m = critRe.exec(spec.answer);
+        if (!m) { check(`${v.id} 규칙1: 조건 범위 파싱`, false, spec.answer); continue; }
+        const col = m[1].replace("$", ""), r1 = +m[2], col2 = m[3].replace("$", ""), r2 = +m[4];
+        check(`${v.id} 규칙1: 조건 범위=머리글+첫 데이터 행`, col === col2 && r1 === 2 && r2 === 3, `${v.id}#${s} ${m[0]}`);
+        const ci = lettersCol(col), cv = spec.rows[0] ? spec.rows[0][ci] : undefined;
+        check(`${v.id} 규칙1: 첫 데이터 행=조건 값(지시문 일치)`, ci >= 0 && ci < spec.headers.length && cv != null && cv !== "" && spec.text.includes(`"${cv}"`), `${v.id}#${s} [${col}3]=${cv}`);
+        // "조건은 [{C}] 영역에" 안내·<조건> 밖 조건 칸이 없어야 한다.
+        check(`${v.id} 규칙1: 밖 조건 안내 없음`, !(spec.notes || []).some((n) => n.includes("{C}")), `${v.id}#${s}`);
+      }
+      // (DCOUNTA) 데이터 영역 빈 칸 0
+      if (/DCOUNTA\s*\(/.test(spec.answer)) {
+        let empties = 0; spec.rows.forEach((row) => row.forEach((c) => { if (c === null || c === undefined || c === "") empties++; }));
+        if (empties) check(`${v.id} DCOUNTA 데이터 빈 칸 0`, false, `${v.id}#${s} 빈칸 ${empties}`);
+      }
+    }
+  }
+}
+
 const VARIANTS = [];
 for (const [st, t] of Object.entries(TEMPLATES)) for (const v of t.variants) VARIANTS.push({ st, id: v.id, difficulty: v.difficulty });
 

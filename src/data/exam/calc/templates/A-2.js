@@ -155,19 +155,18 @@ function daverageDiff(rng) {
   if (!differ(davg, avgAll)) throw new Error("조건축소 무영향");
 
   const g = geom(headers, n);
-  const db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critRange(1), valRel = g.colRel("국어");
+  const db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critInTable("학교"), critA = g.critInTableAbs("학교"), valRel = g.colRel("국어");
   return {
     subtype: "A-2", colWidths: [8, 8, 8], headers, rows,
     result: { kind: "single", label: `${school} 국어 평균차` },
-    discriminators: [{ name: `학교=${school}(조건)`, test: (r) => r[1] === school, min: 3, max: n, allowFixed: "lastRow", reason: "조건 대상 학교 행을 첫·중간·마지막에 배치(DAVERAGE 범위 축소·조건 판별)" }],
+    discriminators: [{ name: `학교=${school}(조건)`, test: (r) => r[1] === school, min: 3, max: n, allowFixed: "firstRow", reason: "표 칸 조건 범위: 첫 데이터 행=조건 값, 마지막 행도 조건(DAVERAGE 범위 축소 판별)" }],
     answer: `=DAVERAGE(${db},"국어",${crit})-AVERAGE(${valRel})`,
-    criteria: { headers: ["학교"], rows: [[school]], rowOffset: 0 },
     functions: { required: ["DAVERAGE", "AVERAGE"], candidates: null },
     text: `[{표}]의 학교[{col:학교}]가 "${school}"인 학생의 국어[{col:국어}] 평균에서 전체 국어[{col:국어}] 평균을 뺀 값을 [{R}] 셀에 계산하시오. (8점)`,
-    notes: ["조건은 [{C}] 영역에 알맞게 입력", "DAVERAGE, AVERAGE 함수 사용"],
+    notes: ["DAVERAGE, AVERAGE 함수 사용"],
     accept: [
-      `=DAVERAGE(${dbA},${g.header("국어")},${crit})-AVERAGE(${valRel})`, // 필드=머리글
-      `=DAVERAGE(${dbA},3,${crit})-AVERAGE(${valRel})`,                   // 필드=번호
+      `=DAVERAGE(${dbA},${g.header("국어")},${critA})-AVERAGE(${valRel})`, // 필드=머리글
+      `=DAVERAGE(${dbA},3,${critA})-AVERAGE(${valRel})`,                   // 필드=번호
     ],
   };
 }

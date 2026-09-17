@@ -110,6 +110,31 @@ console.log("=== dcountaFieldInvariant ===");
   check("DCOUNT 은 비허용", rn("=DCOUNT($A$2:$C$10,A2,E1:F3)", "=DCOUNT($A$2:$C$10,B2,E1:F3)", gc(filled)) === null);
 }
 
+// ───────── extremeLookupShrink: VLOOKUP(DMAX) 표 칸 조건(criteria null) 시트에서 조건값 읽기 ─────────
+console.log("=== extremeLookupShrink (DMAX 표 칸 조건) ===");
+{
+  const mkSheet = (rows) => { const m = { A2: { v: "분류", t: "s" }, B2: { v: "브랜드", t: "s" }, C2: { v: "판매실적", t: "s" }, D2: { v: "제품명", t: "s" } };
+    rows.forEach((r, i) => { const R = 3 + i; m["A" + R] = { v: r.cat, t: "s" }; m["B" + R] = { v: "B" + R, t: "s" }; m["C" + R] = { v: r.v, t: "n" }; m["D" + R] = { v: "P" + R, t: "s" }; }); return m; };
+  // 대상(낚시용품) 최대가 마지막 데이터 행(R10)이 아님(R5=500), 전체 최대 900은 비대상(R4)
+  const notLast = mkSheet([{ cat: "낚시용품", v: 300 }, { cat: "등산용품", v: 900 }, { cat: "낚시용품", v: 500 }, { cat: "캠핑용품", v: 400 }, { cat: "낚시용품", v: 200 }, { cat: "수영용품", v: 350 }, { cat: "등산용품", v: 450 }, { cat: "캠핑용품", v: 250 }]);
+  // 대상 최대가 마지막 데이터 행(R10=500)
+  const atLast = mkSheet([{ cat: "낚시용품", v: 300 }, { cat: "등산용품", v: 900 }, { cat: "낚시용품", v: 200 }, { cat: "캠핑용품", v: 400 }, { cat: "수영용품", v: 350 }, { cat: "수영용품", v: 250 }, { cat: "등산용품", v: 450 }, { cat: "낚시용품", v: 500 }]);
+  const base = "=VLOOKUP(DMAX($A$2:$D$10,3,$A$2:$A$3),$C$3:$D$10,2,0)";
+  const mutDb = "=VLOOKUP(DMAX($A$2:$D$9,3,$A$2:$A$3),$C$3:$D$10,2,0)";        // db 끝-1 축소
+  const mutLook = "=VLOOKUP(DMAX($A$2:$D$10,3,$A$2:$A$3),$C$3:$D$9,2,0)";      // lookup 끝-1 축소
+  const itNull = { result: { kind: "single" }, functions: { required: ["VLOOKUP", "DMAX"] } };            // criteria 없음(표 칸)
+  const itCrit = { ...itNull, criteria: { range: "F2:F3", table: [["분류"], ["낚시용품"]] } };            // 밖 조건(기존)
+  const rn2 = (b, m, g, it) => { const r = classifySurvivor(b, m, it, g); return r && r.name; };
+  // criteria null + 표 칸 조건 → 허용 (대상 최대가 마지막 아님)
+  check("표 칸(criteria null): db 끝-1 축소 → 허용", rn2(base, mutDb, gc(notLast), itNull) === "extremeLookupShrink");
+  check("표 칸(criteria null): lookup 끝-1 축소 → 허용", rn2(base, mutLook, gc(notLast), itNull) === "extremeLookupShrink");
+  // 대상 최대가 마지막 → 비허용
+  check("표 칸(criteria null): 대상 최대=마지막 행 → 비허용", rn2(base, mutDb, gc(atLast), itNull) === null);
+  // criteria 있는 기존 사례 → 기존과 동일(허용/비허용)
+  check("밖 조건(criteria 있음): 대상 최대 아님 → 허용(기존 유지)", rn2(base, mutDb, gc(notLast), itCrit) === "extremeLookupShrink");
+  check("밖 조건(criteria 있음): 대상 최대=마지막 → 비허용(기존 유지)", rn2(base, mutDb, gc(atLast), itCrit) === null);
+}
+
 // ───────── 빈 칸 판정 (스텁 ""·t:'z'·셀없음·수식""·값 입력) ─────────
 console.log("=== 빈 칸 판정 ===");
 {

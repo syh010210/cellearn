@@ -23,6 +23,9 @@ export function geom(headers, nData) {
     single: () => COL(nCols - 1) + aggR,
     // 조건 범위: 1열 · condRows 조건 행. "<조건>" 캡션이 1행을 차지하므로 머리글은 2행부터. E2:E(2+condRows)
     critRange: (condRows = 1, cols = 1) => `${COL(attCol0)}2:${COL(attCol0 + cols - 1)}${2 + condRows}`,
+    // 표 칸 조건 범위(규칙 1): 조건 열의 머리글 + 첫 데이터 행. 첫 데이터 행이 조건 값이어야 한다.
+    critInTable: (name) => `${L(name)}${hdr}:${L(name)}${dr1}`,
+    critInTableAbs: (name) => `$${L(name)}$${hdr}:$${L(name)}$${dr1}`,
     // 참조표 {T}: 머리글+데이터(이름 행 제외, 라벨 열 제외). hasName·데이터행수·너비·hasLabels.
     refRangeAbs: (hasName, nRefRows, width, hasLabels = false) => { const top = hasName ? 1 : 0; const r1 = top + 1, r2 = top + 1 + nRefRows; const c0 = attCol0 + (hasLabels ? 1 : 0); return `$${COL(c0)}$${r1}:$${COL(c0 + width - 1)}$${r2}`; },
   };

@@ -34,19 +34,18 @@ function a6DsumRoundup(rng) {
   const exIn = Math.floor(dsum / 1000) * 1000 + (100 + rng.int(899));
   const exOut = Math.ceil(exIn / 1000) * 1000;
   const exNote = `백의 자리에서 올림하여 천의 자리까지 표시 [표시 예 : ${exIn.toLocaleString("en-US")} → ${exOut.toLocaleString("en-US")}]`;
-  const g = geom(headers, N), dbA = g.dbAllAbs(), db = g.dbAll(), crit = g.critRange(1);
+  const g = geom(headers, N), dbA = g.dbAllAbs(), db = g.dbAll(), crit = g.critInTable("지점"), critA = g.critInTableAbs("지점");
   return {
     subtype: "A-6", colWidths: [8, 8, 10], headers, rows, colZ: { 2: "#,##0" },
     result: { kind: "single", label: `${region} 매출액 합계` },
-    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "lastRow", reason: "조건 지점을 첫·중간·마지막에 배치(DSUM 범위 축소·조건 판별)" }],
+    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "firstRow", reason: "표 칸 조건 범위: 첫 데이터 행=조건 값, 마지막 행도 조건(DSUM 범위 축소 판별)" }],
     answer: `=ROUNDUP(DSUM(${db},"매출액",${crit}),-3)`,
-    criteria: { headers: ["지점"], rows: [[region]], rowOffset: 0 },
     functions: { required: ["DSUM"], candidates: ["ROUND", "ROUNDUP", "ROUNDDOWN"] },
     text: `[{표}]에서 지점[{col:지점}]이 "${region}"인 매출액[{col:매출액}]의 합계를 [{R}] 셀에 계산하시오. (8점)`,
-    notes: [exNote, "조건은 [{C}] 영역에 알맞게 입력", "DSUM, ROUND, ROUNDUP, ROUNDDOWN 함수 중 알맞은 함수들을 선택하여 사용"],
+    notes: [exNote, "DSUM, ROUND, ROUNDUP, ROUNDDOWN 함수 중 알맞은 함수들을 선택하여 사용"],
     accept: [
-      `=ROUNDUP(DSUM(${dbA},${g.header("매출액")},${crit}),-3)`,   // 필드=머리글 셀
-      `=ROUNDUP(DSUM(${dbA},3,${crit}),-3)`,                       // 필드=열 번호
+      `=ROUNDUP(DSUM(${dbA},${g.header("매출액")},${critA}),-3)`,   // 필드=머리글 셀
+      `=ROUNDUP(DSUM(${dbA},3,${critA}),-3)`,                       // 필드=열 번호
       `=ROUNDUP(DSUM(${db},"매출액",${crit}),-3)`,                 // 표 범위 $ 없음
     ],
   };
@@ -66,17 +65,16 @@ function a6DsumBasic(rng) {
   if (all === dsum) throw new Error("조건 없는 합과 같음");         // 비매칭 존재 보장(조건 유효)
   const names = rng.sample(NAMES, N);
   const rows = jijeom.map((j, i) => [j, names[i], 매출[i]]);
-  const g = geom(headers, N), db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critRange(1);
+  const g = geom(headers, N), db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critInTable("지점"), critA = g.critInTableAbs("지점");
   return {
     subtype: "A-6", colWidths: [8, 8, 10], headers, rows, colZ: { 2: "#,##0" },
     result: { kind: "single", label: `${region} 매출액 합계`, z: "#,##0" },
-    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "lastRow", reason: "조건 지점을 첫·중간·마지막에 배치(DSUM 범위 축소·조건 판별)" }],
+    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "firstRow", reason: "표 칸 조건 범위: 첫 데이터 행=조건 값, 마지막 행도 조건(DSUM 범위 축소 판별)" }],
     answer: `=DSUM(${db},"매출액",${crit})`,
-    criteria: { headers: ["지점"], rows: [[region]], rowOffset: 0 },
     functions: { required: ["DSUM"], candidates: null },
     text: `[{표}]에서 지점[{col:지점}]이 "${region}"인 매출액[{col:매출액}]의 합계를 [{R}] 셀에 계산하시오. (8점)`,
-    notes: ["조건은 [{C}] 영역에 알맞게 입력", "DSUM 함수 사용"],
-    accept: [`=DSUM(${dbA},"매출액",${crit})`, `=DSUM(${dbA},${g.header("매출액")},${crit})`, `=DSUM(${dbA},3,${crit})`],
+    notes: ["DSUM 함수 사용"],
+    accept: [`=DSUM(${dbA},"매출액",${critA})`, `=DSUM(${dbA},${g.header("매출액")},${critA})`, `=DSUM(${dbA},3,${critA})`, `=DSUM(${db},"매출액",${crit})`],
   };
 }
 

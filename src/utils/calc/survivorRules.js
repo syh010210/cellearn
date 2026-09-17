@@ -195,13 +195,24 @@ function extremeRow(rangeStr, isMax, getCell) {
   for (let row = r.r1; row <= r.r2; row++) { const cell = getCell(colStr(r.c1) + row); const v = cell ? cell.v : undefined; if (typeof v !== "number") continue; if (best === null || (isMax ? v > best : v < best)) { best = v; bestRow = row; } }
   return bestRow < 0 ? null : { row: bestRow, last: r.r2 };
 }
-// DMAX/DMIN(db, field, crit) 의 극값 행. 조건값은 item.criteria(문제 파일엔 조건 셀이 비어 있으므로)에서 읽는다.
-// 정확 일치 조건만 판정(연산자·와일드카드는 null → 미적용).
-function dExtremeRow(db, field, item, isMax, getCell) {
+// DMAX/DMIN(db, field, crit) 의 극값 행. 조건값은 item.criteria(밖 조건 — 문제 파일엔 조건 셀이 비어 있음)에서,
+// item.criteria 가 null(표 칸 조건)이면 기준 수식의 조건 범위 주소(머리글 셀 + 그 아래 값)로 시트에서 읽는다.
+// 정확 일치 조건만 판정(연산자·와일드카드는 null → 미적용). 판정 내용(극값 행이 마지막이 아니면 끝-1 축소 동치)은 동일.
+function dExtremeRow(db, field, critRange, item, isMax, getCell) {
   const d = colRangeM(db); if (!d) return null;
-  const table = item?.criteria?.table; if (!table || table.length < 2) return null;
-  const critHdr = String(table[0][0]), cvRaw = String(table[1][0]);
-  if (/[<>=*?]/.test(cvRaw) || table[0].length !== 1) return null;   // 단일 정확 일치 조건만
+  let critHdr, cvRaw;
+  const table = item?.criteria?.table;
+  if (table) {
+    if (table.length < 2 || table[0].length !== 1) return null;    // 밖 조건: 단일 열만
+    critHdr = String(table[0][0]); cvRaw = String(table[1][0]);
+  } else if (item == null || item.criteria == null) {
+    const cr = colRangeM(critRange); if (!cr) return null;         // 표 칸 조건: 1열 · 머리글+값 1칸
+    if (cr.c1 !== cr.c2 || cr.r2 - cr.r1 !== 1) return null;
+    const hc = getCell(colStr(cr.c1) + cr.r1), vc = getCell(colStr(cr.c1) + cr.r2);
+    if (!hc || !vc) return null;
+    critHdr = String(hc.v); cvRaw = String(vc.v);
+  } else return null;
+  if (/[<>=*?]/.test(cvRaw)) return null;   // 단일 정확 일치 조건만
   // field → 열 인덱스
   let fcol = null; const fm = /^\$?([A-Za-z]{1,3})\$?(\d+)$/.exec(field.trim());
   if (fm) fcol = colNum(fm[1]);
@@ -225,8 +236,8 @@ export function extremeLookupShrink(base, mut, item, getCell) {
   if (shrunk === null) return false;
   const im = /INDEX\(\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*MATCH\(\s*(MAX|MIN)\(\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*\)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*(?:0|FALSE)\s*\)/i.exec(base);
   if (im) { const e = extremeRow(im[2], im[1].toUpperCase() === "MAX", getCell); return !!(e && e.row !== e.last); }
-  const vm = /VLOOKUP\(\s*(DMAX|DMIN)\(\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*,\s*("[^"]*"|\$?[A-Za-z]+\$?\d+|\d+)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*\)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*\d+\s*,\s*(?:0|FALSE)\s*\)/i.exec(base);
-  if (vm) { const e = dExtremeRow(vm[2], vm[3], item, vm[1].toUpperCase() === "DMAX", getCell); return !!(e && e.row !== e.last); }
+  const vm = /VLOOKUP\(\s*(DMAX|DMIN)\(\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*,\s*("[^"]*"|\$?[A-Za-z]+\$?\d+|\d+)\s*,\s*(\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+)\s*\)\s*,\s*\$?[A-Za-z]+\$?\d+:\$?[A-Za-z]+\$?\d+\s*,\s*\d+\s*,\s*(?:0|FALSE)\s*\)/i.exec(base);
+  if (vm) { const e = dExtremeRow(vm[2], vm[3], vm[4], item, vm[1].toUpperCase() === "DMAX", getCell); return !!(e && e.row !== e.last); }
   return false;
 }
 

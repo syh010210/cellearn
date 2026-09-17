@@ -108,7 +108,14 @@ function a1DcountaOr(rng) {
     functions: { required: ["DCOUNTA"], candidates: null },
     text: `[{표}]에서 성별[{col:성별}]이 "${gv}"이거나 학과[{col:학과}]가 "${mv}"인 인원 수를 [{R}] 셀에 계산하시오. (8점)`,
     notes: [`계산된 인원 수 뒤에 "명"을 포함하여 표시 [표시 예 : ${exN}명]`, "조건은 [{C}] 영역에 알맞게 입력", "DCOUNTA 함수와 & 연산자 사용"],
-    accept: [`=DCOUNTA(${g.dbAllAbs()},1,${crit})&"명"`, `=DCOUNTA(${g.dbAllAbs()},${g.header("성별")},${crit})&"명"`],
+    accept: [
+      `=DCOUNTA(${g.dbAllAbs()},1,${crit})&"명"`,                     // 필드=열 번호
+      `=DCOUNTA(${g.dbAllAbs()},2,${crit})&"명"`,
+      `=DCOUNTA(${g.dbAllAbs()},3,${crit})&"명"`,
+      `=DCOUNTA(${g.dbAllAbs()},${g.header("성별")},${crit})&"명"`,   // 필드=머리글 셀
+      `=DCOUNTA(${g.dbAllAbs()},"성명",${crit})&"명"`,                // 필드=머리글 문자열
+      `=DCOUNTA(${g.dbAllAbs()},"학과",${crit})&"명"`,
+    ],
   };
 }
 
@@ -161,17 +168,16 @@ function a1DcountaSingle(rng) {
   const 실적 = distinctInts(rng, N, 20, 99);
   const rows = seqD.map((d, i) => [names[i], d, 실적[i]]);
   let exN; do { exN = 2 + rng.int(N - 2); } while (exN === cnt);
-  const g = geom(headers, N), crit = g.critRange(1), fld = g.header("사원명");
+  const g = geom(headers, N), crit = g.critInTable("부서"), critA = g.critInTableAbs("부서"), fld = g.header("사원명");
   return {
     subtype: "A-1", colWidths: [8, 8, 6], headers, rows, verbException: "계산",
     result: { kind: "single", label: `${dept} 인원 수` },
-    discriminators: [{ name: `부서=${dept}`, test: (r) => r[1] === dept, min: 3, max: N, allowFixed: "lastRow", reason: "조건 부서를 첫·중간·마지막에 배치(DCOUNTA 범위 축소·조건 판별)" }],
+    discriminators: [{ name: `부서=${dept}`, test: (r) => r[1] === dept, min: 3, max: N, allowFixed: "firstRow", reason: "표 칸 조건 범위: 첫 데이터 행=조건 값, 마지막 행도 조건(DCOUNTA 범위 축소 판별)" }],
     answer: `=DCOUNTA(${g.dbAll()},${fld},${crit})&"명"`,
-    criteria: { headers: ["부서"], rows: [[dept]], rowOffset: 0 },
     functions: { required: ["DCOUNTA"], candidates: null },
     text: `[{표}]에서 부서[{col:부서}]가 "${dept}"인 인원 수를 [{R}] 셀에 계산하시오. (8점)`,
-    notes: [`계산된 인원 수 뒤에 "명"을 포함하여 표시 [표시 예 : ${exN}명]`, "조건은 [{C}] 영역에 알맞게 입력", "DCOUNTA 함수와 & 연산자 사용"],
-    accept: [`=DCOUNTA(${g.dbAllAbs()},1,${crit})&"명"`, `=DCOUNTA(${g.dbAllAbs()},"사원명",${crit})&"명"`],
+    notes: [`계산된 인원 수 뒤에 "명"을 포함하여 표시 [표시 예 : ${exN}명]`, "DCOUNTA 함수와 & 연산자 사용"],
+    accept: [`=DCOUNTA(${g.dbAllAbs()},1,${critA})&"명"`, `=DCOUNTA(${g.dbAllAbs()},"사원명",${critA})&"명"`, `=DCOUNTA(${g.dbAllAbs()},2,${critA})&"명"`, `=DCOUNTA(${g.dbAllAbs()},3,${critA})&"명"`],
   };
 }
 
