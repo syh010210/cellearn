@@ -156,6 +156,17 @@ for (const V of VARIANTS) {
     r.spec.rows.forEach((row, i) => { const k = JSON.stringify(sc.map((c) => row[c])); (rowPos[i] = rowPos[i] || new Map()).set(k, (rowPos[i].get(k) || 0) + 1); });
     specDiscriminators(r.spec).forEach((d, di) => { discMeta[di] = { name: d.name, allowFixed: d.allowFixed }; let mc = 0; r.spec.rows.forEach((row, i) => { if (d.test(row)) { (discPos[di] = discPos[di] || new Map()).set(i, (discPos[di].get(i) || 0) + 1); mc++; } }); discTot[di] = (discTot[di] || 0) + mc; });
     const exm = /표시\s*예\s*[:：]\s*([^\]]+?)(?:\]|$)/.exec((it.notes || []).join(" ")); if (exm) exSet.add(exm[1].trim());
+    // 표시 예 결과값도 기대값과 겹치면 실패: 화살표 뒤(없으면 표시 예 값 자체)가 순수 숫자(+단위)면 모든 기대값과 대조.
+    if (exm) {
+      const raw = exm[1].trim();
+      const resPart = raw.includes("→") ? raw.split("→").pop().trim() : raw;
+      const nm = /^(-?[\d,]+(?:\.\d+)?)(?:명|개|일|원|점|위|가지|번)?$/.exec(resPart.replace(/\s/g, ""));
+      if (nm) {
+        const exVal = +nm[1].replace(/,/g, "");
+        const toNum = (v) => { if (typeof v === "number") return v; const mm = /-?[\d,]+(?:\.\d+)?/.exec(String(v)); return mm ? +mm[0].replace(/,/g, "") : NaN; };
+        for (const ev of Object.values(it.expected)) { const n2 = toNum(ev); if (!Number.isNaN(n2) && Math.abs(n2 - exVal) < 1e-9) { check(`${V.id} 표시 예 결과 ≠ 기대값`, false, `${seed} 표시예결과=${exVal} 기대값=${JSON.stringify(ev)}`); break; } }
+      }
+    }
     if (r.spec.result.kind === "single" && String(r.spec.answer).includes("$") && s === 0) check(`${V.id} single 기준수식 $ 없음`, false, r.spec.answer);
     // 결과 라벨(single·fillRow) 표시 폭 ≤ 20 (한글 1자=2). 병합 칸에 들어가므로 짧게.
     if ((r.spec.result.kind === "single" || r.spec.result.kind === "fillRow") && r.spec.result.label) {

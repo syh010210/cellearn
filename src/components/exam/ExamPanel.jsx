@@ -1,6 +1,6 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { Download, Upload, CheckCircle2, XCircle } from "lucide-react";
-import { buildExamFile, examFileName } from "../../utils/examBuilder";
+import { buildExamFile, examFileName, buildAnswerFile } from "../../utils/examBuilder";
 import { gradeExamFile } from "../../utils/examGrader";
 import { useExamAttempts } from "../../hooks/useExamAttempts";
 import { scrollExamTop } from "../../utils/examScroll";
@@ -28,6 +28,49 @@ const itemKey = (pid, no) => `${pid}:${no ?? 0}`;
 const SECTION_LABEL = { "기본2": "기본작업-2", "기본3": "기본작업-3", "계산": "계산작업", "분석": "분석작업", "매크로": "매크로작업", "차트": "차트작업" };
 
 const DIFF_LABEL = { basic: "기본", hard: "어려움" };
+
+// 기대값 표시(오류·문자열·숫자)
+function fmtExpected(v) {
+  if (v && typeof v === "object" && v.error) return v.error;
+  if (typeof v === "number") return v.toLocaleString("en-US");
+  return String(v);
+}
+const DFUNC_RE = /D(?:SUM|AVERAGE|COUNTA|COUNT|MAX|MIN|GET|PRODUCT|VARP|VAR|STDEVP|STDEV)\s*\(/i;
+// 계산작업 한 문항의 정답 정보(채점 후 결과 화면·정답 확인용): 기준 수식·기대값(≤5 + 나머지 개수)·조건.
+function calcAnswerInfo(instance, no) {
+  const it = instance?.items?.find((x) => x.no === no);
+  if (!it || !it.answer) return null;
+  const entries = Object.entries(it.expected || {});
+  const shown = entries.slice(0, 5).map(([a, v]) => ({ a, v: fmtExpected(v) }));
+  return {
+    formula: it.answer.formula,
+    values: shown,
+    rest: Math.max(0, entries.length - shown.length),
+    criteria: it.criteria ? { range: it.criteria.range, table: it.criteria.table } : null,
+    inTableCond: !it.criteria && DFUNC_RE.test(it.answer.formula), // 표 칸 조건(조건이 표 안에 있음)
+  };
+}
+// 기본작업-2 한 문항의 정답 스펙(서식·값). checks 를 사람이 읽을 형태로.
+function basic2AnswerInfo(item) {
+  const out = [];
+  for (const c of item.checks || []) {
+    if (c.kind === "numFmt") out.push({ label: `[${c.range}] 표시 형식`, val: (c.codes || []).join("  또는  ") });
+    else if (c.kind === "shortDate") out.push({ label: `[${c.range}] 표시 형식`, val: "간단한 날짜" });
+    else if (c.kind === "value") out.push({ label: `[${c.cell}] 값`, val: String(c.equals) });
+    else if (c.kind === "values") out.push({ label: `[${c.range}] 값`, val: (c.expected || []).slice(0, 5).join(", ") + ((c.expected || []).length > 5 ? " …" : "") });
+    else if (c.kind === "fill") out.push({ label: `[${c.range}] 채우기 색`, val: `#${String(c.rgb).replace(/^FF/, "")}` });
+    else if (c.kind === "alignment") out.push({ label: `[${c.range}] 맞춤`, val: (c.horizontal || "") + (c.vertical ? ` / ${c.vertical}` : "") + (c.merge ? " · 병합하고 가운데" : "") });
+    else if (c.kind === "merge") out.push({ label: `[${c.range}] 병합`, val: "병합하고 가운데 맞춤" });
+    else if (c.kind === "font") out.push({ label: `[${c.range}] 글꼴`, val: [c.bold && "굵게", c.italic && "기울임", c.underline && "밑줄", c.name, c.sz && `${c.sz}pt`].filter(Boolean).join(" ") || "글꼴" });
+    else if (c.kind === "rowHeight") out.push({ label: `${c.row}행 높이`, val: String(c.height) });
+    else if (c.kind === "cellStyle") out.push({ label: `[${c.range}] 셀 스타일`, val: c.name || `기본 제공 ${c.builtinId}` });
+    else if (c.kind === "comment") out.push({ label: `[${c.cell}] 메모`, val: c.text + (c.autoSize ? " (자동 크기)" : "") });
+    else if (c.kind === "definedName") out.push({ label: "이름 정의", val: `${c.name} = ${c.ref}` });
+    else out.push({ label: c.kind, val: "" });
+  }
+  return out;
+}
+
 export default function ExamPanel({ problems, label = "", seed = null, difficulty = "basic", onReset }) {
   const mono = { fontFamily: UI.mono };
   const [phase, setPhase] = useState("idle"); // idle | running | graded
@@ -41,6 +84,7 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
   const [activeSection, setActiveSection] = useState(null);
   const [confirm, setConfirm] = useState(null); // 업로드된 File(채점 확인 대기)
   const [saved, setSaved] = useState(false); // 서버 저장 성공 여부(결과 화면 표시용)
+  const [openAns, setOpenAns] = useState({}); // 정답 접기/펼치기(키별). 미설정이면 오답=펼침·정답=접힘
   const fileRef = useRef();
   const { saveExamAttempt } = useExamAttempts();
 
@@ -263,6 +307,51 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
 
   function resultFor(pid) { return result?.find((r) => r.id === pid); }
 
+  const isAnsOpen = (key, ok) => (openAns[key] !== undefined ? openAns[key] : !ok); // 기본: 오답 펼침·정답 접힘
+  const toggleAns = (key, ok) => setOpenAns((o) => ({ ...o, [key]: !(o[key] !== undefined ? o[key] : !ok) }));
+
+  // 채점 후 한 문항의 "정답" 접이식 패널 (계산작업·기본작업-2). 채점 전에는 호출하지 않는다.
+  function answerPanel(p, no, ok) {
+    const key = `${p.id}:${no}`;
+    let body;
+    if (p.section === "계산") {
+      const ai = calcAnswerInfo(p.instance, no);
+      if (!ai) return null;
+      body = (
+        <>
+          <div style={{ marginBottom: 4 }}><span style={{ color: UI.faint }}>기준 수식 </span><span style={{ ...codeStyle, color: UI.correct }}>{ai.formula}</span></div>
+          <div style={{ marginBottom: ai.criteria || ai.inTableCond ? 4 : 0 }}>
+            <span style={{ color: UI.faint }}>기대값 </span>
+            {ai.values.map((e, i) => <span key={i} style={{ ...codeStyle, marginRight: 4 }}>{e.a}={e.v}</span>)}
+            {ai.rest > 0 && <span style={{ color: UI.mut }}>외 {ai.rest}개</span>}
+          </div>
+          {ai.criteria && (
+            <div><span style={{ color: UI.faint }}>조건 범위 </span><span style={codeStyle}>{ai.criteria.range}</span>
+              <span style={{ marginLeft: 6, color: UI.mut }}>{ai.criteria.table.map((row) => row.join(" ")).join(" / ")}</span>
+            </div>
+          )}
+          {ai.inTableCond && <div style={{ color: UI.mut }}>조건이 표 안에 있는 형태입니다(표의 머리글 + 첫 데이터 행이 조건 범위).</div>}
+        </>
+      );
+    } else if (p.section === "기본2") {
+      const it = (p.items || []).find((x) => x.no === no);
+      const list = it ? basic2AnswerInfo(it) : [];
+      if (!list.length) return null;
+      body = list.map((e, i) => (
+        <div key={i} style={{ marginBottom: 2 }}><span style={{ color: UI.faint }}>{e.label} </span><span style={{ ...codeStyle, color: UI.correct }}>{e.val}</span></div>
+      ));
+    } else return null;
+    const open = isAnsOpen(key, ok);
+    return (
+      <div style={{ marginLeft: 20, marginTop: 4 }}>
+        <button onClick={() => toggleAns(key, ok)} style={{ fontSize: 11.5, fontWeight: 700, cursor: "pointer", border: `1px solid ${UI.line}`, background: UI.surface, color: UI.teal, borderRadius: UI.rSm, padding: "2px 8px", fontFamily: UI.font }}>
+          정답 {open ? "접기 ▲" : "보기 ▼"}
+        </button>
+        {open && <div style={{ marginTop: 5, padding: "8px 10px", background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: UI.rSm, fontSize: 12, lineHeight: 1.6 }}>{body}</div>}
+      </div>
+    );
+  }
+
   // 문제 하나의 지문 + (채점 후) 결과
   function renderProblem(p) {
     const res = resultFor(p.id);
@@ -300,6 +389,7 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
               {res && graded?.warnings?.map((w, i) => (
                 <div key={`w${i}`} style={{ fontSize: 11.5, color: UI.faint, marginLeft: 20, marginTop: 2, lineHeight: 1.5 }}>{w}</div>
               ))}
+              {res && answerPanel(p, it.no, ok)}
             </div>
           );
         }) : (
@@ -410,6 +500,12 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
       )}
       {phase === "graded" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {result && problems.some((p) => p.section === "계산" && p.instance) && (
+            <button style={{ ...btn(UI.surface, UI.teal), width: "100%", border: `1px solid ${UI.teal}` }}
+              onClick={() => { if (!buildAnswerFile(problems, label)) alert("정답 파일로 만들 수 있는 계산작업이 없습니다."); }}>
+              <Download size={16} /> 정답 파일 받기 (계산작업)
+            </button>
+          )}
           <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={replayAttempt}>같은 문제 다시 풀기</button>
           <button style={{ ...btn(UI.surface, UI.ink), width: "100%", border: `1px solid ${UI.line}` }} onClick={newAttempt}>새 응시</button>
         </div>

@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { composeExamCalc } from "../src/utils/calc/composeExamCalc.js";
-import { buildExamWorkbook } from "../src/utils/examBuilder.js";
+import { buildExamWorkbook, buildAnswerWorkbook, answerFileName } from "../src/utils/examBuilder.js";
 import { gradeExamBuffer } from "../src/utils/examGrader.js";
 import { assembleBasic2 } from "../src/utils/basic2Assembler.js";
 import { shiftFormula } from "../src/utils/formulaUtils.js";
@@ -127,6 +127,23 @@ for (const [difficulty, count] of [["기본", 5], ["어려움", 5], ["기본", 3
   const res = await gradeExamBuffer(buf, [p]);
   const cr = res.find((r) => r.section === "계산");
   check("실파일 solved 32/40", cr.earned === 32 && cr.totalPoints === 40, `${cr.earned}/${cr.totalPoints}`);
+}
+
+// ── 5. 정답 파일: buildAnswerWorkbook → 그대로 채점기에 넣으면 계산작업 만점 ──
+for (const [difficulty, count] of [["기본", 5], ["어려움", 5], ["기본", 3]]) {
+  const calc = calcProblem(`ans~${difficulty}~${count}`, count, difficulty);
+  const wb = buildAnswerWorkbook([calc]);
+  check(`정답 파일 생성(${difficulty}·${count})`, !!wb && wb.SheetNames.includes("계산작업"));
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx", cellStyles: true });
+  const res = await gradeExamBuffer(buf, [calc]);
+  const cr = res.find((r) => r.section === "계산");
+  check(`정답 파일 계산 만점(${difficulty}·${count})`, cr.earned === cr.totalPoints && cr.totalPoints === count * 8, `${cr.earned}/${cr.totalPoints}`);
+}
+// 계산작업이 없으면 정답 워크북은 null(기본작업-2 단독은 서식 정답이라 값 채우기 불가)
+{
+  const b2 = assembleBasic2("ansb2", { difficulty: "basic" });
+  check("정답 파일: 계산 없으면 null", buildAnswerWorkbook([b2]) === null);
+  check("정답 파일명 = 원본+_정답", answerFileName("2026-01-01") === "컴활2급_실전_2026-01-01_정답.xlsx", answerFileName("2026-01-01"));
 }
 
 console.log(`\n계산작업 앱 통합: ${pass} 통과 / ${fail} 실패`);

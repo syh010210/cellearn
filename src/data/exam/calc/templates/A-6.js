@@ -30,9 +30,13 @@ function a6DsumRoundup(rng) {
   if (applyRound("ROUNDUP", all, -3) === up) throw new Error("조건축소 무영향");
   const names = rng.sample(NAMES, N);
   const rows = jijeom.map((j, i) => [j, names[i], 매출[i]]);
-  // 표시 예: 결과 크기 근처, 백의 자리가 드러나는 값 → 천의 자리 올림 (시드마다 다름)
-  const exIn = Math.floor(dsum / 1000) * 1000 + (100 + rng.int(899));
-  const exOut = Math.ceil(exIn / 1000) * 1000;
+  // 표시 예: 백의 자리가 드러나는 값 → 천의 자리 올림. 자리(-3)가 커 결과(up)와 겹치기 쉬우므로
+  //  결과 크기 ±40%로 넓게 뽑고, 표시 예 출력(exOut)이 기대값(up)과 같으면 다시 뽑는다.
+  let exIn, exOut, guard = 0;
+  do {
+    exIn = Math.floor(dsum * (0.6 + rng.next() * 0.8) / 1000) * 1000 + (100 + rng.int(899)); // 60~140%, 천 미만 자리 존재
+    exOut = Math.ceil(exIn / 1000) * 1000;
+  } while ((exOut === up || exIn === exOut || exIn <= 0) && guard++ < 60);
   const exNote = `백의 자리에서 올림하여 천의 자리까지 표시 [표시 예 : ${exIn.toLocaleString("en-US")} → ${exOut.toLocaleString("en-US")}]`;
   const g = geom(headers, N), dbA = g.dbAllAbs(), db = g.dbAll(), crit = g.critInTable("지점"), critA = g.critInTableAbs("지점");
   return {
