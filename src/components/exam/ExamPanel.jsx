@@ -1,6 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useRef, useCallback } from "react";
 import { Download, Upload, CheckCircle2, XCircle } from "lucide-react";
 import { buildExamFile, examFileName, buildAnswerFile } from "../../utils/examBuilder";
+import { basic2ExcludedFeatures } from "../../utils/basic2AnswerSheet";
 import { gradeExamFile } from "../../utils/examGrader";
 import { useExamAttempts } from "../../hooks/useExamAttempts";
 import { scrollExamTop } from "../../utils/examScroll";
@@ -500,11 +501,18 @@ export default function ExamPanel({ problems, label = "", seed = null, difficult
       )}
       {phase === "graded" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {result && problems.some((p) => p.section === "계산" && p.instance) && (
-            <button style={{ ...btn(UI.surface, UI.teal), width: "100%", border: `1px solid ${UI.teal}` }}
-              onClick={() => { if (!buildAnswerFile(problems, label)) alert("정답 파일로 만들 수 있는 계산작업이 없습니다."); }}>
-              <Download size={16} /> 정답 파일 받기 (계산작업)
-            </button>
+          {result && problems.some((p) => (p.section === "계산" && p.instance) || (p.section === "기본2" && p.items)) && (
+            <>
+              <button style={{ ...btn(UI.surface, UI.teal), width: "100%", border: `1px solid ${UI.teal}` }}
+                onClick={() => { if (!buildAnswerFile(problems, label)) alert("정답 파일로 만들 수 있는 작업이 없습니다."); }}>
+                <Download size={16} /> 정답 파일 받기
+              </button>
+              {basic2ExcludedFeatures(problems).length > 0 && (
+                <div style={{ fontSize: 11.5, color: UI.faint, textAlign: "center", lineHeight: 1.5 }}>
+                  정답 파일 제외 서식(직접 확인하세요): {basic2ExcludedFeatures(problems).join(", ")}
+                </div>
+              )}
+            </>
           )}
           <button style={{ ...btn(UI.teal, "#fff"), width: "100%" }} onClick={replayAttempt}>같은 문제 다시 풀기</button>
           <button style={{ ...btn(UI.surface, UI.ink), width: "100%", border: `1px solid ${UI.line}` }} onClick={newAttempt}>새 응시</button>

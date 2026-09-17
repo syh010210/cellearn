@@ -9,6 +9,7 @@ import { composeExamCalc } from "../src/utils/calc/composeExamCalc.js";
 import { buildExamWorkbook, buildAnswerWorkbook, answerFileName } from "../src/utils/examBuilder.js";
 import { gradeExamBuffer } from "../src/utils/examGrader.js";
 import { assembleBasic2 } from "../src/utils/basic2Assembler.js";
+import { basic2ItemAnswerable, basic2ExcludedFeatures } from "../src/utils/basic2AnswerSheet.js";
 import { shiftFormula } from "../src/utils/formulaUtils.js";
 import { stripXlfn } from "../src/data/exam/calc/functions.js";
 
@@ -139,11 +140,43 @@ for (const [difficulty, count] of [["기본", 5], ["어려움", 5], ["기본", 3
   const cr = res.find((r) => r.section === "계산");
   check(`정답 파일 계산 만점(${difficulty}·${count})`, cr.earned === cr.totalPoints && cr.totalPoints === count * 8, `${cr.earned}/${cr.totalPoints}`);
 }
-// 계산작업이 없으면 정답 워크북은 null(기본작업-2 단독은 서식 정답이라 값 채우기 불가)
+// 기본작업-2 단독도 정답 파일이 만들어진다(서식 적용). 계산·기본2 모두 없으면 null.
 {
   const b2 = assembleBasic2("ansb2", { difficulty: "basic" });
-  check("정답 파일: 계산 없으면 null", buildAnswerWorkbook([b2]) === null);
+  check("정답 파일: 기본2 단독도 생성", !!buildAnswerWorkbook([b2]));
+  check("정답 파일: 대상 시트 없으면 null", buildAnswerWorkbook([{ id: "x", section: "분석", sheetName: "분석작업-1", table: [["a"]] }]) === null);
   check("정답 파일명 = 원본+_정답", answerFileName("2026-01-01") === "컴활2급_실전_2026-01-01_정답.xlsx", answerFileName("2026-01-01"));
+}
+
+// ── 6. 기본작업-2 정답 파일: 답할 수 있는 문항은 basic2Grader 로 만점, 두 시트 한 파일 ──
+let b2AnsItems = 0, b2Excluded = 0;
+for (const difficulty of ["basic", "hard"]) {
+  for (let s = 0; s < 15; s++) {
+    const b2 = assembleBasic2(`ansb2~${difficulty}~${s}`, { difficulty });
+    const wb = buildAnswerWorkbook([b2]);
+    check(`기본2 정답 파일 생성(${difficulty}#${s})`, !!wb && wb.SheetNames.includes(b2.sheetName));
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx", cellStyles: true });
+    const res = await gradeExamBuffer(buf, [b2]);
+    const r = res.find((x) => x.section === "기본2");
+    for (const it of b2.items) {
+      const gi = r.items.find((x) => x.no === it.no);
+      if (basic2ItemAnswerable(it)) { b2AnsItems++; check(`기본2 정답 만점(${difficulty}#${s} it${it.no})`, gi && gi.ok, gi?.reasons?.join(" | ")); }
+      else b2Excluded++;
+    }
+  }
+}
+console.log(`기본2 정답: 답가능 문항 ${b2AnsItems} 만점 확인, 제외 문항 ${b2Excluded}`);
+// 두 시트(기본2 + 계산) 한 파일: 계산 만점 + 기본2 답가능 만점
+{
+  const b2 = assembleBasic2("both~0", { difficulty: "basic" });
+  const calc = calcProblem("both~0", 5, "기본");
+  const wb = buildAnswerWorkbook([b2, calc]);
+  check("정답 파일 두 시트 포함", wb.SheetNames.includes(b2.sheetName) && wb.SheetNames.includes("계산작업"));
+  const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx", cellStyles: true });
+  const res = await gradeExamBuffer(buf, [b2, calc]);
+  check("두 시트: 계산 만점", res.find((r) => r.section === "계산").earned === 40);
+  const rb = res.find((r) => r.section === "기본2");
+  check("두 시트: 기본2 답가능 만점", b2.items.every((it) => !basic2ItemAnswerable(it) || rb.items.find((x) => x.no === it.no).ok));
 }
 
 console.log(`\n계산작업 앱 통합: ${pass} 통과 / ${fail} 실패`);

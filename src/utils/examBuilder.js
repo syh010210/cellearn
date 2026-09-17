@@ -1,6 +1,7 @@
 import XLSX from "xlsx-js-style";
 import { buildCalcInstanceSheet } from "./calc/calcSheetBuilder.js";
 import { buildCalcAnswerSheet } from "./calc/calcAnswerSheet.js";
+import { buildBasic2AnswerSheet } from "./basic2AnswerSheet.js";
 
 // 실전 모드 시험지(.xlsx) 생성. 지문은 파일에 넣지 않는다(채택한 결정 6) — 표(데이터)만 그린다.
 // section 별 시트 빌더로 분리하고, 워크북 끝에 숨김 "_meta" 시트로 attemptId 를 심는다(업로드 매칭용).
@@ -94,21 +95,28 @@ export const examFileName = (label = "") => `컴활2급_실전_${label || "모�
 // 정답 파일명 = 원본 파일명 + "_정답"
 export const answerFileName = (label = "") => examFileName(label).replace(/\.xlsx$/, "_정답.xlsx");
 
-// 정답 워크북: 채점 완료 후 결과 확인용. 현재는 계산작업 시트만 포함(결과=기준 수식, 조건=조건 값).
-//  기본작업-2 는 정답이 '셀 값'이 아니라 '서식'(numFmt·채우기·맞춤·병합·테두리·메모·셀스타일·이름정의)이라
-//  값 채우기 방식으로는 정답 파일을 만들 수 없다 → 계산작업만 넣는다(사유는 보고).
+// 정답 워크북: 채점 완료 후 결과 확인용. 계산작업(결과=기준 수식, 조건=조건 값) + 기본작업-2(서식) 포함.
+//  기본작업-2 는 xlsx-js-style 로 쓸 수 없는 서식(셀 스타일·메모 항상표시·특수 밑줄·대각선)만 제외하고
+//  나머지(표시형식·채우기·맞춤·병합·테두리·글꼴·행높이·이름정의·값)를 실제 서식으로 적용한다.
 //  반환: 포함된 시트가 있으면 워크북, 없으면 null.
 export function buildAnswerWorkbook(problems) {
   const wb = XLSX.utils.book_new();
+  const names = [];
   let added = 0;
   for (const p of problems) {
     if (p.section === "계산" && p.instance && p.instance.items) {
       XLSX.utils.book_append_sheet(wb, buildCalcAnswerSheet(p.instance), p.sheetName || "계산작업");
       added++;
+    } else if (p.section === "기본2" && p.items) {
+      const { ws, definedNames } = buildBasic2AnswerSheet(p);
+      XLSX.utils.book_append_sheet(wb, ws, p.sheetName || "기본작업-2");
+      for (const d of definedNames) names.push({ Name: d.Name, Ref: `'${p.sheetName || "기본작업-2"}'!${String(d.Ref).replace(/^'[^']*'!/, "").replace(/^[^!]*!/, "")}` });
+      added++;
     }
   }
   if (!added) return null;
   wb.Workbook = { ...(wb.Workbook || {}), CalcPr: { fullCalcOnLoad: true, calcMode: "auto" } }; // 열 때 재계산
+  if (names.length) wb.Workbook.Names = names;
   return wb;
 }
 
