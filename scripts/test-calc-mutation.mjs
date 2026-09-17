@@ -59,11 +59,11 @@ SAMPLES.forEach((sample, si) => {
   const it = inst.items[0];
 
   for (const acc of sample.accept || []) {
-    const r = submit(inst, { 1: { formula: acc } }).items[0];
+    const r = submit(inst, { 1: { formula: acc, rel: true } }).items[0];
     check(`[S${si + 1}] accept 만점: ${acc.slice(0, 40)}`, r.ok, r.ok ? "" : r.reasons.join(" / "));
   }
   for (const rej of sample.reject || []) {
-    const r = submit(inst, { 1: { formula: rej.formula, criteria: rej.criteria } }).items[0];
+    const r = submit(inst, { 1: { formula: rej.formula, criteria: rej.criteria, rel: true } }).items[0];
     const cats = new Set(r.details.map((d) => d.cat));
     check(`[S${si + 1}] reject 불합격+사유: ${String(rej.formula).slice(0, 34)}`, !r.ok && cats.has(rej.expectReason), `ok=${r.ok} cats=${[...cats].join(",")} 기대=${rej.expectReason}`);
   }

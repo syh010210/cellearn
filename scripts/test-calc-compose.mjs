@@ -47,7 +47,7 @@ for (const difficulty of ["기본", "어려움"]) {
       else { if (dA === 1) usesD3A++; if (dA > 1) check(`${tag} 3문항 A usesD≤1`, false, seed); }
       // 제약: resultKind 균형
       const fill = metas.filter((m) => FILL.has(m.resultKind)).length, single = metas.length - fill;
-      if (count === 5) { if (!(single >= 2 && single <= 3 && fill >= 2 && fill <= 3)) check(`${tag} resultKind 균형`, false, `${seed} s=${single} f=${fill}`); }
+      if (count === 5) { const ok = difficulty === "기본" ? (single >= 1 && single <= 3 && fill >= 2 && fill <= 4) : (single >= 2 && single <= 3 && fill >= 2 && fill <= 3); if (!ok) check(`${tag} resultKind 균형`, false, `${seed} s=${single} f=${fill}`); }
       else { if (!(single >= 1 && single <= 2)) check(`${tag} resultKind 균형`, false, `${seed} s=${single}`); }
       // 제약: C 2개 계열
       const C = metas.filter((m) => m.subtype[0] === "C");
@@ -79,7 +79,8 @@ for (const difficulty of ["기본", "어려움"]) {
     console.log(`생성시간(ms): 평균 ${avg(times).toFixed(2)} p95 ${p95(times).toFixed(2)}`);
     // 요약 양성 검사(전 시드 제약·만점·예외 통과 확인)
     check(`${tag} 전 시드 생성(예외 0)`, times.length === SEEDS, `${times.length}/${SEEDS}`);
-    check(`${tag} resultKind 균형 합계`, count === 5 ? (kindCnt.single >= SEEDS * 2 && kindCnt.fill >= SEEDS * 2) : kindCnt.single >= SEEDS);
+    check(`${tag} resultKind 균형 합계`, count === 5 ? (kindCnt.single >= SEEDS && kindCnt.fill >= SEEDS * 2) : kindCnt.single >= SEEDS);
+    if (count === 3) check(`${tag} A usesD 50%±5%`, Math.abs(usesD3A / SEEDS - 0.5) <= 0.05, `${(usesD3A / SEEDS * 100).toFixed(1)}%`);
     if (count === 5) check(`${tag} A usesD=1 전 시드`, usesDA_ok === SEEDS, `${usesDA_ok}/${SEEDS}`);
     // 출현 0 변형(해당 난이도 풀)
     const zero = [];

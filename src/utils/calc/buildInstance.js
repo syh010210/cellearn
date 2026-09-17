@@ -18,8 +18,8 @@ const estCharW = (s) => { let w = 0; for (const ch of String(s)) { const cp = ch
 const decodeRangeCols = (range) => { const a = String(range).split(":")[0]; return { c1: lettersCol(/[A-Za-z]+/.exec(a)[0]) }; };
 const XLSX_decode = (range) => { const [a, b = a] = String(range).split(":"); const pa = /^([A-Za-z]+)(\d+)$/.exec(a), pb = /^([A-Za-z]+)(\d+)$/.exec(b); return { r1: +pa[2] - 1, c1: lettersCol(pa[1]), r2: +pb[2] - 1, c2: lettersCol(pb[1]) }; };
 
-// 수식의 모든 셀 참조를 (dRow,dCol) 만큼 이동($ 표시는 유지). 문자열 리터럴은 건드리지 않는다.
-function translateFormula(formula, dRow, dCol) {
+// 수식의 모든 셀 참조를 (dRow,dCol) 만큼 이동($ 표시는 유지하되 위치는 이동). 문자열 리터럴은 건드리지 않는다.
+export function translateFormula(formula, dRow, dCol) {
   let out = "", i = 0;
   while (i < formula.length) {
     const ch = formula[i];
@@ -134,6 +134,7 @@ export function buildInstance({ id, seed = "sample", difficulty = "상", blocks 
       no: bi + 1, subtype: b.spec.subtype, points: 8,
       text, notes,
       functions: b.spec.functions,
+      origin: { r: OR(bi).r, c: OR(bi).c },   // 블록 원점(절대) — 하네스가 블록-상대 accept 식을 여기로 이동
       result: { kind: b.result.kind, range: rngA1({ r1: OR(bi).r + b.result.range.r1, c1: OR(bi).c + b.result.range.c1, r2: OR(bi).r + b.result.range.r2, c2: OR(bi).c + b.result.range.c2 }), anchor: AA(bi, b.answer.r, b.answer.c), fill: b.result.fill, ...(b.result.z ? { z: b.result.z } : {}) },
       answer: { formula: "=" + translateFormula(b.answer.formula.replace(/^=/, ""), OR(bi).r, OR(bi).c) },
       criteria: b.criteria ? { range: AR(bi, b.criteria.range), rows: b.criteria.rows, table: b.criteria.table } : null,

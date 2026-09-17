@@ -88,7 +88,7 @@ export function dateWithWeekday(rng, want, mode, y1, y2, used) {
 import { Sheet } from "../../../../excel-engine/index.js";
 import { classifySurvivor } from "../../../../utils/calc/survivorRules.js";
 import { shiftFormula } from "../../../../utils/formulaUtils.js";
-import { buildInstance } from "../../../../utils/calc/buildInstance.js";
+import { buildInstance, translateFormula } from "../../../../utils/calc/buildInstance.js";
 
 const lettersColU = (L) => { let n = 0; for (const ch of L.toUpperCase()) n = n * 26 + (ch.charCodeAt(0) - 64); return n - 1; };
 // 본표(+조건/참조 셀)를 미니 시트에 놓고 formula 를 평가
@@ -150,5 +150,9 @@ export function assertFillColClean(spec, mutants) {
   const inst = buildInstance({ id: "_chk", blocks: [spec, _FILLER, _FILLER] });
   const item = inst.items[0];
   const base = JSON.stringify(_fillColVec(inst, item, item.answer.formula));
-  for (const m of mutants) if (JSON.stringify(_fillColVec(inst, item, m)) === base) throw new Error("fillCol mutant 무영향: " + m);
+  for (const m of mutants) {
+    // mutant 는 블록-상대(A1 기준) → 블록 원점으로 이동해 절대 기준식과 같은 위치에서 비교.
+    const mm = String(m).startsWith("=") ? "=" + translateFormula(String(m).replace(/^=/, ""), item.origin.r, item.origin.c) : m;
+    if (JSON.stringify(_fillColVec(inst, item, mm)) === base) throw new Error("fillCol mutant 무영향: " + m);
+  }
 }

@@ -1,21 +1,21 @@
 // src/utils/calc/calcLayout.js
 // 블록(문항 하나의 상대 좌표 묶음)들을 시험지 페이지에 배치하는 순수 함수.
-//  · 슬롯: 띠(band) × 좌/우. 5블록 = (0,L)(0,R)(1,L)(1,R)(2,L), 3블록 = (0,L)(0,R)(1,L).
-//  · 오른쪽 시작 열 = 왼쪽 블록들의 최대 폭 + 1(사이 1열 띄움). 띠 높이 = 그 띠 블록 중 큰 값.
-//    띠 사이 빈 행 2개. 첫 띠는 0행(엑셀 1행).
-//  · 문항→슬롯 배정을 순열로 평가해 비용(사용 열 폭 + 20열 초과 페널티) 최소를 고른다(결정론적: 동률이면
-//    먼저 나온 순열). origins 는 입력 블록 순서(index)에 맞춰 돌려주므로 buildInstance 는 그대로 쓴다.
-//  · 블록 0(=표1)은 항상 좌상단 슬롯(A1)에 고정한다: 채점 하네스가 표1 accept 를 A1 기준으로 평가하고,
-//    [표1]이 읽기 시작점이어야 한다. 나머지 블록만 남은 슬롯에 재배정한다.
+//  · 슬롯: 띠(band) × 좌/우. 5블록 = (0,L)(0,R)(1,L)(1,R)(2,L), 3블록 = (0,L)(0,R)(1,L). 마지막 슬롯은 짝 없음.
+//  · 오른쪽 시작 열 = 짝 있는 줄(L·R 모두 있는 띠)의 왼쪽 블록 최대 폭 + 1. 짝 없는 블록은 계산에서 제외
+//    (그 블록은 col 0 에서 폭만큼 쓰되 다른 띠의 오른쪽 열과 행이 달라 겹치지 않는다).
+//  · 문항→슬롯 배정을 전수 순열로 평가해 비용 최소를 고른다(결정론적: 동률이면 먼저 나온 순열).
+//    비용 = 빈열 합 × W_GAP + 전체 사용 열 수 + 오른쪽 블록 너비 불일치 + 20열 초과 페널티.
+//    ([표1] A1 고정 제약 없음 — 하네스는 item.origin 으로 블록-상대 식을 옮긴다.)
+//  · 띠 높이 = 그 띠 블록 중 큰 값, 띠 사이 빈 행 2개, 첫 띠는 0행.
 //  · 20열(index 19=T) 초과 시(최적 배정에서도) 오류.
 //
 // 입력: sizes = [{ w, h }, ...] (3개 또는 5개)
-// 출력: { origins: [{ r, c }], usedRange: { r1, c1, r2, c2 }, cols, rows, cost }
+// 출력: { origins, usedRange, cols, rows, cost, gaps }
 
 const ROW_GAP = 2;
-const OVERFLOW_PENALTY = 100000;
+const OVERFLOW_PENALTY = 1e6;
+const W_GAP = 50;
 
-// 위치 목록(읽기 순서). 각 원소 { band, side } side 0=왼쪽 1=오른쪽.
 function slotPositions(n) {
   const bandCount = Math.floor((n - 1) / 2) + 1;
   const pos = [];
@@ -23,19 +23,22 @@ function slotPositions(n) {
   return pos.slice(0, n);
 }
 
-// 한 배정(assign[slot] = 블록 index)의 origins·사용영역·비용 계산.
 function placeAssignment(sizes, positions, assign) {
   const bandCount = Math.max(...positions.map((p) => p.band)) + 1;
-  const leftW = [], rightW = [], bandH = Array.from({ length: bandCount }, () => 0);
+  const bandH = Array.from({ length: bandCount }, () => 0);
+  const bandHasR = Array.from({ length: bandCount }, () => false);
+  const leftW = Array.from({ length: bandCount }, () => 0), rightW = Array.from({ length: bandCount }, () => 0);
   positions.forEach((p, slot) => {
     const s = sizes[assign[slot]];
-    (p.side === 0 ? leftW : rightW).push(s.w);
     if (s.h > bandH[p.band]) bandH[p.band] = s.h;
+    if (p.side === 0) leftW[p.band] = s.w; else { rightW[p.band] = s.w; bandHasR[p.band] = true; }
   });
-  const maxLeftW = leftW.length ? Math.max(...leftW) : 0;
-  const rightStart = maxLeftW + 1;
-  const bandTop = []; for (let b = 0; b < bandCount; b++) bandTop[b] = b === 0 ? 0 : bandTop[b - 1] + bandH[b - 1] + ROW_GAP;
+  const pairedBands = [];
+  for (let b = 0; b < bandCount; b++) if (bandHasR[b]) pairedBands.push(b);
+  const maxPairedLeftW = pairedBands.length ? Math.max(...pairedBands.map((b) => leftW[b])) : 0;
+  const rightStart = maxPairedLeftW + 1;
 
+  const bandTop = []; for (let b = 0; b < bandCount; b++) bandTop[b] = b === 0 ? 0 : bandTop[b - 1] + bandH[b - 1] + ROW_GAP;
   const origins = new Array(sizes.length);
   let maxCol = 0, maxRow = 0;
   positions.forEach((p, slot) => {
@@ -45,11 +48,15 @@ function placeAssignment(sizes, positions, assign) {
     maxCol = Math.max(maxCol, c + s.w - 1);
     maxRow = Math.max(maxRow, r + s.h - 1);
   });
-  const cost = maxCol + (maxCol > 19 ? OVERFLOW_PENALTY : 0);
-  return { origins, maxCol, maxRow, cost };
+
+  const gaps = pairedBands.map((b) => rightStart - leftW[b]);            // 왼쪽 블록 끝 ~ 오른쪽 시작 사이 빈 열 수
+  const gapSum = gaps.reduce((a, b) => a + b, 0);
+  const maxRightW = pairedBands.length ? Math.max(...pairedBands.map((b) => rightW[b])) : 0;
+  const widthMismatch = pairedBands.reduce((a, b) => a + (maxRightW - rightW[b]), 0);
+  const cost = W_GAP * gapSum + maxCol + widthMismatch + (maxCol > 19 ? OVERFLOW_PENALTY : 0);
+  return { origins, maxCol, maxRow, cost, gaps };
 }
 
-// 순열 생성(결정론적: 사전순).
 function* permutations(arr) {
   if (arr.length <= 1) { yield arr.slice(); return; }
   for (let i = 0; i < arr.length; i++) {
@@ -61,16 +68,12 @@ function* permutations(arr) {
 export function layoutPage(sizes) {
   const n = sizes.length;
   if (n !== 3 && n !== 5) throw new Error(`블록 수는 3 또는 5여야 합니다 (받음: ${n})`);
-
   const positions = slotPositions(n);
   let best = null;
-  const rest = sizes.map((_, i) => i).slice(1);          // 블록 0 은 슬롯 0(A1)에 고정
-  for (const p of permutations(rest)) {
-    const assign = [0, ...p];
+  for (const assign of permutations(sizes.map((_, i) => i))) {
     const cand = placeAssignment(sizes, positions, assign);
-    if (!best || cand.cost < best.cost) best = cand;      // 동률이면 먼저 나온 순열 유지
+    if (!best || cand.cost < best.cost) best = cand;
   }
   if (best.maxCol > 19) throw new Error(`20열(T) 초과: 최적 배정에서도 최대 열 index ${best.maxCol}`);
-
-  return { origins: best.origins, usedRange: { r1: 0, c1: 0, r2: best.maxRow, c2: best.maxCol }, cols: best.maxCol + 1, rows: best.maxRow + 1, cost: best.cost };
+  return { origins: best.origins, usedRange: { r1: 0, c1: 0, r2: best.maxRow, c2: best.maxCol }, cols: best.maxCol + 1, rows: best.maxRow + 1, cost: best.cost, gaps: best.gaps };
 }

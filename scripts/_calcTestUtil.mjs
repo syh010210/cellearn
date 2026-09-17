@@ -7,6 +7,7 @@ import { engineGetCell } from "../src/utils/calc/cellAdapter.js";
 import { gradeCalc } from "../src/utils/calc/calcGrader.js";
 import { astToFormula } from "../src/utils/calc/astToFormula.js";
 import { resolveBlock } from "../src/utils/calc/calcBlock.js";
+import { translateFormula } from "../src/utils/calc/buildInstance.js";
 import { NAMES } from "../src/data/exam/calc/pools.js";
 const NAMESET = new Set(NAMES);
 
@@ -26,7 +27,9 @@ export function submit(instance, submissions = {}) {
   }
   for (const it of instance.items) {
     const sub = submissions[it.no] || {};
-    const formula = sub.formula !== undefined ? sub.formula : it.answer.formula;
+    let formula = sub.formula !== undefined ? sub.formula : it.answer.formula;
+    // rel:true — 블록-상대(A1 기준) 식(accept·reject 등)을 블록 원점으로 이동해 실제 위치에 맞춘다.
+    if (sub.rel && it.origin && String(formula).startsWith("=")) formula = "=" + translateFormula(String(formula).replace(/^=/, ""), it.origin.r, it.origin.c);
     const { r: ar, c: ac } = parseA1(it.result.anchor);
     for (const a of expand1D(it.result.range)) {
       const { r, c } = parseA1(a);
@@ -59,16 +62,18 @@ export function cellsGetCell(cells) {
 }
 
 // 공통 검증: 지시문 좌표 무결성. 반드시 "해석된 item.text"(place­holder 아님)에 적용한다.
-// 블록0이 원점(0,0)에 놓이므로 절대 주소 = 블록-상대 주소.
+// 지시문 좌표는 절대. 블록-상대 resolveBlock 과 비교하려면 item.origin 만큼 빼서 맞춘다.
 export function validateText(item, spec) {
   const b = resolveBlock(spec, "표1");
+  const O = item.origin || { r: 0, c: 0 };
+  const rel = (a) => { const p = parseA1(a); return { r: p.r - O.r, c: p.c - O.c }; };
   const cellAt = (r, c) => { const p = b.fileCells.find((x) => x.r === r && x.c === c); return p ? p.v : undefined; };
   const roleAt = (r, c) => b.roles.get(`${r},${c}`);
   const refLabel = (b.fileCells.find((x) => x.role === "reflabel") || {}).v;
   const errs = [];
   const re = /([^\[\]\s,]+)\[([A-Z]+\d+)(?::([A-Z]+\d+))?\]/g; let m;
   while ((m = re.exec(item.text)) !== null) {
-    const word = m[1], p1 = parseA1(m[2]), p2 = parseA1(m[3] || m[2]);
+    const word = m[1], p1 = rel(m[2]), p2 = rel(m[3] || m[2]);
     const isRef = roleAt(p1.r, p1.c) === "refheader";
     if (isRef) {                                   // 표이름[{T}]
       if (refLabel !== undefined && word !== String(refLabel).replace(/^<|>$/g, "")) errs.push(`표이름 '${word}' ≠ 라벨 '${refLabel}' [${m[2]}]`);

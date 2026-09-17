@@ -52,9 +52,38 @@ function a6DsumRoundup(rng) {
   };
 }
 
+// 2) a6-dsum-basic [기본] — DSUM(db,"매출액",조건), 반올림 없음
+function a6DsumBasic(rng) {
+  const N = 8 + rng.int(3);
+  const headers = ["지점", "담당자", "매출액"];
+  const region = rng.pick(REGIONS), others = REGIONS.filter((r) => r !== region);
+  const jijeom = new Array(N).fill(null);
+  jijeom[0] = region; jijeom[N - 1] = region; jijeom[1 + rng.int(N - 2)] = region;
+  for (let i = 0; i < N; i++) if (!jijeom[i]) jijeom[i] = rng.pick(others);
+  const 매출 = distinctInts(rng, N, 120, 990, 1).map((x) => x * 1000 + 1 + rng.int(998)); // 6자리
+  const dsum = jijeom.reduce((s, j, i) => s + (j === region ? 매출[i] : 0), 0);
+  const all = 매출.reduce((s, v) => s + v, 0);
+  if (all === dsum) throw new Error("조건 없는 합과 같음");         // 비매칭 존재 보장(조건 유효)
+  const names = rng.sample(NAMES, N);
+  const rows = jijeom.map((j, i) => [j, names[i], 매출[i]]);
+  const g = geom(headers, N), db = g.dbAll(), dbA = g.dbAllAbs(), crit = g.critRange(1);
+  return {
+    subtype: "A-6", colWidths: [8, 8, 10], headers, rows, colZ: { 2: "#,##0" },
+    result: { kind: "single", label: `${region} 매출액 합계`, z: "#,##0" },
+    discriminators: [{ name: `지점=${region}`, test: (r) => r[0] === region, min: 3, max: N, allowFixed: "lastRow", reason: "조건 지점을 첫·중간·마지막에 배치(DSUM 범위 축소·조건 판별)" }],
+    answer: `=DSUM(${db},"매출액",${crit})`,
+    criteria: { headers: ["지점"], rows: [[region]], rowOffset: 0 },
+    functions: { required: ["DSUM"], candidates: null },
+    text: `[{표}]에서 지점[{col:지점}]이 "${region}"인 매출액[{col:매출액}]의 합계를 [{R}] 셀에 계산하시오. (8점)`,
+    notes: ["조건은 [{C}] 영역에 알맞게 입력", "DSUM 함수 사용"],
+    accept: [`=DSUM(${dbA},"매출액",${crit})`, `=DSUM(${dbA},${g.header("매출액")},${crit})`, `=DSUM(${dbA},3,${crit})`],
+  };
+}
+
 export const TEMPLATE_A6 = {
   subtype: "A-6",
   variants: [
+    { id: "a6-dsum-basic", difficulty: "기본", resultKind: "single", usesD: true, core: ["DSUM"], plan: a6DsumBasic },
     { id: "a6-dsum-roundup", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DSUM"], plan: a6DsumRoundup },
   ],
 };

@@ -1,6 +1,6 @@
 // src/data/exam/calc/templates/A-1.js
 // 조건 개수·비율 (COUNTIF / COUNTIFS / DCOUNTA). 변형 4개. 모두 단일 셀.
-import { NAMES, MALE_NAMES, FEMALE_NAMES, REGIONS, MAJORS } from "../pools.js";
+import { NAMES, MALE_NAMES, FEMALE_NAMES, REGIONS, MAJORS, DEPTS } from "../pools.js";
 import { geom, assertRangesClean, COL } from "./_util.js";
 
 const distinctInts = (rng, n, lo, hi, ex = []) => { const s = new Set(ex); const out = []; let g = 0; while (out.length < n && g++ < 800) { const v = rng.range(lo, hi); if (!s.has(v)) { s.add(v); out.push(v); } } if (out.length < n) throw new Error("distinctInts 부족"); return out; };
@@ -144,11 +144,41 @@ function a1CountifsAvg(rng) {
   };
 }
 
+// 5) a1-dcounta-single [기본] — DCOUNTA + 조건 1행(완전 일치)&"명"
+function a1DcountaSingle(rng) {
+  const N = 8 + rng.int(3);
+  const headers = ["사원명", "부서", "실적"];
+  const dept = rng.pick(DEPTS), others = DEPTS.filter((d) => d !== dept);
+  // 조건 부서를 첫·중간·마지막 행에 배치(≥3). 마지막 매칭 → db 끝-1 축소가 개수를 바꿈.
+  const seqD = new Array(N).fill(null);
+  seqD[0] = dept; seqD[N - 1] = dept; seqD[1 + rng.int(N - 2)] = dept;
+  for (let i = 0; i < N; i++) if (!seqD[i]) seqD[i] = rng.pick(others);
+  const cnt = seqD.filter((d) => d === dept).length;
+  if (cnt < 3 || cnt >= N) throw new Error("매칭 수 부적합");   // 조건 없는 집계(N)와 달라야
+  const names = rng.sample(NAMES, N);
+  const 실적 = distinctInts(rng, N, 20, 99);
+  const rows = seqD.map((d, i) => [names[i], d, 실적[i]]);
+  let exN; do { exN = 2 + rng.int(N - 2); } while (exN === cnt);
+  const g = geom(headers, N), crit = g.critRange(1), fld = g.header("사원명");
+  return {
+    subtype: "A-1", colWidths: [8, 8, 6], headers, rows, verbException: "계산",
+    result: { kind: "single", label: `${dept} 인원 수` },
+    discriminators: [{ name: `부서=${dept}`, test: (r) => r[1] === dept, min: 3, max: N, allowFixed: "lastRow", reason: "조건 부서를 첫·중간·마지막에 배치(DCOUNTA 범위 축소·조건 판별)" }],
+    answer: `=DCOUNTA(${g.dbAll()},${fld},${crit})&"명"`,
+    criteria: { headers: ["부서"], rows: [[dept]], rowOffset: 0 },
+    functions: { required: ["DCOUNTA"], candidates: null },
+    text: `[{표}]에서 부서[{col:부서}]가 "${dept}"인 인원 수를 [{R}] 셀에 계산하시오. (8점)`,
+    notes: [`계산된 인원 수 뒤에 "명"을 포함하여 표시 [표시 예 : ${exN}명]`, "조건은 [{C}] 영역에 알맞게 입력", "DCOUNTA 함수와 & 연산자 사용"],
+    accept: [`=DCOUNTA(${g.dbAllAbs()},1,${crit})&"명"`, `=DCOUNTA(${g.dbAllAbs()},"사원명",${crit})&"명"`],
+  };
+}
+
 export const TEMPLATE_A1 = {
   subtype: "A-1",
   variants: [
     { id: "a1-ratio", difficulty: "기본", resultKind: "single", usesD: false, core: ["COUNTIF"], plan: a1Ratio },
     { id: "a1-countifs", difficulty: "기본", resultKind: "single", usesD: false, core: ["COUNTIFS"], plan: a1Countifs },
+    { id: "a1-dcounta-single", difficulty: "기본", resultKind: "single", usesD: true, core: ["DCOUNTA"], plan: a1DcountaSingle },
     { id: "a1-dcounta-or", difficulty: "어려움", resultKind: "single", usesD: true, core: ["DCOUNTA"], plan: a1DcountaOr },
     { id: "a1-countifs-avg", difficulty: "어려움", resultKind: "single", usesD: false, core: ["COUNTIFS"], plan: a1CountifsAvg },
   ],

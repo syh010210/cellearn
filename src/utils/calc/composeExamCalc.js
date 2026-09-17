@@ -58,9 +58,10 @@ function pickA2(rng, poolA) {
   return rng.chance(0.5) ? [a1, rng.pick(a2cands)] : [rng.pick(a2cands), a1];
 }
 
-// A 1개: usesD 여부 지정
-function pickA1(rng, poolA, wantD) {
-  const p = poolA.filter((m) => m.usesD === wantD);
+// A 1개: usesD 여부 지정. singleOnly=true 면 single 변형만(3문항에서 채우기-A 탈락에 의한 usesD 편중 방지).
+function pickA1(rng, poolA, wantD, singleOnly) {
+  let p = poolA.filter((m) => m.usesD === wantD);
+  if (singleOnly) p = p.filter((m) => m.resultKind === "single");
   return p.length ? [rng.pick(p)] : null;
 }
 
@@ -77,13 +78,14 @@ function allDisjoint(metas) {
   return true;
 }
 
-function resultKindOk(metas, count) {
+function resultKindOk(metas, count, difficulty) {
   const fill = metas.filter(isFill).length, single = metas.length - fill;
-  return count === 5 ? (single >= 2 && single <= 3 && fill >= 2 && fill <= 3) : (single >= 1 && single <= 2);
+  if (count === 5) return difficulty === "기본" ? (single >= 1 && single <= 3 && fill >= 2 && fill <= 4) : (single >= 2 && single <= 3 && fill >= 2 && fill <= 3);
+  return single >= 1 && single <= 2;
 }
 
 // 한 번의 조합 추첨(제약 검사까지). 실패 시 null.
-function drawCombo(rng, pool, count) {
+function drawCombo(rng, pool, count, difficulty) {
   let metas;
   if (count === 5) {
     const roll = rng.next();
@@ -94,7 +96,7 @@ function drawCombo(rng, pool, count) {
     const D = shape.D === 1 ? pickDistinct(rng, pool.D, 1, null) : []; if (shape.D === 1 && !D) return null;
     metas = [...A, ...B, ...C, ...D];
   } else {
-    const A = pickA1(rng, pool.A, rng.chance(0.5)); if (!A) return null;
+    const A = pickA1(rng, pool.A, rng.chance(0.5), true); if (!A) return null; // single-A 로 usesD 편중 방지
     const B = pickDistinct(rng, pool.B, 1, null); if (!B) return null;
     const last = rng.chance(0.5) ? pickDistinct(rng, pool.C, 1, null) : pickDistinct(rng, pool.D, 1, null);
     if (!last) return null;
@@ -102,7 +104,7 @@ function drawCombo(rng, pool, count) {
   }
   if (new Set(metas.map((m) => m.subtype)).size !== metas.length) return null; // 소유형 중복 없음
   if (!allDisjoint(metas)) return null;
-  if (!resultKindOk(metas, count)) return null;
+  if (!resultKindOk(metas, count, difficulty)) return null;
   return metas;
 }
 
@@ -112,7 +114,7 @@ export function composeExamCalc(seed, { count = 5, difficulty = "기본" } = {})
   const rng = makeRng(seed + "~exam~" + count + "~" + difficulty);
   let lastErr;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    const metas = drawCombo(rng, pool, count);
+    const metas = drawCombo(rng, pool, count, difficulty);
     if (!metas) continue;
     const subtypes = metas.map((m) => m.subtype), variantIds = metas.map((m) => m.id);
     let inst;

@@ -127,7 +127,7 @@ for (const V of VARIANTS) {
     const cand = it.functions?.candidates || null;
     const ref = submit(inst).items[0];
     if (!ref.ok) check(`${V.id} 기준답 만점`, false, `${seed} :: ${ref.reasons.join(" / ")}`);
-    for (const a of r.spec.accept || []) { accN++; const rr = submit(inst, { 1: { formula: a } }).items[0]; if (rr.ok) accOk++; else check(`${V.id} accept`, false, `${seed} :: ${a} :: ${rr.reasons.join("/")}`); }
+    for (const a of r.spec.accept || []) { accN++; const rr = submit(inst, { 1: { formula: a, rel: true } }).items[0]; if (rr.ok) accOk++; else check(`${V.id} accept`, false, `${seed} :: ${a} :: ${rr.reasons.join("/")}`); }
     for (const m of mutate(it.answer.formula, r.spec.functions?.required || [])) {
       mutN++;
       const rr = submit(inst, { 1: { formula: m.formula } }).items[0];
