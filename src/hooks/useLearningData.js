@@ -43,7 +43,8 @@ function dequeue(uid, key) { savePending(uid, loadPending(uid).filter((e) => e.k
 const nowIso = () => new Date().toISOString();
 const descProgress = (uid, lid, done, score) => ({ key: `progress:${lid}`, table: "progress", onConflict: "user_id,lesson_id", row: { user_id: uid, lesson_id: Number(lid), done, score, updated_at: nowIso() } });
 const descWrong = (uid, lid, kind, payload) => ({ key: `${kind}:${lid}`, table: "wrong_notes", onConflict: "user_id,lesson_id,kind", row: { user_id: uid, lesson_id: Number(lid), kind, payload, updated_at: nowIso() } });
-const descClear = (uid, day, at) => ({ key: `day:${day}`, table: "day_clears", onConflict: "user_id,day", row: { user_id: uid, day: Number(day), cleared_at: at || nowIso() } });
+// cleared_at 은 서버가 생성(default now()) → 클라이언트는 보내지 않는다.
+const descClear = (uid, day) => ({ key: `day:${day}`, table: "day_clears", onConflict: "user_id,day", row: { user_id: uid, day: Number(day) } });
 
 export function useLearningData() {
   const { user } = useAuth();
@@ -145,7 +146,7 @@ export function useLearningData() {
       else if (!isEmpty(lsPr)) Object.keys(lsPr).forEach((lid) => trySync(descWrong(uid, lid, "practice", lsPr[lid])));
       // 일차 클리어
       if (!isEmpty(dc)) applyClears(dc);
-      else if (!isEmpty(lsC)) Object.keys(lsC).forEach((day) => { if (lsC[day]) trySync(descClear(uid, day, typeof lsC[day] === "string" ? lsC[day] : undefined)); });
+      else if (!isEmpty(lsC)) Object.keys(lsC).forEach((day) => { if (lsC[day]) trySync(descClear(uid, day)); });
 
       // 3) 이전에 실패했던 저장분 재시도
       await flushPending();
@@ -195,12 +196,20 @@ export function useLearningData() {
     trySync(descProgress(userIdRef.current, lid, true, score));
   }, [applyProgress, trySync]);
 
-  // 일차 마무리 시험 통과 → (다음 날) 잠금 해제. cleared_at 을 로컬·DB 동일 값으로 기록.
-  const clearDay = useCallback((day) => {
-    const at = nowIso();
-    applyClears({ ...clearsRef.current, [day]: at });
-    trySync(descClear(userIdRef.current, day, at));
-  }, [applyClears, trySync]);
+  // 일차 마무리 시험 통과 → (다음 날) 잠금 해제. cleared_at 은 서버가 생성하므로 응답값으로 교체한다.
+  //  낙관적으로 임시(device) 값을 넣고, 서버 응답의 cleared_at 으로 덮는다. 실패 시 재시도 큐로.
+  const clearDay = useCallback(async (day) => {
+    const uid = userIdRef.current;
+    applyClears({ ...clearsRef.current, [day]: nowIso() }); // 임시(로드/응답 시 서버값으로 교체)
+    if (!supabase || !uid) return;
+    const { data, error } = await supabase
+      .from("day_clears")
+      .upsert({ user_id: uid, day: Number(day) }, { onConflict: "user_id,day" })
+      .select("day, cleared_at")
+      .single();
+    if (error) { console.error("day_clears 저장 실패:", error.message); enqueue(uid, descClear(uid, day)); bumpFailure(); return; }
+    if (data?.cleared_at) applyClears({ ...clearsRef.current, [day]: data.cleared_at }); // 서버 생성 cleared_at
+  }, [applyClears, bumpFailure]);
 
   return { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson, clearDay };
 }

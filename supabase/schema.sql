@@ -82,7 +82,7 @@ create table if not exists public.progress (
 create table if not exists public.day_clears (
   user_id     uuid not null references auth.users(id) on delete cascade,
   day         integer not null,
-  cleared_at  timestamptz not null default now(),
+  cleared_at  timestamptz not null default now(),   -- 서버 생성(클라이언트가 보내지 않음). 날짜 기반 일차 잠금 판정에 사용
   primary key (user_id, day)
 );
 
@@ -145,6 +145,13 @@ end $$;
 drop trigger if exists visits_set_user_id on public.visits;
 create trigger visits_set_user_id before insert on public.visits
   for each row execute function public.visits_set_user_id();
+
+-- =============================================================
+--  서버 시각 RPC — 클라이언트가 기기 시계 대신 서버 시각을 받아 날짜 잠금 판정에 사용
+-- =============================================================
+create or replace function public.server_now()
+returns timestamptz language sql stable as $$ select now(); $$;
+grant execute on function public.server_now() to anon, authenticated;
 
 -- =============================================================
 --  가입 시 profiles 자동 생성 트리거

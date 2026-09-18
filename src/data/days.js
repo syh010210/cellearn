@@ -2,6 +2,7 @@
 // 하루치 진도(=일차)를 100% 끝내고, 마무리 시험(오답 재시험 + 누적 복습 엑셀 채점)을
 // 통과해야 다음 일차가 열린다.
 import { LESSONS } from "./lessons";
+import { serverNow } from "../lib/serverTime";
 
 export const DAYS = [
   { day: 1, lessons: [1, 2, 3] },
@@ -41,7 +42,7 @@ export function kstDayStr(x) {
   return new Date(ms + KST_OFFSET).toISOString().slice(0, 10); // KST 기준 "YYYY-MM-DD"
 }
 // 일차 잠금 상세: { locked, kind: "prev"(직전 미클리어) | "date"(당일 클리어, 내일 열림) | null, opensOn: "YYYY-MM-DD"|null }
-export function dayGateInfo(day, dayClears, now = Date.now()) {
+export function dayGateInfo(day, dayClears, now = serverNow()) {
   const prev = day - 1;
   const v = dayClears?.[prev];
   if (!v) return { locked: true, kind: "prev", opensOn: null };
@@ -59,7 +60,7 @@ export function isOTDone(dayClears) {
 
 // 일차가 열려 있는가: 직전 일차가 클리어되고, 그 클리어 다음 날(KST)이 되어야 열린다.
 // 1일차는 직전이 day 0(=OT) → OT 통과 당일에 바로 열린다(예외). 구형식(true)은 날짜 제한 없이 열린다.
-export function isDayUnlocked(day, dayClears, now = Date.now()) {
+export function isDayUnlocked(day, dayClears, now = serverNow()) {
   return !dayGateInfo(day, dayClears, now).locked;
 }
 

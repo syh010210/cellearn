@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { LESSONS } from "./data/lessons";
 import { trackVisit } from "./lib/trackVisit";
+import { supabase } from "./lib/supabase";
+import { initServerTime } from "./lib/serverTime";
 import { useAuth } from "./context/AuthContext";
 import { useLearningData } from "./hooks/useLearningData";
 import { useLessonFlow, allConceptsPassed } from "./hooks/useLessonFlow";
@@ -52,8 +54,11 @@ const SIDEBAR_COLLAPSE_W = 480;
 
 export default function App() {
   const [isMobile] = useState(isMobileDevice); // 기기 특성 기반, 세션 내 고정
+  const [, setClockTick] = useState(0); // 서버 시각 동기화 완료 시 리렌더(잠금 재판정)
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1024);
   useEffect(() => { const on = () => setVw(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+  // 서버 시각 1회 동기화(기기 시계 변조로 일차 잠금 우회 방지). 완료되면 리렌더해 잠금 재판정.
+  useEffect(() => { let alive = true; initServerTime(supabase).then(() => { if (alive) setClockTick((t) => t + 1); }); return () => { alive = false; }; }, []);
   const collapseSidebar = vw < SIDEBAR_COLLAPSE_W;
   const { loading, dataReady, isSupabaseConfigured, isAuthed, isAdmin, hasActiveEnrollment, user, signOut } = useAuth();
   const [page, setPage] = useState("landing");
