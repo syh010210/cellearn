@@ -7,6 +7,7 @@ import { computeRefund } from "../../data/refund";
 import { PAID_MONTHS } from "../../data/membership";
 import { kstDateStr } from "../../lib/trackVisit";
 import { UI } from "../../theme";
+import AdminStudentDetail from "./AdminStudentDetail";
 
 // 관리자 대시보드 — 회원/결제/진도 데이터 조회. role='admin' 계정만 접근.
 // 원본 Supabase 컬럼 대신 한글 라벨·포맷된 금액/날짜·상태 뱃지로 가공해서 보여준다.
@@ -33,6 +34,7 @@ export default function AdminView({ onBack }) {
 
   const totalLessons = LESSONS.length;
   const day1LessonCount = DAYS[0]?.lessons.length ?? 3; // 1일차 차시 수(전액 환불 기준)
+  const [detailUid, setDetailUid] = useState(null); // 진도 상세로 연 회원
 
   // 관리자 데이터는 양이 적으므로(초기 서비스) 한 번에 모두 받아 탭별로 가공한다.
   async function load() {
@@ -165,16 +167,28 @@ export default function AdminView({ onBack }) {
     return m;
   }, [activeEnrollments]);
 
+  // 상세 화면용: 회원별 최신 결제(paid)·최신 수강권
+  const paidByUser = useMemo(() => {
+    const m = new Map();
+    payments.forEach((p) => { if (p.status !== "paid") return; const t = p.paid_at || p.created_at; const c = m.get(p.user_id); if (!c || new Date(t) > new Date(c.paid_at)) m.set(p.user_id, { amount: p.amount || 0, paid_at: t }); });
+    return m;
+  }, [payments]);
+  const latestEnrByUser = useMemo(() => {
+    const m = new Map();
+    enrollments.forEach((e) => { const c = m.get(e.user_id); if (!c || new Date(e.valid_to) > new Date(c.valid_to)) m.set(e.user_id, e); });
+    return m;
+  }, [enrollments]);
+
   // 진도 집계(사용자별)
   const progressRows = useMemo(() => {
     const byUser = new Map();
     profiles.forEach((p) => byUser.set(p.id, {
-      email: p.email || p.id, name: p.name || "", grade: p.target_grade || "",
+      uid: p.id, email: p.email || p.id, name: p.name || "", grade: p.target_grade || "",
       done: 0, scoreSum: 0, scoreCnt: 0, last: null,
     }));
     progress.forEach((r) => {
       let u = byUser.get(r.user_id);
-      if (!u) { u = { email: r.user_id, name: "", grade: "", done: 0, scoreSum: 0, scoreCnt: 0, last: null }; byUser.set(r.user_id, u); }
+      if (!u) { u = { uid: r.user_id, email: r.user_id, name: "", grade: "", done: 0, scoreSum: 0, scoreCnt: 0, last: null }; byUser.set(r.user_id, u); }
       if (r.done) u.done += 1;
       if (typeof r.score === "number") { u.scoreSum += r.score; u.scoreCnt += 1; }
       if (!u.last || r.updated_at > u.last) u.last = r.updated_at;
@@ -249,6 +263,7 @@ export default function AdminView({ onBack }) {
   const th = { textAlign: "left", padding: "10px 12px", fontSize: 12, color: UI.mut, borderBottom: `1px solid ${UI.line}`, whiteSpace: "nowrap", fontWeight: 700 };
   const td = { padding: "10px 12px", fontSize: 13, borderBottom: `1px solid ${UI.line}`, whiteSpace: "nowrap", color: UI.ink };
   const tdNum = { ...td, fontFamily: UI.mono };
+  const linkBtn = { background: "none", border: "none", padding: 0, color: UI.teal, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, textDecoration: "underline", textAlign: "left" };
 
   const fmtWon = (n) => "₩" + (n || 0).toLocaleString("ko-KR");
   const fmtDateTime = (v) => v ? new Date(v).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false }) : "—";
@@ -278,7 +293,7 @@ export default function AdminView({ onBack }) {
   };
 
   const tabBtn = (t, label) => (
-    <button onClick={() => setTab(t)} style={{ background: tab === t ? UI.teal : UI.panel, border: `1px solid ${tab === t ? UI.teal : UI.line}`, color: tab === t ? "#fff" : UI.mut, padding: "8px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 700 : 500 }}>{label}</button>
+    <button onClick={() => { setTab(t); setDetailUid(null); }} style={{ background: tab === t ? UI.teal : UI.panel, border: `1px solid ${tab === t ? UI.teal : UI.line}`, color: tab === t ? "#fff" : UI.mut, padding: "8px 16px", borderRadius: 999, cursor: "pointer", fontSize: 13, fontWeight: tab === t ? 700 : 500 }}>{label}</button>
   );
 
   const Kpi = ({ label, value, unit, sub, accent }) => (
@@ -315,7 +330,16 @@ export default function AdminView({ onBack }) {
 
       {error && <div style={{ color: UI.red, background: UI.redSoft, border: `1px solid ${UI.redLine}`, borderRadius: UI.rMd, padding: "12px 14px", marginBottom: 16, fontSize: 13 }}>데이터 조회 오류: {error}</div>}
 
-      {loading ? <div style={{ color: UI.mut }}>불러오는 중…</div> : (
+      {loading ? <div style={{ color: UI.mut }}>불러오는 중…</div> : detailUid ? (
+        <AdminStudentDetail
+          uid={detailUid}
+          profile={profById.get(detailUid)}
+          payment={paidByUser.get(detailUid) || null}
+          enrollment={latestEnrByUser.get(detailUid) || null}
+          totalLessons={totalLessons}
+          onBack={() => setDetailUid(null)}
+        />
+      ) : (
         <>
           {/* ── 개요 ─────────────────────────────── */}
           {tab === "overview" && (
@@ -429,7 +453,7 @@ export default function AdminView({ onBack }) {
                 <tbody>
                   {progressRows.map((u, i) => (
                     <tr key={u.email || i}>
-                      <td style={td}>{u.email}</td>
+                      <td style={td}><button onClick={() => setDetailUid(u.uid)} style={linkBtn}>{u.email}</button></td>
                       <td style={td}>{u.name || "—"}</td>
                       <td style={td}><GradeChip g={u.grade} /></td>
                       <td style={tdNum}>{u.done} / {totalLessons}</td>
@@ -466,7 +490,7 @@ export default function AdminView({ onBack }) {
                   <tbody>
                     {refundRows.map((u) => (
                       <tr key={u.uid}>
-                        <td style={td}>{u.email}{u.name ? ` (${u.name})` : ""}</td>
+                        <td style={td}><button onClick={() => setDetailUid(u.uid)} style={linkBtn}>{u.email}{u.name ? ` (${u.name})` : ""}</button></td>
                         <td style={tdNum}>{u.done} / {totalLessons}</td>
                         <td style={tdNum}>{fmtDay(u.paidAt)}</td>
                         <td style={tdNum}>{u.elapsedPaidDays} / {u.periodDays}</td>
