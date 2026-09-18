@@ -5,10 +5,12 @@
 // ⚠️ 서비스 롤 키는 이 함수(서버) 환경에서만 사용한다. 클라이언트에는 절대 내려보내지 않는다.
 // 호출자 JWT 를 검증하고 profiles.role='admin' 일 때만 동작한다(아니면 403).
 //
-// 입력: { action: "create" | "reset" | "list", username, password? }
+// 입력: { action: "create" | "reset" | "list" | "revoke", username?, password?, user_id? }
 //  - create : 수강 계정 생성(이메일 인증 완료 처리) + 2급 수강권 1년 부여
 //  - reset  : progress·day_clears·wrong_notes·exam_attempts 에서 그 계정 행 삭제
 //  - list   : user_metadata.created_by='admin' 계정 목록(최대 100)
+//  - revoke : 수강권 회수 — 해당 회원의 활성 enrollments.valid_to=now, revoked_at=now.
+//             계정·결제·진도는 지우지 않는다(기록 보관). 학습 접근만 차단.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -128,6 +130,20 @@ Deno.serve(async (req) => {
         deleted[t] = count ?? 0;
       }
       return json({ ok: true, user_id: uid, deleted });
+    }
+
+    // ── revoke : 수강권 회수 (계정·결제·진도는 보존) ──────────
+    if (action === "revoke") {
+      const uid = typeof body?.user_id === "string" ? body.user_id.trim() : "";
+      if (!uid) return json({ error: "user_id 가 필요합니다." }, 400);
+      const nowIso = new Date().toISOString();
+      const { data: updated, error: revErr } = await admin.from("enrollments")
+        .update({ valid_to: nowIso, revoked_at: nowIso })
+        .eq("user_id", uid)
+        .gt("valid_to", nowIso)        // 아직 유효한 수강권만 회수
+        .select("id");
+      if (revErr) return json({ error: "수강권 회수 실패", detail: revErr.message }, 500);
+      return json({ ok: true, user_id: uid, revoked: updated?.length ?? 0, revoked_at: nowIso });
     }
 
     return json({ error: "알 수 없는 action 입니다." }, 400);

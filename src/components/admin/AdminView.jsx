@@ -2,6 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { supabase } from "../../lib/supabase";
 import { LESSONS } from "../../data/lessons";
+import { DAYS } from "../../data/days";
+import { computeRefund } from "../../data/refund";
+import { PAID_MONTHS } from "../../data/membership";
 import { kstDateStr } from "../../lib/trackVisit";
 import { UI } from "../../theme";
 
@@ -29,6 +32,7 @@ export default function AdminView({ onBack }) {
   const [createBusy, setCreateBusy] = useState(false);
 
   const totalLessons = LESSONS.length;
+  const day1LessonCount = DAYS[0]?.lessons.length ?? 3; // 1일차 차시 수(전액 환불 기준)
 
   // 관리자 데이터는 양이 적으므로(초기 서비스) 한 번에 모두 받아 탭별로 가공한다.
   async function load() {
@@ -107,6 +111,14 @@ export default function AdminView({ onBack }) {
     alert(`${username} 초기화 완료 — 진도 ${d.progress ?? 0} · 일차 ${d.day_clears ?? 0} · 오답 ${d.wrong_notes ?? 0} · 응시 ${d.exam_attempts ?? 0}`);
     loadStudents();
   }
+  // 수강권 회수: 계정·결제·진도는 보존하고 학습 접근만 차단(enrollments.valid_to=now). 실제 환불은 결제사에서 수동.
+  async function revokeEnrollment(uid, label) {
+    if (!window.confirm(`${label} 회원의 수강권을 회수합니다.\n학습 접근이 즉시 차단됩니다. 계정·결제·진도 기록은 삭제하지 않습니다.\n(실제 환불은 결제사에서 별도로 처리하세요.)\n계속할까요?`)) return;
+    const { data, error: err } = await invokeAdminStudent({ action: "revoke", user_id: uid });
+    if (err) { alert(err); return; }
+    alert(`수강권 회수 완료 — 회수된 수강권 ${data?.revoked ?? 0}건.`);
+    load();
+  }
 
   // ── 파생 데이터 ─────────────────────────────────────────────
   const profById = useMemo(() => {
@@ -175,6 +187,37 @@ export default function AdminView({ onBack }) {
       }))
       .sort((a, b) => b.done - a.done || String(b.last || "").localeCompare(String(a.last || "")));
   }, [profiles, progress, totalLessons]);
+
+  // 환불·수강권 회수용 회원별 집계 (결제 있는 회원만)
+  const refundRows = useMemo(() => {
+    const paidByUser = new Map();
+    payments.forEach((p) => {
+      if (p.status !== "paid") return;
+      const t = p.paid_at || p.created_at;
+      const cur = paidByUser.get(p.user_id);
+      if (!cur || new Date(t) > new Date(cur.paidAt)) paidByUser.set(p.user_id, { amount: p.amount || 0, paidAt: t });
+    });
+    const doneByUser = new Map();
+    progress.forEach((r) => { if (r.done) doneByUser.set(r.user_id, (doneByUser.get(r.user_id) || 0) + 1); });
+    const enrByUser = new Map();
+    enrollments.forEach((e) => { const cur = enrByUser.get(e.user_id); if (!cur || new Date(e.valid_to) > new Date(cur.valid_to)) enrByUser.set(e.user_id, e); });
+    const rows = [];
+    for (const [uid, pay] of paidByUser) {
+      const prof = profById.get(uid);
+      const done = doneByUser.get(uid) || 0;
+      const enr = enrByUser.get(uid);
+      const rf = computeRefund({ amount: pay.amount, totalLessons, doneLessons: done, day1LessonCount, paidStartMs: Date.parse(pay.paidAt), paidMonths: PAID_MONTHS, nowMs: now });
+      rows.push({
+        uid, email: prof?.email || uid, name: prof?.name || "",
+        amount: pay.amount, paidAt: pay.paidAt, done,
+        elapsedPaidDays: Math.round(rf.elapsedPaidDays), periodDays: Math.round(rf.periodDays),
+        refund: rf.refund, reason: rf.reason, refundable: rf.refundable, full: rf.full, capped: rf.capped,
+        active: !!(enr && new Date(enr.valid_to).getTime() > now),
+        revoked: !!enr?.revoked_at, revokedAt: enr?.revoked_at || null, validTo: enr?.valid_to || null,
+      });
+    }
+    return rows.sort((a, b) => String(b.paidAt || "").localeCompare(String(a.paidAt || "")));
+  }, [payments, progress, enrollments, profById, totalLessons, day1LessonCount, now]);
 
   // 접속 현황 집계(선택 날짜)
   const visitStats = useMemo(() => {
@@ -265,6 +308,7 @@ export default function AdminView({ onBack }) {
         {tabBtn("members", "회원")}
         {tabBtn("payments", "결제")}
         {tabBtn("progress", "진도")}
+        {tabBtn("refund", "환불·수강권")}
         {tabBtn("visits", "접속 현황")}
         {tabBtn("students", "수강 계정")}
       </div>
@@ -405,6 +449,48 @@ export default function AdminView({ onBack }) {
                 </tbody>
               </table>
             </div>
+          )}
+
+          {/* ── 환불·수강권 ─────────────────────────── */}
+          {tab === "refund" && (
+            <>
+              <div style={{ background: UI.panelAlt, border: `1px solid ${UI.line}`, borderRadius: UI.rMd, padding: "10px 14px", fontSize: 12.5, color: UI.mut, marginBottom: 12, lineHeight: 1.6 }}>
+                환불 예상 금액은 <b style={{ color: UI.ink }}>환불정책 기준으로 계산한 참고용 표시</b>입니다. <b style={{ color: UI.ink }}>실제 환불은 결제사(PortOne) 콘솔에서 수동으로 처리</b>하세요. 수강권 회수는 학습 접근만 차단하며 계정·결제·진도 기록은 보존합니다.
+              </div>
+              <div style={tableWrap}>
+                <table style={{ borderCollapse: "collapse", width: "100%" }}>
+                  <thead><tr>
+                    <th style={th}>이메일</th><th style={th}>완료 차시</th><th style={th}>결제일</th><th style={th}>경과/유료기간(일)</th>
+                    <th style={th}>결제금액</th><th style={th}>환불 예상</th><th style={th}>근거</th><th style={th}>수강권</th><th style={th}>회수</th>
+                  </tr></thead>
+                  <tbody>
+                    {refundRows.map((u) => (
+                      <tr key={u.uid}>
+                        <td style={td}>{u.email}{u.name ? ` (${u.name})` : ""}</td>
+                        <td style={tdNum}>{u.done} / {totalLessons}</td>
+                        <td style={tdNum}>{fmtDay(u.paidAt)}</td>
+                        <td style={tdNum}>{u.elapsedPaidDays} / {u.periodDays}</td>
+                        <td style={tdNum}>{fmtWon(u.amount)}</td>
+                        <td style={{ ...tdNum, color: u.refund === 0 ? UI.red : u.full ? UI.green : UI.ink, fontWeight: 700 }}>{fmtWon(u.refund)}{u.full ? " (전액)" : ""}</td>
+                        <td style={{ ...td, whiteSpace: "normal", maxWidth: 260, color: UI.mut, fontSize: 12 }}>{u.reason}</td>
+                        <td style={td}>
+                          {u.revoked ? <span style={{ background: "#fdf3e3", color: UI.warn, border: "1px solid #f0dcb8", padding: "2px 10px", borderRadius: UI.rPill, fontSize: 12, fontWeight: 700 }}>회수됨</span>
+                            : u.active ? <span style={{ background: UI.greenSoft, color: UI.green, border: `1px solid ${UI.greenLine}`, padding: "2px 10px", borderRadius: UI.rPill, fontSize: 12, fontWeight: 700 }}>활성</span>
+                            : <span style={{ color: UI.faint }}>만료</span>}
+                        </td>
+                        <td style={td}>
+                          <button onClick={() => revokeEnrollment(u.uid, u.email)} disabled={!u.active}
+                            style={{ background: u.active ? UI.redSoft : UI.panelAlt, color: u.active ? UI.red : UI.faint, border: `1px solid ${u.active ? UI.redLine : UI.line}`, borderRadius: UI.rMd, padding: "5px 12px", fontSize: 12.5, fontWeight: 700, cursor: u.active ? "pointer" : "not-allowed" }}>
+                            수강권 회수
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {refundRows.length === 0 && <tr><td style={td} colSpan={9}>결제 기록이 있는 회원이 없습니다.</td></tr>}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
 
           {/* ── 접속 현황 ─────────────────────────── */}

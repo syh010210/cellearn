@@ -251,7 +251,7 @@ function HeroCarousel() {
 const FAQS = [
   { q: "PC에서만 학습할 수 있나요?", a: "개념 학습 · 실습 · 채점 기능은 PC(웹 브라우저)에서 이용합니다. 랜딩 · 커리큘럼 · 수강료 안내는 모바일에서도 볼 수 있어요." },
   { q: COPY.faqQ, a: COPY.faqA },
-  { q: "급수는 어떻게 선택하나요?", a: `결제 시 2급 또는 1급 중 하나를 선택합니다. 2급은 ${SCHEDULE.grade2Soon}, 1급은 ${SCHEDULE.grade1Month}에 오픈 예정입니다.` },
+  { q: "급수는 어떻게 선택하나요?", a: `현재는 2급 실기만 결제할 수 있습니다. 1급은 ${SCHEDULE.grade1Month} 중 서비스 개시 예정이라 지금은 선택할 수 없어요.` },
   { q: "실습은 어떻게 채점되나요?", a: "결과값이 아니라 셀에 입력한 수식 자체를 셀 단위로 비교해 정오답을 가립니다. 실제 시험처럼 수식을 정확히 써야 정답으로 인정됩니다." },
   { q: "다음 차시는 어떻게 열리나요?", a: "하루치 진도를 마친 뒤, 사전 점검 세션(누적 퀴즈 오답 재시험 + 누적 실습 오답 엑셀)을 모두 통과하면 다음 날 차시가 열립니다." },
   { q: "실전 모드는 무엇인가요?", a: "전 차시를 완주하면 열리는 모드로, 최근 기출 유형의 문제를 원하는 주제로 생성해 원하는 만큼 풀 수 있습니다. 시험 직전 감각 유지에 좋습니다." },
@@ -336,7 +336,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
       {/* ===== AB. 오픈 공지 바 ===== */}
       <div style={{ background: UI.teal, color: "#fff", textAlign: "center", padding: "9px 16px", fontSize: 13.5 }}>
         <span style={{ ...mono, background: UI.lime, color: UI.teal, fontWeight: 700, fontSize: 11.5, padding: "2px 8px", borderRadius: UI.rSm, marginRight: 10 }}>OPEN</span>
-        {SCHEDULE.grade2Soon}, {SCHEDULE.grade2Open} 컴활 2급 실기 클래스가 열립니다
+        {SCHEDULE.grade2Open}, 컴활 2급 실기 클래스가 열렸습니다
         <a href="#pricing" style={{ color: UI.lime, fontWeight: 700, textDecoration: "none", marginLeft: isMobile ? 0 : 10, display: isMobile ? "block" : "inline", marginTop: isMobile ? 4 : 0 }}>수강료 보기 →</a>
       </div>
 
@@ -387,7 +387,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
           <div style={{ flex: "1 1 400px", minWidth: 300, display: "flex", flexDirection: "column" }}>
             <p style={{ color: UI.ink, fontSize: 20, lineHeight: 1.65, margin: "0 0 18px", fontWeight: 500 }}>
               지금까지 쌓인 기출 유형이 그대로 통하는 마지막 해.<br />
-              {SCHEDULE.grade2Open}, 컴활 2급 실기 클래스가 열립니다.
+              {SCHEDULE.grade2Open}, 컴활 2급 실기 클래스가 열렸습니다.
             </p>
             <p style={{ color: UI.mut, fontSize: 16.5, lineHeight: 1.75, margin: "0 0 30px" }}>
               강의를 보기만 하는 학습이 아니라 직접 셀에 수식을 입력하고,

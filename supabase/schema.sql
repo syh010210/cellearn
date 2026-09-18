@@ -60,6 +60,7 @@ create table if not exists public.enrollments (
   payment_id    uuid references public.payments(id) on delete set null,
   valid_from    timestamptz not null default now(),
   valid_to      timestamptz not null,           -- 결제 검증 시 computeValidTo(유료 2개월, 프로모션 마감 전이면 2026-12-31과 max)
+  revoked_at    timestamptz,                     -- 관리자 수강권 회수 시각(회수=valid_to를 now로. 만료와 구분용)
   created_at    timestamptz not null default now()
 );
 create index if not exists enrollments_user_idx on public.enrollments(user_id);
