@@ -10,7 +10,37 @@ import { supabase } from "../lib/supabase";
 // - upsert 실패는 localStorage 큐(cellearn:{userId}:pending)에 쌓아 다음 로드·저장 시 재시도.
 // - 실패가 3회 이상 누적되면 saveError=true 로 알려 화면 상단 배너를 띄운다.
 
-const MAP = { progress: "progress", quiz: "quizWrongMap", practice: "practiceWrongMap", clears: "dayClears" };
+const MAP = { progress: "progress", quiz: "quizWrongMap", practice: "practiceWrongMap", clears: "dayClears", flow: "lessonFlow" };
+
+// 차시 흐름(개념 통과·실습 완료) 병합: 통과 개념은 합집합, revealed 는 OR, practiceDone 은 OR.
+const emptyFlow = () => ({ concepts: {}, practiceDone: false });
+function mergeConcepts(a = {}, b = {}) {
+  const out = {};
+  for (const idx of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    out[idx] = { passed: !!(a[idx]?.passed || b[idx]?.passed), revealed: !!(a[idx]?.revealed || b[idx]?.revealed) };
+  }
+  return out;
+}
+function mergeFlow(a, b) {
+  const x = a || emptyFlow(), y = b || emptyFlow();
+  return { concepts: mergeConcepts(x.concepts, y.concepts), practiceDone: !!(x.practiceDone || y.practiceDone) };
+}
+// 구형식 per-lesson 키(cellearn:{uid}:lesson:{id}:flow) 를 훑어 {lid:{concepts,practiceDone}} 로 모은다.
+function scanOldFlow(uid) {
+  const out = {};
+  if (!hasLS) return out;
+  const prefix = `cellearn:${uid ?? "local"}:lesson:`;
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (!k || !k.startsWith(prefix) || !k.endsWith(":flow")) continue;
+      const lid = k.slice(prefix.length, -":flow".length);
+      const v = JSON.parse(localStorage.getItem(k) || "null");
+      if (v) out[lid] = { concepts: v.concepts || {}, practiceDone: !!v.practiceDone };
+    }
+  } catch { /* 무시 */ }
+  return out;
+}
 
 const hasLS = typeof localStorage !== "undefined";
 const uidTag = (uid) => uid ?? "local";
@@ -45,6 +75,8 @@ const descProgress = (uid, lid, done, score) => ({ key: `progress:${lid}`, table
 const descWrong = (uid, lid, kind, payload) => ({ key: `${kind}:${lid}`, table: "wrong_notes", onConflict: "user_id,lesson_id,kind", row: { user_id: uid, lesson_id: Number(lid), kind, payload, updated_at: nowIso() } });
 // cleared_at 은 서버가 생성(default now()) → 클라이언트는 보내지 않는다.
 const descClear = (uid, day) => ({ key: `day:${day}`, table: "day_clears", onConflict: "user_id,day", row: { user_id: uid, day: Number(day) } });
+// 개념 흐름 저장 — progress 의 concepts·practice_done 만 담는다(done·score 는 건드리지 않음).
+const descFlow = (uid, lid, concepts, practiceDone) => ({ key: `flow:${lid}`, table: "progress", onConflict: "user_id,lesson_id", row: { user_id: uid, lesson_id: Number(lid), concepts, practice_done: !!practiceDone, updated_at: nowIso() } });
 
 export function useLearningData() {
   const { user } = useAuth();
@@ -58,10 +90,11 @@ export function useLearningData() {
   const [quizWrongMap, setQuizWrongState] = useState({});
   const [practiceWrongMap, setPracticeWrongState] = useState({});
   const [dayClears, setDayClearsState] = useState({});
+  const [lessonFlow, setLessonFlowState] = useState({}); // { lessonId: { concepts, practiceDone } }
   const [saveError, setSaveError] = useState(false);
 
   // 최신 맵을 동기적으로 읽어 next 를 계산하기 위한 미러 ref
-  const progressRef = useRef({}), quizRef = useRef({}), practiceRef = useRef({}), clearsRef = useRef({});
+  const progressRef = useRef({}), quizRef = useRef({}), practiceRef = useRef({}), clearsRef = useRef({}), flowRef = useRef({});
   const failuresRef = useRef(0);
 
   const bumpFailure = useCallback(() => {
@@ -74,6 +107,7 @@ export function useLearningData() {
   const applyQuiz = useCallback((v) => { quizRef.current = v; setQuizWrongState(v); lsSet(userIdRef.current, MAP.quiz, v); }, []);
   const applyPractice = useCallback((v) => { practiceRef.current = v; setPracticeWrongState(v); lsSet(userIdRef.current, MAP.practice, v); }, []);
   const applyClears = useCallback((v) => { clearsRef.current = v; setDayClearsState(v); lsSet(userIdRef.current, MAP.clears, v); }, []);
+  const applyFlow = useCallback((v) => { flowRef.current = v; setLessonFlowState(v); lsSet(userIdRef.current, MAP.flow, v); }, []);
 
   // Supabase upsert 시도. 실패하면 큐에 넣고 실패 카운트 증가, 성공하면 해당 큐 제거.
   const trySync = useCallback(async (desc) => {
@@ -111,7 +145,8 @@ export function useLearningData() {
     const lsQ = lsGet(uid, MAP.quiz) || {};
     const lsPr = lsGet(uid, MAP.practice) || {};
     const lsC = lsGet(uid, MAP.clears) || {};
-    applyProgress(lsP); applyQuiz(lsQ); applyPractice(lsPr); applyClears(lsC);
+    const lsF = lsGet(uid, MAP.flow) || {};
+    applyProgress(lsP); applyQuiz(lsQ); applyPractice(lsPr); applyClears(lsC); applyFlow(lsF);
 
     if (!supabase || !uid) return;
 
@@ -119,14 +154,17 @@ export function useLearningData() {
     let cancelled = false;
     (async () => {
       const [{ data: prog }, { data: notes }, { data: clears }] = await Promise.all([
-        supabase.from("progress").select("lesson_id, done, score").eq("user_id", uid),
+        supabase.from("progress").select("lesson_id, done, score, concepts, practice_done").eq("user_id", uid),
         supabase.from("wrong_notes").select("lesson_id, kind, payload").eq("user_id", uid),
         supabase.from("day_clears").select("day, cleared_at").eq("user_id", uid),
       ]);
       if (cancelled) return;
 
-      const p = {};
-      (prog ?? []).forEach((r) => { p[r.lesson_id] = { done: r.done, score: r.score }; });
+      const p = {}, fmDb = {};
+      (prog ?? []).forEach((r) => {
+        p[r.lesson_id] = { done: r.done, score: r.score };
+        fmDb[r.lesson_id] = { concepts: r.concepts || {}, practiceDone: !!r.practice_done };
+      });
       const qw = {}, pw = {};
       (notes ?? []).forEach((r) => {
         if (r.kind === "quiz") qw[r.lesson_id] = r.payload ?? [];
@@ -148,11 +186,22 @@ export function useLearningData() {
       if (!isEmpty(dc)) applyClears(dc);
       else if (!isEmpty(lsC)) Object.keys(lsC).forEach((day) => { if (lsC[day]) trySync(descClear(uid, day)); });
 
+      // 개념 흐름: DB + 로컬(통합 미러 + 구형식 per-lesson 키) 병합(더 많이 진행된 쪽). 앞선 차시는 DB로 이관.
+      const merged = { ...fmDb };
+      const localAll = { ...scanOldFlow(uid) };
+      for (const [lid, v] of Object.entries(lsF)) localAll[lid] = mergeFlow(localAll[lid], v);
+      for (const [lid, lv] of Object.entries(localAll)) merged[lid] = mergeFlow(fmDb[lid], lv);
+      applyFlow(merged);
+      for (const [lid, mv] of Object.entries(merged)) {
+        const dbv = fmDb[lid];
+        if (JSON.stringify(mv) !== JSON.stringify(dbv || emptyFlow())) trySync(descFlow(uid, lid, mv.concepts, mv.practiceDone));
+      }
+
       // 3) 이전에 실패했던 저장분 재시도
       await flushPending();
     })();
     return () => { cancelled = true; };
-  }, [userId, applyProgress, applyQuiz, applyPractice, applyClears, trySync, flushPending]);
+  }, [userId, applyProgress, applyQuiz, applyPractice, applyClears, applyFlow, trySync, flushPending]);
 
   const saveQuizWrong = useCallback((lid, ids) => {
     const next = { ...quizRef.current, [lid]: ids };
@@ -196,6 +245,26 @@ export function useLearningData() {
     trySync(descProgress(userIdRef.current, lid, true, score));
   }, [applyProgress, trySync]);
 
+  // 개념 통과 기록(차시별). concepts·practice_done 만 저장 → done·score 는 건드리지 않음.
+  const setConceptPassed = useCallback((lid, idx, opts = {}) => {
+    const cur = flowRef.current[lid] || emptyFlow();
+    const c = cur.concepts[idx] || {};
+    if (c.passed && (c.revealed || !opts.revealed)) return; // 변화 없음
+    const nextConcepts = { ...cur.concepts, [idx]: { passed: true, revealed: !!c.revealed || !!opts.revealed } };
+    const next = { concepts: nextConcepts, practiceDone: cur.practiceDone };
+    applyFlow({ ...flowRef.current, [lid]: next });
+    trySync(descFlow(userIdRef.current, lid, nextConcepts, next.practiceDone));
+  }, [applyFlow, trySync]);
+
+  // 실습 채점 완료 기록(차시별).
+  const setPracticeDone = useCallback((lid) => {
+    const cur = flowRef.current[lid] || emptyFlow();
+    if (cur.practiceDone) return;
+    const next = { concepts: cur.concepts, practiceDone: true };
+    applyFlow({ ...flowRef.current, [lid]: next });
+    trySync(descFlow(userIdRef.current, lid, cur.concepts, true));
+  }, [applyFlow, trySync]);
+
   // 일차 마무리 시험 통과 → (다음 날) 잠금 해제. cleared_at 은 서버가 생성하므로 응답값으로 교체한다.
   //  낙관적으로 임시(device) 값을 넣고, 서버 응답의 cleared_at 으로 덮는다. 실패 시 재시도 큐로.
   const clearDay = useCallback(async (day) => {
@@ -211,5 +280,5 @@ export function useLearningData() {
     if (data?.cleared_at) applyClears({ ...clearsRef.current, [day]: data.cleared_at }); // 서버 생성 cleared_at
   }, [applyClears, bumpFailure]);
 
-  return { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson, clearDay };
+  return { progress, quizWrongMap, practiceWrongMap, dayClears, lessonFlow, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson, clearDay, setConceptPassed, setPracticeDone };
 }

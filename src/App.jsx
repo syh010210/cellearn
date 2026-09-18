@@ -5,7 +5,7 @@ import { supabase } from "./lib/supabase";
 import { initServerTime } from "./lib/serverTime";
 import { useAuth } from "./context/AuthContext";
 import { useLearningData } from "./hooks/useLearningData";
-import { useLessonFlow, allConceptsPassed } from "./hooks/useLessonFlow";
+import { allConceptsPassed } from "./hooks/useLessonFlow";
 import Sidebar from "./components/layout/Sidebar";
 import LandingPage from "./components/landing/LandingPage";
 import Dashboard from "./components/dashboard/Dashboard";
@@ -35,6 +35,9 @@ const STEP_TABS = [
 
 // 수강권(결제) 필수. true면 로그인 후 활성 수강권이 없으면 결제 화면으로 보낸다.
 const REQUIRE_ENROLLMENT = true;
+
+// 개념 흐름 기본값(해당 차시 기록이 아직 없을 때)
+const EMPTY_FLOW = { concepts: {}, practiceDone: false };
 
 // 모바일 안내 게이트 판정 — 뷰포트 폭이 아니라 "기기 특성"으로 본다.
 // 터치 전용(pointer:coarse && hover:none, iPad OS13+ 데스크톱 UA 포함) 또는 모바일 UA 일 때만 true.
@@ -70,12 +73,14 @@ export default function App() {
   const [authMode, setAuthMode] = useState("login");
   // 실전 응시(phase=running) 중 앱 내 다른 화면으로 이동하려 하면 종료 확인. 확정 이동 함수를 담아둔다.
   const [examExitAsk, setExamExitAsk] = useState(null);
-  // 진도/오답은 계정에 저장·복원 (비로그인/미설정 시 메모리 fallback)
-  const { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay } = useLearningData();
-  // 차시 내 순서 강제(개념→실습→퀴즈) 흐름 상태 — 현재 차시 기준, localStorage 만 사용
+  // 진도/오답/개념 흐름은 계정(DB)에 저장·복원 (비로그인/미설정 시 메모리 fallback)
+  const { progress, quizWrongMap, practiceWrongMap, dayClears, lessonFlow, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson: persistComplete, clearDay, setConceptPassed: persistConceptPassed, setPracticeDone: persistPracticeDone } = useLearningData();
+  // 차시 내 순서 강제(개념→실습→퀴즈) 흐름 상태 — 현재 차시 기준(DB의 lessonFlow에서 선택)
   const [conceptIdx, setConceptIdx] = useState(0);
   const [tabNotice, setTabNotice] = useState(null);
-  const { flow, setConceptPassed, setPracticeDone } = useLessonFlow(typeof view === "number" ? view : null, user?.id);
+  const flow = (typeof view === "number" && lessonFlow[view]) || EMPTY_FLOW;
+  const setConceptPassed = (idx, opts) => { if (typeof view === "number") persistConceptPassed(view, idx, opts); };
+  const setPracticeDone = () => { if (typeof view === "number") persistPracticeDone(view); };
 
   // Supabase 키가 없으면(개발 중) 게이팅을 우회해 기존처럼 학습 화면 사용 가능
   const gateBypassed = !isSupabaseConfigured;

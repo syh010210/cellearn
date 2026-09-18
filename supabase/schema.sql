@@ -75,6 +75,8 @@ create table if not exists public.progress (
   lesson_id   integer not null,
   done        boolean not null default false,
   score       integer,
+  concepts     jsonb not null default '{}'::jsonb, -- 개념 단위 통과 { "idx": { passed, revealed } }
+  practice_done boolean not null default false,     -- 실습 채점 1회 이상 완료
   updated_at  timestamptz not null default now(),
   primary key (user_id, lesson_id)
 );

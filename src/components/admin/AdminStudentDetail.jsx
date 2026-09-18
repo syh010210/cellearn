@@ -15,7 +15,7 @@ export default function AdminStudentDetail({ uid, profile, payment, enrollment, 
     (async () => {
       if (!supabase || !uid) { setD({ progress: [], clears: [], wrongs: [], exams: [] }); return; }
       const [p, c, w, e] = await Promise.all([
-        supabase.from("progress").select("lesson_id, done, score, updated_at").eq("user_id", uid),
+        supabase.from("progress").select("lesson_id, done, score, updated_at, concepts, practice_done").eq("user_id", uid),
         supabase.from("day_clears").select("day, cleared_at").eq("user_id", uid),
         supabase.from("wrong_notes").select("lesson_id, kind, payload").eq("user_id", uid),
         supabase.from("exam_attempts").select("created_at, correct, total, elapsed_ms").eq("user_id", uid).order("created_at", { ascending: false }),
@@ -113,16 +113,23 @@ export default function AdminStudentDetail({ uid, profile, payment, enrollment, 
         <div style={card}>
           <div style={h}>차시별 진행</div>
           <table style={{ borderCollapse: "collapse", width: "100%" }}>
-            <thead><tr><th style={th}>차시</th><th style={th}>제목</th><th style={th}>완료</th><th style={th}>완료 시각</th><th style={th}>퀴즈 점수</th></tr></thead>
+            <thead><tr><th style={th}>차시</th><th style={th}>제목</th><th style={th}>상태</th><th style={th}>완료 시각</th><th style={th}>퀴즈 점수</th></tr></thead>
             <tbody>
               {LESSONS.map((l) => {
                 const r = progById.get(l.id);
                 const ql = quizLen(l.id);
+                const nConcept = l.concepts?.length ?? 0;
+                const passed = Object.values(r?.concepts || {}).filter((c) => c?.passed).length;
+                const started = passed > 0 || !!r?.practice_done;
+                let status;
+                if (r?.done) status = <span style={{ color: UI.green, fontWeight: 700 }}>완료</span>;
+                else if (started) status = <span style={{ color: UI.warn, fontWeight: 700 }}>진행 중 (개념 {passed}/{nConcept}, 실습 {r?.practice_done ? "채점됨" : "미채점"})</span>;
+                else status = <span style={{ color: UI.faint }}>미시작</span>;
                 return (
                   <tr key={l.id}>
                     <td style={tdNum}>{l.id}</td>
                     <td style={td}>{l.shortTitle || l.title}</td>
-                    <td style={td}>{r?.done ? <span style={{ color: UI.green, fontWeight: 700 }}>완료</span> : <span style={{ color: UI.faint }}>미완료</span>}</td>
+                    <td style={{ ...td, whiteSpace: "normal" }}>{status}</td>
                     <td style={tdNum}>{r?.done && r?.updated_at ? kstDateTime(r.updated_at) : "—"}</td>
                     <td style={tdNum}>{typeof r?.score === "number" ? `${r.score} / ${ql}` : "—"}</td>
                   </tr>
