@@ -32,15 +32,35 @@ export function isDayCleared(day, dayClears) {
   return !!dayClears?.[day];
 }
 
+// ── 날짜(KST) 기반 잠금 ──
+// dayClears[day] 값: cleared_at ISO 문자열(신형) 또는 true(구형, 날짜 없음). 시간대는 KST 고정.
+const KST_OFFSET = 9 * 60 * 60 * 1000;
+export function kstDayStr(x) {
+  const ms = typeof x === "number" ? x : Date.parse(x);
+  if (Number.isNaN(ms)) return null;
+  return new Date(ms + KST_OFFSET).toISOString().slice(0, 10); // KST 기준 "YYYY-MM-DD"
+}
+// 일차 잠금 상세: { locked, kind: "prev"(직전 미클리어) | "date"(당일 클리어, 내일 열림) | null, opensOn: "YYYY-MM-DD"|null }
+export function dayGateInfo(day, dayClears, now = Date.now()) {
+  const prev = day - 1;
+  const v = dayClears?.[prev];
+  if (!v) return { locked: true, kind: "prev", opensOn: null };
+  if (prev === 0 || v === true) return { locked: false, kind: null, opensOn: null }; // OT 예외(당일 시작)·구형식(무제한)
+  const cd = kstDayStr(v), td = kstDayStr(now);
+  if (cd && td && cd < td) return { locked: false, kind: null, opensOn: null };       // 클리어 다음 날 이후 → 열림
+  const opensOn = cd ? kstDayStr(Date.parse(cd + "T00:00:00+09:00") + 24 * 3600 * 1000) : null; // 클리어일 + 1일(KST)
+  return { locked: true, kind: "date", opensOn };
+}
+
 // OT(학습 안내)를 끝까지 읽으면 day 0 클리어로 기록한다 → 1일차 잠금 해제 기준.
 export function isOTDone(dayClears) {
   return !!dayClears?.[0];
 }
 
-// 일차가 열려 있는가: 직전 일차가 클리어되어야 열림.
-// 1일차는 직전이 day 0(=OT)이므로, OT를 확인해야 열린다.
-export function isDayUnlocked(day, dayClears) {
-  return !!dayClears?.[day - 1];
+// 일차가 열려 있는가: 직전 일차가 클리어되고, 그 클리어 다음 날(KST)이 되어야 열린다.
+// 1일차는 직전이 day 0(=OT) → OT 통과 당일에 바로 열린다(예외). 구형식(true)은 날짜 제한 없이 열린다.
+export function isDayUnlocked(day, dayClears, now = Date.now()) {
+  return !dayGateInfo(day, dayClears, now).locked;
 }
 
 // 특정 차시에 접근 가능한가 (그 차시가 속한 일차가 열려 있으면)

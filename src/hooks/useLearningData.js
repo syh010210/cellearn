@@ -43,7 +43,7 @@ function dequeue(uid, key) { savePending(uid, loadPending(uid).filter((e) => e.k
 const nowIso = () => new Date().toISOString();
 const descProgress = (uid, lid, done, score) => ({ key: `progress:${lid}`, table: "progress", onConflict: "user_id,lesson_id", row: { user_id: uid, lesson_id: Number(lid), done, score, updated_at: nowIso() } });
 const descWrong = (uid, lid, kind, payload) => ({ key: `${kind}:${lid}`, table: "wrong_notes", onConflict: "user_id,lesson_id,kind", row: { user_id: uid, lesson_id: Number(lid), kind, payload, updated_at: nowIso() } });
-const descClear = (uid, day) => ({ key: `day:${day}`, table: "day_clears", onConflict: "user_id,day", row: { user_id: uid, day: Number(day), cleared_at: nowIso() } });
+const descClear = (uid, day, at) => ({ key: `day:${day}`, table: "day_clears", onConflict: "user_id,day", row: { user_id: uid, day: Number(day), cleared_at: at || nowIso() } });
 
 export function useLearningData() {
   const { user } = useAuth();
@@ -120,7 +120,7 @@ export function useLearningData() {
       const [{ data: prog }, { data: notes }, { data: clears }] = await Promise.all([
         supabase.from("progress").select("lesson_id, done, score").eq("user_id", uid),
         supabase.from("wrong_notes").select("lesson_id, kind, payload").eq("user_id", uid),
-        supabase.from("day_clears").select("day").eq("user_id", uid),
+        supabase.from("day_clears").select("day, cleared_at").eq("user_id", uid),
       ]);
       if (cancelled) return;
 
@@ -132,7 +132,7 @@ export function useLearningData() {
         else if (r.kind === "practice") pw[r.lesson_id] = r.payload ?? [];
       });
       const dc = {};
-      (clears ?? []).forEach((r) => { dc[r.day] = true; });
+      (clears ?? []).forEach((r) => { dc[r.day] = r.cleared_at || true; }); // 날짜 잠금 판정용 cleared_at 보존(없으면 true=구형식)
 
       // 진도
       if (!isEmpty(p)) applyProgress(p);
@@ -145,7 +145,7 @@ export function useLearningData() {
       else if (!isEmpty(lsPr)) Object.keys(lsPr).forEach((lid) => trySync(descWrong(uid, lid, "practice", lsPr[lid])));
       // 일차 클리어
       if (!isEmpty(dc)) applyClears(dc);
-      else if (!isEmpty(lsC)) Object.keys(lsC).forEach((day) => { if (lsC[day]) trySync(descClear(uid, day)); });
+      else if (!isEmpty(lsC)) Object.keys(lsC).forEach((day) => { if (lsC[day]) trySync(descClear(uid, day, typeof lsC[day] === "string" ? lsC[day] : undefined)); });
 
       // 3) 이전에 실패했던 저장분 재시도
       await flushPending();
@@ -195,10 +195,11 @@ export function useLearningData() {
     trySync(descProgress(userIdRef.current, lid, true, score));
   }, [applyProgress, trySync]);
 
-  // 일차 마무리 시험 통과 → 다음 일차 잠금 해제
+  // 일차 마무리 시험 통과 → (다음 날) 잠금 해제. cleared_at 을 로컬·DB 동일 값으로 기록.
   const clearDay = useCallback((day) => {
-    applyClears({ ...clearsRef.current, [day]: true });
-    trySync(descClear(userIdRef.current, day));
+    const at = nowIso();
+    applyClears({ ...clearsRef.current, [day]: at });
+    trySync(descClear(userIdRef.current, day, at));
   }, [applyClears, trySync]);
 
   return { progress, quizWrongMap, practiceWrongMap, dayClears, saveError, saveQuizWrong, savePracticeWrong, addPracticeWrong, resolvePracticeWrong, completeLesson, clearDay };

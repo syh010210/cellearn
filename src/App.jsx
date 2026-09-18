@@ -20,7 +20,7 @@ import OTView from "./components/lesson/OTView";
 import TrialView from "./components/lesson/TrialView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
-import { getDay, isLessonAccessible, lessonLockReason, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
+import { getDay, isLessonAccessible, lessonLockReason, isDayComplete, allDaysCleared, isOTDone, dayGateInfo } from "./data/days";
 import { isExamGuarded, endExamAttempt } from "./utils/examGuard";
 import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
 import { UI } from "./theme";
@@ -299,7 +299,7 @@ export default function App() {
               onExit={() => setView("dash")}
             />
           )}
-          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} reason={lockReason} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} onSelect={selectLesson} />}
+          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} reason={lockReason} progress={progress} dayClears={dayClears} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} onSelect={selectLesson} />}
           {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} idx={conceptIdx} setIdx={setConceptIdx} onGoStep={goStep} addPracticeWrong={addPracticeWrong} resolvePracticeWrong={resolvePracticeWrong} flow={flow} setConceptPassed={setConceptPassed} unlockAll={freeNav} showAdminBadge={isAdmin} />}
           {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onGoStep={goStep} onJump={jumpTo} onWrong={savePracticeWrong} flow={flow} setPracticeDone={setPracticeDone} unlockAll={freeNav} showAdminBadge={isAdmin} />}
           {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onJump={jumpTo} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} flow={flow} unlockAll={freeNav} showAdminBadge={isAdmin} />}
@@ -329,11 +329,33 @@ export default function App() {
   );
 }
 
-// 잠긴 차시 진입 시 안내 — 차시 순서 잠금(앞 차시 미완료) 또는 일차 잠금
-function LockNotice({ lesson, reason, progress, onGate, onDash, onOT, onSelect }) {
+// "YYYY-MM-DD" → "M월 D일"
+function krDate(ymd) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd || ""); return m ? `${+m[2]}월 ${+m[3]}일` : ""; }
+
+// 잠긴 차시 진입 시 안내 — 차시 순서 잠금(앞 차시 미완료) / 일차 날짜 잠금(내일 열림) / 일차 잠금
+function LockNotice({ lesson, reason, progress, dayClears, onGate, onDash, onOT, onSelect }) {
   const d = getDay(lesson.id);
   const prevDay = d ? d.day - 1 : null;
   const prevComplete = prevDay ? isDayComplete(prevDay, progress) : false;
+
+  // 일차 날짜 잠금: 직전 일차를 클리어했지만 아직 그 다음 날(KST)이 되지 않음 → 내일 열림
+  if (reason === "day" && d) {
+    const gate = dayGateInfo(d.day, dayClears);
+    if (gate.kind === "date") {
+      return (
+        <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
+          <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.tealSoft, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <ClipboardCheck size={24} strokeWidth={2} color={UI.teal} />
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: UI.ink }}>{d.day}일차는 내일 열립니다</h2>
+          <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
+            {prevDay}일차를 마쳤어요. 하루 한 일차씩 진행합니다 — <b style={{ color: UI.ink }}>{krDate(gate.opensOn)}</b>에 {d.day}일차가 열립니다.
+          </p>
+          <button onClick={onDash} style={{ background: UI.panelAlt, color: UI.ink, border: `1px solid ${UI.line}`, padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer" }}>대시보드로</button>
+        </div>
+      );
+    }
+  }
 
   // 차시 순서 잠금: 일차는 열렸으나 같은 일차의 앞 차시가 아직 미완료
   if (reason === "lesson" && d) {

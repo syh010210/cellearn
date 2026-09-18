@@ -1,5 +1,5 @@
 import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
-import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared, isLessonAccessible } from "../../data/days";
+import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared, isLessonAccessible, dayGateInfo } from "../../data/days";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
@@ -63,6 +63,9 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
           const cleared = isDayCleared(d.day, dayClears);
           const complete = isDayComplete(d.day, progress);
           const gateActive = current === `gate-${d.day}`;
+          // 날짜 잠금(직전 일차 오늘 클리어 → 내일 열림) 안내용
+          const gate = unlockAll ? { kind: null } : dayGateInfo(d.day, dayClears);
+          const opensOn = gate.kind === "date" && gate.opensOn ? `${+gate.opensOn.slice(5, 7)}/${+gate.opensOn.slice(8, 10)}` : null;
           return (
             <div key={d.day} style={{ marginTop: 12 }}>
               {/* 일차 헤더 */}
@@ -72,6 +75,7 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
                   : null}
                 {d.day}일차
                 <span style={{ color: "#cfd6d2", fontWeight: 500 }}>({d.lessons[0]}~{d.lessons[d.lessons.length - 1]}차시)</span>
+                {opensOn && <span style={{ marginLeft: "auto", color: UI.teal, fontWeight: 700 }}>내일 열림 {opensOn}</span>}
               </div>
 
               {/* 차시들 */}
