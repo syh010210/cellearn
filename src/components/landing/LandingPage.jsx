@@ -692,7 +692,7 @@ export default function LandingPage({ onStart, onTrial, onLegal, isAuthed, onSig
             <div style={{ position: "relative", background: "#12332d", border: "1px solid #204740", borderRadius: UI.rLg, padding: "28px 26px" }}>
               <span style={{ position: "absolute", top: 20, right: 22, background: "transparent", border: `1px solid ${tealLine}`, color: UI.invMut, fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: UI.rPill }}>{SCHEDULE.grade1Month} 오픈 예정</span>
               <div style={{ fontSize: 15, fontWeight: 700, color: "#cfd6d3", marginBottom: 6 }}>컴퓨터활용능력 실기 1급</div>
-              <div style={{ ...num, fontSize: 36 }}>₩120,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> · 이용기간 2개월</span></div>
+              <div style={{ ...num, fontSize: 36 }}>₩140,000<span style={{ fontSize: 15, fontWeight: 500, color: UI.invMut }}> · 이용기간 3개월</span></div>
               <div style={{ margin: "20px 0" }}>
                 {["2급 전 과정 학습 시스템 포함", "1급 심화 함수 · 배열 수식", "액세스 · 매크로 실기 대비", "엑셀 파일 자동 채점 · 누적 복습 시스템"].map((f) => (
                   <div key={f} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 14, color: "#d5dbd8", marginBottom: 10 }}>

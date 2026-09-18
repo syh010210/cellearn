@@ -8,7 +8,7 @@
 // 판매(유료) 상품 — 2급만 판매. 1급은 상수만 두고 sold:false(랜딩 "10월 오픈 예정", 결제 목록 제외).
 export const PRODUCTS = {
   "2급": { grade: "2급", amount: 70000, paidMonths: 2, orderName: "셀런 컴활 2급 실기 2개월 이용권", sold: true },
-  "1급": { grade: "1급", amount: 120000, paidMonths: 2, orderName: "셀런 컴활 1급 실기 2개월 이용권", sold: false },
+  "1급": { grade: "1급", amount: 140000, paidMonths: 3, orderName: "셀런 컴활 1급 실기 3개월 이용권", sold: false },
 };
 
 // 유료 이용기간(개월)
