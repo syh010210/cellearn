@@ -28,8 +28,9 @@ export const COPY = {
   priceLine: "70,000원 · 이용기간 2개월",
   promoLabel: "자체 프로모션",
   promoSentence: "2026년 10월 31일까지 결제하시면 2026년 12월 31일까지 이용하실 수 있습니다.",
-  checkoutNotice: "판매 상품은 2개월 이용권입니다. 2026년 12월 31일까지의 이용 기간은 자체 프로모션으로 무상 제공되며, 환불 금액 계산에는 포함되지 않습니다.",
-  usagePeriodLine: "이용 기간: 2개월 (자체 프로모션으로 2026년 12월 31일까지 연장)",
+  // 날짜·개월은 상수(PAID_MONTHS·PROMO)에서 조립 — 하드코딩 금지
+  usagePeriodLine: `이용 기간: ${PAID_MONTHS}개월 (자체 프로모션으로 ${PROMO.extendToText}까지 연장)`,
+  usagePeriodLineRefund: `이용 기간: ${PAID_MONTHS}개월 (자체 프로모션으로 ${PROMO.extendToText}까지 연장, 연장 기간은 환불 계산에 미포함)`,
   faqQ: "실제로 얼마나 이용할 수 있나요?",
   faqA: "판매 상품은 2개월 이용권입니다. 2026년 10월 31일까지 결제하시면 자체 프로모션으로 2026년 12월 31일까지 이용하실 수 있습니다.",
   refundBasis: "환불은 유료 이용기간 2개월과 결제 금액 70,000원을 기준으로 계산합니다.",

@@ -230,8 +230,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
       <div style={card}>
         {onBack && phase === "form" && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
 
-        <div style={{ fontSize: 23, fontWeight: 700 }}>수강 결제</div>
-        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px", lineHeight: 1.6 }}>{COPY.checkoutNotice}</div>
+        <div style={{ fontSize: 23, fontWeight: 700, marginBottom: 22 }}>수강 결제</div>
 
         {/* 진행 단계 표시 (게스트 결제-우선 흐름) */}
         {isGuest && (
@@ -251,7 +250,6 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderRadius: UI.rMd, border: `2px solid ${UI.teal}`, background: UI.limeSoft }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 17 }}>컴활 {grade} 실기</div>
-            <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>{COPY.usagePeriodLine}</div>
           </div>
           <div style={{ fontWeight: 700, fontSize: 18, color: UI.teal, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</div>
         </div>
@@ -276,7 +274,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
             <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
               · 상품: {product.label}<br />
               · 결제 금액: <b style={{ color: UI.ink, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</b><br />
-              · {COPY.usagePeriodLine}
+              · {COPY.usagePeriodLineRefund}
             </div>
 
             {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
