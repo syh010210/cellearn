@@ -5,7 +5,7 @@
 ## 아키텍처 요약
 - **인증·DB**: Supabase (Postgres + Auth + RLS + Edge Functions)
 - **결제**: 포트원(PortOne) — 결제창은 브라우저, **검증은 서버(Edge Function)**
-- **상품**: 급수별(1급/2급) 기간제 — 프로모션: 올해 말까지
+- **상품**: 2급 실기 2개월 이용권(70,000원). 자체 프로모션: 2026-10-31까지 결제 시 2026-12-31까지 무상 연장 (1급 판매 중지). 값은 `src/data/membership.js`
 - **관리자**: `profiles.role='admin'` 계정 → 앱 내 `/admin`(관리자 대시보드)
 
 ```
@@ -51,7 +51,7 @@ update public.profiles set role = 'admin' where email = '본인관리자@메일'
    ```
    supabase functions deploy verify-payment
    ```
-   결제 완료 → `verify-payment` 가 금액/상태 확인 → `payments`, `enrollments`(올해 말까지) 기록 → 실습 잠금 해제.
+   결제 완료 → `verify-payment` 가 금액/상태 확인 → `payments`, `enrollments`(유료 2개월 + 프로모션 연장) 기록 → 실습 잠금 해제.
 
 ## 5. 배포
 - 프론트: Vercel/Netlify에 배포하고 환경변수 등록.

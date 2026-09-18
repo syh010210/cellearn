@@ -5,12 +5,11 @@ import { krAuthError } from "../../lib/authErrors";
 import { supabase } from "../../lib/supabase";
 import { UI } from "../../theme";
 import PasswordInput from "../auth/PasswordInput";
+import { PRODUCTS as MEMBERSHIP, COPY } from "../../data/membership";
 
-// 급수별 기간제 상품 — 프로모션: 올해 말까지 (가격은 서버 verify-payment의 PRICE와 반드시 일치)
-const PRODUCTS = {
-  "2급": { grade: "2급", amount: 70000, label: "컴퓨터활용능력 2급 실기 · 올해 끝까지" },
-  "1급": { grade: "1급", amount: 120000, label: "컴퓨터활용능력 1급 실기 · 올해 끝까지" },
-};
+// 판매 상품(2개월 이용권) — 상수는 src/data/membership.js. 판매 중인 급수만 결제 목록에 노출.
+//  label = PortOne orderName. 가격은 서버 verify-payment 의 PRICE 와 반드시 일치.
+const PRODUCTS = Object.fromEntries(Object.entries(MEMBERSHIP).map(([g, p]) => [g, { grade: p.grade, amount: p.amount, label: p.orderName, sold: p.sold }]));
 
 // 결제수단 — 카드 일반결제 + KG이니시스 간편결제. requestPayment에 병합할 파라미터를 반환.
 const METHODS = [
@@ -33,7 +32,8 @@ const PENDING_KEY = "portone_pending";
 // phase: "form"(결제 정보) → "account"(결제완료·비번/약관) → "otp"(6자리 코드) → 완료
 export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   const { user, profile, refresh, signUp, verifySignupOtp, resendSignupOtp } = useAuth();
-  const [grade, setGrade] = useState(presetGrade || profile?.target_grade || "2급");
+  const soldGrade = (g) => (PRODUCTS[g]?.sold ? g : "2급"); // 판매 중인 급수만(1급 판매중지 → 2급으로)
+  const [grade, setGrade] = useState(soldGrade(presetGrade || profile?.target_grade || "2급"));
   const [method, setMethod] = useState("CARD");
   const [name, setName] = useState(profile?.name || "");
   const [phone, setPhone] = useState(profile?.phone || "");
@@ -52,7 +52,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   useEffect(() => {
     if (profile?.name) setName((v) => v || profile.name);
     if (profile?.phone) setPhone((v) => v || profile.phone);
-    if (profile?.target_grade) setGrade((g) => g || profile.target_grade);
+    if (profile?.target_grade) setGrade((g) => soldGrade(g || profile.target_grade));
   }, [profile]);
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
@@ -114,6 +114,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
   // 1단계: 결제하기 (게스트도 로그인 없이 결제)
   async function startCheckout() {
     setMsg("");
+    if (!product?.sold) { setMsg("현재 판매 중인 상품이 아닙니다."); return; } // 1급 등 판매중지
     if (!supabase || !STORE_ID || !CHANNEL_KEY) {
       setMsg("결제 설정이 아직 없습니다. docs/SETUP.md의 Supabase · 포트원 키를 .env에 넣어주세요.");
       return;
@@ -230,7 +231,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         {onBack && phase === "form" && <button style={{ background: UI.surface, border: `1px solid ${UI.line}`, color: UI.mut, padding: "8px 15px", borderRadius: UI.rMd, cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: UI.font, display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 18 }} onClick={onBack}>← 홈으로</button>}
 
         <div style={{ fontSize: 23, fontWeight: 700 }}>수강 결제</div>
-        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px" }}>결제하면 올해 말까지 해당 학습 과정의 학습 · 실습이 열립니다.</div>
+        <div style={{ fontSize: 13.5, color: UI.mut, margin: "6px 0 22px", lineHeight: 1.6 }}>{COPY.checkoutNotice}</div>
 
         {/* 진행 단계 표시 (게스트 결제-우선 흐름) */}
         {isGuest && (
@@ -250,7 +251,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "18px 20px", borderRadius: UI.rMd, border: `2px solid ${UI.teal}`, background: UI.limeSoft }}>
           <div>
             <div style={{ fontWeight: 700, fontSize: 17 }}>컴활 {grade} 실기</div>
-            <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>올해 끝까지 이용</div>
+            <div style={{ fontSize: 13, color: UI.mut, marginTop: 4 }}>{COPY.usagePeriodLine}</div>
           </div>
           <div style={{ fontWeight: 700, fontSize: 18, color: UI.teal, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</div>
         </div>
@@ -275,7 +276,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
             <div style={{ marginTop: 20, fontSize: 13, color: UI.mut, lineHeight: 1.7 }}>
               · 상품: {product.label}<br />
               · 결제 금액: <b style={{ color: UI.ink, fontFamily: UI.mono }}>{product.amount.toLocaleString()}원</b><br />
-              · 이용 기간: 결제일부터 <b style={{ color: UI.ink }}>2026년 12월 31일</b>까지
+              · {COPY.usagePeriodLine}
             </div>
 
             {msg && <div style={{ marginTop: 16, background: UI.tealSoft, border: `1px solid ${UI.greenLine}`, color: UI.teal, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13 }}>{msg}</div>}
@@ -293,7 +294,7 @@ export default function CheckoutView({ onBack, presetGrade, onNeedLogin }) {
         {/* ── 2단계: 계정 만들기 (결제 완료 후) ── */}
         {phase === "account" && (
           <>
-            <div style={{ marginTop: 18, background: UI.greenSoft, border: `1px solid ${UI.greenLine}`, color: UI.green, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13, fontWeight: 600 }}>✓ 결제 완료 — 이제 계정을 만들어 학습을 시작하세요.</div>
+            <div style={{ marginTop: 18, background: UI.greenSoft, border: `1px solid ${UI.greenLine}`, color: UI.green, borderRadius: UI.rMd, padding: "10px 12px", fontSize: 13, fontWeight: 600 }}>✓ 결제 완료 — 이제 계정을 만들어 학습을 시작하세요.<br /><span style={{ fontWeight: 500 }}>{COPY.usagePeriodLine}</span></div>
             <div style={{ marginTop: 20, fontSize: 13, fontWeight: 700, color: UI.ink }}>계정 만들기</div>
             <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
               <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="이메일" style={inp} />

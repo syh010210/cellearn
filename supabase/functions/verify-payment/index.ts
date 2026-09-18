@@ -3,12 +3,13 @@
 // 시크릿: supabase secrets set PORTONE_API_SECRET=... (SERVICE_ROLE 키는 런타임이 자동 주입)
 //
 // 흐름: 클라이언트가 결제창에서 결제 → paymentId 를 이 함수로 전달 →
-//       포트원 API로 결제 진위/금액 확인 → 통과 시 payments=paid + enrollments(올해 말까지) 기록.
+//       포트원 API로 결제 진위/금액 확인 → 통과 시 payments=paid + enrollments(유료 2개월 + 프로모션 연장) 기록.
 // ⚠️ 금액/상품은 반드시 서버에서 재확인한다(클라이언트 값 신뢰 금지).
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SOLD_GRADES, computeValidTo } from "./validTo.js";
 
-// 상품 정가(서버 기준). 클라이언트가 보낸 금액과 대조.
+// 상품 정가(서버 기준). 클라이언트가 보낸 금액과 대조. (클라이언트 src/data/membership.js PRODUCTS.amount 와 일치)
 const PRICE: Record<string, number> = { "2급": 70000, "1급": 120000 };
 
 const CORS = {
@@ -23,6 +24,10 @@ Deno.serve(async (req) => {
     const { paymentId, grade } = await req.json();
     if (!paymentId || !PRICE[grade]) {
       return json({ error: "잘못된 요청" }, 400);
+    }
+    // 판매 중지 급수 거부 (현재 1급 판매 중지 — 2급만 결제 가능)
+    if (!SOLD_GRADES.has(grade)) {
+      return json({ error: "현재 판매하지 않는 상품입니다.", detail: `${grade}는 판매 중지 상태입니다. 2급만 결제할 수 있습니다.` }, 400);
     }
 
     // 1) 요청한 사용자 확인 (Authorization 헤더의 JWT)
@@ -69,22 +74,11 @@ Deno.serve(async (req) => {
       return json({ error: "결제 기록 저장 실패", detail: payErr.message }, 500);
     }
 
-    // 5) 수강권 부여 — 기간 정책
-    //   · 기본값: 결제일부터 2개월 (내년부터 이 값 적용 예정)
-    //   · 프로모션(현재): 구매 연도 12월 31일 23:59:59(KST)까지 "올해 끝까지"
-    //   프로모션을 끄려면 PROMO_UNTIL_YEAR_END=false 로 바꾸면 기본 2개월이 적용된다.
-    const PROMO_UNTIL_YEAR_END = true;
-    const BASE_MONTHS = 2;
-    const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
-    const year = kstNow.getUTCFullYear();
-    let validTo: Date;
-    if (PROMO_UNTIL_YEAR_END) {
-      validTo = new Date(`${year}-12-31T23:59:59+09:00`);
-    } else {
-      // kstNow는 UTC필드에 KST 벽시계를 담고 있으므로 setUTCMonth로 개월 가산
-      validTo = new Date(kstNow);
-      validTo.setUTCMonth(validTo.getUTCMonth() + BASE_MONTHS);
-    }
+    // 5) 수강권 부여 — 기간 정책(validTo.js)
+    //   · 유료 2개월. 결제 시각이 프로모션 마감(2026-10-31 23:59:59 KST) 이하이면
+    //     연장 종료일(2026-12-31 23:59:59 KST)과 비교해 늦은 날짜로. 마감 후면 결제일 + 2개월.
+    //   · 기존 enrollments 행은 건드리지 않는다(INSERT 만).
+    const validTo: Date = computeValidTo(new Date());
     const { error: enrErr } = await admin.from("enrollments").insert({
       user_id: user.id, grade, payment_id: pay?.id, valid_to: validTo.toISOString(),
     });

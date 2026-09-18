@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { MessageCircle, X, Send } from "lucide-react";
 import { UI } from "../../theme";
+import { PROMO } from "../../data/membership";
+
+// 자체 프로모션 결제 마감 시각(ms) — 상수 모듈에서
+const PROMO_DEADLINE_MS = Date.parse(PROMO.payDeadline);
 
 // 문의 수신 주소 — 여기로 모든 문의가 메일로 전달됩니다.
 const SUPPORT_EMAIL = "support@cellearn.kr";
@@ -8,15 +12,14 @@ const SUPPORT_EMAIL = "support@cellearn.kr";
 // 빠른 문의 주제 (누르면 메시지에 프리필)
 const QUICK = ["수강 · 결제 문의", "환불 문의", "학습/채점 오류", "기타 문의"];
 
-// 올해 말(프로모션 마감, 12/31)까지 남은 일수 — 매 분 갱신. 지난 경우 null.
+// 자체 프로모션 결제 마감(2026-10-31 23:59:59 KST)까지 남은 일수 — 매 분 갱신. 마감 후 null(배지 숨김).
 function useDday() {
   const [now, setNow] = useState(() => new Date());
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(t);
   }, []);
-  const end = new Date(now.getFullYear(), 11, 31, 23, 59, 59);
-  const ms = end - now;
+  const ms = PROMO_DEADLINE_MS - now.getTime();
   if (ms <= 0) return null;
   return Math.floor(ms / 86400000);
 }
@@ -135,7 +138,7 @@ export default function SupportWidget() {
             window.scrollTo({ top: y, behavior: "smooth" });
           }}
           role="button"
-          aria-label={`오픈 프로모션 마감까지 D-${dday}, 수강료 보기`}
+          aria-label={`자체 프로모션 마감까지 D-${dday}, 수강료 보기`}
           style={{
             position: "fixed", right: 24, bottom: 92, zIndex: 1000, width: 108,
             background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg,
@@ -143,7 +146,7 @@ export default function SupportWidget() {
             fontFamily: UI.font, cursor: "pointer", textAlign: "center",
           }}
         >
-          <div style={{ background: UI.teal, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "6px 0", letterSpacing: "-0.01em" }}>오픈 프로모션</div>
+          <div style={{ background: UI.teal, color: "#fff", fontSize: 11.5, fontWeight: 800, padding: "6px 0", letterSpacing: "-0.01em" }}>자체 프로모션</div>
           <div style={{ padding: "10px 8px 11px" }}>
             <div style={{ fontSize: 11, color: UI.mut, fontWeight: 700, marginBottom: 4 }}>마감까지</div>
             <div style={{ fontSize: 26, fontWeight: 800, color: UI.teal, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>D-{dday}</div>
