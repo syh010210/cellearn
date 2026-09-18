@@ -14,7 +14,7 @@ const otKey = () => userKey("ot:checked"); // cellearn:{uid}:ot:checked · 로�
 // 사이드바에서 "실전 모드"와 "1일차" 사이에 위치한다.
 // STEP 카드를 위에서부터 하나씩 읽고 체크해야 다음 STEP이 열리며(그전엔 블러),
 // 4개를 모두 확인하면 OT 완료로 기록되어 1일차가 열린다.
-export default function OTView({ onStart, onComplete, otDone = false }) {
+export default function OTView({ onStart, onComplete, otDone = false, onReplayTutorial }) {
   const [checked, setChecked] = useState(() => {
     if (otDone) return Array(STEP_COUNT).fill(true);
     try {
@@ -61,10 +61,24 @@ export default function OTView({ onStart, onComplete, otDone = false }) {
           <h2 style={{ fontSize: 25, fontWeight: 800, margin: 0, color: UI.ink }}>시작하기 전에, 학습 흐름부터</h2>
         </div>
       </div>
-      <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.75, margin: "0 0 20px" }}>
+      <p style={{ color: UI.mut, fontSize: 15, lineHeight: 1.75, margin: "0 0 14px" }}>
         컴퓨터 활용능력 2급 실기 수업을 <b style={{ color: UI.ink }}>7일 완성</b>으로 설계했습니다. 하루하루 정해진 루틴을
         그대로 따라오면 됩니다.
       </p>
+
+      {/* 미니 엑셀 사용법 다시 보기 — 튜토리얼 완료 표시를 지우고 1차시 개념1로 이동하면 같은 따라 하기가 다시 뜬다. */}
+      <button
+        onClick={() => {
+          for (const name of ["tutorial:miniexcel:done", "tutorial:miniexcel:f4:done"]) {
+            const k = userKey(name);
+            if (k) { try { localStorage.removeItem(k); } catch { /* noop */ } }
+          }
+          onReplayTutorial?.();
+        }}
+        style={{ display: "inline-flex", alignItems: "center", gap: 8, background: UI.surface, border: `1px solid ${UI.line}`, color: UI.teal, padding: "9px 14px", borderRadius: UI.rMd, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: UI.font, marginBottom: 20 }}
+      >
+        <BookOpen size={16} strokeWidth={2} /> 미니 엑셀 사용법 다시 보기
+      </button>
 
       {/* ── 진행 안내 바 */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, background: allDone ? UI.greenSoft : UI.panelAlt, border: `1px solid ${allDone ? UI.greenLine : UI.line}`, borderRadius: UI.rMd, padding: "12px 16px", marginBottom: 26 }}>

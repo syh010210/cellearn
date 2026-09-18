@@ -20,7 +20,7 @@ import OTView from "./components/lesson/OTView";
 import TrialView from "./components/lesson/TrialView";
 import LegalView from "./components/legal/LegalView";
 import SupportWidget from "./components/support/SupportWidget";
-import { getDay, isLessonUnlocked, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
+import { getDay, isLessonAccessible, lessonLockReason, isDayComplete, allDaysCleared, isOTDone } from "./data/days";
 import { isExamGuarded, endExamAttempt } from "./utils/examGuard";
 import { BookOpen, FolderOpen, PenLine, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
 import { UI } from "./theme";
@@ -143,8 +143,10 @@ export default function App() {
   const totalWrong = Object.values(quizWrongMap).flat().length + Object.values(practiceWrongMap).flat().length;
   const currentLesson = typeof view === "number" ? LESSONS.find((l) => l.id === view) : null;
   const gateDay = typeof view === "string" && view.startsWith("gate-") ? Number(view.slice(5)) : null;
-  // 관리자 계정은 차시 잠금 없이 전체 접근
-  const lessonLocked = currentLesson && !isAdmin && !isLessonUnlocked(currentLesson.id, dayClears);
+  // 관리자·이미 완료한 차시는 잠금 예외(재열람 항상 가능). 그 외엔 일차 잠금 + 차시 순서 잠금(앞 차시 완료).
+  const lessonDone = currentLesson ? !!progress[currentLesson.id]?.done : false;
+  const lessonLocked = currentLesson && !isAdmin && !lessonDone && !isLessonAccessible(currentLesson.id, dayClears, progress);
+  const lockReason = (currentLesson && !lessonDone) ? lessonLockReason(currentLesson.id, dayClears, progress) : null;
   // 순서 게이팅 우회: 관리자 또는 이미 완료한 차시(재방문 자유 이동)
   const freeNav = isAdmin || (typeof view === "number" && !!progress[view]?.done);
   const conceptsPassed = currentLesson ? allConceptsPassed(currentLesson, flow) : false;
@@ -270,7 +272,7 @@ export default function App() {
 
         <div style={{ padding: "32px 32px 40px" }}>
           {view === "dash" && <Dashboard lessons={LESSONS} progress={progress} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
-          {view === "ot" && <OTView otDone={isOTDone(dayClears)} onComplete={() => clearDay(0)} onStart={() => selectLesson(1)} />}
+          {view === "ot" && <OTView otDone={isOTDone(dayClears)} onComplete={() => clearDay(0)} onStart={() => selectLesson(1)} onReplayTutorial={() => selectLesson(1)} />}
           {view === "wrong" && <WrongNoteView lessons={LESSONS} quizWrongMap={quizWrongMap} practiceWrongMap={practiceWrongMap} />}
           {view === "exam" && (
             (isAdmin || allDaysCleared(dayClears))
@@ -297,7 +299,7 @@ export default function App() {
               onExit={() => setView("dash")}
             />
           )}
-          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} />}
+          {currentLesson && lessonLocked && <LockNotice lesson={currentLesson} reason={lockReason} progress={progress} onGate={openGate} onDash={() => setView("dash")} onOT={() => setView("ot")} onSelect={selectLesson} />}
           {currentLesson && !lessonLocked && step === "concept" && <ConceptView key={view} lesson={currentLesson} idx={conceptIdx} setIdx={setConceptIdx} onGoStep={goStep} addPracticeWrong={addPracticeWrong} resolvePracticeWrong={resolvePracticeWrong} flow={flow} setConceptPassed={setConceptPassed} unlockAll={freeNav} showAdminBadge={isAdmin} />}
           {currentLesson && !lessonLocked && step === "practice" && <PracticeView lesson={currentLesson} onGoStep={goStep} onJump={jumpTo} onWrong={savePracticeWrong} flow={flow} setPracticeDone={setPracticeDone} unlockAll={freeNav} showAdminBadge={isAdmin} />}
           {currentLesson && !lessonLocked && step === "quiz" && <QuizView lesson={currentLesson} onJump={jumpTo} onSaveWrong={saveQuizWrong} onDone={(score) => completeLesson(currentLesson.id, score)} flow={flow} unlockAll={freeNav} showAdminBadge={isAdmin} />}
@@ -327,11 +329,34 @@ export default function App() {
   );
 }
 
-// 잠긴 차시 진입 시 안내 — 이전 일차 마무리 시험을 먼저 통과해야 함
-function LockNotice({ lesson, progress, onGate, onDash, onOT }) {
+// 잠긴 차시 진입 시 안내 — 차시 순서 잠금(앞 차시 미완료) 또는 일차 잠금
+function LockNotice({ lesson, reason, progress, onGate, onDash, onOT, onSelect }) {
   const d = getDay(lesson.id);
   const prevDay = d ? d.day - 1 : null;
   const prevComplete = prevDay ? isDayComplete(prevDay, progress) : false;
+
+  // 차시 순서 잠금: 일차는 열렸으나 같은 일차의 앞 차시가 아직 미완료
+  if (reason === "lesson" && d) {
+    const pos = d.lessons.indexOf(lesson.id);
+    const prevLessonId = pos > 0 ? d.lessons[pos - 1] : null;
+    const prev = prevLessonId ? LESSONS.find((l) => l.id === prevLessonId) : null;
+    return (
+      <div className="cl-fade-up" style={{ maxWidth: 560, margin: "40px auto 0", background: UI.surface, border: `1px solid ${UI.line}`, borderRadius: UI.rLg, padding: 32, textAlign: "center" }}>
+        <div style={{ width: 52, height: 52, borderRadius: UI.rPill, background: UI.panelAlt, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+          <Lock size={24} strokeWidth={2} color={UI.mut} />
+        </div>
+        <h2 style={{ fontSize: 20, fontWeight: 700, margin: "0 0 8px", color: UI.ink }}>앞 차시를 완료하면 열립니다</h2>
+        <p style={{ color: UI.mut, fontSize: 14.5, lineHeight: 1.7, margin: "0 0 20px" }}>
+          {prev ? <><b style={{ color: UI.ink }}>{prev.id}차시 {prev.shortTitle || prev.title}</b>를 완료하면 이 차시가 열립니다.</> : "앞 차시를 완료하면 이 차시가 열립니다."}
+        </p>
+        {prev && (
+          <button onClick={() => onSelect?.(prev.id)} style={{ background: UI.teal, color: "#fff", border: "none", padding: "12px 22px", borderRadius: UI.rMd, fontSize: 15, fontWeight: 700, cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8 }}>
+            <BookOpen size={17} strokeWidth={2} /> {prev.id}차시로 가기
+          </button>
+        )}
+      </div>
+    );
+  }
 
   // 1일차는 직전이 OT(day 0). 마무리 시험이 아니라 학습 안내(OT)를 먼저 봐야 열린다.
   if (d?.day === 1) {

@@ -1,5 +1,5 @@
 import { LayoutDashboard, XCircle, CheckCircle2, Circle, Lock, ClipboardCheck, Target, GraduationCap } from "lucide-react";
-import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared } from "../../data/days";
+import { DAYS, isDayComplete, isDayUnlocked, isDayCleared, allDaysCleared, isLessonAccessible } from "../../data/days";
 import Logo from "../brand/Logo";
 import { UI } from "../../theme";
 
@@ -84,13 +84,16 @@ export default function Sidebar({ lessons, current, onSelect, progress, dayClear
                 );
                 const active = current === id;
                 const done = progress[id]?.done;
+                // 차시 순서 잠금: 일차 열림 + 앞 차시 완료. 완료 차시·관리자(unlockAll)는 항상 열림.
+                const openable = unlockAll || done || isLessonAccessible(id, dayClears, progress);
                 return (
-                  <button key={id} onClick={() => onSelect(id)} style={{ ...navBtn(active), fontSize: 13, opacity: (done || unlocked) ? 1 : 0.55 }}>
+                  <button key={id} onClick={() => openable && onSelect(id)} disabled={!openable}
+                    style={{ ...navBtn(active), fontSize: 13, opacity: openable ? 1 : 0.55, cursor: openable ? "pointer" : "not-allowed" }}>
                     {/* 완료(done)면 체크가 최우선 → 완료 차시에 자물쇠가 겹치지 않는다.
-                        완료 아님 + 잠김 → 자물쇠, 그 외 → 빈 원 */}
+                        완료 아님 + 잠김(일차·차시 순서) → 자물쇠, 그 외 → 빈 원 */}
                     {done
                       ? <CheckCircle2 size={16} strokeWidth={2} color={active ? "#fff" : UI.correct} style={{ flexShrink: 0 }} />
-                      : !unlocked
+                      : !openable
                       ? <Lock size={15} strokeWidth={1.5} color={active ? "#fff" : UI.faint} style={{ flexShrink: 0 }} />
                       : <Circle size={16} strokeWidth={1.5} color={active ? UI.lime : "#cfd6d2"} style={{ flexShrink: 0 }} />}
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{id}. {l.shortTitle || l.title}</span>

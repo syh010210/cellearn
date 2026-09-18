@@ -49,6 +49,25 @@ export function isLessonUnlocked(lessonId, dayClears) {
   return d ? isDayUnlocked(d.day, dayClears) : true;
 }
 
+// 차시 순서 잠금: 일차가 열려 있고, 그 일차에서 앞 차시가 모두 완료(progress.done)여야 열린다.
+// 일차의 첫 차시는 일차가 열리면 바로 열린다. 판정은 progress.done(DB)만 사용.
+export function isLessonAccessible(lessonId, dayClears, progress = {}) {
+  const d = getDay(lessonId);
+  if (!d) return true;                                    // 커리큘럼 밖(방어) → 접근 허용
+  if (!isDayUnlocked(d.day, dayClears)) return false;     // 일차 잠금이 우선
+  const pos = d.lessons.indexOf(lessonId);
+  if (pos <= 0) return true;                              // 일차 첫 차시(또는 목록 밖) → 일차 열리면 바로
+  return d.lessons.slice(0, pos).every((id) => progress[id]?.done); // 앞 차시 전부 완료
+}
+
+// 잠금 사유 판별(화면 안내용): "day"=일차 잠김, "lesson"=일차는 열렸으나 앞 차시 미완료, null=열림
+export function lessonLockReason(lessonId, dayClears, progress = {}) {
+  const d = getDay(lessonId);
+  if (!d) return null;
+  if (!isDayUnlocked(d.day, dayClears)) return "day";
+  return isLessonAccessible(lessonId, dayClears, progress) ? null : "lesson";
+}
+
 // 1차시 ~ 해당 일차 마지막 차시까지 누적 차시 id
 export function cumulativeLessonIds(day) {
   const ids = [];
